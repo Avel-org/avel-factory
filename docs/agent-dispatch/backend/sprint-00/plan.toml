@@ -1,0 +1,349 @@
+# The plan for backend sprint-00 (Step 0). The lead writes it; scripts/render.py turns it into
+# the dispatch package. Every task doc and prompt comes from here: never edit
+# the rendered files, fix this and re-render. Format: docs/agent-dispatch/avel/dispatch-kit.md
+#
+# 2026-11-06: B1-B9 answered (decisions.md). Waits on Brennan's review of contract.md;
+# nothing is dispatched before the slice locks. Sources follow CR-19's order (D3).
+team = "backend"
+sprint = "sprint-00"
+lead = "axis"
+step = "0"
+title = "The contract written fresh, and the schema rebuilt from the database map"
+goals = [
+  "A pnpm workspace with TypeScript, Biome, Vitest, scripts/pg-local.sh and CI with a Postgres service",
+  "packages/contract: every value list defined once, the DTOs and inputs, the 99 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, with no rep fields",
+  "packages/db: the Drizzle schema rebuilt from AVEL Database Map.html (every table, column, default, foreign key, CHECK, index and trigger by name, the six functions rewritten), the accepted CRs applied on top, value lists imported from the contract, and a first migration",
+  "The ERD and the OpenAPI document generated, DATABASE.md brought up to the schema, and the drift check in CI",
+]
+# Step 0 and Step 1 plan, Step 0, "Done when", word for word.
+done_when = [
+  "The first migration applies to an empty database and reverses cleanly.",
+  "A `db` suite against real Postgres covers every CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal in DATABASE.md, one test per rule (the count is filled in when Rigg writes them).",
+  "The CR-13 rules: a second internal client is refused; a client mission on the internal client is refused, and an internal mission on a client is refused; changing a mission's kind after onboarding starts is refused.",
+  "The ERD drift check passes: the schema and DATABASE.md agree.",
+  "The contract builds and the OpenAPI document generates; the review script passes.",
+  "Every value list the schema checks is imported from the contract package, not repeated (a test looks for repeats).",
+  "A new event kind with no owning module fails to compile.",
+  "**The schema matches the map:** a test reads the map's table, column, foreign-key, CHECK and index lists and compares them with the schema. Anything that differs has to be listed against the CR that changed it.",
+  "**Each of the six functions has a test** for the rule it enforces. For example: an update to an immutable table is refused; a frozen plan's detail can't be inserted, updated or deleted; a freeze-once column can't change once set; `updated_at` and `row_version` move on every update; v7 ids sort by time.",
+]
+sources = [
+  "docs/agent-dispatch/backend/sprint-00/contract.md",
+  "docs/agent-dispatch/backend/sprint-00/decisions.md",
+  "docs/design/Step 0 and Step 1 plan.md",
+  "docs/design/AVEL Database Map.html",
+  "docs/design/Schema vs DATABASE.md.md",
+  "docs/design/Change requests CR-1 to 13.md",
+  "docs/design/CR-16 Dispatch package contract.md",
+  "docs/design/API routes.md",
+  "docs/design/DATABASE.md",
+  "docs/design/API and data reference.md",
+  "docs/design/Canon onboarding v0.5.md",
+  "docs/design/Backend modules and build plan.md",
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "A new TypeScript monorepo on pnpm workspaces. Biome for lint and format, Vitest for tests, Drizzle ORM and drizzle-kit on Postgres, and oRPC contract definitions with Zod schemas (Frontend Map v0.6, CR-W1). Nothing is built yet: Step 0 is the first code in avel-factory. The old schema is lost; its record is docs/design/AVEL Database Map.html, and Step 0 rebuilds packages/db from it (CR-19)."
+layout = [
+  "packages/contract: value lists, DTOs and inputs, oRPC routes, the error map, the event-owner map, the completion report schema (src/), and its tests (test/)",
+  "packages/db: the Drizzle schema, the table-owner map, drizzle-kit migrations, and the db suite against real Postgres (test/)",
+  "tools/docs: the ERD and OpenAPI generators and the DATABASE.md drift check; output in docs/generated/",
+  "scripts/pg-local.sh: a local Postgres for tests",
+  "docs/design: the design docs this step is written from (read-only)",
+]
+conventions = [
+  "Value lists are text with a CHECK, never Postgres enums, defined once in packages/contract and imported by packages/db (DATABASE.md, Types)",
+  "Every foreign key is ON DELETE RESTRICT except Better Auth's own tables, which cascade from users (DATABASE.md, Foreign-key policy)",
+  "Primary keys are UUIDv7, money is bigint *_micros, and times are timestamptz *_at (DATABASE.md, Types)",
+  "Table, column, CHECK, index and trigger names are the map's, word for word, as contract.md section 6 changes them; never invent a column",
+  "Every mutable table has row_version and updated_at (touch_updated_at); immutable tables refuse updates (refuse_update) (Schema vs DATABASE.md.md, Patterns)",
+  "Package names are @avel/contract and @avel/db (decisions.md, D12)",
+]
+notes = [
+  "contract.md is the step contract. Its section 7 lists what's still open; a dispatch that meets an open item stops and reports it under Deviations.",
+]
+
+# ------------------------------------------------------------------ m0: workspace
+[[dispatch]]
+agent = "atlas"
+module = "m0-workspace"
+role = "build"
+domain = "The pnpm workspace, TypeScript, Biome and Vitest config, scripts/pg-local.sh and the main CI workflow with a Postgres service (Step 0 item 1). No package code."
+territory = [
+  "package.json",
+  "pnpm-workspace.yaml",
+  "pnpm-lock.yaml",
+  ".npmrc",
+  "tsconfig.base.json",
+  "tsconfig.json",
+  "biome.json",
+  "vitest.workspace.ts",
+  ".github/workflows/ci.yml",
+  "scripts/pg-local.sh",
+]
+context = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 0 item 1 (the workspace) and Step 1 item 14 (what CI must run later)" },
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "the packages the workspace must hold" },
+]
+
+[[dispatch.task]]
+title = "Root workspace: pnpm-workspace.yaml (packages/*, tools/*), root package.json with build, typecheck, lint and test scripts that run across packages, tsconfig.base.json (strict), Biome and Vitest workspace config"
+priority = "P0"
+current = "No package.json in the repo"
+required = "pnpm install, pnpm build, pnpm typecheck, pnpm lint and pnpm test all exit 0 on an empty workspace"
+verify = "pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm test"
+expected = "every command exits 0"
+
+[[dispatch.task]]
+title = "scripts/pg-local.sh: start, stop and print a DATABASE_URL for a throwaway local Postgres (Docker), idempotent"
+priority = "P0"
+required = "Tests reach real Postgres through DATABASE_URL; running it twice doesn't fail"
+verify = "scripts/pg-local.sh start && scripts/pg-local.sh url && scripts/pg-local.sh start && scripts/pg-local.sh stop"
+expected = "a postgres:// URL is printed and every call exits 0"
+
+[[dispatch.task]]
+title = ".github/workflows/ci.yml: install, build, typecheck, lint and test against a Postgres service container"
+priority = "P1"
+required = "The workflow sets DATABASE_URL from the service, and runs the same four commands as local"
+verify = "pnpm dlx @action-validator/cli .github/workflows/ci.yml"
+expected = "the workflow validates"
+
+[[dispatch]]
+agent = "axis"
+module = "m0-workspace"
+role = "review-backend"
+domain = "Review the workspace against Step 0 item 1 and this plan's commands."
+context = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 0 item 1" },
+]
+
+[[dispatch.task]]
+title = "Review the m0-workspace diff: every command in [commands] works, CI runs against Postgres, nothing outside the territory changed"
+verify = "pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm test"
+expected = "every command exits 0"
+
+# ------------------------------------------------------------------ m1: the contract
+[[dispatch]]
+agent = "axis"
+module = "m1-contract"
+role = "api-contract"
+domain = "packages/contract: the value lists, DTOs and inputs, the 99 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, from contract.md (Step 0 item 2)."
+territory = [
+  "packages/contract/src/**",
+  "packages/contract/package.json",
+  "packages/contract/tsconfig.json",
+]
+after = ["agent-atlas-m0-workspace-build"]
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "the slice: what the contract contains and where each item comes from" },
+  { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "D1 to D12, and the operator's answers to B1 to B9" },
+  { path = "docs/design/API routes.md", why = "the 99 routes and CR-16's 3, word for word" },
+  { path = "docs/design/AVEL Database Map.html", why = "the columns every DTO is drafted from, and the value-list CHECKs (contract.md, Appendix A)" },
+  { path = "docs/design/CR-16 Dispatch package contract.md", why = "DispatchPackageDto, its query and its four error codes" },
+  { path = "docs/design/Canon onboarding v0.5.md", why = "Implementation: the named enums" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Data layer (contract/base.ts) and Contract change requests: what the web will import" },
+]
+
+[[dispatch.task]]
+title = "Value lists (contract.md section 3 and Appendix A): one exported const array and type per list, the map's 99 CHECKed lists with section 3's changes on top"
+priority = "P0"
+required = "Each list is defined once; the changes in section 3 are applied; jobs.state uses 'claimed'"
+verify = "pnpm --filter @avel/contract test -- value-lists"
+expected = "passes"
+
+[[dispatch.task]]
+title = "DTOs and inputs (contract.md section 4), with no rep fields, and the 102 routes (section 2) as oRPC route definitions over one base with the error map (section 5)"
+priority = "P0"
+required = "Every route in section 2 is defined once with its method and path; every DTO field traces to a map column or its route row; DispatchPackageDto is CR-16's, word for word"
+verify = "pnpm --filter @avel/contract build && pnpm --filter @avel/contract test -- routes"
+expected = "builds; the route snapshot lists 102 method and path pairs"
+
+[[dispatch.task]]
+title = "The event-kind to owning-module map (section 5) and the completion report schema (E6)"
+priority = "P1"
+required = "A kind with no owner fails to compile (done-when 7)"
+verify = "pnpm --filter @avel/contract typecheck && pnpm --filter @avel/contract test -- events"
+expected = "passes"
+
+[[dispatch]]
+agent = "rigg"
+module = "m1-contract"
+role = "test-unit"
+domain = "The contract's done-when tests: 5 (the contract builds and the route snapshot), 6 (the contract exports every list the schema checks), 7 (an event kind with no owner fails to compile)."
+territory = ["packages/contract/test/**"]
+after = ["agent-atlas-m0-workspace-build"]
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "what the contract must export" },
+  { path = "docs/design/API routes.md", why = "the 99 method and path pairs plus CR-16's 3: 102 to snapshot" },
+]
+
+[[dispatch.task]]
+title = "Done-when 5, 6 and 7 as Vitest tests (7 as a type test with an expected compile error)"
+priority = "P0"
+required = "Each fails first with an assertion, three runs in a row, and carries its done-when number in its name"
+verify = "pnpm --filter @avel/contract test"
+expected = "every test fails with an assertion before the contract exists"
+
+[[dispatch]]
+agent = "brennan"
+module = "m1-contract"
+role = "review-spec"
+domain = "Review packages/contract against contract.md, API routes.md, the database map and CR-16: every route, list, DTO field and code traces to its source."
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "the slice the contract implements" },
+  { path = "docs/design/API routes.md", why = "the routes" },
+  { path = "docs/design/AVEL Database Map.html", why = "the columns behind each DTO, and the value lists" },
+  { path = "docs/design/CR-16 Dispatch package contract.md", why = "DispatchPackageDto and its errors" },
+]
+
+[[dispatch.task]]
+title = "Review the m1-contract diff: no invented field, route or value; no rep fields; every Deviation is a CR"
+verify = "pnpm --filter @avel/contract build && pnpm --filter @avel/contract test"
+expected = "builds; the locked tests pass"
+
+# ------------------------------------------------------------------ m2: the schema
+[[dispatch]]
+agent = "rigg"
+module = "m2-db"
+role = "test-unit"
+domain = "The db done-when tests against real Postgres: 1 (migration applies and reverses), 2 (one test per CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal, from the map and the changes on top), 3 (the CR-13 rules), 6 (no value list repeated in packages/db), 8 (the schema matches the map), 9 (one test per function)."
+territory = ["packages/db/test/**"]
+after = ["agent-atlas-m0-workspace-build"]
+context = [
+  { path = "docs/design/AVEL Database Map.html", why = "every rule under test, by name, and what test 8 compares against" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "the Step 0 table and done-when 1 to 3, 6, 8 and 9" },
+  { path = "docs/design/DATABASE.md", why = "Integrity rules: why each rule exists" },
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "section 6: the tables and the owner map" },
+]
+
+[[dispatch.task]]
+title = "Done-when 1, 2, 3, 6, 8 and 9 against real Postgres (scripts/pg-local.sh); report the rule count for test 2"
+priority = "P0"
+required = "One test per rule, each named with its done-when number and the rule; each fails first with an assertion"
+verify = "pnpm --filter @avel/db test"
+expected = "every test fails with an assertion before the schema exists"
+
+[[dispatch]]
+agent = "soap"
+module = "m2-db"
+role = "build"
+domain = "packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the six functions, the table-owner map, and the first migration (Step 0 item 3; CR-19)."
+territory = ["packages/db/**"]
+after = ["agent-axis-m1-contract-api-contract"]
+context = [
+  { path = "docs/design/AVEL Database Map.html", why = "every table, column, default, foreign key, CHECK, index and trigger, by name" },
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "section 6: the changes on top of the map and the owners; section 3: the value lists to import" },
+  { path = "docs/design/Schema vs DATABASE.md.md", why = "the patterns (row_version, immutable tables, freezes) and what each function enforces" },
+  { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "D6 to D9 and the operator's answers to B1 to B9" },
+]
+
+[[dispatch.task]]
+title = "The Drizzle schema: the map's 91 tables by name with section 6's changes, every CHECK, index and FK in the schema itself, and the six functions with their triggers; value lists imported from @avel/contract"
+priority = "P0"
+required = "The locked db suite passes, including the map comparison (8) and the function tests (9); no value list is written in packages/db"
+verify = "pnpm --filter @avel/db test"
+expected = "all locked tests pass"
+
+[[dispatch.task]]
+title = "The first migration, generated by drizzle-kit, with a down migration"
+priority = "P0"
+required = "It applies to an empty database and reverses cleanly (done-when 1)"
+verify = "pnpm --filter @avel/db migrate:up && pnpm --filter @avel/db migrate:down"
+expected = "both exit 0"
+
+[[dispatch]]
+agent = "axis"
+module = "m2-db"
+role = "review-backend"
+domain = "Review packages/db against contract.md section 6 and the database map."
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "the slice" },
+  { path = "docs/design/AVEL Database Map.html", why = "the tables and rules, by name" },
+]
+
+[[dispatch.task]]
+title = "Review the m2-db diff: rules in the schema, not only the migration; owners match section 6; value lists imported"
+verify = "pnpm --filter @avel/db test"
+expected = "the locked tests pass"
+
+[[dispatch]]
+agent = "brennan"
+module = "m2-db"
+role = "review-spec"
+domain = "Review packages/db against the database map, the accepted CRs and contract.md section 6 (CR-19's precedence): no invented column, every CR change in."
+context = [
+  { path = "docs/design/AVEL Database Map.html", why = "what exists, by name" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "the Step 0 table" },
+  { path = "docs/design/Change requests CR-1 to 13.md", why = "the accepted changes on top" },
+]
+
+[[dispatch.task]]
+title = "Review the m2-db diff column by column against the map and the Step 0 table"
+verify = "pnpm --filter @avel/db test"
+expected = "the locked tests pass"
+
+# ------------------------------------------------------------------ m3: generated docs
+[[dispatch]]
+agent = "rigg"
+module = "m3-docs"
+role = "test-unit"
+domain = "Done-when 4 (the ERD drift check passes, and fails on a planted mismatch) and 5's OpenAPI half (the document generates and holds the contract's routes)."
+territory = ["tools/docs/test/**"]
+after = ["agent-atlas-m0-workspace-build"]
+context = [
+  { path = "docs/design/DATABASE.md", why = "Source of truth: what the drift check compares" },
+]
+
+[[dispatch.task]]
+title = "Done-when 4 and 5 (OpenAPI) as tests, including a planted-mismatch case for the drift check"
+priority = "P1"
+required = "Each fails first with an assertion"
+verify = "pnpm --filter @avel/docs test"
+expected = "every test fails with an assertion before the generators exist"
+
+[[dispatch]]
+agent = "atlas"
+module = "m3-docs"
+role = "build"
+domain = "tools/docs: the ERD generator from the Drizzle schema, the drift check against DATABASE.md, the OpenAPI generator from the contract, and their CI workflow (Step 0 item 4); DATABASE.md brought up to the schema (Step 0 item 5)."
+territory = ["tools/docs/**", "docs/generated/**", ".github/workflows/docs.yml", "docs/design/DATABASE.md"]
+after = ["agent-soap-m2-db-build", "agent-axis-m1-contract-api-contract"]
+context = [
+  { path = "docs/design/DATABASE.md", why = "Source of truth: the drift check's rules" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 0 items 4 and 5" },
+  { path = "docs/design/Schema vs DATABASE.md.md", why = "the 11 tables and column changes DATABASE.md needs" },
+]
+
+[[dispatch.task]]
+title = "ERD from the schema, the drift check against DATABASE.md, and the OpenAPI document from the contract, run in CI"
+priority = "P1"
+required = "The drift check fails the build when DATABASE.md is stale; the OpenAPI document generates"
+verify = "pnpm --filter @avel/docs test && pnpm --filter @avel/docs generate"
+expected = "the locked tests pass; docs/generated/ has the ERD and openapi.json"
+
+[[dispatch.task]]
+title = "DATABASE.md brought up to the schema: the 11 tables it lacks, outbox removed, the column changes, design_systems, and the CR changes (Step 0 item 5)"
+priority = "P1"
+required = "The drift check passes against the new schema; DATABASE.md keeps its reasoning sections (spine, integrity rules, delete policy)"
+verify = "pnpm --filter @avel/docs drift"
+expected = "no drift"
+
+[[dispatch]]
+agent = "axis"
+module = "m3-docs"
+role = "review-backend"
+domain = "Review the generated docs and the drift check against Step 0 item 4."
+context = [
+  { path = "docs/design/DATABASE.md", why = "Source of truth" },
+]
+
+[[dispatch.task]]
+title = "Review the m3-docs diff: the drift check really compares, and fails on a mismatch"
+verify = "pnpm --filter @avel/docs test"
+expected = "the locked tests pass"

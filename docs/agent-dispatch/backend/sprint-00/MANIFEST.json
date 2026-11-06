@@ -1,0 +1,99 @@
+{
+  "renderer": "scripts/render.py (minimal, CR-16)",
+  "team": "backend",
+  "sprint": "sprint-00",
+  "planSha256": "2e56d67dc771f51b83fb59f1a92d92c66f82f2fc229ef28f685dc312c2746b20",
+  "packageSha256": "ce37c9ae251fef0fbeadbfea9680783b637374a10cd98f2ec6072fa301613239",
+  "files": [
+    {
+      "path": "DISPATCH-PROMPTS.md",
+      "kind": "prompts_archive",
+      "sha256": "0e04084feb5375ecc3957f9dcd03411d85a1ed952f33d593fdb2c8f3526c23df",
+      "bytes": 15728
+    },
+    {
+      "path": "DISPATCH.md",
+      "kind": "dispatch_md",
+      "sha256": "a67fc29f9f6813fc7dcf580ad64861d7311bc90ed86ccb5415a9fd6c1514c736",
+      "bytes": 7837
+    },
+    {
+      "path": "agent-atlas-m0-workspace-build.md",
+      "kind": "task_doc",
+      "sha256": "6a07cc54c7e6d5df48da76ff3289efb84e80ed62b023410bd8991b908a55fecc",
+      "bytes": 11995
+    },
+    {
+      "path": "agent-atlas-m3-docs-build.md",
+      "kind": "task_doc",
+      "sha256": "00779fb7a58850baf97cea827309eef2d38dc6c0107ce398d6418d149124b870",
+      "bytes": 11334
+    },
+    {
+      "path": "agent-axis-m0-workspace-review-backend.md",
+      "kind": "task_doc",
+      "sha256": "c34fabce6791eb08716e0415bb239f65504df471112a71ba4c5b9e4b7567190f",
+      "bytes": 10390
+    },
+    {
+      "path": "agent-axis-m1-contract-api-contract.md",
+      "kind": "task_doc",
+      "sha256": "c968d0469d29a5bc75f94d7774ab4b7e1768275ad3e660e4af1a70436df59936",
+      "bytes": 11937
+    },
+    {
+      "path": "agent-axis-m2-db-review-backend.md",
+      "kind": "task_doc",
+      "sha256": "e7f1d9c6da96741a92df961c91a7ae8876275d8d28cab7fe8028e09c445bc941",
+      "bytes": 10268
+    },
+    {
+      "path": "agent-axis-m3-docs-review-backend.md",
+      "kind": "task_doc",
+      "sha256": "fcef62d084c6e78a1ec8c345de2b54b6871b7cdc548cf182bdcf412d31392add",
+      "bytes": 10153
+    },
+    {
+      "path": "agent-brennan-m1-contract-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "9ef411a8e1ede5280588875b6e02984eccfa8a758eb730df4726cd88496cafdd",
+      "bytes": 10623
+    },
+    {
+      "path": "agent-brennan-m2-db-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "0a35fba75c281ec0ae2f34f04f0c43c011de7411ddb285a4ab761c7b6153196a",
+      "bytes": 10290
+    },
+    {
+      "path": "agent-rigg-m1-contract-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "a1c32108689bc4cb2e2db44ce8b96db93cd1b8e6b8dfadac9b1bc9724b4a46ad",
+      "bytes": 10371
+    },
+    {
+      "path": "agent-rigg-m2-db-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "c2ebb553c44e9f8f87aa00b2f243aa65d46cc7639c6a151edeacc11ce375ba2c",
+      "bytes": 10505
+    },
+    {
+      "path": "agent-rigg-m3-docs-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "87d048881cd6f1e1a816e3fda30669dc55abec60cb24896c1d07569630d0d31e",
+      "bytes": 10145
+    },
+    {
+      "path": "agent-soap-m2-db-build.md",
+      "kind": "task_doc",
+      "sha256": "9dbe11f71fb3c3f481e931cf30f215f3d728b73401eddb9a63671bec87390592",
+      "bytes": 11451
+    },
+    {
+      "path": "codebase-analysis.md",
+      "kind": "codebase_analysis",
+      "sha256": "22198dbb47ff024e7168c16b6183d51ae299a6bfd23bb18a1a81785ff456002f",
+      "bytes": 2093
+    }
+  ]
+}
