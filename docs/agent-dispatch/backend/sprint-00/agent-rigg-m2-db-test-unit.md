@@ -44,7 +44,8 @@ The db done-when tests against real Postgres: 1 (migration applies and reverses)
 
 - `agent-atlas-m0-workspace-build`: The pnpm workspace, TypeScript, Biome and Vitest config, scripts/pg-local.sh and the main CI workflow with a Postgres service (Step 0 item 1). No package code.
 - `agent-axis-m0-workspace-review-backend`: Review the workspace against Step 0 item 1 and this plan's commands.
-- `agent-axis-m1-contract-api-contract`: packages/contract: the value lists, DTOs and inputs, the 99 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, from contract.md (Step 0 item 2).
+- `agent-brennan-slice-review-spec`: Review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at commit ffc6914, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence).
+- `agent-axis-m1-contract-api-contract`: packages/contract: the value lists, DTOs and inputs, the 102 oRPC route definitions (the 99 and CR-16's 3), the error map, the event-kind to owning-module map and the completion report schema, from contract.md (Step 0 item 2).
 - `agent-rigg-m1-contract-test-unit`: The contract's done-when tests: 5 (the contract builds and the route snapshot), 6 (the contract exports every list the schema checks), 7 (an event kind with no owner fails to compile).
 - `agent-brennan-m1-contract-review-spec`: Review packages/contract against contract.md, API routes.md, the database map and CR-16: every route, list, DTO field and code traces to its source.
 - `agent-soap-m2-db-build`: packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the six functions, the table-owner map, and the first migration (Step 0 item 3; CR-19).

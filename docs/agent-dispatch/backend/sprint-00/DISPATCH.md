@@ -5,7 +5,7 @@ Step 0 · lead AXIS · rendered by `scripts/render.py` from `plan.toml`.
 ## Goals
 
 - A pnpm workspace with TypeScript, Biome, Vitest, scripts/pg-local.sh and CI with a Postgres service
-- packages/contract: every value list defined once, the DTOs and inputs, the 99 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, with no rep fields
+- packages/contract: every value list defined once, the DTOs and inputs, the 102 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, with no rep fields
 - packages/db: the Drizzle schema rebuilt from AVEL Database Map.html (every table, column, default, foreign key, CHECK, index and trigger by name, the six functions rewritten), the accepted CRs applied on top, value lists imported from the contract, and a first migration
 - The ERD and the OpenAPI document generated, DATABASE.md brought up to the schema, and the drift check in CI
 
@@ -42,7 +42,8 @@ Step 0 · lead AXIS · rendered by `scripts/render.py` from `plan.toml`.
 | --- | --- | --- | --- | --- |
 | [`agent-atlas-m0-workspace-build`](agent-atlas-m0-workspace-build.md) | ATLAS | build | m0-workspace | at once (no test dispatch in this module) |
 | [`agent-axis-m0-workspace-review-backend`](agent-axis-m0-workspace-review-backend.md) | AXIS | review-backend | m0-workspace | once `agent-atlas-m0-workspace-build` has its completion report, checked out at its result commit |
-| [`agent-axis-m1-contract-api-contract`](agent-axis-m1-contract-api-contract.md) | AXIS | api-contract | m1-contract | first; after `agent-atlas-m0-workspace-build` is merged into main |
+| [`agent-brennan-slice-review-spec`](agent-brennan-slice-review-spec.md) | BRENNAN | review-spec | slice | at once |
+| [`agent-axis-m1-contract-api-contract`](agent-axis-m1-contract-api-contract.md) | AXIS | api-contract | m1-contract | first; after `agent-atlas-m0-workspace-build`, `agent-brennan-slice-review-spec` is merged into main |
 | [`agent-rigg-m1-contract-test-unit`](agent-rigg-m1-contract-test-unit.md) | RIGG | test-unit | m1-contract | first; after `agent-atlas-m0-workspace-build` is merged into main |
 | [`agent-brennan-m1-contract-review-spec`](agent-brennan-m1-contract-review-spec.md) | BRENNAN | review-spec | m1-contract | once `agent-axis-m1-contract-api-contract` has its completion report, checked out at its result commit |
 | [`agent-rigg-m2-db-test-unit`](agent-rigg-m2-db-test-unit.md) | RIGG | test-unit | m2-db | first; after `agent-atlas-m0-workspace-build` is merged into main |
@@ -79,6 +80,7 @@ Step 0 · lead AXIS · rendered by `scripts/render.py` from `plan.toml`.
 | `.github/workflows/docs.yml` | ATLAS (build) |
 | `docs/design/DATABASE.md` | ATLAS (build) |
 | `docs/agent-dispatch/backend/sprint-00/findings/m0-workspace-axis-*.md` | AXIS (findings) |
+| `docs/agent-dispatch/backend/sprint-00/findings/slice-brennan-*.md` | BRENNAN (findings) |
 | `docs/agent-dispatch/backend/sprint-00/findings/m1-contract-brennan-*.md` | BRENNAN (findings) |
 | `docs/agent-dispatch/backend/sprint-00/findings/m2-db-axis-*.md` | AXIS (findings) |
 | `docs/agent-dispatch/backend/sprint-00/findings/m2-db-brennan-*.md` | BRENNAN (findings) |

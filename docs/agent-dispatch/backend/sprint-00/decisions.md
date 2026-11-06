@@ -200,6 +200,18 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
   - **Why:** `blocked_on_you` means work waits on a decision of yours. Showing `paused` would hide that.
   - **For Brennan:** check this.
 
+## 2026-11-06: a review of the slice itself (after ffc6914)
+
+**Not part of the reviewed slice.** Brennan reviews `contract.md` and `decisions.md` as at ffc6914. This entry was added after that commit.
+
+- **INT, 2026-11-06:** `plan.toml` had no review of the slice, because both Brennan dispatches review built code. INT asked for a `review-spec` dispatch on `contract.md` and `decisions.md` at ffc6914, checked against the map, the accepted CRs, API routes.md and CR-16, with m1 (`api-contract`) waiting for it. Atlas's m0 starts from ffc6914.
+- **D17. How that review is wired:**
+  - **It's `agent-brennan-slice-review-spec`, in its own module, `slice`.** Inside m1, the renderer would point it at the m1 contract (`review_target`). With no build or contract in its module, it's ready at once.
+  - **It starts at the commit that adds its task doc, not at ffc6914.** `scripts/agent.sh` refuses a start commit that doesn't contain the task doc ("isn't committed at $base"), and the new task doc doesn't exist at ffc6914.
+  - **It has no diff, so its task doc pins the files.** The slice is already on main, so `AVEL_BASE..HEAD` is empty. The task doc tells Brennan to read both files whole with `git show ffc6914:<path>`, and its verify commands read the ffc6914 copies.
+  - **m1 waits for the review to be merged.** m1's `after` names the review, and `after` counts only branches merged into main (`render.py`, `ready()`). So m1 starts once Brennan's branch, with his report and findings, is merged.
+  - **Checked by running them:** the review's three verify commands printed `QUOTES-MATCH`, then the map's counts, then 25 (D1 to D16 and B1 to B9).
+
 ## Open: for INT
 
 Nothing.

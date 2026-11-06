@@ -11,7 +11,7 @@ step = "0"
 title = "The contract written fresh, and the schema rebuilt from the database map"
 goals = [
   "A pnpm workspace with TypeScript, Biome, Vitest, scripts/pg-local.sh and CI with a Postgres service",
-  "packages/contract: every value list defined once, the DTOs and inputs, the 99 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, with no rep fields",
+  "packages/contract: every value list defined once, the DTOs and inputs, the 102 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, with no rep fields",
   "packages/db: the Drizzle schema rebuilt from AVEL Database Map.html (every table, column, default, foreign key, CHECK, index and trigger by name, the six functions rewritten), the accepted CRs applied on top, value lists imported from the contract, and a first migration",
   "The ERD and the OpenAPI document generated, DATABASE.md brought up to the schema, and the drift check in CI",
 ]
@@ -128,18 +128,61 @@ title = "Review the m0-workspace diff: every command in [commands] works, CI run
 verify = "pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm test"
 expected = "every command exits 0"
 
+# ------------------------------------------------------------------ slice: Brennan on the step contract
+# The slice is already on main, so this review has no diff of its own: its task pins
+# contract.md and decisions.md as at ffc6914 and reads them whole (decisions.md, D17).
+[[dispatch]]
+agent = "brennan"
+module = "slice"
+role = "review-spec"
+domain = "Review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at commit ffc6914, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence)."
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "under review, as at ffc6914: git show ffc6914:docs/agent-dispatch/backend/sprint-00/contract.md" },
+  { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "under review, as at ffc6914: D1 to D16, B1 to B9, O1 and O2" },
+  { path = "docs/design/AVEL Database Map.html", why = "what exists: tables, columns, CHECKs, indexes, triggers (its ERD data)" },
+  { path = "docs/design/Change requests CR-1 to 13.md", why = "the accepted changes on top of the map" },
+  { path = "docs/design/Backend modules and build plan.md", why = "sections 8 to 10: auth, CR-18 and CR-19 (the precedence)" },
+  { path = "docs/design/API routes.md", why = "the 99 routes and CR-16's 3" },
+  { path = "docs/design/CR-16 Dispatch package contract.md", why = "accepted Nov 6: routes, DispatchPackageDto, errors, dispatch_docs" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 0: what the contract and schema must contain, and done-when 1 to 9" },
+  { path = "docs/design/Schema vs DATABASE.md.md", why = "how the map differs from DATABASE.md" },
+]
+notes = [
+  "The work under review is two files as at commit ffc6914, not a diff: the slice was committed to main before this review was planned, so AVEL_BASE..HEAD shows nothing of it. Read both files whole with git show ffc6914:<path>. Their history is git log --oneline e1ed7ae..ffc6914 -- docs/agent-dispatch/backend/sprint-00/contract.md docs/agent-dispatch/backend/sprint-00/decisions.md.",
+  "Each finding cites the slice's line (contract.md:N or decisions.md:N at ffc6914), the source it breaks (file and section, or the map's table and CHECK name), and the command that shows it.",
+  "Axis's api-contract dispatch (m1) waits for this review to be merged into main, so your report and findings are what it builds on.",
+]
+
+[[dispatch.task]]
+title = "Routes and shapes: the 99 routes match API routes.md lines 20 to 189 byte for byte, CR-16's 3 match lines 192 to 196, and DispatchPackageDto matches the CR-16 contract"
+priority = "P0"
+verify = '''diff <(sed -n '20,189p' 'docs/design/API routes.md' | sed 's/^## //') <(git show ffc6914:docs/agent-dispatch/backend/sprint-00/contract.md | sed -n '/^### Auth (5)/,/^\*\*Total: 99.\*\*/p' | sed 's/^### //') && diff <(sed -n '28,50p' 'docs/design/CR-16 Dispatch package contract.md') <(git show ffc6914:docs/agent-dispatch/backend/sprint-00/contract.md | sed -n '/^```ts/,/^```$/p') && echo QUOTES-MATCH'''
+expected = "QUOTES-MATCH"
+
+[[dispatch.task]]
+title = "Tables and lists: Appendix A is the map's value-list CHECKs unedited, section 3's changes each cite an accepted CR or a recorded INT answer, and section 6's owner table names the map's 91 tables plus design_systems exactly once"
+priority = "P0"
+verify = '''python3 -I -c "import json;l=[x for x in open('docs/design/AVEL Database Map.html',encoding='utf-8') if x.startswith('const ERD =')][0];e=json.loads(l[len('const ERD ='):].strip().rstrip(';'));print(e['stats'])"'''
+expected = "{'tables': 91, 'foreignKeys': 204, 'checks': 199, 'uniques': 81, 'indexes': 183}"
+
+[[dispatch.task]]
+title = "Decisions: every D, B and O entry cites a source that says what it claims; any choice that changes the map, a route or an accepted CR without an INT answer or a CR is a finding"
+priority = "P1"
+verify = '''git show ffc6914:docs/agent-dispatch/backend/sprint-00/decisions.md | grep -cE "^- \*\*(D|B)[0-9]+\." '''
+expected = "the count of D and B entries, each of which you've checked"
+
 # ------------------------------------------------------------------ m1: the contract
 [[dispatch]]
 agent = "axis"
 module = "m1-contract"
 role = "api-contract"
-domain = "packages/contract: the value lists, DTOs and inputs, the 99 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, from contract.md (Step 0 item 2)."
+domain = "packages/contract: the value lists, DTOs and inputs, the 102 oRPC route definitions (the 99 and CR-16's 3), the error map, the event-kind to owning-module map and the completion report schema, from contract.md (Step 0 item 2)."
 territory = [
   "packages/contract/src/**",
   "packages/contract/package.json",
   "packages/contract/tsconfig.json",
 ]
-after = ["agent-atlas-m0-workspace-build"]
+after = ["agent-atlas-m0-workspace-build", "agent-brennan-slice-review-spec"]
 context = [
   { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "the slice: what the contract contains and where each item comes from" },
   { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "D1 to D12, and the operator's answers to B1 to B9" },
