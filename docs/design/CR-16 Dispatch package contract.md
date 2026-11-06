@@ -1,4 +1,6 @@
-# CR-16: dispatch package contract (proposed)
+# CR-16: dispatch package contract (accepted Nov 6)
+
+**Accepted Nov 6, 2026,** with its proposed items: the `dispatch_docs` integration-commit kind and the web's task-doc shape (activation last, plus `DISPATCH-PROMPTS.md`). Still open: whether a client mission's delivered PR includes `docs/agent-dispatch/<mission>/` (build plan section 6, "Decision for you").
 
 Nov 3, 2026 · @javaris
 

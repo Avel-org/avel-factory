@@ -212,7 +212,7 @@ Table owners below are **proposed**: DATABASE.md says each table has exactly one
 - **Why:** "each table has one owning module" is an architecture rule, but nothing lists the owners, so neither code nor a test can check it.
 - **Touches:** DATABASE.md (Ownership, plus `completion_reports` and the `agent_traces.kind` CHECK), the design doc Main (Modules), `claude/Roster.md` (the CLI slot), and the repo layout of `packages/server`. Schema: a new `completion_reports` table if the repo doesn't already have one, and one new `agent_traces` kind.
 
-## 6. CR-16: the dispatch package (proposed)
+## 6. CR-16: the dispatch package (accepted Nov 6)
 
 - **What:**
   1. **One renderer, three destinations.** The renderer writes the agent-dispatch package (`codebase-analysis.md`, `DISPATCH.md`, one task doc per dispatch with its activation built in, the completion templates). The same bytes and hashes go to:
