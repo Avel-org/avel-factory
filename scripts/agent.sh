@@ -46,6 +46,17 @@ agent=${BASH_REMATCH[1]} rest=${BASH_REMATCH[2]}
 
 doc="docs/agent-dispatch/$team/$sprint/$task.md"
 [[ -f $repo/$doc ]] || { echo "no task doc at $doc: render the package first" >&2; exit 1; }
+# Generated, never pasted: the worktree gets the doc from its start commit, and
+# that copy must be the one the renderer wrote (MANIFEST.json on main).
+git -C "$repo" cat-file -e "$base:$doc" 2>/dev/null || {
+  echo "$doc isn't committed at $base: commit the package (git add docs/agent-dispatch/$team/$sprint) first" >&2; exit 1; }
+want=$(git -C "$repo" show "main:docs/agent-dispatch/$team/$sprint/MANIFEST.json" 2>/dev/null | python3 -c '
+import json, sys
+try: print(next(e["sha256"] for e in json.load(sys.stdin)["files"] if e["path"] == sys.argv[1]))
+except Exception: pass' "$task.md")
+have=$(git -C "$repo" show "$base:$doc" | sha256sum | cut -d' ' -f1)
+[[ -n $want ]] || { echo "$doc isn't in its sprint's MANIFEST.json on main: render it with scripts/render.py $team/$sprint" >&2; exit 1; }
+[[ $have == "$want" ]] || { echo "$doc at $base isn't what was rendered (edited by hand, or re-rendered since): re-render, commit, then dispatch" >&2; exit 1; }
 
 int_pane=$(avel_pane_for INT) || { echo "open the control room first: Ctrl+a then v, or scripts/control-room.sh" >&2; exit 1; }
 

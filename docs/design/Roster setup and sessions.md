@@ -62,7 +62,7 @@ While the factory is built by hand, each Claude Code session stands in for one t
 
 ### Opening an agent session
 1. **Generate first, never paste:** the lead session renders the package into `docs/agent-dispatch/<team>/sprint-NN/`, and you approve it (Gate 0, then the Gate 1 checklist).
-2. **Start the wave:** `scripts/dispatch.sh <team>/sprint-NN` runs `scripts/agent.sh` once per dispatch in the wave. Each dispatch gets its worktree and branch, and Claude Code starts in its own WezTerm tab as the agent (`claude --agent <name>`) with `/dispatch <team>/sprint-NN/<task doc>`.
+2. **Start what's ready:** `scripts/dispatch.sh <team>/sprint-NN` runs `scripts/agent.sh` once for each dispatch whose start rule is met (tests first, the build once its tests are locked, reviews once the build has its report), up to the 6 slots. Run it again whenever something lands. The kit is described in `docs/agent-dispatch/avel/dispatch-kit.md`. Each dispatch gets its worktree and branch, and Claude Code starts in its own WezTerm tab as the agent (`claude --agent <name>`) with `/dispatch <team>/sprint-NN/<task doc>`.
    - **For one agent:** `scripts/agent.sh <team> sprint-NN <task doc> [attempt] [start-commit]`. A retry is the same command with the next attempt number. A reviewer gets the builder's result commit as its start commit.
 3. **In order:** test writers first (Rigg, Fenn). Lock their tests (`locks.md`), then start the builder. Reviewers start once the builder's report is in.
 4. **One session is one attempt.** A retry is a new session in a fresh worktree, started from the right commit for its ladder step, given only the error output, never the old transcript. Don't continue a failed session.
@@ -85,7 +85,7 @@ Everything runs in one WezTerm workspace, `avel`, opened with **Ctrl+a, then v**
 
 ### Messages between sessions
 `scripts/tell.sh <name> "<message>"` types one line into another session (a crew pane such as `AXIS`, or a dispatch tab), signed with the sender (`[from AXIS] …`), and appends it to `docs/agent-dispatch/messages.md`.
-- **Only when you say so.** Leads send a message only when you ask. `scripts/tell.sh` is never in the allow list of `.claude/settings.json`, so each send asks for your approval.
+- **Only when you say so.** Sessions message the crew only when you ask, and each such send asks for your approval. The one exception is a report to you: `scripts/tell.sh INT "..."` is in the allow list of `.claude/settings.json`, so a lead can tell you it's blocked, needs a decision or is done without waiting on a prompt.
 - **Coordination only:** start, stop, commit a checkpoint and report, "tests locked at <sha>", "your reviewer is done". A message never carries new instructions or scope. If an agent needs to know something its task doc doesn't say, the task doc is missing it: fix the plan, re-render, and start a new attempt.
 - **No messages to reviewers about the builder's work.** A reviewer sees only its task doc and the commit, so the builder never decides what the reviewer sees.
 
