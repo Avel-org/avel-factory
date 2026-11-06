@@ -1,0 +1,81 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm --filter:*)",
+      "Bash(pnpm exec vitest:*)",
+      "Bash(scripts/pg-local.sh:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch --show-current)",
+      "Bash(git merge-base:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(git rebase:*)",
+      "Bash(rm -rf:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(npm publish:*)",
+      "Bash(pnpm publish:*)",
+      "Bash(avel:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git -C \"$CLAUDE_PROJECT_DIR\" worktree list --porcelain | sed -n '1s/^worktree //p')/scripts/hooks/session.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git -C \"$CLAUDE_PROJECT_DIR\" worktree list --porcelain | sed -n '1s/^worktree //p')/scripts/hooks/session.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git -C \"$CLAUDE_PROJECT_DIR\" worktree list --porcelain | sed -n '1s/^worktree //p')/scripts/hooks/session.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git -C \"$CLAUDE_PROJECT_DIR\" worktree list --porcelain | sed -n '1s/^worktree //p')/scripts/hooks/session.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

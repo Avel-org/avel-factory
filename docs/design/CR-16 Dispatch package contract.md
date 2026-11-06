@@ -2,7 +2,7 @@
 
 Nov 3, 2026 · @javaris
 
-The contract change behind the web's Dispatch tab. It fills in the route that CR-16 (in `claude/Backend modules and build plan.md`, section 6) left as a one-liner. Nothing here is built until you accept it.
+The contract change behind the web's Dispatch tab. It fills in the route that CR-16 (in `docs/design/Backend modules and build plan.md`, section 6) left as a one-liner. Nothing here is built until you accept it.
 
 ## What the package is
 The agent-dispatch file set for one mission's plan version, rendered by `factory` (Step 8), byte-identical on every render:

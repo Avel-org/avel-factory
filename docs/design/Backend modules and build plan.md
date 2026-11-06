@@ -9,11 +9,11 @@ The build order with every accepted change request applied (CR-1 to CR-13; CR-14
 | Step | What | Done when (short) | Changed by |
 | --- | --- | --- | --- |
 | 0 | **Sync:** one migration for the CR schema changes, the contract enums, the docs, the ERD and OpenAPI regenerated | The migration applies and reverses; the 35 `db` tests pass; the project-kind tests pass; the ERD drift check passes | CR-12, CR-13 |
-| 1 | **Scaffold:** server shell, middleware, idempotency, Better Auth, step-up, CLI login, activity log, jobs, events, factory repo loader, webhook, sample route, minimal approval page, CI | The 14 tests in `claude/Step 0 and Step 1 plan.md` | CR-1 (no secrets), CR-6 (claims) |
+| 1 | **Scaffold:** server shell, middleware, idempotency, Better Auth, step-up, CLI login, activity log, jobs, events, factory repo loader, webhook, sample route, minimal approval page, CI | The 14 tests in `docs/design/Step 0 and Step 1 plan.md` | CR-1 (no secrets), CR-6 (claims); auth decisions (Nov 5, section 8) |
 | 2 | **Rooms:** gVisor rooms, the model proxy, the egress proxy, the package cache, the mission repo over HTTP with per-attempt git credentials, the credentials reaper, the upload parser, image builds. The host stays undecided. | The isolation suite passes in CI; a push outside the attempt's branch is refused; a killed attempt's token is revoked; an image build reaches only the package proxy | CR-3 |
 | 3 | **Gate v4 parity:** `decide()`, producers, receipts, the rules registry, `avel check` v1 | Fixture missions give receipts identical to avel-server's | — |
 | 4 | **Runner, harness, delivery, and secrets:** the Claude harness (first adapter), the host tool server, Gate 3 in a check room, KMS secrets, repo connections, the delivery worker, PR delivery | A hand-made task doc runs in a room and opens a PR from that exact commit; the main service can't decrypt a write token | CR-1, CR-5 |
-| 5 | **Events and the CLI:** live and trace streams, `avel watch`, `doctor`, `link` with git hooks | A reconnect resumes with no gaps; a consumer never acts twice; a linked commit lands only on `operator/<mission>` | CR-14 (if accepted) |
+| 5 | **Events and the CLI:** live and trace streams, `avel watch`, `doctor`, `link` with git hooks. The CLI and its TUI are built in their own repo, `avel-cli` (TypeScript + OpenTUI, decided Nov 4; CR-15 item 4) | A reconnect resumes with no gaps; a consumer never acts twice; a linked commit lands only on `operator/<mission>` | CR-14 (if accepted); CR-17 (proposed: agent access to the CLI) |
 | 6 | **Plan, roster, packages** | Every validator refusal has a test; a roster change doesn't touch running missions | CR-7 to CR-9 (new work kinds and roles) |
 | 7 | **Gate 0 with Canon:** per-kind briefing | Your internal project onboards end to end to an approved plan | CR-4, CR-13 |
 | 8 | **Render, Gate 1, budgets** | Byte-identical renders; Gate 1's refusal list; `capped` and `budget_parked` | CR-10 (task doc) |
@@ -84,7 +84,7 @@ For each mission, the renderer (`factory`, Step 8) produces agent-dispatch's fil
 
 **Starting an agent never takes a paste:**
 - **In a room:** the runner mounts the package read-only and starts the agent on its own task doc. Nothing is typed.
-- **On your machine:** `/dispatch sprint-01/agent-soap-platform` in Claude Code, or `scripts/dispatch.sh sprint-01` to make every agent's worktree and start each one in its own tmux window. Any other tool takes the same one line: "Read <task doc> in full and follow it exactly."
+- **On your machine:** `/dispatch sprint-01/agent-soap-platform` in Claude Code, or `scripts/dispatch.sh sprint-01` to make every agent's worktree and start each one in its own WezTerm tab (through `scripts/agent.sh`; see Roster setup and sessions, WezTerm layout). Any other tool takes the same one line: "Read <task doc> in full and follow it exactly."
 
 **Where the package goes** (new, CR-16): inside the room (above), as a **zip download**, or **into the repo** under `docs/agent-dispatch/`. Work you or a local agent does from the zip or the repo comes back the way your own commits already do: pushed to `operator/<mission>`, landed by the integrator through Gate 2, and shown on the receipt as operator work.
 
@@ -128,7 +128,7 @@ For each mission, the renderer (`factory`, Step 8) produces agent-dispatch's fil
 
 ## 4. Module map
 
-19 modules, in one service (`packages/server`). Other packages: `contract`, `db` and `cli`, plus the web app in `apps/web` and `packages/contract-mock` (Frontend Map v0.6). **Proposed layout:** one folder per module, `packages/server/src/modules/<name>/`, each with an `index.ts` as its only public entry. An import rule refuses reaching into another module's internals, and another refuses writing a table the module doesn't own.
+19 modules, in one service (`packages/server`). Other packages: `contract` and `db`, plus the web app in `apps/web` and `packages/contract-mock` (Frontend Map v0.6). The CLI client is its own repo, `avel-cli` (CR-15 item 4). **Proposed layout:** one folder per module, `packages/server/src/modules/<name>/`, each with an `index.ts` as its only public entry. An import rule refuses reaching into another module's internals, and another refuses writing a table the module doesn't own.
 
 Table owners below are **proposed**: DATABASE.md says each table has exactly one owning module, but it doesn't list them (CR-15).
 
@@ -139,7 +139,7 @@ Table owners below are **proposed**: DATABASE.md says each table has exactly one
 | `contract` (server side): shell, middleware, errors, idempotency, auth, step-up, rate limits, the jobs runtime | Better Auth's tables, `cli_sessions`, `step_up_grants`, `idempotency_keys`, `webhook_deliveries`, `jobs` (also the factory repo loader, which owns no table) | 1 | Pure libraries as-is; errors, middleware, DB core and auth with changes | Soap; Iyo for the jobs runtime | Rigg; Breach | Axis, Zane, Brennan |
 | `events` | `events`, `consumer_cursors`, `agent_traces` | 1 (writes), 5 (streams) | New | Iyo | Rigg (resume, load) | Axis, Leah |
 | `audit` | `activity_log`, `overrides` | 1 | Activity log with changes | Soap | Rigg | Axis |
-| `cli` (the `packages/cli` client) | none | 1 (login), 5 | Auth's device login with changes | Ghost (proposed, CR-15) | Rigg | Axis, Zane |
+| `cli` (server side: device login and operator events; the client is the `avel-cli` repo) | none | 1 (login), 5 | Auth's device login with changes | Ghost (proposed, CR-15) | Rigg | Axis, Zane |
 
 ### Intake and planning (Steps 6 and 7)
 
@@ -198,7 +198,11 @@ Table owners below are **proposed**: DATABASE.md says each table has exactly one
      - `jobs` → `platform`;
      - `clients` → `onboarding` and `repo_connections` → `delivery`, as the Port inventory says ("Clients and connections → onboarding, delivery"). They're inside the 19, not outside. The web's front-end-only `clients` module is fine as a screen that reads from both.
   3. Name the server side of `contract` in the docs. The Port inventory puts the shell, middleware and auth under `contract`, which is easy to confuse with the `packages/contract` package. Proposed name: `platform`.
-  4. Give the CLI a roster slot: `packages/cli` is built by Ghost (it uses the same typed oRPC client as the web app), tested by Rigg, and reviewed by Axis, with Zane for credentials.
+  4. Give the CLI a roster slot, in its own repo (**decided Nov 4**): the CLI and its TUI (`avel watch`, `avel doctor`, `avel link`, device login) live in a separate repo, `avel-cli`, built in TypeScript with OpenTUI. Ghost builds it, Rigg tests it, Axis reviews it, with Zane for credentials. The server's `cli` module (device login, operator events) stays in `packages/server`.
+     - **The contract:** `avel-cli` builds from a vendored copy of `packages/contract`, synced by a `contract:sync` script, with a test that fails while the copy and the factory's differ (the pattern avel-web uses with avel-server). It uses the same typed oRPC client as the web app.
+     - **Its rules:** its own CI, the same locked-test check (`scripts/check_locks.py`) and a territory check. A contract change lands in avel-factory first, then syncs.
+     - **Phase 1 input:** until Step 5's stream exists, `avel watch` reads the factory's Phase 1 event log (`docs/agent-dispatch/records/events.jsonl`, same event shape and `seq`), so the TUI can be built and used now. See `docs/agent-dispatch/avel/operator-tools.md`, "Handoff to avel-cli".
+     - **Why a separate repo:** the TUI ships on its own schedule, and a client that works only through the contract proves the contract is enough.
   5. Adopt the folder-per-module layout and the two import rules above.
   6. **DATABASE.md is behind the dispatch concept.** Your concept doc lists `completion_reports` as a table and `parked_from` on dispatches; DATABASE.md has neither. If the repo's schema has them (likely), DATABASE.md is stale: add both to it, with `completion_reports` owned by `runner`. If the repo doesn't, they're missing from the schema.
   7. Progress notes (`POST /api/agent/progress-notes`) have no table. Proposed: store them as `agent_traces` rows with a new kind, `progress`, unless the repo already does something else.
@@ -239,3 +243,55 @@ Your concept doc says the docs win and to flag conflicts. Here they are:
 | Retries 2 and 3 start from "the module's build base commit" | The design says "the module's start commit" | Likely the same commit under two names. Worth confirming against After Canon. |
 | Gate 3 for a build: `avel check` and the locked tests pass | The design also checks that the completion report exists, the verification commands give the expected output, and only owned files changed | The design: it adds checks and contradicts nothing, so the concept doc is a short version. |
 | At most 3 new packages per dispatch; tokens last the cap plus 10 minutes | Not in the docs I have | Probably from After Canon or the contract. Fine to keep. |
+
+## 8. Auth decisions (Nov 5)
+
+Step 1 starts with authentication and builds inwards. Nothing here is built yet; this section prepares the step.
+
+**Decided:**
+- **One operator.** AVEL has a single human user: you. There are no orgs, teams or roles for people. Sign-up is off: the seed script creates your account (and AVEL's internal client, CR-13). Every activity row, override and approval still records the operator's user id, so adding a second person later is a migration, not a redesign.
+- **A password, for now.** Sign-in is email and password, and step-up is your password again. Step-up guards secrets, repo connections and CLI login approval, and never approvals of work. A grant is single-use, for one action on one target, bound to the session, lasts 5 minutes and is written to `step_up_grants`.
+  - **The password never goes in the repo,** a doc, a task doc or a test fixture. The seed reads it from an environment variable on the host (`AVEL_OPERATOR_PASSWORD`), and tests use their own throwaway value.
+  - **Its strength is a config value:** Better Auth's minimum length (8 by default) applies unless it's changed on purpose. Lockout (10 failures in 15 minutes) and the sign-in rate limit (5 a minute) back it up.
+- **Passkeys later.** Deferred, not dropped: Better Auth's passkey table stays in the schema, unused in Step 1. Moving step-up, then sign-in, to passkeys is a later change request.
+
+**Proposed, following from those:**
+- **Identities, all defined in Step 1:** operator (web session or CLI session), agent (attempt token, CR-17) and runner. Agent and runner resolve to "refused" until Steps 2 and 4 issue their tokens, so the policy layer exists before any module does.
+- **Policy from day one:** every route carries a policy tag, untagged routes refuse non-operators, and a contract test fails on an untagged route (CR-17).
+
+**The order inside Step 1, outside in:**
+1. The contract's base error map, including `STEP_UP_REQUIRED` (CR-W6), `AGENT_NOT_PERMITTED` and `AGENT_SCOPE`; the DB core.
+2. The `platform` shell: Hono and the oRPC implementer, request IDs, errors, idempotency, rate limits on the named routes.
+3. Identity: the operator seed, password sign-in with lockout, sessions, password step-up, CLI device login (`cli_sessions`, approved at `/cli/approve/$userCode` with step-up).
+4. Policy: route tags, the default deny, the untagged-route test.
+5. Audit and events: every operator write and override goes to `activity_log` with its event, in one transaction.
+6. Outwards: jobs, the factory repo loader, the webhook, the sample route, the minimal approval page.
+
+**Breach's Step 1 attacks:** session fixation, cookie theft across origins, replaying an idempotency key with a different body, brute-forcing the password past the lockout and rate limit, reusing or extending a step-up grant, a step-up grant from one session used in another, racing two approvals of the same device code, brute-forcing a user code, and signing up a second operator after bootstrap.
+
+**Inputs now in `docs/design/`** (added Nov 5): DATABASE.md, the API and data reference, the Step 0 and Step 1 plan, Jobs and workers, Canon onboarding v0.5 and the Sandbox doc. Still not in the repo: `packages/contract` and the `db` schema (code), the design doc Main, the Port inventory, `claude/Change requests.md`, `claude/Roster.md` and the After Canon tab.
+
+**Aligned on Nov 5** (every doc in `docs/design/` now says the same thing):
+- **Auth:** one operator; email and password for sign-in and step-up; passkeys later. Changed in the Step 1 plan, the API reference, Canon's rule 9, Frontend Map v0.6 and CR-17. The design library's step-up dialog already asks for a password.
+- **Better Auth's table names:** `auth_sessions`, `auth_accounts`, `auth_verifications` and `auth_passkeys`, as the Step 1 plan says the existing schema has them (the adapter maps the names). DATABASE.md now uses them too.
+- **`device_logins`** is now in DATABASE.md (Plumbing), owned by `cli`: a CLI login waiting for approval, before its `cli_sessions` row exists.
+- **CR-17's attempt token is a `credentials` row** (kind `dispatch`, hashed, `revoked_at`), so CR-17 needs no new table. CR-17 now says so.
+- **Reps:** removed by CR-18 (accepted Nov 5, below).
+- **The Canon doc (Oct 30) predates the current roster:** it says there is no Atlas and routes unit tests to Nemi. Roster setup and sessions (Nov 4) wins; the Canon doc carries a note saying so.
+
+**Still open:** Step 0 comes first. Its migration and contract release are Step 1's inputs, and CR-18 (accepted) adds to both.
+
+**Touches:** the design doc Main (auth), DATABASE.md (`device_logins`, Better Auth's table names), the contract (error codes, CR-18) and Frontend Map v0.6 (sign-in and step-up).
+
+## 9. CR-18: one operator in the contract (accepted Nov 5)
+
+- **What:** AVEL has one human user, you, and nobody else ever signs in or is paid through it. The schema and contract still carry a second kind of person, the sales rep. Remove it, and make "only the operator" explicit in the contract:
+  1. **Drop reps.** Remove `clients.rep_id`, `missions.rep_id` and `missions.rep_pct` from the schema, and the matching fields from the client and mission DTOs and the create and update inputs. Remove the `users ||--o{ clients : "reps"` edge from DATABASE.md's ERD.
+  2. **No people routes.** The contract has no sign-up, invite, user list or role routes. Better Auth's sign-up route is turned off on the server, and a test proves it (Step 1 test 7).
+  3. **Keep the `user_id` columns.** `overrides.user_id`, `pass_approvals.user_id`, `proposals.resolved_by`, `deliveries.released_by`, `activity_log.user_id` and the rest stay. They always point at you, cost nothing, and keep the record honest about who acted if that ever changes.
+  4. **Who acted is still typed.** `activity_log.actor_kind` keeps `'user'|'agent'|'system'`. "Operator" means the one user; agents and the runner are never users (CR-17).
+- **Why:** a field nobody can fill is a bug waiting to happen. A rep link to `users` would need a second account, which the one-operator rule forbids.
+- **When:** Step 0's migration and contract release, before any client row exists. Step 1's sample route (`toClientDto`) is built without rep fields.
+- **If reps come back:** add them as client contacts or a small `reps` table with no sign-in, never as users.
+- **Touches:** DATABASE.md (clients, missions, the ERD, the FK table), the contract (client and mission DTOs and inputs), the Step 0 and Step 1 plan (the Step 0 schema table), the API and data reference (generated from the contract, so it follows).
+

@@ -4,6 +4,8 @@ Nov 4, 2026 · @javaris
 
 How the control room in `apps/web` is put together: its modules, layers, routes, data, live stream, state, performance, errors and tests. Built on the factory design (v0.6), the API reference, the Enclosure Grid design system and its v1.1 decisions, the backend plan (CR-15, CR-16) and Roster setup and sessions (Nov 4). Nothing here is built yet.
 
+**Nov 5 update:** one operator, email and password for sign-in and step-up, passkeys later (Backend modules and build plan, section 8). The sign-in route below says so. CR-18 (accepted Nov 5) removes rep fields from the client and mission DTOs, so no screen shows a rep.
+
 **v0.6 (Nov 4):** aligned with the backend plan and the roster.
 - **Event kinds keep entity names** (`attempt.started`, `task_doc.rendered`), and the contract exports an exhaustive map from each kind to its owning module (CR-15 item 8). CR-W10 is reworded to match, and CR-W14's event is `message.stopped`.
 - **Tests have their own territory:** `apps/web/test/**` and `apps/web/e2e/**`, owned by Fenn. No test files inside module folders.
@@ -181,7 +183,7 @@ The URL is the state for navigation: tabs, filters, the selected view and the fo
 | `/activity` | Audit log | — | Overrides included |
 | `/settings` | Theme, CLI sessions, health and doctor | — | |
 | `/cli/approve/$userCode` | Approve a CLI login | — | Step-up |
-| `/login` | Sign in | — | Email and password, optional passkey |
+| `/login` | Sign in | — | Email and password, for the one operator; no sign-up form (the seed creates the account). Passkeys later |
 
 The root route's `beforeLoad` reads the Better Auth session and redirects to `/login?next=` when signed out. Routes are code-split automatically, and links preload on intent.
 
