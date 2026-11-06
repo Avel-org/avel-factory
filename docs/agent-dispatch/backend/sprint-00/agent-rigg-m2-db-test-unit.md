@@ -38,17 +38,17 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 
 ## 3. Domain
 
-The db done-when tests against real Postgres: 1 (migration applies and reverses), 2 (one test per CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal, from the map and the changes on top), 3 (the CR-13 rules), 6 (no value list repeated in packages/db), 8 (the schema matches the map), 9 (one test per function).
+The db done-when tests against real Postgres: 1 (migration applies and reverses), 2 (one test per CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal, from the map and the changes on top), 3 (the CR-13 rules), 6 (no value list repeated in packages/db, and no two contract lists with the same values; contract.md section 3), 8 (the schema matches the map, with every difference in contract.md section 6's names table), 9 (one test per function: the map's six plus freeze_after_set, CR-13).
 
 **The rest of this sprint:**
 
 - `agent-atlas-m0-workspace-build`: The pnpm workspace, TypeScript, Biome and Vitest config, scripts/pg-local.sh and the main CI workflow with a Postgres service (Step 0 item 1). No package code.
 - `agent-axis-m0-workspace-review-backend`: Review the workspace against Step 0 item 1 and this plan's commands.
-- `agent-brennan-slice-review-spec`: Review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at commit ffc6914, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence).
+- `agent-brennan-slice-review-spec`: Re-review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at the commit your session starts on, which answers attempt a1's seven findings, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence).
 - `agent-axis-m1-contract-api-contract`: packages/contract: the value lists, DTOs and inputs, the 102 oRPC route definitions (the 99 and CR-16's 3), the error map, the event-kind to owning-module map and the completion report schema, from contract.md (Step 0 item 2).
 - `agent-rigg-m1-contract-test-unit`: The contract's done-when tests: 5 (the contract builds and the route snapshot), 6 (the contract exports every list the schema checks), 7 (an event kind with no owner fails to compile).
 - `agent-brennan-m1-contract-review-spec`: Review packages/contract against contract.md, API routes.md, the database map and CR-16: every route, list, DTO field and code traces to its source.
-- `agent-soap-m2-db-build`: packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the six functions, the table-owner map, and the first migration (Step 0 item 3; CR-19).
+- `agent-soap-m2-db-build`: packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the seven functions (the map's six plus freeze_after_set), the table-owner map, and the first migration (Step 0 item 3; CR-19).
 - `agent-axis-m2-db-review-backend`: Review packages/db against contract.md section 6 and the database map.
 - `agent-brennan-m2-db-review-spec`: Review packages/db against the database map, the accepted CRs and contract.md section 6 (CR-19's precedence): no invented column, every CR change in.
 - `agent-rigg-m3-docs-test-unit`: Done-when 4 (the ERD drift check passes, and fails on a planted mismatch) and 5's OpenAPI half (the document generates and holds the contract's routes).
@@ -61,7 +61,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### RIGG-01: Done-when 1, 2, 3, 6, 8 and 9 against real Postgres (scripts/pg-local.sh); report the rule count for test 2 (P0)
 
-- **Required:** One test per rule, each named with its done-when number and the rule; each fails first with an assertion
+- **Required:** One test per rule, each named with its done-when number and the rule; each fails first with an assertion. Test 9 covers seven functions: freeze_after_set is the seventh (decisions.md, F02). Test 3's kind freeze runs through the missions_frozen trigger
 - **Verify:** `pnpm --filter @avel/db test`
 - **Expected:** every test fails with an assertion before the schema exists
 

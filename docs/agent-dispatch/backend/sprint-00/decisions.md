@@ -13,7 +13,7 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
 - **D1. Library paths are `/api/library/skills`, `/api/library/kb-entries`, `/api/library/rules` and `/api/library/templates`.**
   - **Left open by:** API routes.md, Library: "check the exact per-kind paths ... against the contract". This step writes the contract, so it can't check against it.
   - **Why:** rows 74 to 89 write those paths, and Q5 (per kind) is decided. The agent's search stays at row 99, `GET /api/agent/kb-entries`.
-- **D2. DTOs are drafted from DATABASE.md, using the rule in `contract.md` section 4.**
+- **D2. DTOs are drafted from DATABASE.md, using the rule in `contract.md` section 4.** **Superseded on Nov 6** (finding 05): DTOs are drafted from the map's columns, with section 6's changes, by the rule in `contract.md` section 4. DATABASE.md no longer settles columns (D3; CR-19). The original follows.
   - **Left open by:** API routes.md, "Not here"; INT, 2026-11-05.
   - **How it's checked:** every field traces to a column or to its route's row. Anything else goes on an open list instead of into the DTO. The reference's 85 and 56 counts aren't a target, because nothing can be checked against them.
 - **D3. Source order: replaced on Nov 5 by CR-19** (Backend modules and build plan, section 10, "Precedence while Step 0 runs"; commit 300127b). When sources disagree, the first in this list wins:
@@ -72,9 +72,10 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
     - **`details`:** both carry the constraint name, the same as `CONSTRAINT_VIOLATION`.
     - **`CONFLICT`** stays as the generic 409 for any case none of these codes covers.
   - **Out until CR-17 is accepted:** `AGENT_NOT_PERMITTED` and `AGENT_SCOPE` (403). D10 stands.
-  - **Out until CR-16 is accepted:** CR-16's four 404 codes.
+  - **CR-16's four 404 codes are in** (superseded on Nov 6, finding 05). This line used to read "Out until CR-16 is accepted"; CR-16 was accepted on Nov 6 (the Nov 6 entry below).
+  - **`STALE_VERSION` carries `details: { field, currentVersion }`** (D21).
   - **The superseded D5** listed only the generic codes plus `STEP_UP_REQUIRED`.
-- **D6. The evals tables are in the first schema.**
+- **D6. The evals tables are in the first schema.** **Now by CR-19** (Nov 6, finding 05): the four evals tables are in the map ("Designed, not built yet"), and CR-19 item 1 rebuilds every table in it. The "leave all four out" alternative below is withdrawn, since it would break CR-19. The original reasoning follows.
   - **Left open by:** DATABASE.md, "Designed, not built yet": "built only when evals are turned on". The Step 0 table, though, changes the `eval_tasks.role` CHECK (CR-7, CR-8), and Step 0 item 3 says "every table in DATABASE.md".
   - **Why:** I read "built" as the code. Their shapes "are kept here so the IDs they need already exist".
   - **The alternative:** leave all four out and drop that CHECK change until evals arrive. That one's yours if you prefer it.
@@ -149,7 +150,7 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
   - **Pinning:** a mission pins one at finalize.
   - **Owner:** I propose `knowledge`, beside `templates` (build plan section 4, Library).
   - **`layer`** (INT, 2026-11-06): `layer: 'global'|'client'`, with the CHECK `(layer = 'client') = (client_id IS NOT NULL)`. That's the map's `kb_entries_client_layer_ck`, word for word. `kb_entries.layer` itself also allows `'stack'`, but `design_systems` has no stack layer.
-  - **Pin columns, confirmed** (INT, 2026-11-06): `missions.design_system_slug` and `missions.design_system_version`. The rest of the earlier proposal is still mine, and Brennan checks it. I had proposed `missions.design_system_slug?` and `missions.design_system_version?`, with a composite FK to `design_systems`, both set or both null, and set once the state is `approved` or later. That mirrors `plans.template_slug` and `template_version` and the `missions` CHECK on `plan_id`. Confirm, or name them.
+  - **Pin columns, confirmed** (INT, 2026-11-06): `missions.design_system_slug` and `missions.design_system_version`. The rest of the earlier proposal is still mine, and Brennan checks it: both optional, a composite FK to `design_systems`, both set or both null, mirroring `plans.template_slug` and `template_version`. **Corrected on Nov 6** (finding 05): there's no state tie. My first draft also had them "set once the state is `approved` or later"; that's dropped, as in `contract.md` section 6. The map ties none of `missions`' other pins to a state beyond `missions_approved_fields_ck`, and not every package needs a design system.
 - **D6, D7 and D8 stand** (INT).
   - **D8:** the stand-in also lists `parked_from` on `module_runs` and `dispatches`. D8's type applies until the map gives one.
 
@@ -212,6 +213,45 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
   - **m1 waits for the review to be merged.** m1's `after` names the review, and `after` counts only branches merged into main (`render.py`, `ready()`). So m1 starts once Brennan's branch, with his report and findings, is merged.
   - **Checked by running them:** the review's three verify commands printed `QUOTES-MATCH`, then the map's counts, then 25 (D1 to D16 and B1 to B9).
 
+## 2026-11-06: Brennan's slice review (a1) and INT's answers
+
+**Inputs:**
+- Brennan's review, FAIL: report and seven findings on `backend/sprint-00/agent-brennan-slice-review-spec-a1`, commit 45c83da (`docs/agent-dispatch/backend/sprint-00/findings/slice-brennan-01` to `07`). He reviewed ffc6914.
+- INT, 2026-11-06: answers to 01 and 02; fix 03 to 07 from their sources; Brennan a2 re-reviews the new commit.
+
+**The findings and what changed:**
+- **F01 (P1), the parent shape of the contract commits.** INT: `ui_contract` and `api_contract` take the `tests` shape, "module_run_id required, the other two parents null", since CR-7 and CR-8 say the contracts are locked like tests. `dispatch_docs` keeps the `operator` shape (CR-16, line 84). In `contract.md` section 6.
+  - **For INT:** the map's `tests` branch requires only `module_run_id`. INT's parenthetical also nulls `attempt_id` and `dependency_request_id`, which is stricter. I've written INT's words (`contract.md` section 7). It changes one CHECK in m2, not the contract.
+- **F02 (P2), freezing `missions.kind`.** INT: a seventh function, `freeze_after_set`. Once `onboarding_started_at` is set, `missions.kind` can't change (CR-13's freeze trigger; CR-19's six are the map's, and CR-13 sits on top). It gets a done-when 9 test. In `contract.md` section 6: the function, its signature and the `missions_frozen` trigger. In `plan.toml`: Soap's m2 build and Rigg's m2 tests name seven functions.
+- **F03 (P2), unnamed objects.** `contract.md` section 6 now has a names table: every new or renamed object, its definition and its source. CR-6's two names are CR-6's (`jobs_expired_claims_ix`, `jobs_claim_ck`), and `jobs_one_live_key_uq`'s predicate changes `'leased'` to `'claimed'`. The other names follow the map's patterns (D19).
+- **F04 (P2), CR-13's contract items.** `contract.md` section 4: `kind` on `MissionDto`; `kind` required on route 20's input; an optional `?kind=` on route 19; and the metrics split (route 69) in Step 10, per CR-13's build order. The route rows stay as quoted.
+- **F05 (P3), stale entries.** D2, D5's CR-16 line and D6 are marked superseded, with what replaces each. B9's pin note no longer ties the pin to a state. B3's "CR-16 is still proposed" stays: it's history, superseded by the Nov 6 entry.
+- **F06 (P3), shared lists.** `contract.md` section 3 names `EvalSet`, `LibraryLayer`, `IndexStatus` and `ArchiveStatus`, adds Canon's `Topic`, and defines `FactKind` as `Topic` plus the rest (D18).
+- **F07 (P3), citations.** `receipt.issued`'s source is now Frontend Map v0.6, lines 92 and 476, and B5 (INT), not CR-W10. `STALE_VERSION` has a `details` shape (D21).
+  - **For Zero, through INT:** `CONFLICT` no longer means a stale version. A stale version is `STALE_VERSION`, and an existing row is `ALREADY_EXISTS`. `packages/contract-mock` and the web's error handling should follow. That's frontend territory, so I note it here and in my report to INT.
+
+**My choices, for Brennan to check:**
+- **D18. Lists with the same values are one list.**
+  - **Left open by:** E1 says "every value list, defined once", and done-when 6 tests for repeats, but neither says whether two columns that happen to share values share a list.
+  - **The rule:** two exported lists with the same values are a repeat. So `EvalSet` (`eval_runs.set`, `eval_tasks.set`), `LibraryLayer` (`kb_entries.layer`, `rules.scope`), `IndexStatus` (`packages`, `rules`, `skills`, `templates` and `design_systems` `.status`) and `ArchiveStatus` (`clients.status`, `notes.state`) are each one list.
+  - **Why:** one rule with no exceptions gives Rigg's repeat test a plain check: no two lists with the same values. The judgment calls (`IndexStatus`, `ArchiveStatus`) mean the same thing on each column: an index row retired by a factory PR; a row archived. If one column later needs a value the others don't, it splits off then.
+  - **Not a repeat:** `DesignSystemLayer` (`global`, `client`) differs from `LibraryLayer`, so it's its own list.
+- **D19. New object names follow the map's patterns.**
+  - **Left open by:** CR-13 and B9 name columns and rules but not their CHECKs, indexes, FKs or triggers. The conventions say names are "the map's, word for word, as contract.md section 6 changes them".
+  - **The patterns:** they're listed above the names table, each with a map example. Where a source gives a name (CR-6), that name wins.
+  - **One choice inside it:** the composite FK to `clients (id, kind)` is `missions_client_kind_fk`, not `missions_client_fk`, because the map's one-column `missions_client_id_clients_id_fk` stays and the new name says what's added.
+- **D20. `clients.kind`, `missions.kind` and `missions.client_kind` have no default.**
+  - **Left open by:** CR-13 gives none, and the map has none.
+  - **Effect:** a client's create input carries `kind` (`ClientKind`), and route 20's input carries `kind` (`ProjectKind`). The server sets `missions.client_kind` from the client.
+  - **Why:** a default of `'client'` would quietly make an internal mission a client one. A missing kind should fail.
+- **D21. `STALE_VERSION`'s `details` is `{ field, currentVersion }`.**
+  - **Left open by:** Frontend Map v0.6 (line 393) asks for "the current version on a 409" and gives no shape. B6 named the code, not its `details`.
+  - **The shape:** `field` is the stale body field (`rowVersion`, `version`, `receiptHash` or `headSha`, per Q4); `currentVersion` is its current value, a number or a string to match.
+- **D22. Brennan's re-review (a2) reads the new commit, and only a2 is merged.**
+  - **What changes in `plan.toml`:** the slice review now reads `contract.md` and `decisions.md` as at the commit a2 starts on, with `git diff ffc6914 "$AVEL_BASE"` for what changed since a1. a2 reads a1's findings from 45c83da and says in its report whether each is closed.
+  - **Merge a2, not a1.** m1's `after` counts any merged attempt of the review (`render.py`, `ready()`), so merging a1, a FAIL, would free m1.
+  - **Findings files:** a still-open a1 finding keeps its file name; a new finding is numbered from 08.
+
 ## Open: for INT
 
-Nothing.
+- **F01's shape:** INT's words null `attempt_id` and `dependency_request_id`; the map's `tests` branch doesn't (above). Confirm, or say "the tests shape" literally. It doesn't block m1.

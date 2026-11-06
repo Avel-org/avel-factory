@@ -1,6 +1,6 @@
 # Backend sprint-00 (Step 0): the step contract
 
-Nov 6, 2026 · Axis · **status: for Brennan's review-spec; not locked.** B1 to B9, O1 and O2 are answered (`decisions.md`). Nothing is open.
+Nov 6, 2026 · Axis · **status: for Brennan's re-review (a2); not locked.** B1 to B9, O1 and O2 are answered, and so are Brennan's seven a1 findings (`decisions.md`, "Brennan's slice review (a1)"). One point waits on INT's word (section 7).
 
 Step 0 rebuilds `packages/db` from `AVEL Database Map.html`, applies CR-1 to CR-13 and CR-18 on top, and writes `packages/contract` fresh (Step 0 and Step 1 plan, Step 0, "Nov 5 change (CR-19)"). This slice says what the contract contains and which tables the schema has. Each item cites its source. An item no source defines is marked **open**. Nothing here is invented.
 
@@ -237,9 +237,20 @@ Called only through the host tool server with a dispatch token, which is checked
 | `ModuleRunState` | `module_runs.state`, `module_runs.parked_from` | — |
 | `DispatchRole` | `dispatches.role`, `eval_tasks.role` | Canon |
 | `Package` | `onboarding_sessions.package_provisional`, `package_final` | Canon; D7 |
-| `Stage`, `Checkpoint`, `FactKind`, `WorkKind`, `EarsPattern`, `Level` | their columns in Appendix A | Canon |
+| `Topic` | `topic_coverage.topic` | Canon (`Canon onboarding v0.5.md`, Build spec) |
+| `FactKind` | `facts.kind`. Defined as `Topic` plus `nogo`, `risk`, `module`, `requirement`, `scenario`, `work_kind`, `package`, `territory`, `constraint`, `context_ref`, `trace`, as Canon defines it | Canon |
+| `Stage` | `onboarding_sessions.stage`, `questions.stage` | Canon |
+| `Checkpoint`, `WorkKind`, `EarsPattern`, `Level` | their columns in Appendix A | Canon |
+| `EvalSet` | `eval_runs.set`, `eval_tasks.set` | D18 |
+| `LibraryLayer` | `kb_entries.layer`, `rules.scope` (`global`, `stack`, `client`) | D18 |
+| `IndexStatus` | `packages.status`, `rules.status`, `skills.status`, `templates.status`, `design_systems.status` (`active`, `retired`) | D18 |
+| `ArchiveStatus` | `clients.status`, `notes.state` (`active`, `archived`) | D18 |
+| `ClientKind` | `clients.kind`, `missions.client_kind` (new; below) | CR-13 |
+| `ProjectKind` | `missions.kind` (new; below) | CR-13 (B2) |
 
-Any other list is named after its table and column, for example `AttemptOutcome` or `FindingState`.
+Any other list is named after its table and column, for example `AttemptOutcome` or `FindingState`. `design_systems.layer` (`global`, `client`) is `DesignSystemLayer`: its values differ from `LibraryLayer`'s, so it isn't a repeat.
+
+**What counts as a repeat** (done-when 6; D18): two exported lists with the same set of values, or a value list written out in `packages/db` instead of imported. After this table, no two lists in the contract have the same values.
 
 **Changes applied on top of the map** (never edited into Appendix A):
 
@@ -253,8 +264,8 @@ Any other list is named after its table and column, for example `AttemptOutcome`
 | `clients.kind` (`ClientKind`), new | `client`, `internal` | CR-13 |
 | `missions.kind` (`ProjectKind`), new | `client`, `internal`, `template` | CR-13 (B2) |
 | `missions.client_kind`, new | `ClientKind` | CR-13 |
-| `design_systems.layer`, new | `global`, `client` | B9 (INT) |
-| `design_systems.status`, new | `active`, `retired` | B9, shaped like `templates` |
+| `design_systems.layer` (`DesignSystemLayer`), new | `global`, `client` | B9 (INT) |
+| `design_systems.status`, new (`IndexStatus`) | `active`, `retired` | B9, shaped like `templates` |
 | `completion_reports.status` | unchanged: `done`, `partial`, `blocked` | the map (B4) |
 
 ## 4. DTOs and inputs (E2)
@@ -299,6 +310,19 @@ DispatchPackageDto = {
 
 **`ClientDto`** (Step 1 item 12, test 2): `id`, `name`, `kind`, `contacts`, `status`, `archivedAt`, `rowVersion`, `createdAt`, `updatedAt`. That's the map's `clients` columns plus CR-13's `kind`, without `rep_id`.
 
+**CR-13's contract items** (`Change requests CR-1 to 13.md`, CR-13, "Contract"). CR-13 is accepted and wins over API routes.md, so these are added here. The route rows in section 2 stay as quoted.
+
+| Item | Where | State |
+| --- | --- | --- |
+| `ProjectKind` | section 3 | in |
+| `kind` on the client DTO | `ClientDto`, above | in |
+| `kind` on the mission DTO | `MissionDto.kind: ProjectKind` | in |
+| `kind` on the create-mission input | route 20, `POST /api/missions`: `kind: ProjectKind`, required, since CR-13 says it's "chosen when the mission is created". The server sets `client_kind` from the client; it isn't an input | in |
+| `?kind=` on the missions list | route 19, `GET /api/missions`: an optional `?kind=` (`ProjectKind`) | in |
+| `kind` on the create-client input | `clients.kind` has no default (D20), so the input that creates a client carries `kind: ClientKind`, required | in (D20) |
+| The `mission.created` event carries it | section 5 | in |
+| Metrics split by kind | route 69 | **Step 10**, where CR-13 builds it ("the metrics split in Step 10"). Not in Step 0 |
+
 ## 5. Errors and events
 
 ### Errors (E4; D5)
@@ -314,7 +338,7 @@ DispatchPackageDto = {
 | `UNPROCESSABLE_CONTENT` | 422 | any other 422 |
 | `TOO_MANY_REQUESTS` | 429 | rate limited; `details.retryAfterMs` |
 | `STEP_UP_REQUIRED` | 403 | a credential action with no valid grant |
-| `STALE_VERSION` | 409 | the body's version isn't current |
+| `STALE_VERSION` | 409 | the body's version isn't current; `details: { field, currentVersion }` (D21) |
 | `IDEMPOTENCY_KEY_REUSED` | 409 | the same key, a different body |
 | `IDEMPOTENCY_IN_PROGRESS` | 409 | the same key while the first still runs |
 | `TOKEN_REPLAYED` | 409 | a token route replayed; the token isn't returned again |
@@ -327,6 +351,8 @@ DispatchPackageDto = {
 | `DISPATCH_PACKAGE_FILE_NOT_FOUND` | 404 | CR-16: `?path=` isn't in the package |
 | `PLAN_VERSION_NOT_FOUND` | 404 | CR-16: no such `?planVersion=` |
 
+- **`STALE_VERSION`'s `details`** (D21): `field` is the body field that was stale (`rowVersion`, `version`, `receiptHash` or `headSha`), and `currentVersion` is its current value (a number for `rowVersion` and `version`, a string otherwise). Frontend Map v0.6 (line 393) asks for "the current version on a 409".
+- **`CONFLICT` changes meaning for the web.** Frontend Map v0.6 defines `CONFLICT` as "stale version, not 'already exists'". Here a stale version is `STALE_VERSION` (B6) and an existing row is `ALREADY_EXISTS`, so `CONFLICT` is only the fallback 409. That's a note for the frontend lead (Zero), passed through INT: `packages/contract-mock` and the web's error handling follow it. Backend doesn't touch either.
 - **Out until CR-17 is accepted:** `AGENT_NOT_PERMITTED` and `AGENT_SCOPE`.
 
 ### Events (E5; B5)
@@ -340,7 +366,7 @@ DispatchPackageDto = {
 | `attempt.started`, `attempt.ended` | `runner` | the same |
 | `mission.created` | `factory` | CR-15 item 8; it carries `kind` (CR-13) |
 | `pass.approved` | `gate` | CR-15 item 8 |
-| `receipt.issued` | `gate` | CR-W10 |
+| `receipt.issued` | `gate` | Frontend Map v0.6, lines 92 and 476; B5 (INT) |
 | `usage.recorded` | `metering` | CR-15 item 8 |
 | `task_doc.rendered` | `factory` | CR-16 (accepted) |
 | `message.stopped` | `onboarding` | CR-W14; INT, 2026-11-06 |
@@ -350,7 +376,9 @@ DispatchPackageDto = {
 
 ## 6. Tables (`packages/db`; Step 0 items 3 and 5)
 
-**The base is the map's 91 tables,** rebuilt by name. That means every column, default, foreign key (all RESTRICT, except Better Auth's cascades), CHECK, unique and partial-unique index, index and trigger, with the six functions rewritten from the rules they enforce: `uuid_generate_v7`, `touch_updated_at`, `freeze_once_set`, `refuse_update`, `freeze_plan_detail`, `freeze_plan` (CR-19 items 1 and 3). `outbox` isn't among them; `jobs` replaces it.
+**The base is the map's 91 tables,** rebuilt by name. That means every column, default, foreign key (all RESTRICT, except Better Auth's cascades), CHECK, unique and partial-unique index, index and trigger, with the map's six functions rewritten from the rules they enforce: `uuid_generate_v7`, `touch_updated_at`, `freeze_once_set`, `refuse_update`, `freeze_plan_detail`, `freeze_plan` (CR-19 items 1 and 3). `outbox` isn't among them; `jobs` replaces it.
+
+**A seventh function, `freeze_after_set`,** comes from CR-13 on top of the map (INT, 2026-11-06; finding 02). CR-19's six are the map's. `freeze_after_set(<gate column>, <column>, ...)` runs before an update and refuses any change to the listed columns once the old row's gate column is non-null. It's needed because `freeze_once_set` freezes a column once that column itself is set, and `missions.kind` is set from insert. Its one trigger is `missions_frozen`, below, and it gets its own done-when 9 test.
 
 **Applied on top of the map** (copied byte for byte from Step 0 and Step 1 plan, Step 0):
 
@@ -371,10 +399,60 @@ DispatchPackageDto = {
 | Drop `clients.rep_id`, `missions.rep_id` and `missions.rep_pct` (one operator; nobody else is a user) | CR-18 (accepted Nov 5) |
 
 **Also on top:**
-- **CR-7 and CR-8, B3 and CR-16:** `integration_commits.kind` gains `ui_contract`, `api_contract` and `dispatch_docs`, and `integration_commits_by_kind_ck` covers them. All three are module-free docs commits, so they take `operator`'s shape (all three parents null) unless Brennan finds a source that says otherwise.
+- **CR-7 and CR-8, B3 and CR-16:** `integration_commits.kind` gains `ui_contract`, `api_contract` and `dispatch_docs`, and `integration_commits_by_kind_ck` gets a branch for each (INT, 2026-11-06; finding 01):
+  - **`ui_contract` and `api_contract`** take the `tests` shape, because CR-7 and CR-8 say the contracts are "locked like tests": `module_run_id` required, and, in INT's words, "the other two parents null". So the branch is `(module_run_id IS NOT NULL) AND (attempt_id IS NULL) AND (dependency_request_id IS NULL)`. The map's own `tests` branch doesn't require the other two to be null, so this is stricter than `tests`; see section 7.
+  - **`dispatch_docs`** takes the `operator` shape, all three parents null: `factory` asks the integrator to land the package when the plan is rendered, and no module run or attempt produces it (CR-16, "Writing it to the repo", line 84).
+  - With a branch for every kind, the CHECK's `ELSE NULL` is never reached by a valid kind.
 - **B9, a new table:** `design_systems`, key `(slug, version)`, with `layer` (`global`, `client`), `client_id? → clients`, `path` (under `design/<slug>`), `factory_commit → factory_versions`, `status` (`active`, `retired`), `created_at`, `row_version` and `updated_at`, like `templates`. Its CHECK is `(layer = 'client') = (client_id IS NOT NULL)`.
 - **B9, the pin:** `missions.design_system_slug?` and `missions.design_system_version?` (INT), with a composite FK to `design_systems (slug, version)`, set together or not at all. A mission pins one at finalize.
 - **Item 5:** DATABASE.md is brought up to this schema, so the drift check (done-when 4) compares like with like.
+
+**Every new or renamed object, by name** (finding 03; D19). Done-when 8's test lists each against its source. Names follow the map's own patterns: `<table>_<column>_ck` for a value list, `<table>_<column>_<parent>_<parent column>_fk` for a one-column FK and `<table>_<column>_ix` for its index, `<table>_<thing>_fk`, `_ix` and `_pair_ck` for a composite FK (as `plans_template_*`), `<table>_<columns>_uq` for a unique target of a composite FK (as `repo_connections_client_id_id_uq`), `<table>_one_<what>_uq` for a one-only partial unique (as `repo_connections_one_active_uq`), `<table>_touch_updated_at`, and `<table>_frozen`. The names CR-6 gives are CR-6's.
+
+| Table | Object | Definition | From |
+| --- | --- | --- | --- |
+| `jobs` | columns | `lease_epoch` → `claim_no`; `lease_until` → `claim_expires_at` | CR-6 |
+| `jobs` | `jobs_state_ck` | `'leased'` → `'claimed'` in the list | CR-6 |
+| `jobs` | `jobs_lease_ck` → `jobs_claim_ck` | `((claim_expires_at IS NOT NULL) = (state = 'claimed')) AND ((claimed_by IS NOT NULL) = (state = 'claimed'))` | CR-6 (the name is CR-6's) |
+| `jobs` | `jobs_expired_leases_ix` → `jobs_expired_claims_ix` | `btree (claim_expires_at) WHERE (state = 'claimed')` | CR-6 (the name is CR-6's) |
+| `jobs` | `jobs_one_live_key_uq` (name kept) | predicate `WHERE (state = ANY (ARRAY['queued', 'claimed']))`, so a claimed job still blocks a second live job with the same key | CR-6 |
+| `consumer_cursors` | column | `lease_epoch` → `claim_no` | CR-6 |
+| `plan_modules` | `plan_modules_work_kind_ck` | `WorkKind` (section 3) | CR-7 |
+| `dispatches`, `eval_tasks` | `dispatches_role_ck`, `eval_tasks_role_ck` | `DispatchRole` (section 3) | CR-7, CR-8 |
+| `integration_commits` | `integration_commits_kind_ck` | the map's four plus `ui_contract`, `api_contract`, `dispatch_docs` | CR-7, CR-8 (B3); CR-16 |
+| `integration_commits` | `integration_commits_by_kind_ck` | three new branches, above | INT (finding 01); CR-16 |
+| `scenarios` | `scenarios_level_ck` | `Level` plus `load` | CR-9 |
+| `usage_log` | column | `vendor` | CR-5 |
+| `clients` | column | `kind text NOT NULL`, no default (D20) | CR-13 |
+| `clients` | `clients_kind_ck` | `kind` in `ClientKind` | CR-13 |
+| `clients` | `clients_one_internal_uq` | `UNIQUE (kind) WHERE (kind = 'internal')`: one internal client | CR-13 |
+| `clients` | `clients_id_kind_uq` | `UNIQUE (id, kind)`, the target of `missions_client_kind_fk` | CR-13 (a composite FK needs it) |
+| `missions` | columns | `kind text NOT NULL`, `client_kind text NOT NULL`, no defaults (D20) | CR-13 |
+| `missions` | `missions_kind_ck` | `kind` in `ProjectKind` | CR-13 |
+| `missions` | `missions_client_kind_ck` | `client_kind` in `ClientKind` | CR-13 |
+| `missions` | `missions_client_kind_match_ck` | `(kind = 'client') = (client_kind = 'client')` | CR-13 |
+| `missions` | `missions_client_kind_fk` | `(client_id, client_kind)` → `clients (id, kind)`, RESTRICT. The map's `missions_client_id_clients_id_fk` stays | CR-13 |
+| `missions` | `missions_client_kind_ix` | `btree (client_id, client_kind)` | CR-13; the map indexes 196 of its 204 FKs, including every one-column FK outside `agent_traces` |
+| `missions` | `missions_frozen` | `BEFORE UPDATE ... EXECUTE FUNCTION freeze_after_set('onboarding_started_at', 'kind')`. With `kind` frozen, `missions_client_kind_match_ck` holds `client_kind` too | CR-13; INT (finding 02) |
+| `missions` | columns | `design_system_slug text`, `design_system_version text`, both optional | B9 (INT) |
+| `missions` | `missions_design_system_fk` | `(design_system_slug, design_system_version)` → `design_systems (slug, version)`, RESTRICT | B9; as `plans_template_fk` |
+| `missions` | `missions_design_system_pair_ck` | `((design_system_slug IS NULL) = (design_system_version IS NULL))` | B9; as `plans_template_pair_ck` |
+| `missions` | `missions_design_system_ix` | `btree (design_system_slug, design_system_version)` | B9; as `plans_template_ix` |
+| `missions` | columns dropped | `rep_id`, `rep_pct`, with `missions_rep_id_users_id_fk` and `missions_rep_id_ix` | CR-18 |
+| `clients` | column dropped | `rep_id`, with `clients_rep_id_users_id_fk` and `clients_rep_id_ix` | CR-18 |
+| `templates` | column | `source_mission_id uuid`, optional | CR-13 |
+| `templates` | `templates_source_mission_id_missions_id_fk` | `source_mission_id` → `missions (id)`, RESTRICT | CR-13 |
+| `templates` | `templates_source_mission_id_ix` | `btree (source_mission_id)` | CR-13; the map indexes 196 of its 204 FKs, including every one-column FK outside `agent_traces` |
+| `design_systems` | table | `slug text`, `version text` (key `(slug, version)`), `layer text`, `client_id uuid` (optional), `path text`, `factory_commit text`, `status text DEFAULT 'active'`, `created_at`, `row_version`, `updated_at`, with `templates`' types and defaults | B9 (INT) |
+| `design_systems` | `design_systems_layer_ck` | `layer` in `DesignSystemLayer` | B9 (INT) |
+| `design_systems` | `design_systems_status_ck` | `status` in `IndexStatus` | B9 |
+| `design_systems` | `design_systems_client_layer_ck` | `((layer = 'client') = (client_id IS NOT NULL))` | B9 (INT); as `kb_entries_client_layer_ck` |
+| `design_systems` | `design_systems_client_id_clients_id_fk`, `design_systems_client_id_ix` | `client_id` → `clients (id)`, RESTRICT; `btree (client_id)` | B9; as `kb_entries_client_id_*` |
+| `design_systems` | `design_systems_factory_commit_factory_versions_sha_fk`, `design_systems_factory_commit_ix` | `factory_commit` → `factory_versions (sha)`, RESTRICT; `btree (factory_commit)` | B9; as `templates_factory_commit_*` |
+| `design_systems` | `design_systems_touch_updated_at` | `BEFORE UPDATE ... EXECUTE FUNCTION touch_updated_at()` | B9; as `templates_touch_updated_at` |
+| (functions) | `freeze_after_set` | above | CR-13; INT (finding 02) |
+
+The domain rename "Money and time" → "Cost and time" (CR-2) changes a label, not an object.
 
 **One owner per table** (Step 0 item 3; build plan section 4 and CR-15 item 2; `device_logins` → `cli` from section 8). The new tables' owners are **proposed** here (CR-19 asks for them):
 
@@ -402,7 +480,9 @@ The exceptions (DATABASE.md, Ownership): `missions.branch_head` is written by `i
 
 ## 7. Open
 
-Nothing. B1 to B9 (2026-11-05 and 2026-11-06), O1 and O2 (2026-11-06) are answered in `decisions.md`.
+B1 to B9 (2026-11-05 and 2026-11-06), O1 and O2 (2026-11-06), and Brennan's seven a1 findings are answered in `decisions.md`.
+
+**For INT, one point (it doesn't block m1):** `ui_contract` and `api_contract` follow INT's words, "module_run_id required, the other two parents null". The map's `tests` branch requires only `module_run_id`, and leaves `attempt_id` free. If "the tests shape" was meant literally, the branch is `(module_run_id IS NOT NULL)` alone, and a contract commit can name the attempt that wrote it. Section 6 has INT's words until INT says otherwise. It changes one CHECK in m2, not the contract.
 
 One choice the docs leave open is mine, and Brennan checks it: which `displayState` wins when more than one pause is open (section 4, item 6).
 

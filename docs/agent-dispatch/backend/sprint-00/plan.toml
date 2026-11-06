@@ -12,7 +12,7 @@ title = "The contract written fresh, and the schema rebuilt from the database ma
 goals = [
   "A pnpm workspace with TypeScript, Biome, Vitest, scripts/pg-local.sh and CI with a Postgres service",
   "packages/contract: every value list defined once, the DTOs and inputs, the 102 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, with no rep fields",
-  "packages/db: the Drizzle schema rebuilt from AVEL Database Map.html (every table, column, default, foreign key, CHECK, index and trigger by name, the six functions rewritten), the accepted CRs applied on top, value lists imported from the contract, and a first migration",
+  "packages/db: the Drizzle schema rebuilt from AVEL Database Map.html (every table, column, default, foreign key, CHECK, index and trigger by name, the map's six functions rewritten, plus freeze_after_set from CR-13), the accepted CRs applied on top, value lists imported from the contract, and a first migration",
   "The ERD and the OpenAPI document generated, DATABASE.md brought up to the schema, and the drift check in CI",
 ]
 # Step 0 and Step 1 plan, Step 0, "Done when", word for word.
@@ -129,16 +129,16 @@ verify = "pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm test
 expected = "every command exits 0"
 
 # ------------------------------------------------------------------ slice: Brennan on the step contract
-# The slice is already on main, so this review has no diff of its own: its task pins
-# contract.md and decisions.md as at ffc6914 and reads them whole (decisions.md, D17).
+# The slice is already on main, so this review has no diff of its own: it reads contract.md and
+# decisions.md whole (D17). a1 (ffc6914) failed with seven findings; a2 re-reviews the fixes (D22).
 [[dispatch]]
 agent = "brennan"
 module = "slice"
 role = "review-spec"
-domain = "Review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at commit ffc6914, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence)."
+domain = "Re-review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at the commit your session starts on, which answers attempt a1's seven findings, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence)."
 context = [
-  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "under review, as at ffc6914: git show ffc6914:docs/agent-dispatch/backend/sprint-00/contract.md" },
-  { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "under review, as at ffc6914: D1 to D16, B1 to B9, O1 and O2" },
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "under review, as at your start commit: sections 3, 4, 5 and 6 changed for a1's findings" },
+  { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "under review: D1 to D22, B1 to B9, O1 and O2, and the section \"Brennan's slice review (a1) and INT's answers\"" },
   { path = "docs/design/AVEL Database Map.html", why = "what exists: tables, columns, CHECKs, indexes, triggers (its ERD data)" },
   { path = "docs/design/Change requests CR-1 to 13.md", why = "the accepted changes on top of the map" },
   { path = "docs/design/Backend modules and build plan.md", why = "sections 8 to 10: auth, CR-18 and CR-19 (the precedence)" },
@@ -148,19 +148,21 @@ context = [
   { path = "docs/design/Schema vs DATABASE.md.md", why = "how the map differs from DATABASE.md" },
 ]
 notes = [
-  "The work under review is two files as at commit ffc6914, not a diff: the slice was committed to main before this review was planned, so AVEL_BASE..HEAD shows nothing of it. Read both files whole with git show ffc6914:<path>. Their history is git log --oneline e1ed7ae..ffc6914 -- docs/agent-dispatch/backend/sprint-00/contract.md docs/agent-dispatch/backend/sprint-00/decisions.md.",
-  "Each finding cites the slice's line (contract.md:N or decisions.md:N at ffc6914), the source it breaks (file and section, or the map's table and CHECK name), and the command that shows it.",
-  "Axis's api-contract dispatch (m1) waits for this review to be merged into main, so your report and findings are what it builds on.",
+  "The work under review is two files as at your start commit, not a diff: the slice is on main, so AVEL_BASE..HEAD shows nothing of it. Read both files whole with git show \"$AVEL_BASE\":<path>. What changed since a1 reviewed them: git diff ffc6914 \"$AVEL_BASE\" -- docs/agent-dispatch/backend/sprint-00/contract.md docs/agent-dispatch/backend/sprint-00/decisions.md.",
+  "Attempt a1 (commit 45c83da, branch backend/sprint-00/agent-brennan-slice-review-spec-a1) failed with seven findings, slice-brennan-01 to 07. Read them with git show 45c83da:docs/agent-dispatch/backend/sprint-00/findings/<file> (git show --stat 45c83da~1 lists them). In your report, say for each whether it's closed, and cite the line that closes it. A still-open one keeps its file name; a new finding is numbered from 08.",
+  "INT answered 01 and 02 (decisions.md). Check that contract.md applies those answers as written. Don't reopen the answers themselves; anything that contradicts a source is still a finding.",
+  "Each finding cites the slice's line (contract.md:N or decisions.md:N at your start commit), the source it breaks (file and section, or the map's table and CHECK name), and the command that shows it.",
+  "Axis's api-contract dispatch (m1) waits for this review to be merged into main, so your report and findings are what it builds on. Only this attempt is merged, not a1 (D22).",
 ]
 
 [[dispatch.task]]
 title = "Routes and shapes: the 99 routes match API routes.md lines 20 to 189 byte for byte, CR-16's 3 match lines 192 to 196, and DispatchPackageDto matches the CR-16 contract"
 priority = "P0"
-verify = '''diff <(sed -n '20,189p' 'docs/design/API routes.md' | sed 's/^## //') <(git show ffc6914:docs/agent-dispatch/backend/sprint-00/contract.md | sed -n '/^### Auth (5)/,/^\*\*Total: 99.\*\*/p' | sed 's/^### //') && diff <(sed -n '28,50p' 'docs/design/CR-16 Dispatch package contract.md') <(git show ffc6914:docs/agent-dispatch/backend/sprint-00/contract.md | sed -n '/^```ts/,/^```$/p') && echo QUOTES-MATCH'''
+verify = '''diff <(sed -n '20,189p' 'docs/design/API routes.md' | sed 's/^## //') <(sed -n '/^### Auth (5)/,/^\*\*Total: 99.\*\*/p' docs/agent-dispatch/backend/sprint-00/contract.md | sed 's/^### //') && diff <(sed -n '28,50p' 'docs/design/CR-16 Dispatch package contract.md') <(sed -n '/^```ts/,/^```$/p' docs/agent-dispatch/backend/sprint-00/contract.md) && echo QUOTES-MATCH'''
 expected = "QUOTES-MATCH"
 
 [[dispatch.task]]
-title = "Tables and lists: Appendix A is the map's value-list CHECKs unedited, section 3's changes each cite an accepted CR or a recorded INT answer, and section 6's owner table names the map's 91 tables plus design_systems exactly once"
+title = "Tables and lists: Appendix A is the map's value-list CHECKs unedited, section 3's changes each cite an accepted CR or a recorded INT answer, section 6's names table covers every new or renamed object, and its owner table names the map's 91 tables plus design_systems exactly once"
 priority = "P0"
 verify = '''python3 -I -c "import json;l=[x for x in open('docs/design/AVEL Database Map.html',encoding='utf-8') if x.startswith('const ERD =')][0];e=json.loads(l[len('const ERD ='):].strip().rstrip(';'));print(e['stats'])"'''
 expected = "{'tables': 91, 'foreignKeys': 204, 'checks': 199, 'uniques': 81, 'indexes': 183}"
@@ -168,7 +170,7 @@ expected = "{'tables': 91, 'foreignKeys': 204, 'checks': 199, 'uniques': 81, 'in
 [[dispatch.task]]
 title = "Decisions: every D, B and O entry cites a source that says what it claims; any choice that changes the map, a route or an accepted CR without an INT answer or a CR is a finding"
 priority = "P1"
-verify = '''git show ffc6914:docs/agent-dispatch/backend/sprint-00/decisions.md | grep -cE "^- \*\*(D|B)[0-9]+\." '''
+verify = '''grep -cE "^- \*\*(D|B)[0-9]+\." docs/agent-dispatch/backend/sprint-00/decisions.md'''
 expected = "the count of D and B entries, each of which you've checked"
 
 # ------------------------------------------------------------------ m1: the contract
@@ -255,7 +257,7 @@ expected = "builds; the locked tests pass"
 agent = "rigg"
 module = "m2-db"
 role = "test-unit"
-domain = "The db done-when tests against real Postgres: 1 (migration applies and reverses), 2 (one test per CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal, from the map and the changes on top), 3 (the CR-13 rules), 6 (no value list repeated in packages/db), 8 (the schema matches the map), 9 (one test per function)."
+domain = "The db done-when tests against real Postgres: 1 (migration applies and reverses), 2 (one test per CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal, from the map and the changes on top), 3 (the CR-13 rules), 6 (no value list repeated in packages/db, and no two contract lists with the same values; contract.md section 3), 8 (the schema matches the map, with every difference in contract.md section 6's names table), 9 (one test per function: the map's six plus freeze_after_set, CR-13)."
 territory = ["packages/db/test/**"]
 after = ["agent-atlas-m0-workspace-build"]
 context = [
@@ -268,7 +270,7 @@ context = [
 [[dispatch.task]]
 title = "Done-when 1, 2, 3, 6, 8 and 9 against real Postgres (scripts/pg-local.sh); report the rule count for test 2"
 priority = "P0"
-required = "One test per rule, each named with its done-when number and the rule; each fails first with an assertion"
+required = "One test per rule, each named with its done-when number and the rule; each fails first with an assertion. Test 9 covers seven functions: freeze_after_set is the seventh (decisions.md, F02). Test 3's kind freeze runs through the missions_frozen trigger"
 verify = "pnpm --filter @avel/db test"
 expected = "every test fails with an assertion before the schema exists"
 
@@ -276,18 +278,18 @@ expected = "every test fails with an assertion before the schema exists"
 agent = "soap"
 module = "m2-db"
 role = "build"
-domain = "packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the six functions, the table-owner map, and the first migration (Step 0 item 3; CR-19)."
+domain = "packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the seven functions (the map's six plus freeze_after_set), the table-owner map, and the first migration (Step 0 item 3; CR-19)."
 territory = ["packages/db/**"]
 after = ["agent-axis-m1-contract-api-contract"]
 context = [
   { path = "docs/design/AVEL Database Map.html", why = "every table, column, default, foreign key, CHECK, index and trigger, by name" },
   { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "section 6: the changes on top of the map and the owners; section 3: the value lists to import" },
   { path = "docs/design/Schema vs DATABASE.md.md", why = "the patterns (row_version, immutable tables, freezes) and what each function enforces" },
-  { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "D6 to D9 and the operator's answers to B1 to B9" },
+  { path = "docs/agent-dispatch/backend/sprint-00/decisions.md", why = "D6 to D9, D18 to D20, the operator's answers to B1 to B9, and INT's answers to findings 01 and 02" },
 ]
 
 [[dispatch.task]]
-title = "The Drizzle schema: the map's 91 tables by name with section 6's changes, every CHECK, index and FK in the schema itself, and the six functions with their triggers; value lists imported from @avel/contract"
+title = "The Drizzle schema: the map's 91 tables by name with section 6's changes, every CHECK, index and FK in the schema itself, named as section 6's names table gives them, and the seven functions with their triggers; value lists imported from @avel/contract"
 priority = "P0"
 required = "The locked db suite passes, including the map comparison (8) and the function tests (9); no value list is written in packages/db"
 verify = "pnpm --filter @avel/db test"

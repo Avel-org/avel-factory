@@ -33,22 +33,22 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 15. `docs/design/AVEL Database Map.html`: every table, column, default, foreign key, CHECK, index and trigger, by name
 16. `docs/agent-dispatch/backend/sprint-00/contract.md`: section 6: the changes on top of the map and the owners; section 3: the value lists to import
 17. `docs/design/Schema vs DATABASE.md.md`: the patterns (row_version, immutable tables, freezes) and what each function enforces
-18. `docs/agent-dispatch/backend/sprint-00/decisions.md`: D6 to D9 and the operator's answers to B1 to B9
+18. `docs/agent-dispatch/backend/sprint-00/decisions.md`: D6 to D9, D18 to D20, the operator's answers to B1 to B9, and INT's answers to findings 01 and 02
 19. `docs/agent-dispatch/backend/sprint-00/agent-soap-m2-db-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the six functions, the table-owner map, and the first migration (Step 0 item 3; CR-19).
+packages/db: the Drizzle schema rebuilt from the database map with contract.md section 6's changes on top, the seven functions (the map's six plus freeze_after_set), the table-owner map, and the first migration (Step 0 item 3; CR-19).
 
 **The rest of this sprint:**
 
 - `agent-atlas-m0-workspace-build`: The pnpm workspace, TypeScript, Biome and Vitest config, scripts/pg-local.sh and the main CI workflow with a Postgres service (Step 0 item 1). No package code.
 - `agent-axis-m0-workspace-review-backend`: Review the workspace against Step 0 item 1 and this plan's commands.
-- `agent-brennan-slice-review-spec`: Review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at commit ffc6914, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence).
+- `agent-brennan-slice-review-spec`: Re-review the Step 0 step contract before anything is built on it: docs/agent-dispatch/backend/sprint-00/contract.md and decisions.md as at the commit your session starts on, which answers attempt a1's seven findings, against the database map, the accepted CRs, API routes.md and CR-16 (CR-19's precedence).
 - `agent-axis-m1-contract-api-contract`: packages/contract: the value lists, DTOs and inputs, the 102 oRPC route definitions (the 99 and CR-16's 3), the error map, the event-kind to owning-module map and the completion report schema, from contract.md (Step 0 item 2).
 - `agent-rigg-m1-contract-test-unit`: The contract's done-when tests: 5 (the contract builds and the route snapshot), 6 (the contract exports every list the schema checks), 7 (an event kind with no owner fails to compile).
 - `agent-brennan-m1-contract-review-spec`: Review packages/contract against contract.md, API routes.md, the database map and CR-16: every route, list, DTO field and code traces to its source.
-- `agent-rigg-m2-db-test-unit`: The db done-when tests against real Postgres: 1 (migration applies and reverses), 2 (one test per CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal, from the map and the changes on top), 3 (the CR-13 rules), 6 (no value list repeated in packages/db), 8 (the schema matches the map), 9 (one test per function).
+- `agent-rigg-m2-db-test-unit`: The db done-when tests against real Postgres: 1 (migration applies and reverses), 2 (one test per CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal, from the map and the changes on top), 3 (the CR-13 rules), 6 (no value list repeated in packages/db, and no two contract lists with the same values; contract.md section 3), 8 (the schema matches the map, with every difference in contract.md section 6's names table), 9 (one test per function: the map's six plus freeze_after_set, CR-13).
 - `agent-axis-m2-db-review-backend`: Review packages/db against contract.md section 6 and the database map.
 - `agent-brennan-m2-db-review-spec`: Review packages/db against the database map, the accepted CRs and contract.md section 6 (CR-19's precedence): no invented column, every CR change in.
 - `agent-rigg-m3-docs-test-unit`: Done-when 4 (the ERD drift check passes, and fails on a planted mismatch) and 5's OpenAPI half (the document generates and holds the contract's routes).
@@ -59,7 +59,7 @@ packages/db: the Drizzle schema rebuilt from the database map with contract.md s
 
 Do them in order. Finish each one, verified, before the next.
 
-### SOAP-01: The Drizzle schema: the map's 91 tables by name with section 6's changes, every CHECK, index and FK in the schema itself, and the six functions with their triggers; value lists imported from @avel/contract (P0)
+### SOAP-01: The Drizzle schema: the map's 91 tables by name with section 6's changes, every CHECK, index and FK in the schema itself, named as section 6's names table gives them, and the seven functions with their triggers; value lists imported from @avel/contract (P0)
 
 - **Required:** The locked db suite passes, including the map comparison (8) and the function tests (9); no value list is written in packages/db
 - **Verify:** `pnpm --filter @avel/db test`
@@ -194,7 +194,7 @@ Before you act, read docs/agent-dispatch/backend/sprint-00/agent-soap-m2-db-buil
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- SOAP-01: The Drizzle schema: the map's 91 tables by name with section 6's changes, every CHECK, index and FK in the schema itself, and the six functions with their triggers; value lists imported from @avel/contract
+- SOAP-01: The Drizzle schema: the map's 91 tables by name with section 6's changes, every CHECK, index and FK in the schema itself, named as section 6's names table gives them, and the seven functions with their triggers; value lists imported from @avel/contract
 - SOAP-02: The first migration, generated by drizzle-kit, with a down migration
 
 You may change only: packages/db/**, docs/agent-dispatch/backend/sprint-00/agent-soap-m2-db-build-completion.md.

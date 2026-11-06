@@ -6,7 +6,7 @@ Step 0 · lead AXIS · rendered by `scripts/render.py` from `plan.toml`.
 
 - A pnpm workspace with TypeScript, Biome, Vitest, scripts/pg-local.sh and CI with a Postgres service
 - packages/contract: every value list defined once, the DTOs and inputs, the 102 oRPC route definitions, the error map, the event-kind to owning-module map and the completion report schema, with no rep fields
-- packages/db: the Drizzle schema rebuilt from AVEL Database Map.html (every table, column, default, foreign key, CHECK, index and trigger by name, the six functions rewritten), the accepted CRs applied on top, value lists imported from the contract, and a first migration
+- packages/db: the Drizzle schema rebuilt from AVEL Database Map.html (every table, column, default, foreign key, CHECK, index and trigger by name, the map's six functions rewritten, plus freeze_after_set from CR-13), the accepted CRs applied on top, value lists imported from the contract, and a first migration
 - The ERD and the OpenAPI document generated, DATABASE.md brought up to the schema, and the drift check in CI
 
 ## Done when
