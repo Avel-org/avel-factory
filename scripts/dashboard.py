@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""The avel control room dashboard: it is the INT tab.
+"""The avel control room dashboard: the top of the INT tab.
+
+The INT tab is the operator's: this dashboard on top, and under it INT, the
+operator's own Claude session (.claude/agents/int.md), which sends messages to
+the crew and starts dispatches, and where the crew's messages to INT land.
 
 NEEDS YOU comes first, as the web app's Decisions home does: sessions waiting
 on a permission prompt, stalled sessions (working with no tool activity for 10
@@ -9,9 +13,8 @@ opens the session, or the merge board at that module.
 
 Then every session in the "avel" WezTerm workspace, in roster order and grouped
 by team tab, with its status (working, idle, no Claude), for how long, and the
-open dispatch tabs with their branch and last commit. The selected session's
-last lines show in a preview, and the latest events (scripts/watch.sh) sit at
-the bottom.
+open dispatch tabs with their branch and last commit. The latest events
+(scripts/watch.sh) sit at the bottom.
 
 Session state comes from the Claude Code hooks (scripts/hooks/session.py) in
 .git/avel/sessions.json; a session started before the hooks existed shows no
@@ -60,7 +63,7 @@ GROUPS = [
     ("REVIEW", "review", [("BRENNAN", "spec review"), ("ZANE", "security review"),
                           ("LEAH", "a11y and performance review"), ("BREACH", "red team")]),
 ]
-TEAM_OF = {"INT": "you"}
+TEAM_OF = {"INT": "you", "DASHBOARD": "you"}
 for _tab, _team, _members in GROUPS:
     for _name, _ in _members:
         TEAM_OF[_name] = _team
@@ -141,15 +144,15 @@ class State:
             if str(p["pane_id"]) == self.me:
                 continue
             title = p["title"] or ""
-            if p["tab_title"] == "INT":
-                name = "INT"
+            if p["tab_title"] == "INT":   # this dashboard over the operator's session
+                name = "DASHBOARD" if title.strip() == "DASHBOARD" else "INT"
             elif per_tab[p["tab_id"]] == 1 and p["tab_title"]:
                 name = p["tab_title"]
             else:
                 name = re.sub(r"^[^A-Za-z0-9]+", "", title).strip()
             if not name or name in sessions:
                 continue
-            st = "shell" if name == "INT" else status_of(title)
+            st = status_of(title)
             sessions[name] = dict(pane=p["pane_id"], title=title, tab=p["tab_title"], status=st,
                                   zoomed=p.get("is_zoomed", False))
             order.append(name)
@@ -251,7 +254,7 @@ class State:
     def rows(self):
         """The list, in order: ("header", tab, team, members) or ("agent", name, team)."""
         rows, listed = [], set()
-        listed.add("INT")   # INT is this dashboard
+        listed.update(("INT", "DASHBOARD"))   # the operator's own tab: right below this
         needs = self.needs()
         rows.append(("header", "NEEDS YOU", "you", [t for _, _, t in needs if t]))
         for text, color, target in needs[:8] or [("nothing needs you", "dim", None)]:
@@ -268,21 +271,6 @@ class State:
         for n in dispatch:
             rows.append(("agent", n, TEAM_OF.get(n.split()[0], "dispatch")))
         return rows
-
-    def preview(self, name, lines):
-        """Last lines of a session's screen; re-read on each poll or a new selection."""
-        s = self.sessions.get(name)
-        if not s:
-            return []
-        key = (name, s["pane"], self.polled_at)
-        if getattr(self, "_preview_key", None) != key:
-            try:
-                text = wez("get-text", "--pane-id", str(s["pane"])).stdout
-            except Exception:
-                text = ""
-            self._preview_key = key
-            self._preview = [l.rstrip() for l in text.splitlines() if l.strip()]
-        return self._preview[-lines:]
 
 
 def recent_events(n):
@@ -378,11 +366,9 @@ class UI:
         self.put(0, max(20, w - len(summary) - 2), summary, self.pairs["dim"])
         self.put(1, 0, "─" * (w - 1), self.pairs["dim"])
 
-        # The list takes what's left after the preview and messages.
-        msg_lines = 3 if h >= 30 else 0
-        prev_lines = max(4, min(12, h // 4)) if h >= 22 else 0
-        list_h = max(1, h - 3 - (prev_lines + 2 if prev_lines else 0) - (msg_lines + 2 if msg_lines else 0))
-        selected_name = None
+        # The list takes what's left after the events panel.
+        msg_lines = max(3, min(8, h // 5)) if h >= 20 else 0
+        list_h = max(1, h - 3 - (msg_lines + 2 if msg_lines else 0))
         y, chosen_row = 2, sel_rows[self.sel] if sel_rows else -1
         # Scroll so the selection stays visible.
         start = max(0, chosen_row - list_h + 1) if chosen_row >= list_h else 0
@@ -398,8 +384,6 @@ class UI:
                 _, text, color, target = row
                 self.put(y, 3, "›" if target else " ", self.pairs[color])
                 self.put(y, 5, text, self.pairs[color] | mark)
-                if is_sel and target and not target.startswith("board:"):
-                    selected_name = target
             elif row[0] == "header" and row[1] == "NEEDS YOU":
                 self.put(y, 1, "NEEDS YOU", self.pairs["you"] | curses.A_BOLD)
                 n = len(st.needs())
@@ -414,8 +398,6 @@ class UI:
                     count = f"{len(open_)}/{len(members)} open · {busy} working"
                 self.put(y, 1, f"{tab:<12}", self.pairs[team] | curses.A_BOLD | mark)
                 self.put(y, 14, count, self.pairs["dim"])
-                if is_sel and members:
-                    selected_name = next((n for n in members if n in st.sessions), None)
             elif row[0] == "closed":
                 _, name, team = row
                 self.put(y, 3, "–", self.pairs["dim"])
@@ -428,7 +410,7 @@ class UI:
                 s = st.sessions[name]
                 icon, label = STATUS[s["status"]]
                 since = st.since.get(name, (None, time.time()))[1]
-                role = ROLE_OF.get(name) or ("you: integration shell" if name == "INT" else st.git.get(name, s["tab"]))
+                role = ROLE_OF.get(name) or ("you: your own session" if name == "INT" else st.git.get(name, s["tab"]))
                 key = f"{number}" if number <= 9 else " "
                 self.put(y, 1, key, self.pairs["dim"])
                 self.put(y, 3, icon, self.pairs[s["status"]])
@@ -442,25 +424,11 @@ class UI:
                     self.put(y, 26, f"{label} {ago(time.time() - since)}", self.pairs[s["status"]])
                 if w > 60:
                     self.put(y, 44, role, self.pairs["dim"])
-                if is_sel:
-                    selected_name = name
             y += 1
-
-        # Preview of the selected session.
-        py = 2 + list_h
-        if not prev_lines:
-            self.footer(h, w, st)
-            scr.refresh()
-            return rows, sel_rows
-        self.put(py, 0, "─" * (w - 1), self.pairs["dim"])
-        self.put(py, 2, f" {selected_name or 'nothing selected'} ", self.pairs["title"])
-        if selected_name:
-            for j, line in enumerate(st.preview(selected_name, prev_lines)):
-                self.put(py + 1 + j, 2, line, self.pairs["text"])
 
         # Messages between sessions.
         if msg_lines:
-            my = py + prev_lines + 2
+            my = 2 + list_h
             self.put(my, 0, "─" * (w - 1), self.pairs["dim"])
             self.put(my, 2, " events (scripts/watch.sh) ", self.pairs["title"])
             recent = recent_events(msg_lines)

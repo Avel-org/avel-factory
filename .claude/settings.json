@@ -16,7 +16,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git branch --show-current)",
-      "Bash(git merge-base:*)"
+      "Bash(git merge-base:*)",
+      "Bash(scripts/tell.sh:*)"
     ],
     "deny": [
       "Bash(git push:*)",

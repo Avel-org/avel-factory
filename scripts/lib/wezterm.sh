@@ -2,9 +2,11 @@
 
 # Sessions in the "avel" workspace, one per line: <pane_id><TAB><name>
 # A tab with one pane is named by its tab title (INT, dispatch tabs such as
-# "SOAP m2-build a1"). INT is the dashboard (scripts/dashboard.py). In a team tab (LEADS, BACKEND, FRONTEND, REVIEW) each
+# "SOAP m2-build a1"). In a team tab (LEADS, BACKEND, FRONTEND, REVIEW) each
 # pane is named by its pane title, which Claude Code sets to its session name
-# ("✳ AXIS" gives AXIS).
+# ("✳ AXIS" gives AXIS). The INT tab has two panes: the dashboard on top
+# (scripts/dashboard.py titles its pane DASHBOARD) and the operator's own
+# Claude session below it, named INT.
 avel_tabs() {
   wezterm.exe cli list --format json | python3 -c '
 import json, re, sys
@@ -12,8 +14,8 @@ from collections import Counter
 panes = [p for p in json.load(sys.stdin) if p["workspace"] == "avel"]
 per_tab = Counter(p["tab_id"] for p in panes)
 for p in panes:
-    if p["tab_title"] == "INT":   # the dashboard
-        name = "INT"
+    if p["tab_title"] == "INT":   # the dashboard over the operator's session
+        name = "DASHBOARD" if p["title"].strip() == "DASHBOARD" else "INT"
     elif per_tab[p["tab_id"]] == 1 and p["tab_title"]:
         name = p["tab_title"]
     else:

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Open the "avel" control room from any shell: INT (the dashboard,
-# scripts/dashboard.py) plus the whole roster,
+# scripts/dashboard.py, over INT, your own Claude session, which messages the
+# crew, starts dispatches and gets the crew's messages) plus the whole roster,
 # grouped into team tabs, each agent in its own pane:
 #   LEADS     AXIS | ZERO
 #   BACKEND   SOAP | IYO       over  ATLAS | RIGG
@@ -92,18 +93,25 @@ for p in json.load(sys.stdin):
   done
 fi
 
+added=()
 open=$(avel_tabs | cut -f2)
 # Team tabs hold several panes, so check them by tab title, not session name.
 tab_titles=$(wezterm.exe cli list --format json | python3 -c '
 import json, sys
 print("\n".join({p["tab_title"] for p in json.load(sys.stdin) if p["workspace"] == "avel"}))')
-int=$(avel_tabs | awk -F'\t' '$2 == "INT" { print $1; exit }')
-if [[ -z $int ]]; then
-  int=$(wezterm.exe cli spawn --new-window --workspace avel --domain-name WSL:Ubuntu --cwd "$repo" -- bash -lc "${nvm}export AVEL_FROM=INT; python3 scripts/dashboard.py; exec bash" | tr -d '\r')
+# INT: the dashboard on top, your own session (INT) under it.
+int=$(avel_tabs | awk -F'\t' '$2 == "DASHBOARD" { print $1; exit }')
+me=$(avel_tabs | awk -F'\t' '$2 == "INT" { print $1; exit }')
+if [[ -z $int && -z $me ]]; then
+  int=$(wezterm.exe cli spawn --new-window --workspace avel --domain-name WSL:Ubuntu --cwd "$repo" -- bash -lc "${nvm}cd $(printf %q "$repo") || exec bash; export AVEL_FROM=INT; python3 scripts/dashboard.py; exec bash" | tr -d '\r')
   wezterm.exe cli set-tab-title --pane-id "$int" INT
 fi
+int=${int:-$me}
+if [[ -z $me ]]; then
+  me=$(wezterm.exe cli split-pane --pane-id "$int" --bottom --percent 40 --cwd "$repo" -- bash -lc "$(crew_cmd int opus INT "$repo")" | tr -d '\r')
+  added+=(INT)
+fi
 
-added=()
 for g in "${groups[@]}"; do
   tab=${g%%=*} spec=${g#*=}
   $arrange || ! grep -qx "$tab" <<<"$tab_titles" || continue
@@ -139,6 +147,6 @@ while IFS=$'\t' read -r title agent path; do
   wezterm.exe cli set-tab-title --pane-id "$p" "$title"
   added+=("$title")
 done < <("$repo/scripts/worktrees.sh" dispatch)
-wezterm.exe cli activate-pane --pane-id "$int"
+wezterm.exe cli activate-pane --pane-id "$me"   # you type here
 if (( ${#added[@]} )); then echo "opened: ${added[*]}"; else echo "every team tab is already open"; fi
 echo "the tabs are in the avel workspace: in WezTerm press Ctrl+a then w, and pick avel (maximize the window: Win+Up)"

@@ -72,7 +72,8 @@ if command -v wezterm.exe >/dev/null && wezterm.exe cli list >/dev/null 2>&1; th
   tabs=$(avel_tabs 2>/dev/null)
   if [[ -z $tabs ]]; then warn "the avel workspace isn't open: Ctrl+a then v"
   else
-    grep -qx $'[0-9]*\tINT' <<<"$tabs" && ok "INT dashboard is open" || warn "no INT tab: Ctrl+a then v opens it"
+    grep -qx $'[0-9]*\tDASHBOARD' <<<"$tabs" && ok "INT dashboard is open" || warn "no dashboard in the INT tab: Ctrl+a then v opens it"
+    grep -qx $'[0-9]*\tINT' <<<"$tabs" && ok "INT session is open (under the dashboard)" || warn "no INT session: Ctrl+a then v opens it"
     used=$(awk -F'\t' '$2 ~ / a[0-9]+$/' <<<"$tabs" | grep -c . || true)
     (( used < 6 )) && ok "dispatch slots: $used/6 in use" || warn "dispatch slots: $used/6, all in use"
   fi
