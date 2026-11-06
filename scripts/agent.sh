@@ -79,6 +79,8 @@ prompt="/dispatch $team/$sprint/$task"
 # For a builder or test writer this is just its start commit.
 avel_base=$(git -C "$repo" merge-base main "$base")
 cmd="[ -s \"\$HOME/.nvm/nvm.sh\" ] && . \"\$HOME/.nvm/nvm.sh\"
+# cd here, not via --cwd: WezTerm drops --cwd for WSL tabs.
+cd $(printf %q "$wt") || exec bash
 export AVEL_FROM=$(printf %q "$title") AVEL_BASE=$avel_base
 if [ -f .claude/agents/$agent.md ]; then
   claude --agent $agent -n $(printf %q "$title") $(printf %q "$prompt")

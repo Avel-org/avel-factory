@@ -41,14 +41,16 @@ declare -A crew_cwd=()
 while IFS=$'\t' read -r a p; do crew_cwd[$a]=$p; done < <("$repo/scripts/worktrees.sh" crew)
 
 # A dispatch tab reopened after a restart: same agent and title, its last conversation.
-resume_cmd() { # <agent> <title>
-  printf '%sexport AVEL_FROM=%q AVEL_BASE=$(git merge-base main HEAD); claude --agent %s -n %q --continue; exec bash' \
-    "$nvm" "$2" "$1" "$2"
+# Every command cds into its own folder itself: WezTerm 20240203 drops --cwd
+# for WSL tabs and splits, which left every agent in /mnt/c/Users/<you>.
+resume_cmd() { # <agent> <title> <dir>
+  printf '%scd %q || exec bash; export AVEL_FROM=%q AVEL_BASE=$(git merge-base main HEAD); claude --agent %s -n %q --continue; exec bash' \
+    "$nvm" "$3" "$2" "$1" "$2"
 }
 
-crew_cmd() { # <agent> <model> <TITLE>
-  printf '%sexport AVEL_FROM=%s; if [ -f .claude/agents/%s.md ]; then claude --agent %s -n %s; else claude --model %s -n %s; fi; exec bash' \
-    "$nvm" "$3" "$1" "$1" "$3" "$2" "$3"
+crew_cmd() { # <agent> <model> <TITLE> <dir>
+  printf '%scd %q || exec bash; export AVEL_FROM=%s; if [ -f .claude/agents/%s.md ]; then claude --agent %s -n %s; else claude --model %s -n %s; fi; exec bash' \
+    "$nvm" "$4" "$3" "$1" "$1" "$3" "$2" "$3"
 }
 
 # Start one agent's session: in a new tab (no split args) or a split of a pane.
@@ -60,12 +62,12 @@ start() { # <agent:model> <tab|split pane-id dir percent>
   local move; move=$(existing "$title" || true)
   if [[ $2 == tab ]]; then
     if [[ -n $move ]]; then echo "$move"; return; fi   # already its own tab: reuse it
-    wezterm.exe cli spawn --pane-id "$int" --domain-name WSL:Ubuntu --cwd "${crew_cwd[$name]:-$repo}" -- bash -lc "$(crew_cmd "$name" "$model" "$title")" | tr -d '\r'
+    wezterm.exe cli spawn --pane-id "$int" --domain-name WSL:Ubuntu --cwd "${crew_cwd[$name]:-$repo}" -- bash -lc "$(crew_cmd "$name" "$model" "$title" "${crew_cwd[$name]:-$repo}")" | tr -d '\r'
   elif [[ -n $move ]]; then
     wezterm.exe cli split-pane --pane-id "$3" "--$4" --percent "$5" --move-pane-id "$move" >/dev/null
     echo "$move"
   else
-    wezterm.exe cli split-pane --pane-id "$3" "--$4" --percent "$5" --cwd "${crew_cwd[$name]:-$repo}" -- bash -lc "$(crew_cmd "$name" "$model" "$title")" | tr -d '\r'
+    wezterm.exe cli split-pane --pane-id "$3" "--$4" --percent "$5" --cwd "${crew_cwd[$name]:-$repo}" -- bash -lc "$(crew_cmd "$name" "$model" "$title" "${crew_cwd[$name]:-$repo}")" | tr -d '\r'
   fi
 }
 
@@ -133,7 +135,7 @@ done
 open_now=$(avel_tabs | cut -f2)
 while IFS=$'\t' read -r title agent path; do
   grep -qxF "$title" <<<"$open_now" && continue
-  p=$(wezterm.exe cli spawn --pane-id "$int" --cwd "$path" -- bash -lc "$(resume_cmd "$agent" "$title")" | tr -d '\r')
+  p=$(wezterm.exe cli spawn --pane-id "$int" --cwd "$path" -- bash -lc "$(resume_cmd "$agent" "$title" "$path")" | tr -d '\r')
   wezterm.exe cli set-tab-title --pane-id "$p" "$title"
   added+=("$title")
 done < <("$repo/scripts/worktrees.sh" dispatch)
