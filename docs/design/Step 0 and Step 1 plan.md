@@ -48,7 +48,7 @@ The plan for the first two build steps, written before any code as the project i
 8. **The schema matches the map:** a test reads the map's table, column, foreign-key, CHECK and index lists and compares them with the schema. Anything that differs has to be listed against the CR that changed it.
 9. **Each of the six functions has a test** for the rule it enforces. For example: an update to an immutable table is refused; a frozen plan's detail can't be inserted, updated or deleted; a freeze-once column can't change once set; `updated_at` and `row_version` move on every update; v7 ids sort by time.
 
-**Builders:** Atlas (workspace, CI, generated docs) and Soap (schema, contract). Rigg writes the done-when tests first. Review: Axis, and Brennan against DATABASE.md and the API and data reference.
+**Builders:** Atlas (workspace, CI, generated docs), Axis (`packages/contract`, its `api-contract` role) and Soap (`packages/db`). Rigg writes the done-when tests first. Review: Axis, and Brennan against the database map, the accepted change requests and `API routes.md` (CR-19's precedence).
 
 ## Step 1: the scaffold
 
