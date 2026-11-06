@@ -295,3 +295,22 @@ Step 1 starts with authentication and builds inwards. Nothing here is built yet;
 - **If reps come back:** add them as client contacts or a small `reps` table with no sign-in, never as users.
 - **Touches:** DATABASE.md (clients, missions, the ERD, the FK table), the contract (client and mission DTOs and inputs), the Step 0 and Step 1 plan (the Step 0 schema table), the API and data reference (generated from the contract, so it follows).
 
+## 10. CR-19: rebuild the schema from the database map (accepted Nov 5)
+
+- **What:** the schema Step 0 was meant to migrate (`packages/db`, migrations `0000_functions.sql`, `0001_schema.sql`, `0002_hand_written.sql`, and its 35 `db` tests) is lost. It isn't in avel-factory, avel-server, any local repo or any Avel-org GitHub branch. Its surviving record is `AVEL Database Map.html`, generated from those migrations on Nov 1 (91 tables, 204 foreign keys, 199 CHECKs, 81 unique and partial-unique indexes, 183 indexes, trigger names), and `Schema vs DATABASE.md.md`, which lists how it differs from DATABASE.md. Step 0 rebuilds `packages/db` from the map, then applies CR-1 to CR-13 and CR-18 on top of it:
+  1. **The map is the base.** Every table, column, default, foreign key, CHECK and index in it is rebuilt by name, including the 11 tables DATABASE.md lacks (`completion_reports`, `progress_notes`, `mission_scenarios`, `check_results`, `release_approvals`, `mission_refreshes`, `mission_pauses`, `proposal_findings`, `redactions`, `readiness_waivers`, `device_logins`) and without `outbox` (`jobs` replaces it).
+  2. **The changes requested after the map go on top:** CR-2, CR-5, CR-6, CR-7, CR-8, CR-9 and CR-13 (the "What Step 0 still has to add" table in `Schema vs DATABASE.md.md`), and CR-18 (the map predates it, so it still has the rep columns).
+  3. **The six functions are rewritten** from their names and the rules they enforce, since the map has no function bodies: `uuid_generate_v7`, `touch_updated_at`, `freeze_once_set`, `refuse_update`, `freeze_plan_detail`, `freeze_plan`.
+  4. **The 35 lost tests aren't recovered.** Rigg writes a new `db` suite with one test per rule (Step 0 done-when 2).
+  5. **DATABASE.md is brought up to the schema** in Step 0, so the ERD drift check means something. The repo's copy is the project snapshot from Nov 1. The lost repo's `docs/DATABASE.md` was current, but this one isn't.
+- **Precedence while Step 0 runs** (this replaces the slice's D3):
+  1. the database map, for what exists;
+  2. accepted change requests, applied on top of it;
+  3. `API routes.md`;
+  4. DATABASE.md, for the reasoning only (the spine, the integrity rules, the delete policy);
+  5. the Canon enums;
+  6. the reference's conventions.
+- **Why:** writing the schema fresh from DATABASE.md (the Nov 5 Step 0 change) would rebuild the older design. It would bring back `paused_from` as a stack and `outbox`, and lose the 11 tables, the composite cross-mission keys, `row_version` everywhere and the freeze triggers. The map is the only record of what was actually built.
+- **When:** Step 0, before the slice locks. Sprint-00's B1, B4 and B7 are answered from the map: `missions_state_ck`, the `completion_reports` table and `mission_pauses`.
+- **If the original turns up** (a Claude Code web session, an unpushed branch): its migrations replace items 1 and 3, and Step 0 goes back to a migration on top of them.
+- **Touches:** the Step 0 and Step 1 plan (Step 0); `docs/design/` (the map committed beside DATABASE.md); DATABASE.md (the 11 tables and the column changes, in Step 0); sprint-00's `contract.md` and `decisions.md` (B1, B4, B7 and D3); the project instructions (the "35 `db` tests" line). The module map's owners (section 4, CR-15) need the 11 new tables added and `outbox` removed.

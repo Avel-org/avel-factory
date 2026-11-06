@@ -8,15 +8,16 @@ The plan for the first two build steps, written before any code as the project i
 
 ## Step 0: the contract and the schema, from the docs
 
-**Nov 5 change:** avel-factory has no existing schema or contract to migrate. Step 0 writes both fresh in this repo from DATABASE.md and the API and data reference, with CR-1 to CR-18 already in. The table below is kept as a checklist of what the first schema must already say. It is no longer a migration.
+**Nov 5 change (CR-19):** the schema Step 0 was meant to migrate is lost, and no contract package exists. Step 0 rebuilds `packages/db` from `AVEL Database Map.html` (the record of the Nov 1 migrations), applies CR-1 to CR-13 and CR-18 on top of it, and writes `packages/contract` fresh. The table below lists the changes applied on top of the map.
 
 **What gets built:**
 1. **The workspace:** pnpm workspace, TypeScript, Biome, Vitest, `scripts/pg-local.sh`, CI with a Postgres service.
 2. **`packages/contract`:** every value list (`WorkKind`, `DispatchRole`, `Level`, `ProjectKind`, the client kinds, the integration commit kinds, the job states, and the rest) defined once; the DTOs and inputs; the oRPC route definitions; the error map; the event-kind → owning-module map (CR-15 item 8); the completion report schema with the CR-10 sections. No rep fields (CR-18).
-3. **`packages/db`:** the Drizzle schema for every table in DATABASE.md, with its CHECKs, partial-unique indexes, `num_nonnulls` rules and RESTRICT foreign keys written in the schema, and a first migration generated from it. Value lists are imported from the contract, never repeated. One owner per table, as CR-15 proposes. Includes `completion_reports`, `dispatches.parked_from` and the `agent_traces` `progress` kind (CR-15 items 6 and 7).
+3. **`packages/db`:** the Drizzle schema rebuilt from the database map: every table, column, default, foreign key, CHECK, index and trigger, by name, with the six functions rewritten (CR-19). The changes in the table below go on top. Value lists are imported from the contract and never repeated. One owner per table, as CR-15 proposes.
 4. **Generated docs:** the ERD and the OpenAPI document, and the drift check against DATABASE.md.
+5. **DATABASE.md updated to the schema:** the 11 tables it lacks, and the column changes in `Schema vs DATABASE.md.md`.
 
-**The first schema must already say** (from the change requests):
+**Applied on top of the map** (from the change requests):
 
 | Change | From |
 | --- | --- |
@@ -44,6 +45,8 @@ The plan for the first two build steps, written before any code as the project i
 5. The contract builds and the OpenAPI document generates; the review script passes.
 6. Every value list the schema checks is imported from the contract package, not repeated (a test looks for repeats).
 7. A new event kind with no owning module fails to compile.
+8. **The schema matches the map:** a test reads the map's table, column, foreign-key, CHECK and index lists and compares them with the schema. Anything that differs has to be listed against the CR that changed it.
+9. **Each of the six functions has a test** for the rule it enforces. For example: an update to an immutable table is refused; a frozen plan's detail can't be inserted, updated or deleted; a freeze-once column can't change once set; `updated_at` and `row_version` move on every update; v7 ids sort by time.
 
 **Builders:** Atlas (workspace, CI, generated docs) and Soap (schema, contract). Rigg writes the done-when tests first. Review: Axis, and Brennan against DATABASE.md and the API and data reference.
 
