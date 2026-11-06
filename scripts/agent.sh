@@ -103,5 +103,5 @@ exec bash"
 pane=$(wezterm.exe cli spawn --pane-id "$int_pane" --cwd "$wt" -- bash -lc "$cmd" | tr -d '\r')
 wezterm.exe cli set-tab-title --pane-id "$pane" "$title"
 python3 "$repo/scripts/events.py" emit attempt.started --actor "${AVEL_FROM:-operator}" --subject "attempt:$branch" \
-  "agent=${agent^^}" "team=$team" "sprint=$sprint" "task=$task" "attempt=$attempt" "base=$avel_base" "worktree=$wt" || true
+  "agent=${agent^^}" "team=$team" "sprint=$sprint" "task=$task" "attempt=$attempt" "start=$(git -C "$repo" rev-parse --short "$base")" "base=$avel_base" "worktree=$wt" || true
 echo "opened '$title' on $branch in $wt"
