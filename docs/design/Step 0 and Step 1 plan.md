@@ -6,11 +6,17 @@ The plan for the first two build steps, written before any code as the project i
 
 **Nov 5 update:** one operator, email and password for sign-in and step-up, passkeys later (Backend modules and build plan, section 8). CR-18 (accepted Nov 5, section 9) drops reps from the schema and contract in Step 0. Items 5 and 6 and tests 7 and 8 are updated to match.
 
-## Step 0: sync the repo with the change requests
+## Step 0: the contract and the schema, from the docs
 
-**What it does:** one migration and one contract release that apply CR-1 to CR-13, plus the doc updates, so Step 1 starts with code and docs agreeing.
+**Nov 5 change:** avel-factory has no existing schema or contract to migrate. Step 0 writes both fresh in this repo from DATABASE.md and the API and data reference, with CR-1 to CR-18 already in. The table below is kept as a checklist of what the first schema must already say. It is no longer a migration.
 
-**Schema (one migration, reversible):**
+**What gets built:**
+1. **The workspace:** pnpm workspace, TypeScript, Biome, Vitest, `scripts/pg-local.sh`, CI with a Postgres service.
+2. **`packages/contract`:** every value list (`WorkKind`, `DispatchRole`, `Level`, `ProjectKind`, the client kinds, the integration commit kinds, the job states, and the rest) defined once; the DTOs and inputs; the oRPC route definitions; the error map; the event-kind → owning-module map (CR-15 item 8); the completion report schema with the CR-10 sections. No rep fields (CR-18).
+3. **`packages/db`:** the Drizzle schema for every table in DATABASE.md, with its CHECKs, partial-unique indexes, `num_nonnulls` rules and RESTRICT foreign keys written in the schema, and a first migration generated from it. Value lists are imported from the contract, never repeated. One owner per table, as CR-15 proposes. Includes `completion_reports`, `dispatches.parked_from` and the `agent_traces` `progress` kind (CR-15 items 6 and 7).
+4. **Generated docs:** the ERD and the OpenAPI document, and the drift check against DATABASE.md.
+
+**The first schema must already say** (from the change requests):
 
 | Change | From |
 | --- | --- |
@@ -28,17 +34,18 @@ The plan for the first two build steps, written before any code as the project i
 | `templates.source_mission_id` → `missions` (optional) | CR-13 |
 | Drop `clients.rep_id`, `missions.rep_id` and `missions.rep_pct` (one operator; nobody else is a user) | CR-18 (accepted Nov 5) |
 
-**Contract package:** no rep fields on the client and mission DTOs and inputs (CR-18, accepted Nov 5); the matching enums (`WorkKind`, `DispatchRole`, `Level`, `ProjectKind`, the client kinds, the integration commit kinds, the job states); `kind` on the mission and client DTOs and on the create-mission input; the completion report schema gains pre-flight results, the contract-to-files map, deviations and limitations (CR-10).
-
 **Docs:** DATABASE.md, the design doc (Main: roster, build order with Step 0, Cost control model routing, Dispatch, Project templates, Measurement and receipts), the Canon doc (work kinds, dispatch roles, task doc, scenario levels, project kinds), the Sandbox doc (host, model key), the project instructions (Durable work wording, the Step 1 list). The ERD and OpenAPI document are regenerated.
 
 **Done when:**
-1. The migration applies to an empty database and to the current one, and reverses cleanly.
-2. The existing 35 `db` tests pass, updated only for the renames.
-3. New `db` tests: a second internal client is refused; a client mission on the internal client is refused, and an internal mission on a client is refused; changing a mission's kind after onboarding starts is refused.
+1. The first migration applies to an empty database and reverses cleanly.
+2. A `db` suite against real Postgres covers every CHECK, unique and partial-unique index, exactly-one-parent rule and delete refusal in DATABASE.md, one test per rule (the count is filled in when Rigg writes them).
+3. The CR-13 rules: a second internal client is refused; a client mission on the internal client is refused, and an internal mission on a client is refused; changing a mission's kind after onboarding starts is refused.
 4. The ERD drift check passes: the schema and DATABASE.md agree.
-5. The contract builds and the OpenAPI document regenerates; the review script passes.
-6. Every enum the schema checks is imported from the contract package, not repeated.
+5. The contract builds and the OpenAPI document generates; the review script passes.
+6. Every value list the schema checks is imported from the contract package, not repeated (a test looks for repeats).
+7. A new event kind with no owning module fails to compile.
+
+**Builders:** Atlas (workspace, CI, generated docs) and Soap (schema, contract). Rigg writes the done-when tests first. Review: Axis, and Brennan against DATABASE.md and the API and data reference.
 
 ## Step 1: the scaffold
 
