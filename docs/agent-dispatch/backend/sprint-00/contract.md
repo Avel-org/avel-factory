@@ -1,6 +1,6 @@
 # Backend sprint-00 (Step 0): the step contract
 
-Nov 6, 2026 · Axis · **status: for Brennan's re-review (a2); not locked.** B1 to B9, O1 and O2 are answered, and so are Brennan's seven a1 findings (`decisions.md`, "Brennan's slice review (a1)"). One point waits on INT's word (section 7).
+Nov 6, 2026 · Axis · **status: for Brennan's re-review (a2); not locked.** B1 to B9, O1 and O2 are answered, and so are Brennan's seven a1 findings (`decisions.md`, "Brennan's slice review (a1)"). Nothing is open (section 7).
 
 Step 0 rebuilds `packages/db` from `AVEL Database Map.html`, applies CR-1 to CR-13 and CR-18 on top, and writes `packages/contract` fresh (Step 0 and Step 1 plan, Step 0, "Nov 5 change (CR-19)"). This slice says what the contract contains and which tables the schema has. Each item cites its source. An item no source defines is marked **open**. Nothing here is invented.
 
@@ -400,7 +400,7 @@ DispatchPackageDto = {
 
 **Also on top:**
 - **CR-7 and CR-8, B3 and CR-16:** `integration_commits.kind` gains `ui_contract`, `api_contract` and `dispatch_docs`, and `integration_commits_by_kind_ck` gets a branch for each (INT, 2026-11-06; finding 01):
-  - **`ui_contract` and `api_contract`** take the `tests` shape, because CR-7 and CR-8 say the contracts are "locked like tests": `module_run_id` required, and, in INT's words, "the other two parents null". So the branch is `(module_run_id IS NOT NULL) AND (attempt_id IS NULL) AND (dependency_request_id IS NULL)`. The map's own `tests` branch doesn't require the other two to be null, so this is stricter than `tests`; see section 7.
+  - **`ui_contract` and `api_contract`** take the map's `tests` shape exactly, because CR-7 and CR-8 say the contracts are "locked like tests": the branch is `(module_run_id IS NOT NULL)`, and says nothing about `attempt_id` or `dependency_request_id` (INT, 2026-11-06, after 5e45543). So a contract commit can name the attempt that wrote it.
   - **`dispatch_docs`** takes the `operator` shape, all three parents null: `factory` asks the integrator to land the package when the plan is rendered, and no module run or attempt produces it (CR-16, "Writing it to the repo", line 84).
   - With a branch for every kind, the CHECK's `ELSE NULL` is never reached by a valid kind.
 - **B9, a new table:** `design_systems`, key `(slug, version)`, with `layer` (`global`, `client`), `client_id? → clients`, `path` (under `design/<slug>`), `factory_commit → factory_versions`, `status` (`active`, `retired`), `created_at`, `row_version` and `updated_at`, like `templates`. Its CHECK is `(layer = 'client') = (client_id IS NOT NULL)`.
@@ -422,7 +422,7 @@ DispatchPackageDto = {
 | `integration_commits` | `integration_commits_kind_ck` | the map's four plus `ui_contract`, `api_contract`, `dispatch_docs` | CR-7, CR-8 (B3); CR-16 |
 | `integration_commits` | `integration_commits_by_kind_ck` | three new branches, above | INT (finding 01); CR-16 |
 | `scenarios` | `scenarios_level_ck` | `Level` plus `load` | CR-9 |
-| `usage_log` | column | `vendor` | CR-5 |
+| `usage_log` | column | `vendor text NOT NULL`, no default | CR-5; as `attempts.vendor` and `price_table.vendor`, which CR-5 says already carry it, and `usage_log.model` |
 | `clients` | column | `kind text NOT NULL`, no default (D20) | CR-13 |
 | `clients` | `clients_kind_ck` | `kind` in `ClientKind` | CR-13 |
 | `clients` | `clients_one_internal_uq` | `UNIQUE (kind) WHERE (kind = 'internal')`: one internal client | CR-13 |
@@ -482,7 +482,7 @@ The exceptions (DATABASE.md, Ownership): `missions.branch_head` is written by `i
 
 B1 to B9 (2026-11-05 and 2026-11-06), O1 and O2 (2026-11-06), and Brennan's seven a1 findings are answered in `decisions.md`.
 
-**For INT, one point (it doesn't block m1):** `ui_contract` and `api_contract` follow INT's words, "module_run_id required, the other two parents null". The map's `tests` branch requires only `module_run_id`, and leaves `attempt_id` free. If "the tests shape" was meant literally, the branch is `(module_run_id IS NOT NULL)` alone, and a contract commit can name the attempt that wrote it. Section 6 has INT's words until INT says otherwise. It changes one CHECK in m2, not the contract.
+Nothing. The last point, the exact branch for `ui_contract` and `api_contract`, was answered by INT after 5e45543: the map's `tests` branch, literally (section 6).
 
 One choice the docs leave open is mine, and Brennan checks it: which `displayState` wins when more than one pause is open (section 4, item 6).
 

@@ -17,7 +17,7 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
   - **Left open by:** API routes.md, "Not here"; INT, 2026-11-05.
   - **How it's checked:** every field traces to a column or to its route's row. Anything else goes on an open list instead of into the DTO. The reference's 85 and 56 counts aren't a target, because nothing can be checked against them.
 - **D3. Source order: replaced on Nov 5 by CR-19** (Backend modules and build plan, section 10, "Precedence while Step 0 runs"; commit 300127b). When sources disagree, the first in this list wins:
-  1. **`AVEL Database Map.html`,** for what exists. It isn't in `docs/design/` yet, so until it lands, `Schema vs DATABASE.md.md` stands in (INT, 2026-11-05);
+  1. **`AVEL Database Map.html`,** for what exists. It isn't in `docs/design/` yet, so until it lands, `Schema vs DATABASE.md.md` stands in (INT, 2026-11-05). **Superseded on Nov 6** (finding 09): the map landed in e1ed7ae and replaces the stand-in (the Nov 6 entry below), so the map settles what exists;
   2. **accepted change requests,** applied on top of it: CR-1 to CR-13 (`Change requests CR-1 to 13.md`), CR-18 and CR-19;
   3. **`API routes.md`;**
   4. **DATABASE.md,** for the reasoning only (the spine, the integrity rules, the delete policy). It no longer settles names or columns;
@@ -168,7 +168,7 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
 - **Rechecked against it:**
   - **B1:** `missions_state_ck` has exactly INT's 13 states.
   - **B4:** `completion_reports` has key `attempt_id`, then `status` (`completion_reports_status_ck`: `done`, `partial`, `blocked`), `result_commit?` (optional), `body`, `submitted_at` and `created_at`. That's INT's list, plus `created_at`, with `result_commit` optional.
-  - **B7:** `mission_pauses` has `kind` (`operator`, `proposal`, `budget`), `interrupted_state` (a `MissionState`), `proposal_id?`, `paused_by?`, `reason?`, `started_at`, `ended_at?` and `ended_by?`, with four CHECKs.
+  - **B7:** `mission_pauses` has `kind` (`operator`, `proposal`, `budget`), `interrupted_state` (a `MissionState`), `proposal_id?`, `paused_by?`, `reason?`, `started_at`, `ended_at?` and `ended_by?`, with five CHECKs (`mission_pauses_kind_ck`, `_interrupted_state_ck`, `_proposal_ck`, `_operator_ck`, `_ended_ck`; "four" until finding 09).
   - **D7:** the map puts the `Package` list on `onboarding_sessions.package_provisional` and `package_final`, and has no list on `packages.key`. D7 stands, unchanged.
   - **D8:** `dispatches_parked_ck` is "`(state = 'parked') = (parked_from IS NOT NULL)` and `parked_from <> 'parked'`", which is D8, so D8 is now quoted from the map. `module_runs.parked_from` has its own list (`module_runs_parked_from_ck`).
   - **The table set:** the map's 91 are exactly my 83 earlier tables, minus `outbox`, plus the 9 tables DATABASE.md lacked. `completion_reports` and `device_logins` were already in my 83. With `design_systems` (B9), Step 0 has 92 tables.
@@ -221,7 +221,8 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
 
 **The findings and what changed:**
 - **F01 (P1), the parent shape of the contract commits.** INT: `ui_contract` and `api_contract` take the `tests` shape, "module_run_id required, the other two parents null", since CR-7 and CR-8 say the contracts are locked like tests. `dispatch_docs` keeps the `operator` shape (CR-16, line 84). In `contract.md` section 6.
-  - **For INT:** the map's `tests` branch requires only `module_run_id`. INT's parenthetical also nulls `attempt_id` and `dependency_request_id`, which is stricter. I've written INT's words (`contract.md` section 7). It changes one CHECK in m2, not the contract.
+  - **Settled after 5e45543** (INT, 2026-11-06): "the tests shape" is the map's literal rule, `module_run_id` required and nothing said about `attempt_id` or `dependency_request_id`. "The other two null" was INT's wording, not the map's. So the branch is `(module_run_id IS NOT NULL)`, and `contract.md` section 6 says so.
+  - **Applied after Brennan's a2 reviewed 5e45543,** as INT's direct answer (INT, 2026-11-06). a2 passed on the stricter wording, so the change wasn't in what a2 reviewed. Brennan's m1 review checks the `integration_commits_by_kind_ck` branches.
 - **F02 (P2), freezing `missions.kind`.** INT: a seventh function, `freeze_after_set`. Once `onboarding_started_at` is set, `missions.kind` can't change (CR-13's freeze trigger; CR-19's six are the map's, and CR-13 sits on top). It gets a done-when 9 test. In `contract.md` section 6: the function, its signature and the `missions_frozen` trigger. In `plan.toml`: Soap's m2 build and Rigg's m2 tests name seven functions.
 - **F03 (P2), unnamed objects.** `contract.md` section 6 now has a names table: every new or renamed object, its definition and its source. CR-6's two names are CR-6's (`jobs_expired_claims_ix`, `jobs_claim_ck`), and `jobs_one_live_key_uq`'s predicate changes `'leased'` to `'claimed'`. The other names follow the map's patterns (D19).
 - **F04 (P2), CR-13's contract items.** `contract.md` section 4: `kind` on `MissionDto`; `kind` required on route 20's input; an optional `?kind=` on route 19; and the metrics split (route 69) in Step 10, per CR-13's build order. The route rows stay as quoted.
@@ -254,4 +255,11 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
 
 ## Open: for INT
 
-- **F01's shape:** INT's words null `attempt_id` and `dependency_request_id`; the map's `tests` branch doesn't (above). Confirm, or say "the tests shape" literally. It doesn't block m1.
+Nothing. F01's shape was settled after 5e45543 (above).
+
+## 2026-11-06: Brennan's slice re-review (a2)
+
+- **PASS** (INT; commit 890f6f6), with two P3 findings, fixed before m2:
+  - **F08, `usage_log.vendor` had no definition.** It's now `vendor text NOT NULL`, no default, in `contract.md` section 6. That's derived from the map, not a choice: CR-5 says only "add it", and the map's `attempts.vendor` and `price_table.vendor` (which CR-5 says already carry it) and `usage_log.model` are all `text NOT NULL` with no default.
+  - **F09, two inaccurate lines here.** D3 item 1 is marked superseded (the map landed in e1ed7ae), and the B7 recheck says five CHECKs, not four.
+- **Not reviewed by a2:** the F01 branch change and these two fixes. Brennan's m1 review checks the `by_kind` branches.
