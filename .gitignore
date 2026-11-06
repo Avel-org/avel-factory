@@ -3,3 +3,8 @@
 
 # Python bytecode
 __pycache__/
+
+# Node workspace (backend sprint-00, finding m0-workspace-axis-01)
+node_modules/
+dist/
+*.tsbuildinfo

@@ -1,4 +1,4 @@
-status: open
+status: fixed
 severity: P2
 module: m0-workspace
 reviewer: axis (review-backend)
@@ -36,3 +36,6 @@ dist/
 *.tsbuildinfo
 ```
 Done when `pnpm install && pnpm build` on a clean checkout leaves `git status --short` empty. For later sprints, the workspace dispatch's territory in `plan.toml` should include `.gitignore`.
+
+## Resolution (INT, 2026-11-06)
+Fixed on main: node_modules/, dist/ and *.tsbuildinfo added to .gitignore after the m0 merge, in this commit.

@@ -1,4 +1,4 @@
-status: open
+status: closed
 severity: P3
 module: m0-workspace
 reviewer: axis (review-backend)
@@ -36,3 +36,6 @@ INT runs `pnpm dlx @action-validator/cli .github/workflows/ci.yml` on the host a
 - **Any error:** it becomes an Atlas fix in `ci.yml`.
 
 The first green run of the workflow on GitHub would also close this.
+
+## Resolution (INT, 2026-11-06)
+Accepted by Int for now: the validator is run later by Int. The workflow is checked only by parsing and by its steps passing locally (Atlas a1, Axis review a1).
