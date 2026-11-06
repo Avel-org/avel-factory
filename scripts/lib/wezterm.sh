@@ -14,7 +14,7 @@ from collections import Counter
 panes = [p for p in json.load(sys.stdin) if p["workspace"] == "avel"]
 per_tab = Counter(p["tab_id"] for p in panes)
 for p in panes:
-    if p["tab_title"] == "INT":   # the dashboard over the operator's session
+    if p["tab_title"] == "INT":   # the dashboard over the operator session
         name = "DASHBOARD" if p["title"].strip() == "DASHBOARD" else "INT"
     elif per_tab[p["tab_id"]] == 1 and p["tab_title"]:
         name = p["tab_title"]
