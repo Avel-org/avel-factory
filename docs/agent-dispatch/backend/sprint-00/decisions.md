@@ -190,7 +190,16 @@ Lead: Axis. Step 0: `packages/contract` and `packages/db`, written fresh in avel
 - **Rigg's m2 tests** now cover 1, 2, 3, 6, 8 and 9.
 - **Item 3** no longer has the `agent_traces` `progress` kind. The map has a `progress_notes` table instead (CR-15 item 7: "unless the repo already does something else"), so no new `agent_traces` kind.
 
+## 2026-11-06: O1 and O2 answered
+
+- **Committed:** INT committed sprint-00 as 84bc62d, and the edits below come after it.
+- **O1, events:** `mission.closed` (owner `factory`) is the 12th kind (INT, 2026-11-06; Design v0.6 Main, line 534). Step 0 ships 12 kinds, and `cli.ran` waits for CR-17.
+- **O2, `displayState`:** an open `operator` pause shows `paused`, and an open `proposal` or `budget` pause shows `blocked_on_you` (INT, 2026-11-06). Otherwise `displayState` is `state`.
+- **D16. When pauses of different kinds are open at once, `blocked_on_you` wins over `paused`.**
+  - **Left open by:** O2 maps each kind, but the map allows several open pauses at the same time: at most one `operator` and one `budget` per mission, plus one per proposal (`mission_pauses_open_operator_uq`, `mission_pauses_open_budget_uq`, `mission_pauses_open_proposal_uq`). Nothing says which one shows.
+  - **Why:** `blocked_on_you` means work waits on a decision of yours. Showing `paused` would hide that.
+  - **For Brennan:** check this.
+
 ## Open: for INT
 
-1. **B5, the count:** 11 kinds (the 12 named, without `cli.ran`). Confirm.
-2. **B5, a 13th kind?** `Design v0.6 Main.md`, line 534, says "What v1 already provides for them: the `mission.closed` event". It isn't in INT's list. Add it (owner `factory`), or leave it for the step that closes missions?
+Nothing.

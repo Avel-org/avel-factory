@@ -1,6 +1,6 @@
 # Backend sprint-00 (Step 0): the step contract
 
-Nov 6, 2026 · Axis · **status: for Brennan's review-spec; not locked.** B1 to B9 are answered (`decisions.md`). Two small items are open (section 7).
+Nov 6, 2026 · Axis · **status: for Brennan's review-spec; not locked.** B1 to B9, O1 and O2 are answered (`decisions.md`). Nothing is open.
 
 Step 0 rebuilds `packages/db` from `AVEL Database Map.html`, applies CR-1 to CR-13 and CR-18 on top, and writes `packages/contract` fresh (Step 0 and Step 1 plan, Step 0, "Nov 5 change (CR-19)"). This slice says what the contract contains and which tables the schema has. Each item cites its source. An item no source defines is marked **open**. Nothing here is invented.
 
@@ -29,7 +29,7 @@ This slice uses only what `docs/design/` quotes from them.
 | E2 | The DTOs and inputs (section 4) | Step 0 item 2 | Drafted from the map's columns by the rule in section 4 (D2). `DispatchPackageDto` is quoted from CR-16 |
 | E3 | The oRPC route definitions: 102 routes (section 2) | API routes.md: the 99, plus CR-16's 3 | Quoted |
 | E4 | The error map (section 5) | Step 1 items 2.9, 3 and 4; D5; CR-16 | Decided |
-| E5 | The event-kind → owning-module map, exhaustive (section 5) | CR-15 item 8; done-when 7 | Decided. The count still needs INT's confirmation (section 7) |
+| E5 | The event-kind → owning-module map, exhaustive: 12 kinds (section 5) | CR-15 item 8; done-when 7; O1 | Decided |
 | E6 | The completion report schema: `completion_reports.body` holds the CR-10 sections | Step 0 item 2; CR-10 item 7; the map (B4) | Decided |
 | E7 | No rep fields anywhere | CR-18 item 1 | Quoted |
 
@@ -292,7 +292,7 @@ DispatchPackageDto = {
 4. **No rep fields** (CR-18).
 5. **Values:** money is integer `*Micros`, times are ISO strings with a zone, and IDs are UUIDv7 strings.
 6. **Computed fields** are included where a doc names them:
-   - `displayState`: `state`, or a hold when a `mission_pauses` row is open (Q8; B7). How each pause kind maps to `paused` or `blocked_on_you` is **open** (section 7).
+   - `displayState`: `state` when no `mission_pauses` row is open (Q8; B7). An open `operator` pause shows `paused`, and an open `proposal` or `budget` pause shows `blocked_on_you` (O2, INT 2026-11-06). The map allows several open pauses at once: one `operator`, one `budget` and one per proposal (`mission_pauses_open_operator_uq`, `mission_pauses_open_budget_uq`, `mission_pauses_open_proposal_uq`). No doc says which wins. I'd let `blocked_on_you` win, since it's the one that needs you; Brennan to check.
    - Route 21's gate strip and onboarding progress, and route 52's pending-decision union, are named but have no field list: CR-W2 and CR-W5 aren't accepted. They get typed placeholders, and Step 1's routes 52 to 54 decide them.
 7. **Lists share one `Page<T>` wrapper,** from the ported pagination shape (Step 1, Ported).
 8. **One file per route group** under `packages/contract/src/dto/`.
@@ -344,8 +344,9 @@ DispatchPackageDto = {
 | `usage.recorded` | `metering` | CR-15 item 8 |
 | `task_doc.rendered` | `factory` | CR-16 (accepted) |
 | `message.stopped` | `onboarding` | CR-W14; INT, 2026-11-06 |
+| `mission.closed` | `factory` | Design v0.6 Main, line 534; O1 (INT, 2026-11-06) |
 
-- **Count:** 11 kinds. `cli.ran` comes in with CR-17. `mission.closed` is named in Design v0.6 Main, line 534, and is **open** (section 7). Each later step adds its own kinds.
+- **Count:** 12 kinds (O1). `cli.ran` comes in with CR-17. Each later step adds its own kinds.
 
 ## 6. Tables (`packages/db`; Step 0 items 3 and 5)
 
@@ -401,12 +402,9 @@ The exceptions (DATABASE.md, Ownership): `missions.branch_head` is written by `i
 
 ## 7. Open
 
-| # | What | Evidence | What it blocks |
-| --- | --- | --- | --- |
-| O1 | **The event count, and `mission.closed`.** 11 kinds (the 12 named, without `cli.ran`), and whether `mission.closed` (owner `factory`) is a 12th | INT, 2026-11-06, said "the 12 named kinds"; Design v0.6 Main, line 534 | E5, the event map. It's additive, so it doesn't block m2 |
-| O2 | **`displayState` for each pause kind.** Q8 gives `paused` or `blocked_on_you`, and the map's `mission_pauses.kind` is `operator`, `proposal` or `budget`. I'd make `operator` → `paused`, and `proposal` and `budget` → `blocked_on_you`, but no doc says so | API and data reference, Q8; `mission_pauses_kind_ck` | `MissionDto.displayState` |
+Nothing. B1 to B9 (2026-11-05 and 2026-11-06), O1 and O2 (2026-11-06) are answered in `decisions.md`.
 
-**Answered:** B1 to B9 and the D-items, in `decisions.md` (2026-11-05 and 2026-11-06).
+One choice the docs leave open is mine, and Brennan checks it: which `displayState` wins when more than one pause is open (section 4, item 6).
 
 ## 8. Not in this step
 
