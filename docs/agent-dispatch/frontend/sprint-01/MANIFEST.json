@@ -1,0 +1,147 @@
+{
+  "renderer": "scripts/render.py (minimal, CR-16)",
+  "team": "frontend",
+  "sprint": "sprint-01",
+  "planSha256": "5b029ed94f3c7490a8007cc65b6b51ffa5c12feea58f002d3d521d7233f36608",
+  "packageSha256": "546d6337593c071c9f2305cf59a39aa149727c3828bff28291135dc4e25f26d6",
+  "files": [
+    {
+      "path": "DISPATCH-PROMPTS.md",
+      "kind": "prompts_archive",
+      "sha256": "597d16a1901c1df77f0b18faf45529b1e39531cf1a944f045db9598995240f04",
+      "bytes": 28198
+    },
+    {
+      "path": "DISPATCH.md",
+      "kind": "dispatch_md",
+      "sha256": "c4e372230e06023c14b77769adada4f89f500c7dec361bbd8202ad6969e7e90e",
+      "bytes": 9811
+    },
+    {
+      "path": "agent-brennan-approvals-uic-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "c0d2327233646e1fa1c7961c22de3613df61a3dab33a57b96602bc882ab20ed6",
+      "bytes": 13612
+    },
+    {
+      "path": "agent-brennan-decisions-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "d3addad774a18be9b519803d580aaef931e480bbee873e0303b2a36a25dbf763",
+      "bytes": 11104
+    },
+    {
+      "path": "agent-brennan-w0-app-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "5360bc032dcb0c75895d355dd04a8b8ad00783a136e410abc4950a73fcf7ac69",
+      "bytes": 11428
+    },
+    {
+      "path": "agent-brennan-w0-data-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "0bf792cba2392614e44a2c55aec65d2980bbdcb4e0fc62eb383046a17e0ecd1d",
+      "bytes": 11176
+    },
+    {
+      "path": "agent-brennan-w0-kit-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "cf334729f594fda432583087ee08589ccf2734c0a0902aa94bbdb3fe1ec4ef34",
+      "bytes": 10855
+    },
+    {
+      "path": "agent-fantem-w0-kit-build.md",
+      "kind": "task_doc",
+      "sha256": "0fedf16e779853fa63af820d53d1f7dc77273f436c4e3af0d13c38b8696bf3ca",
+      "bytes": 12103
+    },
+    {
+      "path": "agent-fenn-decisions-test-e2e.md",
+      "kind": "task_doc",
+      "sha256": "8c2014a75ff06f1dbcd06deadd528e332a70f962037a76372db2e0ac7fb6ec14",
+      "bytes": 10935
+    },
+    {
+      "path": "agent-fenn-decisions-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "7798f0de02a2f7200dbafae8a6294a684337cb7be16d16b84275bef265e00d4b",
+      "bytes": 11237
+    },
+    {
+      "path": "agent-fenn-w0-data-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "3a692e4742326202278e83cc335977958e1faddf8eb8fa99e8d34b26eefee9c3",
+      "bytes": 12026
+    },
+    {
+      "path": "agent-fenn-w0-kit-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "a39cb8c12c826c7e081654c53ee77db7f09040ae69009c70cb396c9cc056d714",
+      "bytes": 11019
+    },
+    {
+      "path": "agent-ghost-w0-data-build.md",
+      "kind": "task_doc",
+      "sha256": "211d556336043dd5f26969f2726ecd1e53560fac2bd9c200b36b09a70cdbd6a2",
+      "bytes": 13247
+    },
+    {
+      "path": "agent-leah-decisions-review-a11y-perf.md",
+      "kind": "task_doc",
+      "sha256": "f85b095936eae13f98132c54573b0ccfb0694c4820612cd67316c6310abb4f54",
+      "bytes": 11208
+    },
+    {
+      "path": "agent-leon-decisions-build.md",
+      "kind": "task_doc",
+      "sha256": "2d98c368b5e2c973d40c9404c234251acaaa009be0955d0db49ca716b8277c65",
+      "bytes": 12353
+    },
+    {
+      "path": "agent-nemi-w0-app-build.md",
+      "kind": "task_doc",
+      "sha256": "18c0dfab65b317ed8fc3a61bca2d83393d24cb936613d159541d89688c67a8f7",
+      "bytes": 14641
+    },
+    {
+      "path": "agent-zane-w0-app-review-security.md",
+      "kind": "task_doc",
+      "sha256": "63da550557c4638370b06383444a86b13459d1ca98a216b799018de4d59d8698",
+      "bytes": 11073
+    },
+    {
+      "path": "agent-zane-w0-data-review-security.md",
+      "kind": "task_doc",
+      "sha256": "929c1d1427cd8f90200455b9eb64babbe05d3e7f759daa8ff6a09f2cda819a0d",
+      "bytes": 11103
+    },
+    {
+      "path": "agent-zero-decisions-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "195d1db8ccc8698f89692e45a07d5bfffc1838460e3e2910e3eae6b96d95514f",
+      "bytes": 11225
+    },
+    {
+      "path": "agent-zero-w0-app-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "b1c09708b7ecfb0902fcbc9ec95d4b0c53b6b4a8e819758ed007b4d45641ecd0",
+      "bytes": 11705
+    },
+    {
+      "path": "agent-zero-w0-data-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "f3b806fe11e7d2b131a6185c3afb694584e613f9c5bd51be55c77ddd4dae8ac9",
+      "bytes": 11129
+    },
+    {
+      "path": "agent-zero-w0-kit-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "af645fedc9d09d2745b8a34dd986ac5b35f8a78e054b5277a04619e1ef65498e",
+      "bytes": 11139
+    },
+    {
+      "path": "codebase-analysis.md",
+      "kind": "codebase_analysis",
+      "sha256": "4fb7fedbdd31a16474d46fc61e5f700a4d7023f57fbc3fd0be45a5b957e025b8",
+      "bytes": 2808
+    }
+  ]
+}
