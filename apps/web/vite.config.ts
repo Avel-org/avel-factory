@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
 // The @avel/contract version this web is built with (UI contract section 3, escalation 02).
@@ -106,5 +107,7 @@ export default defineConfig({
     ...(process.env.AVEL_API === "mock" ? [contractMock()] : []),
     tailwindcss(),
     tanstackStart(),
+    // After tanstackStart(), as TanStack Start documents: the React Refresh runtime dev needs to hydrate.
+    react(),
   ],
 });
