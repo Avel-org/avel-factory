@@ -296,3 +296,17 @@ INT's call: Rigg's m1 tests are locked and run against the contract before m1 me
 ## 2026-11-06: CR-W2 accepted
 
 - **D37. CR-W2 is accepted** as `docs/design/CR-W2 Pending decisions.md`, written fresh by Axis from Zero's needs (`docs/agent-dispatch/frontend/sprint-01/cr-w2-needs.md`); the Nov 3 write-up is lost. INT's calls: `clientName` (nullable, via `missions.client_id`), not `missionName`; `costImpact` optional and never sent in Step 1; `ProposalOptions` fixed; a proposal whose options don't parse is listed as not decidable; no single factory-PR read in Step 1 (route 103 later). Its `packages/contract` changes (the route 52 union, `ProposalViewDto`, `DecisionChoice`, `ProposalOptions`, D30's change for routes 52 and 72) go into the Step 1 slice; m1 stays as reviewed. The Step 1 slice also lists `missions` and `clients` as read for route 52 (Plan line 89).
+
+## 2026-11-06: m2 db build: Soap's choices S1 to S8, and the done-when 6 (c) defect
+
+Soap's m2 report (0eb89e5, `agent-soap-m2-db-build-completion.md`) is PARTIAL: 591 of 592 locked db tests pass. INT accepts S1 to S8; Axis's and Brennan's m2 reviews check them.
+
+- **D38 (S1). Trigger refusals are `check_violation` with `CONSTRAINT` set to the trigger's name** (e.g. `missions_frozen`), so Step 1's mapper reports them as `CONSTRAINT_VIOLATION` 422 with `details.constraint`, like a CHECK.
+- **D39 (S2). `freeze_plan`:** a draft changes freely; once a plan isn't a draft, every column but `state`, `row_version` and `updated_at` is frozen, and `state` may move only from `approved` to `superseded`. This is D36's six columns and the rest of the plan's content.
+- **D40 (S3). `freeze_plan_detail`** freezes once the plan isn't `draft` (so `superseded` too); an update is checked against both the old and the new `plan_id`.
+- **D41 (S4). `freeze_once_set`:** a set column can't change, a null one can be set, a no-op update of a set column is allowed, and an argument naming a missing column raises.
+- **D42 (S5). `touch_updated_at`** sets `updated_at = now()` (transaction time) and adds 1 to `row_version`.
+- **D43 (S6). `uuid_generate_v7`** is built on `gen_random_uuid()` (core Postgres 13+, no extension): 48 bits of ms time, version 7, RFC variant.
+- **D44 (S7). Composite primary keys are named `<table>_pkey`;** the map doesn't record PK names, and done-when 8 compares columns only.
+- **D45 (S8). The migration creates no `agent_traces` partitions;** "partitioned by week" is runtime work (Step 5's weekly partition job).
+- **D46. Done-when 6 test (c) is a locked-test defect (Soap's D-1), fixed by Rigg under `AVEL_LOCK_OVERRIDE`.** Its `listOf` reads the first `ARRAY[...]` of every CHECK, so it flags 15 rule CHECKs (e.g. `jobs_finished_ck`) that hold a subset of a list and that done-when 8 requires word for word; no schema passes both. Soap showed it against the locked helpers' own expected schema. The fix narrows (c) to the value-list CHECKs (the columns in the contract's `checkedColumns`); the lock moves to the fix's commit. The lockfile for `packages/db` lands with the m2 merge (INT).
