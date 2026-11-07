@@ -1,4 +1,4 @@
-status: open
+status: resolved (a2, 1f6c6a8, checked by Zane)
 severity: P3
 title: Forwarded X-Request-Id is taken from the incoming request without a check
 
