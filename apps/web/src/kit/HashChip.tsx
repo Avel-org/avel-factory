@@ -1,0 +1,104 @@
+import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
+import { Icon } from "./Icon";
+
+// DL's HashChip (`dt`). `verified`, `href` and `title` aren't ported (UI contract section 4), so
+// the chip's title is always the full value. DL's copy button is kept: `aria-label` "Copy {value}".
+
+export interface HashChipProps {
+  value: string | number | null | undefined;
+  kind?: "sha" | "hash" | "id";
+  length?: number;
+  prefix?: string;
+  strike?: boolean;
+  /** Defaults to true for every kind but "id", as DL's does. */
+  copy?: boolean;
+}
+
+const COPIED_MS = 1200;
+
+export function HashChip({ value, kind = "sha", length = 7, prefix, strike, copy }: HashChipProps) {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+  const withCopy = copy ?? kind !== "id";
+  const chip: CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 4,
+    height: "var(--av-chip-h)",
+    boxSizing: "border-box",
+    padding: withCopy ? "0 3px 0 7px" : "0 7px",
+    borderRadius: "var(--av-radius-stamp)",
+    background: "var(--av-inset)",
+    color: "var(--av-ink)",
+    fontFamily: "var(--av-font-mono)",
+    fontSize: "var(--av-fs-mono)",
+    lineHeight: 1,
+    whiteSpace: "nowrap",
+    verticalAlign: "middle",
+    flex: "none",
+  };
+  if (value == null) {
+    return (
+      <span data-ui="HashChip" style={chip}>
+        {"—"}
+      </span>
+    );
+  }
+  const full = String(value);
+  const shown = kind === "id" ? full : full.slice(0, length);
+  const onCopy = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    // As DL's: the copy is best effort, and the button confirms the tap either way. A browser
+    // without the Clipboard API (or one that refuses it) leaves the full value in the title.
+    navigator.clipboard?.writeText(full).catch(() => undefined);
+    setCopied(true);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setCopied(false), COPIED_MS);
+  };
+  return (
+    <span data-ui="HashChip" data-kind={kind} title={full} style={chip}>
+      {prefix ? (
+        <span
+          style={{ color: "var(--av-muted)", fontFamily: "var(--av-font-sans)", fontWeight: 500 }}
+        >
+          {prefix}
+        </span>
+      ) : null}
+      <span style={{ textDecoration: strike ? "line-through" : undefined }}>{shown}</span>
+      {withCopy ? (
+        <button
+          type="button"
+          onClick={onCopy}
+          aria-label={`Copy ${full}`}
+          title={copied ? "Copied" : "Copy"}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 4,
+            height: 24,
+            minWidth: 24,
+            margin: "-1px -3px -1px 0",
+            padding: copied ? "0 6px" : 0,
+            border: "none",
+            borderRadius: 4,
+            background: "transparent",
+            color: "var(--av-muted)",
+            cursor: "pointer",
+            fontFamily: "var(--av-font-sans)",
+            fontSize: 12,
+          }}
+        >
+          {copied ? "Copied" : <Icon name="copy" size={12} />}
+        </button>
+      ) : null}
+    </span>
+  );
+}
