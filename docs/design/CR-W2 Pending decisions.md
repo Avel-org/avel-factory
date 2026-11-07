@@ -133,6 +133,8 @@ Idempotency-Key: <one per tap; reused only to retry that same request>
 { proposalId: UUID, version: int ≥ 1, choice: string ≥ 1, reason: Reason }
 ```
 
+- **`proposalId` comes only from the path** (S1-5, Nov 6). The input schema is `{ proposalId, version, choice, reason }`. Under oRPC's `compact` input, the OpenAPI document leaves `proposalId` out of the body, `OpenAPILink` doesn't send it, and the handler merges `{ ...body, ...params }`. A `proposalId` in a hand-written body is overwritten by the path and never refused. The "body doesn't match the path" check this section first had is dropped.
+
 - **The input is m1's `DecideProposalInput`, unchanged.** `version` is `proposals.version` (Q4, D25), and `reason` is required for both choices (Routes line 16; m1 `Reason`, trimmed, at least 1 character).
 - **No step-up.** Approvals never ask for a password (Main 444).
 - **Output:** `ProposalViewDto` (section 4), in its resolved state.
@@ -146,7 +148,7 @@ Idempotency-Key: <one per tap; reused only to retry that same request>
 
 | # | Check | Error |
 | --- | --- | --- |
-| 1 | The body fails its schema, or the `proposalId` in the body doesn't match the one in the path | `BAD_REQUEST` 400, with `details` naming the field |
+| 1 | The input fails its schema (the path's `proposalId`, and the body's `version`, `choice` and `reason`) | `BAD_REQUEST` 400, with `details` naming the field (S1-3) |
 | 2 | No such proposal | `NOT_FOUND` 404 |
 | 3 | `state` isn't `open`, or `expires_at ≤ now()` (counted as expired even before the expiry job runs) | `INVALID_TRANSITION` 422, `details: { state: 'resolved' \| 'expired', allowed: [] }` (Needs §4 Q4) |
 | 4 | `version` ≠ `proposals.version` | `STALE_VERSION` 409, `details: { field: 'version', currentVersion }` (D21) |
