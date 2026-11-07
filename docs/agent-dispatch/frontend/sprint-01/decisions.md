@@ -324,3 +324,9 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **Escalation 01: resolved by INT.** `pnpm-workspace.yaml` lists `apps/*` and `vitest.workspace.ts` collects `apps` (main, operator commit). INT regenerates and commits `pnpm-lock.yaml` on main after merging any dispatch that changes a `package.json`; no dispatch commits the lockfile. The plan's notes for Nemi and Ghost stand.
 - **The four unplaced files: confirmed as proposed.** `routes/__root.tsx` and `apps/web/.gitignore` to Nemi, `router.tsx` to Ghost, `vitest.config.ts`, `playwright.config.ts` and `test/setup/**` to Fenn.
 - **The scope cut: accepted.** No `/decisions/$ref` in sprint-01; it follows once backend Step 1's contract has route 53's `ProposalViewDto` (CR-W2).
+
+## 2026-11-07: INT's answers on Nemi's w0-app report (23ef100)
+
+- **Five dependencies outside section 6 are accepted:** `vite` 8.3.6 (TanStack Start's peer, and the build tool), `@types/react` and `@types/react-dom` 19.3.0, `@testing-library/dom` 10.4.2, `@tanstack/react-router-ssr-query` 1.167.3; and the `dev` script. Zane's w0-app security review checks them.
+- **Root `biome.json` sets `css.parser.tailwindDirectives: true`** (INT, on main), so `@theme` lints.
+- **Merge order:** after its three reviews pass, w0-app merges even though `@avel/web`'s build and typecheck are red until Ghost's `src/router.tsx` and `packages/contract-mock` land (like locked tests failing first). Everything else on main stays green. After Ghost merges, `@avel/contract-mock` switches from `link:` to `workspace:*`, and INT regenerates the lockfile at each merge.
