@@ -180,7 +180,13 @@ Who needs to know what.
 Each Part 7 command and its output.
 ```
 
-**Then stop.** Say in the session that the report is committed, with the commit sha. The operator takes it from there.
+**Then tell INT, and stop.** Send the operator one message, so the next dispatch can start:
+
+```bash
+scripts/tell.sh INT "SOAP m2-db build a<N>: <verdict>, report at <sha> on <branch>. Needs INT: <merges, locks, decisions, or none>"
+```
+
+Say the same in the session. The operator takes it from there.
 
 ## Activation
 
@@ -201,7 +207,7 @@ You may change only: packages/db/**, docs/agent-dispatch/backend/sprint-00/agent
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-soap-m2-db-build-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-soap-m2-db-build-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```

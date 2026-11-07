@@ -20,7 +20,7 @@ You may change only: package.json, pnpm-workspace.yaml, pnpm-lock.yaml, .npmrc, 
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-atlas-m0-workspace-build-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-atlas-m0-workspace-build-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -41,7 +41,7 @@ You may change only: docs/agent-dispatch/backend/sprint-00/agent-axis-m0-workspa
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-axis-m0-workspace-review-backend-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-axis-m0-workspace-review-backend-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -64,7 +64,7 @@ You may change only: docs/agent-dispatch/backend/sprint-00/agent-brennan-slice-r
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-brennan-slice-review-spec-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-brennan-slice-review-spec-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -87,7 +87,7 @@ You may change only: packages/contract/src/**, packages/contract/package.json, p
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-axis-m1-contract-api-contract-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-axis-m1-contract-api-contract-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -108,7 +108,7 @@ You may change only: packages/contract/test/**, docs/agent-dispatch/backend/spri
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-rigg-m1-contract-test-unit-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-rigg-m1-contract-test-unit-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -129,7 +129,7 @@ You may change only: docs/agent-dispatch/backend/sprint-00/agent-brennan-m1-cont
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-brennan-m1-contract-review-spec-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-brennan-m1-contract-review-spec-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -150,7 +150,7 @@ You may change only: packages/db/test/**, docs/agent-dispatch/backend/sprint-00/
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-rigg-m2-db-test-unit-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-rigg-m2-db-test-unit-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -172,7 +172,7 @@ You may change only: packages/db/**, docs/agent-dispatch/backend/sprint-00/agent
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-soap-m2-db-build-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-soap-m2-db-build-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -193,7 +193,7 @@ You may change only: docs/agent-dispatch/backend/sprint-00/agent-axis-m2-db-revi
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-axis-m2-db-review-backend-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-axis-m2-db-review-backend-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -214,7 +214,7 @@ You may change only: docs/agent-dispatch/backend/sprint-00/agent-brennan-m2-db-r
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-brennan-m2-db-review-spec-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-brennan-m2-db-review-spec-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -235,7 +235,7 @@ You may change only: tools/docs/test/**, docs/agent-dispatch/backend/sprint-00/a
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-rigg-m3-docs-test-unit-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-rigg-m3-docs-test-unit-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -257,7 +257,7 @@ You may change only: tools/docs/**, docs/generated/**, .github/workflows/docs.ym
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-atlas-m3-docs-build-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-atlas-m3-docs-build-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -278,7 +278,7 @@ You may change only: docs/agent-dispatch/backend/sprint-00/agent-axis-m3-docs-re
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
-write docs/agent-dispatch/backend/sprint-00/agent-axis-m3-docs-review-backend-completion.md, commit it, and stop.
+write docs/agent-dispatch/backend/sprint-00/agent-axis-m3-docs-review-backend-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```

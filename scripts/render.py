@@ -540,7 +540,9 @@ def render_task_doc(plan, d):
               code(verification_cmds(plan, d) + [f"git diff --name-only main...HEAD   # only paths from Part 5"]), "",
               f"**Report.** Write `{report_path(plan, d)}` on your branch and commit it last. Use this outline and leave no section out (write \"none\" where it applies):", "",
               completion_outline(plan, d, ids), "",
-              "**Then stop.** Say in the session that the report is committed, with the commit sha. The operator takes it from there.", ""]
+              "**Then tell INT, and stop.** Send the operator one message, so the next dispatch can start:", "",
+              code([f'scripts/tell.sh INT "{d.agent.upper()} {d.module} {d.role} a<N>: <verdict>, report at <sha> on <branch>. Needs INT: <merges, locks, decisions, or none>"']), "",
+              "Say the same in the session. The operator takes it from there.", ""]
     # Activation, last (CR-16)
     lines += ["## Activation", "",
               "This is your first message. `/dispatch` and `scripts/dispatch.sh` send it; the factory's runner will too.", "",
@@ -586,7 +588,7 @@ def activation(plan, d, ids):
             "Everything else is read-only. Locked tests (locks.md) are never changed.",
             "",
             "Work by Part 6 of the task doc. Finish with Part 7: run every verification command,",
-            f"write {report_path(plan, d)}, commit it, and stop.",
+            f"write {report_path(plan, d)}, commit it, tell INT with scripts/tell.sh INT \"...\" (Part 7), and stop.",
             "Never push, rebase or force anything. If the task doc is missing something you need,",
             "don't guess: say so in your report."]
     return "\n".join(out)
