@@ -323,6 +323,26 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **Why the whole block, not just background and ink:** it's one block in DL. Cutting it at background and ink would invent a boundary DL doesn't draw. Every value in it is a `--av-*` token or DL's own literal (section 0's value rule).
 - **The token check is unaffected:** the block declares no custom properties, so the check still counts 533 pairs.
 
+## 2026-11-07: Fonts: Mono preload to Nemi now, the size-matched fallback to Leah's measurement (Brennan's w0-app note)
+
+- **Input:** INT, from Brennan's w0-app review-spec. FM line 289 asks for fonts "preloaded, with a size-matched fallback", and UI contract section 6 named neither.
+- **What's merged** (w0-app):
+  - `__root.tsx` preloads Inter Variable only;
+  - `fonts.css` has DL's three `@font-face` rules (`font-display: swap`), and no fallback metrics.
+- **The Mono preload goes to Nemi now:**
+  - `/` paints IBM Plex Mono 500 on first load: DL's `HashChip` (`fontWeight: 500`, `var(--av-font-mono)`) draws the factory PR's commit chip, and `fixtures.step1` has a factory PR.
+  - Preloading it is one `link` in Nemi's `__root.tsx`, the same form as Inter's. It needs no new value.
+  - Mono 400 isn't preloaded. Nothing on `/`'s first paint is known to use it, and a preload that isn't used is wasted bandwidth that Lighthouse flags.
+  - Section 6 now says so.
+  - **It needs a small Nemi follow-up dispatch**, because w0-app is merged and `__root.tsx` is Nemi's territory. That's for INT to approve. It should land before Leah's review.
+- **The size-matched fallback goes with Leah's review, not Nemi:**
+  - A size-matched fallback means `@font-face` metric overrides (`size-adjust`, `ascent-override` and the like) on a local font.
+  - DL has none: its stacks are plain name lists (`--av-font-sans`, `--av-font-mono`). So writing them now would invent values, against section 0's value rule.
+  - **What Leah does:** a new task measures layout shift on `/` at 390×844 against FM's CLS budget (under 0.02), with the fonts arriving after first paint.
+  - **If it's within budget:** the fallback stays an open FM item for a later W0 pass.
+  - **If it's over and the swap is the cause:** it becomes a finding. The override values would then be derived from the shipped WOFF2 files' own metrics and recorded as derived values, which needs INT's approval as new values.
+- **`plan.toml`:** Leah's dispatch gets the fonts task, re-rendered.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).

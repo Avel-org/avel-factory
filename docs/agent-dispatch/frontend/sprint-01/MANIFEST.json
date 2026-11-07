@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "156aa273cf1e66dada4ed2ae04bc2315ef482b1bed3c30a7ce0c50d7e88142f1",
-  "packageSha256": "b563aafe408f6a0912eff271e2a22e801e6f0857743c3b743166a457a0f03a2f",
+  "planSha256": "6a5ea0bea9eea9ab233a39f5f1c9f548abee0e3797d01d79e3a22e00ed060d5d",
+  "packageSha256": "bbe80edd3a85c57f162a1b3ab3d3716ece775fae1b24804fb896ec44a556e762",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "e0809ebd8b9c11b0e81d52a35b3396f79175688a270b96bf11fd4eee2618e2d3",
-      "bytes": 29215
+      "sha256": "3e6bbd16b32cd9edfa1f37da60eb10e93f318781e51e6d5abb22550294fa3dc3",
+      "bytes": 29564
     },
     {
       "path": "DISPATCH.md",
@@ -86,8 +86,8 @@
     {
       "path": "agent-leah-decisions-review-a11y-perf.md",
       "kind": "task_doc",
-      "sha256": "ea9a0abf984908023a5d628ff20fa0fbbe93537c0e3fb215f08406dffa592879",
-      "bytes": 11279
+      "sha256": "6d796aebb146dc06ad901672d40b8d120ac5c7b8919800e39b3ebf1452f4131d",
+      "bytes": 12330
     },
     {
       "path": "agent-leon-decisions-build.md",

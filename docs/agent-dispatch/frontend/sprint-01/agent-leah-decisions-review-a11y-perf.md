@@ -63,6 +63,11 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web build && pnpm --filter @avel/web exec playwright test`
 - **Expected:** builds; the locked end-to-end tests pass; the route's gzipped JS size, which you report
 
+### LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts') (P2)
+
+- **Verify:** `pnpm --filter @avel/web build && grep -n -A4 'rel: "preload"' apps/web/src/routes/__root.tsx`
+- **Expected:** two font preloads (Inter Variable, IBM Plex Mono 500); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not
+
 ## 5. Territory
 
 **You may change only:**
@@ -143,6 +148,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | LEAH-01 | DONE / PARKED / BLOCKED | |
+| LEAH-02 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md`): its path, severity and title. "none" if none.
@@ -193,6 +199,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against the 150 KB budget
+- LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

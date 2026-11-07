@@ -485,6 +485,7 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 - **`apps/web/src/routes/__root.tsx`** is the shell:
   - `<html>` gets `data-theme` from the `avel-theme` cookie (`light` or `night`, default `light`), read on the server before first paint;
   - it loads Inter Variable and IBM Plex Mono;
+  - it preloads the font files the first paint of `/` uses (FM line 289): Inter Variable, and IBM Plex Mono 500, the weight of DL's `HashChip` (the factory PR's commit chip and the request ID). Mono 400 isn't preloaded. **The size-matched fallback (FM line 289) isn't in sprint-01:** DL gives no fallback metrics, so no values exist to copy. Leah's review measures layout shift on `/` instead (Decisions, 2026-11-07, "Fonts");
   - its route context is `{ queryClient: QueryClient }` (`createRootRouteWithContext`). `getRouter()` fills it and provides the `QueryClient` (section 3), so the shell adds no provider of its own;
   - no auth guard.
 - **`vite.config.ts`:**

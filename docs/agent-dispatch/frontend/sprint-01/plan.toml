@@ -505,3 +505,9 @@ context = [
 title = "Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against the 150 KB budget"
 verify = "pnpm --filter @avel/web build && pnpm --filter @avel/web exec playwright test"
 expected = "builds; the locked end-to-end tests pass; the route's gzipped JS size, which you report"
+
+[[dispatch.task]]
+title = "Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')"
+priority = "P2"
+verify = "pnpm --filter @avel/web build && grep -n -A4 'rel: \"preload\"' apps/web/src/routes/__root.tsx"
+expected = "two font preloads (Inter Variable, IBM Plex Mono 500); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not"
