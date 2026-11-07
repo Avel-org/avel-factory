@@ -1,0 +1,41 @@
+{
+  "name": "@avel/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AVEL's web app: the TanStack Start control room, on the design library's tokens.",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "typecheck": "node -e \"import('vite').then((vite) => vite.resolveConfig({}, 'build'))\" && tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@avel/contract": "workspace:*",
+    "@orpc/client": "1.16.2",
+    "@orpc/openapi-client": "1.16.2",
+    "@orpc/tanstack-query": "1.16.2",
+    "@tanstack/react-query": "5.107.1",
+    "@tanstack/react-router": "1.170.46",
+    "@tanstack/react-router-ssr-query": "1.167.3",
+    "@tanstack/react-start": "1.169.4",
+    "lucide-react": "1.70.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@avel/contract-mock": "link:../../packages/contract-mock",
+    "@playwright/test": "1.65.0",
+    "@tailwindcss/vite": "4.3.5",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsdom": "31.0.0",
+    "tailwindcss": "4.3.5",
+    "vite": "8.3.6",
+    "vitest": "5.1.0"
+  }
+}

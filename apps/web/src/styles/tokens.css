@@ -1,0 +1,731 @@
+/* biome-ignore-all format: a copy of the design library's token section; its values are kept character for character. */
+/* biome-ignore-all lint/complexity/noImportantStyles: the library's reduced-motion rule holds the skeleton still with !important. */
+/* biome-ignore-all lint/correctness/noUnknownUnit: --av-stall-after: 8m is the library's value as it is (UI contract section 6). */
+/* biome-ignore-all lint/style/noDescendingSpecificity: the library's selector order, copied as it is. */
+/* AVEL Enclosure Grid tokens, copied from the design library v1.1 (docs/design/AVEL Enclosure
+   Grid · Design library v1.1.html): every declaration between its "Theme-independent AVEL tokens"
+   and "Base element defaults" comments, under the same selectors with the same values. Don't edit
+   a value here: change the library and copy it again. Light is :root and [data-theme="light"],
+   Night is [data-theme="night"]; the root shell sets data-theme on <html> before first paint. */
+
+/* Theme-independent AVEL tokens (avel-web src/styles/app.css @ fa08ea9): fonts, shape, size, layers, motion. */
+:root {
+  /* Only AVEL's scales exist: Tailwind's default radii, shadows, type sizes and families are cleared, so an off-system rounded-md or text-sm generates nothing instead of drifting from the palette. */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* Shape. One radius per element. */
+  --radius-xs: 5px;  /* checkbox, kbd, hash */
+  --radius-sm: 6px;  /* pills, tags, mini tiles */
+  --radius-tile: 9px;  /* icon tiles */
+  --radius-control: 10px;  /* buttons, inputs, segmented, nav items, rows */
+  --radius-card: 12px;  /* cards, wells, menus, popovers */
+  --radius-dialog: 16px;  /* dialogs, sheets, the app canvas */
+  --radius-full: 999px;  /* avatars, dots, switches */
+  /* Size. A hit target is never under 24px. */
+  --spacing-control-sm: 28px;
+  --spacing-control-md: 32px;
+  --spacing-control-lg: 38px;
+  --spacing-tile-sm: 24px;
+  --spacing-tile-md: 32px;
+  --spacing-tile-lg: 36px;
+  --z-raised: 10;
+  --z-dock: 200;
+  --z-modal: 400;
+  /* Above the modal: a select, menu, popover or tooltip opened inside a dialog must draw over it. Nothing outside an open modal can be reached, so no popup ever needs to sit under one. */
+  --z-popover: 450;
+  --z-toast: 500;
+  --row-comfortable: 12px;
+  --row-compact: 6px;
+  /* Shell geometry. The canvas is inset from the viewport and rounded (rounded-dialog); anything rounded inside it follows the concentric rule: inner radius = outer radius minus the padding between them. */
+  --canvas-inset: 8px;
+  --topbar-height: 56px;
+  --content-max: 75rem;
+  --chat-max: 45rem;
+  /* Motion. Nothing bouncy, no overshoot. */
+  --duration-micro: 120ms;  /* hover, focus, press, toggles */
+  --duration-state: 200ms;  /* panel change, tab indicator, a landed row */
+  --ease-avel: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* GENERATED from src/tokens/palette.js by scripts/build-tokens.mjs. Do not edit. */
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --color-app-canvas: #f1efee;
+  --color-app-bg: #f1efee;
+  --color-app-page: #f1efee;
+  --color-app-panel: #f4f3f1;
+  --color-app-band: #f1efee;
+  --color-app-well: #e9e7e6;
+  --color-app-hollow: #f1efee;
+  --color-composer: #f6f5f3;
+  --color-composer-edge: #e6e4e2;
+  --color-composer-chip: rgb(16 24 40 / 0.035);
+  --color-field-fill: #f6f5f3;
+  --color-field-edge: rgb(16 24 40 / 0.09);
+  --color-field-edge-hover: rgb(16 24 40 / 0.2);
+  --color-field-fill-focus: #f8f7f6;
+  --color-field-focus: #2f86e6;
+  --color-field-halo: rgb( 75 155 242 / 0.3 );
+  --color-app-raised: #e9e7e6;
+  --color-app-float: #f6f5f3;
+  --color-skeleton: #e6e4e2;
+  --color-chip: #f8f7f6;
+  --color-text: #111214;
+  --color-text-muted: #66666d;
+  --color-text-subtle: #65656b;
+  --color-text-on-solid: #ffffff;
+  --color-border: #e6e4e2;
+  --color-border-strong: #dddcda;
+  --color-border-control: #87878f;
+  --color-accent: #4b9bf2;
+  --color-accent-text: #1963bd;
+  --color-accent-soft: #eef6ff;
+  --color-accent-line: #b9d8fa;
+  --color-focus-ring: #2f86e6;
+  --color-selected: #eef6ff;
+  --color-selected-border: #4a90e2;
+  --color-text-selection: #cfe4fd;
+  --color-edge-top: rgb(255 255 255 / 0);
+  --color-float-outline: rgb(255 255 255 / 0);
+  --color-scrim: rgb(16 24 40 / 0.35);
+  --color-btn-primary-top: #2a6fd6;
+  --color-btn-primary-bottom: #1d5cc0;
+  --color-btn-primary-border: #1a56b4;
+  --color-btn-primary-glow: rgb(75 155 242 / 0.5);
+  --color-btn-primary-glow-near: rgb(63 136 224 / 0.25);
+  --color-btn-highlight: rgb(255 255 255 / 0.38);
+  --color-btn-label-shadow: rgb(20 70 140 / 0.22);
+  --color-btn-danger-top: #e8725f;
+  --color-btn-danger-bottom: #d7503f;
+  --color-btn-danger-border: #c8483a;
+  --color-btn-danger-glow: rgb(222 89 77 / 0.42);
+  --color-btn-danger-glow-near: rgb(222 89 77 / 0.2);
+  --color-btn-danger-label-shadow: rgb(120 30 20 / 0.22);
+  --color-gate-pass: #18744d;
+  --color-gate-pass-solid: #1f9d63;
+  --color-gate-pass-soft: #e9f8f1;
+  --color-gate-pass-line: rgb(31 157 99 / 0.35);
+  --color-gate-block: #b8352b;
+  --color-gate-block-solid: #d64a3e;
+  --color-gate-block-soft: #fdeeee;
+  --color-gate-block-line: #f3c9c6;
+  --color-gate-warn: #8a5d00;
+  --color-gate-warn-solid: #d89a06;
+  --color-gate-warn-soft: #fdf5dc;
+  --color-gate-warn-line: #f2e2a8;
+  --color-gate-warn-banner: #fffbeb;
+  --color-gate-pending: #55585e;
+  --color-gate-pending-solid: #8d9097;
+  --color-gate-pending-soft: #f0f1f3;
+  --color-gate-pending-line: rgb(141 144 151 / 0.35);
+  --av-chart-1: #2563c4;
+  --av-chart-2: #119aa0;
+  --av-chart-3: #8b5fd6;
+  --av-chart-4: #d0609f;
+  --av-chart-5: #8d9097;
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 1px rgb(16 24 40 / 0.02);
+  --shadow-btn: 0 1px 2px rgb(16 24 40 / 0.06);
+  --shadow-popover: 0 0 0 1px rgb(16 24 40 / 0.04), 0 8px 24px -6px rgb(16 24 40 / 0.14);
+  --shadow-dialog: 0 0 0 1px rgb(16 24 40 / 0.04), 0 2px 6px rgb(16 24 40 / 0.05), 0 24px 56px -12px rgb(16 24 40 / 0.22);
+  --shadow-drag: 0 10px 28px rgb(16 24 40 / 0.12);
+  --shadow-field: inset 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-composer: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 1px rgb(16 24 40 / 0.02);
+}
+
+.dark, [data-theme="night"] {
+  color-scheme: dark;
+  --color-app-canvas: #121315;
+  --color-app-bg: #141517;
+  --color-app-page: #141517;
+  --color-app-panel: #1b1c1f;
+  --color-app-band: #17181a;
+  --color-app-well: rgb(255 255 255 / 0.035);
+  --color-app-hollow: rgb(0 0 0 / 0);
+  --color-composer: #202124;
+  --color-composer-edge: rgb(255 255 255 / 0.1);
+  --color-composer-chip: rgb(255 255 255 / 0.045);
+  --color-field-fill: rgb(255 255 255 / 0.04);
+  --color-field-edge: rgb(255 255 255 / 0.09);
+  --color-field-edge-hover: rgb(255 255 255 / 0.18);
+  --color-field-fill-focus: rgb(255 255 255 / 0.06);
+  --color-field-focus: #4f98ea;
+  --color-field-halo: rgb(79 152 234 / 0.22);
+  --color-app-raised: #27282c;
+  --color-app-float: #212226;
+  --color-skeleton: #292a2e;
+  --color-chip: #333438;
+  --color-text: #ededef;
+  --color-text-muted: #a5a6ad;
+  --color-text-subtle: #8f9098;
+  --color-border: rgb(255 255 255 / 0.075);
+  --color-border-strong: rgb(255 255 255 / 0.13);
+  --color-border-control: #76777f;
+  --color-accent: #74b8fc;
+  --color-accent-text: #8cc4fd;
+  --color-accent-soft: rgb(116 184 252 / 0.13);
+  --color-accent-line: rgb(116 184 252 / 0.42);
+  --color-focus-ring: #8cc4fd;
+  --color-selected: rgb(116 184 252 / 0.12);
+  --color-selected-border: rgb(116 184 252 / 0.8);
+  --color-text-selection: rgb(116 184 252 / 0.32);
+  --color-edge-top: rgb(255 255 255 / 0.065);
+  --color-float-outline: rgb(255 255 255 / 0.11);
+  --color-scrim: rgb(6 7 9 / 0.62);
+  --color-btn-primary-top: #2d72d9;
+  --color-btn-primary-bottom: #1d5bbd;
+  --color-btn-primary-border: rgb(140 196 253 / 0.42);
+  --color-btn-primary-glow: rgb(84 160 240 / 0.38);
+  --color-btn-primary-glow-near: rgb(84 160 240 / 0.26);
+  --color-btn-highlight: rgb(255 255 255 / 0.26);
+  --color-btn-danger-glow: rgb(240 104 92 / 0.34);
+  --color-btn-danger-glow-near: rgb(240 104 92 / 0.24);
+  --color-gate-pass: #68d3a0;
+  --color-gate-pass-solid: #3cbf82;
+  --color-gate-pass-soft: rgb(60 191 130 / 0.13);
+  --color-gate-pass-line: rgb(60 191 130 / 0.26);
+  --color-gate-block: #f6958b;
+  --color-gate-block-solid: #ec6a5e;
+  --color-gate-block-soft: rgb(236 106 94 / 0.13);
+  --color-gate-block-line: rgb(236 106 94 / 0.3);
+  --color-gate-warn: #f2c662;
+  --color-gate-warn-solid: #efb32e;
+  --color-gate-warn-soft: rgb(239 179 46 / 0.13);
+  --color-gate-warn-line: rgb(239 179 46 / 0.27);
+  --color-gate-warn-banner: rgb(239 179 46 / 0.075);
+  --color-gate-pending: #b9bac1;
+  --color-gate-pending-solid: #8c8d95;
+  --color-gate-pending-soft: rgb(255 255 255 / 0.07);
+  --color-gate-pending-line: rgb(148 150 158 / 0.3);
+  --av-chart-1: #3779d4;
+  --av-chart-2: #1fa2a7;
+  --av-chart-3: #8a6be0;
+  --av-chart-4: #d4648c;
+  --av-chart-5: #8c8d95;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 20px -12px rgb(0 0 0 / 0.55);
+  --shadow-btn: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-popover: 0 0 0 1px rgb(255 255 255 / 0.06), 0 12px 32px -8px rgb(0 0 0 / 0.6);
+  --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.06), 0 2px 6px rgb(0 0 0 / 0.3), 0 28px 64px -16px rgb(0 0 0 / 0.7);
+  --shadow-drag: 0 14px 32px rgb(0 0 0 / 0.55);
+  --shadow-field: inset 0 1px 1px rgb(0 0 0 / 0.22);
+  --shadow-composer: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.4), 0 18px 40px -18px rgb(0 0 0 / 0.85);
+}
+
+/* GENERATED from tailwind/avel-tokens.css (avel-web src/styles/app.css @ fa08ea9) as plain CSS so browsers read it.
+   Values are identical. Light on :root and [data-theme="light"]; dark on .dark and [data-theme="night"]. */
+
+
+
+:root, [data-theme="light"], [data-theme="night"], .dark {
+	--color-gate-stale: var(--color-gate-pending);
+	--color-gate-stale-soft: var(--color-gate-pending-soft);
+	--color-gate-stale-line: var(--color-gate-pending-line);
+
+	--color-foreground: var(--color-text);
+	--color-card: var(--color-app-panel);
+	--color-popover: var(--color-app-float);
+	--color-destructive: var(--color-gate-block);
+}
+
+
+
+/* AVEL Enclosure Grid aliases. Components read --av-*; every value resolves to an AVEL token
+   from tokens/avel.css (avel-web src/styles/app.css @ fa08ea9). Same set in light and night. */
+
+:root, [data-theme="light"], [data-theme="night"], .dark {
+  --av-floor: var(--color-app-page);
+  --av-faceplate: var(--color-app-panel);
+  --av-float: var(--color-app-float);
+  --av-inset: var(--color-app-well);
+  --av-inset-deep: var(--color-app-raised);
+  --av-ink: var(--color-text);
+  --av-muted: var(--color-text-muted);
+  --av-subtle: var(--color-text-subtle);
+  --av-primary: var(--color-accent);
+  --av-on-primary: var(--color-text-on-solid);
+  --av-accent: var(--color-accent-text);
+  --av-needs: var(--color-gate-warn-solid);
+  --av-needs-text: var(--color-gate-warn);
+  --av-stopped: var(--color-gate-block);
+  --av-stopped-solid: var(--color-gate-block-solid);
+  --av-verified: var(--color-gate-pass);
+  --av-verified-solid: var(--color-gate-pass-solid);
+  --av-pending: var(--color-gate-pending);
+  --av-pending-solid: var(--color-gate-pending-solid);
+  --av-pending-soft: var(--color-gate-pending-soft);
+  --av-pending-line: var(--color-gate-pending-line);
+  --av-needs-line: var(--color-gate-warn-line);
+  --av-stopped-line: var(--color-gate-block-line);
+  --av-verified-line: var(--color-gate-pass-line);
+  --av-selected-border: var(--color-selected-border);
+  --av-accent-line: var(--color-accent-line);
+  --av-on-danger: var(--color-text-on-solid);
+  --av-on-needs: var(--color-text);
+  --av-on-stopped: var(--color-text-on-solid);
+  --av-on-verified: var(--color-text-on-solid);
+
+  --av-hairline: var(--color-border);
+  --av-hairline-strong: var(--color-gate-pending-line);
+  --av-control-edge: var(--color-border-control);
+  --av-faint: var(--color-border-control);
+  --av-faceplate-hover: var(--color-app-raised);
+  --av-faceplate-pressed: color-mix(in oklab, var(--color-app-raised), var(--color-text) 5%);
+  --av-inset-hover: color-mix(in oklab, var(--color-app-raised), var(--color-text) 4%);
+  --av-ink-hover: color-mix(in oklab, var(--color-text), var(--color-app-panel) 14%);
+  --av-ink-pressed: color-mix(in oklab, var(--color-text), var(--color-app-panel) 26%);
+  --av-on-ink: var(--color-app-panel);
+  --av-primary-hover: color-mix(in oklab, var(--color-accent), var(--color-text) 8%);
+  --av-primary-pressed: color-mix(in oklab, var(--color-accent), var(--color-text) 16%);
+  --av-primary-tint: var(--color-selected);
+  --av-accent-hover: color-mix(in oklab, var(--color-accent-text), var(--color-text) 18%);
+  --av-accent-tint: var(--color-selected);
+  --av-needs-hover: color-mix(in oklab, var(--color-gate-warn-solid), var(--color-text) 10%);
+  --av-needs-tint: var(--color-gate-warn-soft);
+  --av-stopped-tint: var(--color-gate-block-soft);
+  --av-verified-tint: var(--color-gate-pass-soft);
+  --av-skeleton: var(--color-skeleton);
+  --av-band: var(--color-app-band);
+  --av-hollow: var(--color-app-hollow);
+  --av-disabled-bg: var(--color-app-raised);
+  --av-disabled-fg: var(--color-text-subtle);
+  --av-chip: var(--color-chip);
+  --av-flash: color-mix(in oklab, var(--color-text) 8%, transparent);
+  --av-scrim: var(--color-scrim);
+  --av-focus-ring: var(--color-focus-ring);
+  --av-field-fill: var(--color-field-fill);
+  --av-field-edge: var(--color-field-edge);
+  --av-field-focus: var(--color-field-focus);
+  --av-field-halo: var(--color-field-halo);
+  --av-hatch: repeating-linear-gradient(-45deg, color-mix(in oklab, var(--color-text-muted) 50%, transparent) 0 1.5px, transparent 1.5px 5px);
+
+  --av-btn-primary-fill: linear-gradient(180deg, var(--color-btn-primary-top), var(--color-btn-primary-bottom));
+  --av-btn-primary-fill-hover: linear-gradient(180deg, color-mix(in oklab, var(--color-btn-primary-top), #000000 8%), color-mix(in oklab, var(--color-btn-primary-bottom), #000000 8%));
+  --av-btn-primary-fill-pressed: linear-gradient(180deg, var(--color-btn-primary-bottom), var(--color-btn-primary-bottom));
+  --av-btn-primary-shadow: inset 0 1px 0 rgb(255 255 255 / .14), 0 0 0 1px var(--color-btn-primary-border), 0 1px 2px var(--color-btn-primary-glow-near), 0 4px 12px -3px var(--color-btn-primary-glow);
+  --av-btn-primary-shadow-pressed: inset 0 1px 2px var(--color-btn-label-shadow), 0 0 0 1px var(--color-btn-primary-border);
+  --av-btn-primary-label: 0 1px 0 var(--color-btn-label-shadow);
+  --av-btn-danger-fill: linear-gradient(180deg, var(--color-btn-danger-top), var(--color-btn-danger-bottom));
+  --av-btn-danger-fill-hover: linear-gradient(180deg, color-mix(in oklab, var(--color-btn-danger-top), #ffffff 8%), color-mix(in oklab, var(--color-btn-danger-bottom), #ffffff 5%));
+  --av-btn-danger-fill-pressed: linear-gradient(180deg, var(--color-btn-danger-bottom), var(--color-btn-danger-bottom));
+  --av-btn-danger-shadow: inset 0 1px 0 var(--color-btn-highlight), 0 0 0 1px var(--color-btn-danger-border), 0 0 10px var(--color-btn-danger-glow-near), 0 4px 14px -3px var(--color-btn-danger-glow);
+  --av-btn-danger-shadow-pressed: inset 0 1px 2px var(--color-btn-danger-label-shadow), 0 0 0 1px var(--color-btn-danger-border);
+  --av-btn-danger-label: 0 1px 0 var(--color-btn-danger-label-shadow);
+  --av-btn-secondary-shadow: inset 0 1px 0 var(--color-edge-top), 0 0 0 1px var(--color-border-strong), var(--shadow-btn);
+
+  /* Depth: flat by default, exactly AVEL's elevation. */
+  --av-page-bg: var(--color-app-page);
+  --av-glass-blur: none;
+  --av-glass-blur-float: none;
+  --av-shadow-faceplate: inset 0 1px 0 var(--color-edge-top), var(--shadow-card);
+  --av-shadow-raised: inset 0 1px 0 var(--color-edge-top), var(--shadow-btn);
+  --av-shadow-inset: var(--shadow-field);
+  --av-shadow-pressed: var(--shadow-field);
+  --av-shadow-popover: 0 0 0 1px var(--color-float-outline), var(--shadow-popover);
+  --av-shadow-overlay: 0 0 0 1px var(--color-float-outline), var(--shadow-dialog);
+
+}
+
+[data-theme="night"], .dark {
+  /* Dark has no well; insets that need a fill take the field's faint white lift. */
+  --av-inset: var(--color-field-fill);
+  --av-on-needs: var(--color-app-page);
+  --av-on-stopped: var(--color-app-page);
+  --av-on-verified: var(--color-app-page);
+  /* No well in dark: a sunken area is bounded by its hairline. */
+  --av-shadow-inset: inset 0 0 0 1px var(--color-border), var(--shadow-field);
+}
+
+/* Glass depth (data-depth="glass"): translucent panels over the flat page; floating layers blur what is behind them. */
+[data-depth="glass"], [data-depth="glass"] [data-theme], [data-depth="glass"] .dark {
+  --av-page-bg: var(--color-app-page);
+  --av-faceplate: color-mix(in oklab, var(--color-app-panel) 62%, transparent);
+  --av-float: color-mix(in oklab, var(--color-app-float) 80%, transparent);
+  --av-inset: color-mix(in oklab, var(--color-app-well) 55%, transparent);
+  --av-inset-deep: color-mix(in oklab, var(--color-app-raised) 70%, transparent);
+  --av-band: color-mix(in oklab, var(--color-app-band) 55%, transparent);
+  /* Panels stay unblurred (blur is costly under live updates); only floating layers blur. */
+  --av-glass-blur: none;
+  --av-glass-blur-float: blur(18px) saturate(1.5);
+  --av-glass-edge: rgb(255 255 255 / 0.55);
+  --av-shadow-faceplate: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 0 0 1px var(--av-glass-edge), 0 6px 16px -8px rgb(16 24 40 / 0.16);
+  --av-shadow-raised: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.5), 0 2px 6px -1px rgb(16 24 40 / 0.1);
+  --av-shadow-inset: inset 0 1px 2px rgb(16 24 40 / 0.06), inset 0 0 0 1px rgb(16 24 40 / 0.05);
+  --av-shadow-pressed: inset 0 1px 3px rgb(16 24 40 / 0.12);
+  --av-btn-secondary-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 0 0 1px rgb(16 24 40 / 0.08), 0 1px 2px rgb(16 24 40 / 0.06);
+  --av-shadow-overlay: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 0 0 1px var(--av-glass-edge), var(--shadow-dialog);
+}
+[data-depth="glass"][data-theme="night"], [data-depth="glass"] [data-theme="night"], [data-depth="glass"].dark, [data-depth="glass"] .dark {
+  --av-page-bg: var(--color-app-page);
+  --av-faceplate: color-mix(in oklab, var(--color-app-panel) 58%, transparent);
+  --av-float: color-mix(in oklab, var(--color-app-float) 78%, transparent);
+  --av-inset: rgb(255 255 255 / 0.035);
+  --av-inset-deep: rgb(255 255 255 / 0.06);
+  --av-glass-edge: rgb(255 255 255 / 0.09);
+  --av-shadow-faceplate: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 1px var(--av-glass-edge), 0 6px 18px -8px rgb(0 0 0 / 0.6);
+  --av-shadow-raised: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1px rgb(255 255 255 / 0.08), 0 2px 6px rgb(0 0 0 / 0.4);
+  --av-shadow-inset: inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 1px 2px rgb(0 0 0 / 0.3);
+  --av-shadow-pressed: inset 0 1px 3px rgb(0 0 0 / 0.5);
+  --av-btn-secondary-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 1px rgb(255 255 255 / 0.1), 0 1px 2px rgb(0 0 0 / 0.4);
+  --av-shadow-overlay: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1px var(--color-float-outline), var(--shadow-dialog);
+}
+
+/* Primary button label: white on the darkened blue (audit D8, decided in v1.7: 4.8:1 at the top of the gradient). data-primary-label="ink" sets the light-mode label in --color-text. */
+:root { --av-on-primary-btn: var(--color-text-on-solid); }
+[data-primary-label="ink"] { --av-on-primary-btn: var(--color-text); --av-btn-primary-label: none; }
+[data-primary-label="ink"][data-theme="night"], [data-primary-label="ink"] [data-theme="night"], [data-primary-label="ink"].dark, [data-primary-label="ink"] .dark, [data-theme="night"] [data-primary-label="ink"] {
+  --av-on-primary-btn: var(--color-text-on-solid);
+  --av-btn-primary-label: 0 1px 0 var(--color-btn-label-shadow);
+}
+
+/* AVEL type scale as tokens (design/AVEL-DESIGN.md section 3). Previously only in the design doc. */
+:root {
+  --text-display: 24px; --text-display--line-height: 32px; --text-display--font-weight: 650; --text-display--letter-spacing: -0.02em;
+  --text-page: 18px;    --text-page--line-height: 26px;    --text-page--font-weight: 620;    --text-page--letter-spacing: -0.012em;
+  --text-title: 15px;   --text-title--line-height: 22px;   --text-title--font-weight: 550;   --text-title--letter-spacing: -0.006em;
+  --text-body: 14px;    --text-body--line-height: 20px;    --text-body--font-weight: 400;
+  --text-small: 13px;   --text-small--line-height: 18px;   --text-small--font-weight: 400;
+  --text-caption: 12px; --text-caption--line-height: 16px; --text-caption--font-weight: 400;
+  --text-eyebrow: 11px; --text-eyebrow--line-height: 16px; --text-eyebrow--font-weight: 600; --text-eyebrow--letter-spacing: 0.07em;
+  --text-metric: 22px;  --text-metric--line-height: 28px;  --text-metric--font-weight: 600;
+  --text-mono: 12.5px;  --text-mono--line-height: 18px;
+}
+
+/* Type. Desk follows AVEL's scale (design/AVEL-DESIGN.md section 3). Phone is an Enclosure Grid addition,
+   one step larger and roomier. Active aliases --av-fs-* switch with data-density. */
+:root {
+  --av-font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --av-font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --av-weight-body: 400;
+  --av-weight-label: 500;
+  --av-weight-title: 550;
+  --av-weight-page: 620;
+  --av-weight-display: 650;
+  --av-weight-number: 600;
+  --av-weight-eyebrow: 600;
+  --av-tracking-display: -0.02em;
+  --av-tracking-page: -0.012em;
+  --av-tracking-title: -0.006em;
+  --av-tracking-eyebrow: 0.07em;
+
+  /* Desk: AVEL scale */
+  --av-desk-hero: 40px;      --av-desk-hero-lh: 48px;
+  --av-desk-number-lg: 24px; --av-desk-number-lg-lh: 32px;
+  --av-desk-number: 22px;    --av-desk-number-lh: 28px;
+  --av-desk-title-lg: 18px;  --av-desk-title-lg-lh: 26px;
+  --av-desk-title: 15px;     --av-desk-title-lh: 22px;
+  --av-desk-body: 14px;      --av-desk-body-lh: 20px;
+  --av-desk-label: 13px;     --av-desk-label-lh: 18px;
+  --av-desk-small: 12px;     --av-desk-small-lh: 16px;
+  --av-desk-eyebrow: 11px;   --av-desk-eyebrow-lh: 16px;
+  --av-desk-mono: 12.5px;    --av-desk-mono-lh: 18px;
+
+  /* Phone: one step up */
+  --av-phone-hero: 48px;      --av-phone-hero-lh: 56px;
+  --av-phone-number-lg: 28px; --av-phone-number-lg-lh: 34px;
+  --av-phone-number: 26px;    --av-phone-number-lh: 32px;
+  --av-phone-title-lg: 20px;  --av-phone-title-lg-lh: 28px;
+  --av-phone-title: 17px;     --av-phone-title-lh: 24px;
+  --av-phone-body: 16px;      --av-phone-body-lh: 24px;
+  --av-phone-label: 15px;     --av-phone-label-lh: 20px;
+  --av-phone-small: 13px;     --av-phone-small-lh: 18px;
+  --av-phone-eyebrow: 12px;   --av-phone-eyebrow-lh: 16px;
+  --av-phone-mono: 13px;      --av-phone-mono-lh: 20px;
+}
+
+:root, [data-density="desk"] {
+  --av-fs-hero: var(--av-desk-hero);           --av-lh-hero: var(--av-desk-hero-lh);
+  --av-fs-number-lg: var(--av-desk-number-lg); --av-lh-number-lg: var(--av-desk-number-lg-lh);
+  --av-fs-number: var(--av-desk-number);       --av-lh-number: var(--av-desk-number-lh);
+  --av-fs-title-lg: var(--av-desk-title-lg);   --av-lh-title-lg: var(--av-desk-title-lg-lh);
+  --av-fs-title: var(--av-desk-title);         --av-lh-title: var(--av-desk-title-lh);
+  --av-fs-body: var(--av-desk-body);           --av-lh-body: var(--av-desk-body-lh);
+  --av-fs-label: var(--av-desk-label);         --av-lh-label: var(--av-desk-label-lh);
+  --av-fs-small: var(--av-desk-small);         --av-lh-small: var(--av-desk-small-lh);
+  --av-fs-eyebrow: var(--av-desk-eyebrow);     --av-lh-eyebrow: var(--av-desk-eyebrow-lh);
+  --av-fs-caption: 12px;                        --av-lh-caption: 16px;
+  --av-fs-mono: var(--av-desk-mono);           --av-lh-mono: var(--av-desk-mono-lh);
+}
+
+[data-density="phone"] {
+  --av-fs-hero: var(--av-phone-hero);           --av-lh-hero: var(--av-phone-hero-lh);
+  --av-fs-number-lg: var(--av-phone-number-lg); --av-lh-number-lg: var(--av-phone-number-lg-lh);
+  --av-fs-number: var(--av-phone-number);       --av-lh-number: var(--av-phone-number-lh);
+  --av-fs-title-lg: var(--av-phone-title-lg);   --av-lh-title-lg: var(--av-phone-title-lg-lh);
+  --av-fs-title: var(--av-phone-title);         --av-lh-title: var(--av-phone-title-lh);
+  --av-fs-body: var(--av-phone-body);           --av-lh-body: var(--av-phone-body-lh);
+  --av-fs-label: var(--av-phone-label);         --av-lh-label: var(--av-phone-label-lh);
+  --av-fs-small: var(--av-phone-small);         --av-lh-small: var(--av-phone-small-lh);
+  --av-fs-eyebrow: var(--av-phone-eyebrow);     --av-lh-eyebrow: var(--av-phone-eyebrow-lh);
+  --av-fs-caption: 13px;                        --av-lh-caption: 18px;
+  --av-fs-mono: var(--av-phone-mono);           --av-lh-mono: var(--av-phone-mono-lh);
+}
+
+/* Shape and size from AVEL (one radius per element), on a 4px grid. */
+:root {
+  --av-space-1: 4px;  --av-space-2: 8px;  --av-space-3: 12px; --av-space-4: 16px;
+  --av-space-5: 20px; --av-space-6: 24px; --av-space-8: 32px; --av-space-10: 40px;
+  --av-space-12: 48px; --av-space-16: 64px;
+
+  --av-radius-faceplate: var(--radius-card);
+  --av-radius-tag: var(--radius-card);
+  --av-radius-control: var(--radius-control);
+  --av-radius-chip: var(--radius-sm);
+  --av-radius-tile: var(--radius-tile);
+  --av-radius-stamp: var(--radius-xs);
+  --av-radius-dialog: var(--radius-dialog);
+  --av-radius-full: var(--radius-full);
+
+  --av-hairline-w: 1px;
+  --av-rail-w: 224px;
+  --av-inspector-w: 360px;
+  --av-inspector-w-wide: 440px;
+  --av-topbar-h: var(--topbar-height);
+  --av-content-max: var(--content-max);
+  --av-bp-phone: 390px;
+  --av-bp-tablet: 1024px;
+  --av-bp-desk: 1440px;
+  --av-bp-wide: 1800px;
+  --av-touch-min: 44px;
+  --av-hit-min: 24px;
+}
+
+:root, [data-density="desk"] {
+  --av-control-h: var(--spacing-control-md);
+  --av-control-h-sm: var(--spacing-control-sm);
+  --av-control-h-lg: var(--spacing-control-lg);
+  --av-pad: 16px;
+  --av-row-y: var(--row-comfortable);
+  --av-gap: 12px;
+  --av-chip-h: 22px;
+}
+
+[data-density="phone"] {
+  --av-control-h: 44px;
+  --av-control-h-sm: 44px;
+  --av-control-h-lg: 44px;
+  --av-pad: 20px;
+  --av-row-y: 14px;
+  --av-gap: 16px;
+  --av-chip-h: 28px;
+}
+
+/* Motion is data. AVEL's curve and durations (nothing bouncy, no overshoot), plus Enclosure Grid
+   durations for sheets, the punch and arrivals. Transform and opacity only. */
+:root {
+  --av-ease: var(--ease-avel);
+  --av-d-color: var(--duration-micro);
+  --av-d-value: var(--duration-state);
+  --av-d-lift: var(--duration-micro);
+  --av-d-sheet: 240ms;
+  --av-d-punch: 400ms;
+  --av-d-arrive: 420ms;
+  --av-stagger: 45ms;
+  --av-stagger-max: 6;
+  --av-rise: 8px;
+  --av-press-scale: .97;
+  --av-lift: -1px;
+  --av-stale-after: 30s;
+  --av-stall-after: 8m;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --av-d-color: 0ms; --av-d-value: 0ms; --av-d-lift: 0ms; --av-d-sheet: 0ms;
+    --av-d-punch: 0ms; --av-d-arrive: 0ms; --av-stagger: 0ms; --av-rise: 0px;
+  }
+}
+
+@keyframes av-arrive { from { opacity: 0; transform: translateY(var(--av-rise)); } to { opacity: 1; transform: none; } }
+@keyframes av-pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes av-pulse-once { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.03); } }
+@keyframes av-flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes av-hole-fill { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes av-stamp-land { from { opacity: 0; transform: rotate(-7deg) scale(1.18); } to { opacity: 1; transform: rotate(-7deg) scale(1); } }
+@keyframes av-print-line { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes av-drop-out { to { opacity: 0; transform: translateY(14px); } }
+@keyframes av-settle { from { opacity: 0; transform: translate(-28px, -10px) scale(.96); } to { opacity: 1; transform: none; } }
+/* Loading only (avel-web skeleton-pulse). Stops when content lands; reduced motion holds it still. */
+@keyframes av-skeleton { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+@keyframes av-hold-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { [data-skeleton] { animation: none !important; } }
+
+/* shadcn/ui theme mapping onto AVEL tokens. Same selector set as the derived tokens. */
+:root, [data-theme="light"], [data-theme="night"], .dark {
+  --radius: 0.75rem;
+  --background: var(--av-floor);
+  --foreground: var(--av-ink);
+  --card: var(--av-faceplate);
+  --card-foreground: var(--av-ink);
+  --popover: var(--av-faceplate);
+  --popover-foreground: var(--av-ink);
+  --primary: var(--av-primary);
+  --primary-foreground: var(--av-on-primary);
+  --secondary: var(--av-inset);
+  --secondary-foreground: var(--av-ink);
+  --muted: var(--av-inset);
+  --muted-foreground: var(--av-muted);
+  --accent: var(--av-faceplate-hover);
+  --accent-foreground: var(--av-ink);
+  --destructive: var(--av-stopped);
+  --destructive-foreground: var(--av-on-stopped);
+  --border: var(--av-hairline);
+  --input: var(--av-field-edge);
+  --ring: var(--av-accent);
+  --chart-1: var(--av-chart-1);
+  --chart-2: var(--av-chart-2);
+  --chart-3: var(--av-chart-3);
+  --chart-4: var(--av-chart-4);
+  --chart-5: var(--av-chart-5);
+  --sidebar: var(--av-floor);
+  --sidebar-foreground: var(--av-ink);
+  --sidebar-primary: var(--av-ink);
+  --sidebar-primary-foreground: var(--av-on-ink);
+  --sidebar-accent: var(--av-faceplate);
+  --sidebar-accent-foreground: var(--av-ink);
+  --sidebar-border: var(--av-hairline);
+  --sidebar-ring: var(--av-accent);
+}
+
+/* Tailwind v4 theme mapping. It reads the tokens above and adds no value of its own.
+   1. As the library's first comment says, Tailwind's default families, radii, shadows and type
+      sizes are cleared, so an off-system rounded-md or text-sm generates nothing.
+   2. The library's tokens in Tailwind's namespaces are registered by name. "reference" keeps
+      Tailwind from writing its own copy of a variable: each utility reads var(--name), which the
+      declarations above set, light or night. */
+@theme {
+  --font-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --text-*: initial;
+}
+
+@theme reference {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-tile: var(--radius-tile);
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+  --radius-dialog: var(--radius-dialog);
+  --radius-full: var(--radius-full);
+  --spacing-control-sm: var(--spacing-control-sm);
+  --spacing-control-md: var(--spacing-control-md);
+  --spacing-control-lg: var(--spacing-control-lg);
+  --spacing-tile-sm: var(--spacing-tile-sm);
+  --spacing-tile-md: var(--spacing-tile-md);
+  --spacing-tile-lg: var(--spacing-tile-lg);
+  --ease-avel: var(--ease-avel);
+  --color-app-canvas: var(--color-app-canvas);
+  --color-app-bg: var(--color-app-bg);
+  --color-app-page: var(--color-app-page);
+  --color-app-panel: var(--color-app-panel);
+  --color-app-band: var(--color-app-band);
+  --color-app-well: var(--color-app-well);
+  --color-app-hollow: var(--color-app-hollow);
+  --color-composer: var(--color-composer);
+  --color-composer-edge: var(--color-composer-edge);
+  --color-composer-chip: var(--color-composer-chip);
+  --color-field-fill: var(--color-field-fill);
+  --color-field-edge: var(--color-field-edge);
+  --color-field-edge-hover: var(--color-field-edge-hover);
+  --color-field-fill-focus: var(--color-field-fill-focus);
+  --color-field-focus: var(--color-field-focus);
+  --color-field-halo: var(--color-field-halo);
+  --color-app-raised: var(--color-app-raised);
+  --color-app-float: var(--color-app-float);
+  --color-skeleton: var(--color-skeleton);
+  --color-chip: var(--color-chip);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-subtle: var(--color-text-subtle);
+  --color-text-on-solid: var(--color-text-on-solid);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-border-control: var(--color-border-control);
+  --color-accent: var(--color-accent);
+  --color-accent-text: var(--color-accent-text);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-accent-line: var(--color-accent-line);
+  --color-focus-ring: var(--color-focus-ring);
+  --color-selected: var(--color-selected);
+  --color-selected-border: var(--color-selected-border);
+  --color-text-selection: var(--color-text-selection);
+  --color-edge-top: var(--color-edge-top);
+  --color-float-outline: var(--color-float-outline);
+  --color-scrim: var(--color-scrim);
+  --color-btn-primary-top: var(--color-btn-primary-top);
+  --color-btn-primary-bottom: var(--color-btn-primary-bottom);
+  --color-btn-primary-border: var(--color-btn-primary-border);
+  --color-btn-primary-glow: var(--color-btn-primary-glow);
+  --color-btn-primary-glow-near: var(--color-btn-primary-glow-near);
+  --color-btn-highlight: var(--color-btn-highlight);
+  --color-btn-label-shadow: var(--color-btn-label-shadow);
+  --color-btn-danger-top: var(--color-btn-danger-top);
+  --color-btn-danger-bottom: var(--color-btn-danger-bottom);
+  --color-btn-danger-border: var(--color-btn-danger-border);
+  --color-btn-danger-glow: var(--color-btn-danger-glow);
+  --color-btn-danger-glow-near: var(--color-btn-danger-glow-near);
+  --color-btn-danger-label-shadow: var(--color-btn-danger-label-shadow);
+  --color-gate-pass: var(--color-gate-pass);
+  --color-gate-pass-solid: var(--color-gate-pass-solid);
+  --color-gate-pass-soft: var(--color-gate-pass-soft);
+  --color-gate-pass-line: var(--color-gate-pass-line);
+  --color-gate-block: var(--color-gate-block);
+  --color-gate-block-solid: var(--color-gate-block-solid);
+  --color-gate-block-soft: var(--color-gate-block-soft);
+  --color-gate-block-line: var(--color-gate-block-line);
+  --color-gate-warn: var(--color-gate-warn);
+  --color-gate-warn-solid: var(--color-gate-warn-solid);
+  --color-gate-warn-soft: var(--color-gate-warn-soft);
+  --color-gate-warn-line: var(--color-gate-warn-line);
+  --color-gate-warn-banner: var(--color-gate-warn-banner);
+  --color-gate-pending: var(--color-gate-pending);
+  --color-gate-pending-solid: var(--color-gate-pending-solid);
+  --color-gate-pending-soft: var(--color-gate-pending-soft);
+  --color-gate-pending-line: var(--color-gate-pending-line);
+  --shadow-card: var(--shadow-card);
+  --shadow-btn: var(--shadow-btn);
+  --shadow-popover: var(--shadow-popover);
+  --shadow-dialog: var(--shadow-dialog);
+  --shadow-drag: var(--shadow-drag);
+  --shadow-field: var(--shadow-field);
+  --shadow-composer: var(--shadow-composer);
+  --color-gate-stale: var(--color-gate-stale);
+  --color-gate-stale-soft: var(--color-gate-stale-soft);
+  --color-gate-stale-line: var(--color-gate-stale-line);
+  --color-foreground: var(--color-foreground);
+  --color-card: var(--color-card);
+  --color-popover: var(--color-popover);
+  --color-destructive: var(--color-destructive);
+  --text-display: var(--text-display);
+  --text-display--line-height: var(--text-display--line-height);
+  --text-display--font-weight: var(--text-display--font-weight);
+  --text-display--letter-spacing: var(--text-display--letter-spacing);
+  --text-page: var(--text-page);
+  --text-page--line-height: var(--text-page--line-height);
+  --text-page--font-weight: var(--text-page--font-weight);
+  --text-page--letter-spacing: var(--text-page--letter-spacing);
+  --text-title: var(--text-title);
+  --text-title--line-height: var(--text-title--line-height);
+  --text-title--font-weight: var(--text-title--font-weight);
+  --text-title--letter-spacing: var(--text-title--letter-spacing);
+  --text-body: var(--text-body);
+  --text-body--line-height: var(--text-body--line-height);
+  --text-body--font-weight: var(--text-body--font-weight);
+  --text-small: var(--text-small);
+  --text-small--line-height: var(--text-small--line-height);
+  --text-small--font-weight: var(--text-small--font-weight);
+  --text-caption: var(--text-caption);
+  --text-caption--line-height: var(--text-caption--line-height);
+  --text-caption--font-weight: var(--text-caption--font-weight);
+  --text-eyebrow: var(--text-eyebrow);
+  --text-eyebrow--line-height: var(--text-eyebrow--line-height);
+  --text-eyebrow--font-weight: var(--text-eyebrow--font-weight);
+  --text-eyebrow--letter-spacing: var(--text-eyebrow--letter-spacing);
+  --text-metric: var(--text-metric);
+  --text-metric--line-height: var(--text-metric--line-height);
+  --text-metric--font-weight: var(--text-metric--font-weight);
+  --text-mono: var(--text-mono);
+  --text-mono--line-height: var(--text-mono--line-height);
+}

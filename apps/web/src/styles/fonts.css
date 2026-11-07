@@ -1,0 +1,26 @@
+/* The design library's two families (design library v1.1, its @font-face rules; Frontend Map v0.6,
+   Performance budgets: self-hosted). The files are the library's embedded WOFF2 data, written out
+   as they are: Inter Variable (300 to 700) and IBM Plex Mono (400 and 500). */
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("./fonts/inter-variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/ibm-plex-mono-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/ibm-plex-mono-500.woff2") format("woff2");
+}
