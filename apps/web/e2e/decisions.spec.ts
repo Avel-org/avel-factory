@@ -30,6 +30,8 @@ test("UC-29: / is server-rendered with its rows, and approving a proposal with a
   await expect(page.getByText("4 things need you.")).toBeVisible();
 
   const row = rows.filter({ hasText: proposal.title });
+  // Hydration: a click on the server's HTML before React has hydrated is lost (UI contract section 7).
+  await expect(page.locator('[data-ui="DecisionsPage"][data-hydrated="true"]')).toBeVisible();
   await row.getByRole("button", { name: new RegExp(`^${proposal.approveLabel}`) }).click();
 
   const dialog = page.getByRole("dialog");
@@ -57,6 +59,8 @@ test("UC-30: a version bumped while the page is open gives the stale state, and 
   await expect(row).toBeVisible();
   await expect(row.getByText(`Binds to Version ${proposal.version}`)).toBeVisible();
 
+  // Hydration: a click on the server's HTML before React has hydrated is lost (UI contract section 7).
+  await expect(page.locator('[data-ui="DecisionsPage"][data-hydrated="true"]')).toBeVisible();
   await row.getByRole("button", { name: new RegExp(`^${proposal.approveLabel}`) }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("textbox").fill(REASON);
@@ -131,6 +135,9 @@ test("UC-31: on a phone the actions are D11's two-column grid, 44px tall, and th
   expect(approveBox.width / rejectBox.width, "columns are 1fr and 1.4fr").toBeCloseTo(1.4, 1);
   expect(approveBox.height, "Approve is at least 44px tall").toBeGreaterThanOrEqual(44);
   expect(rejectBox.height, "Reject is at least 44px tall").toBeGreaterThanOrEqual(44);
+
+  // Hydration: a click on the server's HTML before React has hydrated is lost (UI contract section 7).
+  await expect(page.locator('[data-ui="DecisionsPage"][data-hydrated="true"]')).toBeVisible();
 
   // The reason dialog at 390px: a 16px input (no iOS zoom), inside the viewport, usable.
   await approve.click();
