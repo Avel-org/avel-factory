@@ -1,6 +1,6 @@
 # UI contract: the approval page (frontend sprint-01, Step 1)
 
-Zero, 2026-11-06. Status: **revision 4, for Brennan's re-review** (`agent-brennan-approvals-uic-review-spec`, a4). Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
+Zero, 2026-11-06. Status: **revision 5, for Brennan's re-review** (`agent-brennan-approvals-uic-review-spec`, a5). Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
 
 This is the one document the sprint's builders and test writer work from:
 - Nemi: the app and tokens.
@@ -45,7 +45,7 @@ Each scenario has an ID (`UC-NN`, section 7), and a test carries it in its name.
 In m1, route 52 returns `Page(Placeholder)` (D30). The Step 1 slice makes it CR-W2's union (CR-W2 section 8, item 5). Until then:
 
 - **The data core holds CR-W2's row as a Zod schema:** `apps/web/src/data/pending-decisions.ts`, transcribed from CR-W2 sections 2.1 to 2.3, field for field. That gives `PendingDecisionRow`, `DecisionChoice` and `CostImpact`. It is the only copy on the web side. The mock's tests check the mock's rows against it.
-- **Each item route 52 returns** is parsed with it in the route's query `select` (`parsePendingPage`).
+- **Each item route 52 returns** is parsed with it, one page at a time (`parsePendingPage`), inside the route's infinite query `select` (`selectPendingPages`), which joins the loaded pages (section 3).
   - Rows that parse are listed.
   - A row that doesn't parse is counted in `unreadable` and not drawn. The page shows the unreadable band (UC-24).
 - **When the Step 1 contract exports `PendingDecisionDto`,** a later dispatch deletes the local schema and imports the contract's.
@@ -208,7 +208,8 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 | | | **The retry delay:** TanStack's default unless `retryDelay` is given (in ms). Screen tests pass `0`; the page never does |
 | | | **Mutations:** never retried automatically |
 | `PendingDecisionRow`, `DecisionChoice`, `CostImpact` | `data/pending-decisions.ts` | Zod schemas, CR-W2 sections 2.1 to 2.3 (section 1 above) |
-| `parsePendingPage(page): { rows: PendingDecisionRow[]; unreadable: number; nextCursor: string \| null }` | `data/pending-decisions.ts` | Route 52's `select` |
+| `parsePendingPage(page): { rows: PendingDecisionRow[]; unreadable: number; nextCursor: string \| null }` | `data/pending-decisions.ts` | Parses **one** route 52 page |
+| `selectPendingPages(data: InfiniteData<Page>): { rows: PendingDecisionRow[]; unreadable: number; nextCursor: string \| null }` | `data/pending-decisions.ts` | Route 52's infinite query `select` (TanStack Query passes it every loaded page). It runs `parsePendingPage` on each of `data.pages`: `rows` are concatenated in page order (the server's order), `unreadable` is summed over the loaded pages, and `nextCursor` is the last page's |
 | `formatAgo(ms: number \| null): string` | `lib/time.ts` | DL's `avAgo`, word for word: null or not finite gives `—`; under 60s gives `Ns`; under 60m gives `Nm`; otherwise `Nh Mm` |
 | `formatClock(iso: string): string` | `lib/time.ts` | Local `HH:MM`, zero-padded, as DL's approved stamp shows it (`14:06`) |
 | `getRouter()` | `router.tsx` | Called per request on the server and once in the browser. It makes a new `QueryClient` (`createQueryClient()`) and a new `Api` bound to it (`bindApi`), passes `{ queryClient }` as the router context, and wires Router and Query with `setupRouterSsrQueryIntegration`, which provides the `QueryClient` to the app (FM, Rendering and SSR) |
@@ -427,7 +428,7 @@ The one exception is section 3's fourth branch (a response body the link can't r
 | `kind` | What the row does | Action |
 | --- | --- | --- |
 | `stale` | `state: "stale"`; binding struck; `staleNote: "Version {currentVersion} arrived while you were reading."`; `staleAction: "Review version {currentVersion}"` (DL's B-2 specimen copy) | **Review** refetches route 52, and the row comes back with the new version in `seen`. **Nothing is re-sent, ever** (FM, In short, item 5). If the row is gone after the refetch, the list shows `That decision was settled elsewhere.`† (`role="status"`) |
-| `notAllowedNow` | `state: "notAllowed"`, with `notAllowedReason` set by `state`: | `onRefresh`: `Refresh list`† refetches route 52 |
+| `notAllowedNow` | `state: "notAllowed"`, with `notAllowedReason` set by `state`: | `onRefresh`: `Refresh list`† refetches route 52. A row the refetch still lists comes back from the server in `seen`, as `stale`'s does: the page keeps no state the server doesn't send |
 | | `state` resolved: `This decision was already made.`† | |
 | | `state` expired: `This decision expired.`† | |
 | | no `state`: `This can't be decided now.`† | |
@@ -438,7 +439,7 @@ The one exception is section 3's fourth branch (a response body the link can't r
 | `forbidden` | `inlineError`: `ErrorPanel` compact, code 403, title `Not allowed` (DL), `body` = `message` | none (E1) |
 | `rateLimited` | Back to `seen`; `actionsDisabledReason: "Retry in {s}s"` (DL 429 copy), counting down each second from `retryAfterMs`; at 0 the buttons come back | Nothing is re-sent automatically |
 | `idempotencyConflict` | `inlineError`: `ErrorPanel` compact, code 400, DL's 400 title and body (FM: "a bug report, not a user message") | `Reload` (DL) reloads the page |
-| `inProgress` | Stay `approving` or `rejecting`; re-send with the same key after 500ms, 1s and 2s; then as `network` | — |
+| `inProgress` | Stay `approving` or `rejecting`; re-send with the same key after 500ms, 1s and 2s; then as `network`, with the last request's ID | — |
 | `conflict` | `inlineError`: `ErrorPanel` compact, code 409, title `This couldn't be recorded.`†, body = `message`. **Never DL's 409 copy, and never the stale state** | `Refresh list`† refetches route 52 |
 | `unprocessable` | `inlineError`: `ErrorPanel` compact, code 422, title `Not allowed now` (FM line 220), body = `message`. **Never DL's 422 copy** | `Refresh list`† |
 | `network`, `server` | Back to `seen`; `inlineError`: `Couldn't reach the server.`† and the request ID chip | `Retry` (DL's `WidgetState` label): step 4 |
@@ -524,16 +525,16 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 | UC-14 | **Reject:** the same path, with the body `{ version, choice: reject.choice, reason }`, `Rejecting…` and the rejected line |
 | UC-15 | **Stale:** `bumpVersion` before confirming → the stale state with `Version {n+1} arrived…` and the request ID; **exactly one request to route 54**; Review → `Version {n+1}`, and deciding it then gets 201 |
 | UC-16 | **Stale, then gone:** after the 409, `resolve` the proposal; Review → the row is gone, and `That decision was settled elsewhere.` |
-| UC-17 | **422 and 404:** `resolve` → `This can't be decided now.`; `failNext(54, { status: 422, code: "INVALID_TRANSITION", data: { state: "resolved", allowed: [] } })` → `This decision was already made.`; the same with `"expired"` → `This decision expired.`; `remove` → `This decision no longer exists.`; each with the request ID; Refresh list drops the row |
+| UC-17 | **422 and 404:** `resolve` → `This can't be decided now.`; `resolve`, then `failNext(54, { status: 422, code: "INVALID_TRANSITION", data: { state: "resolved", allowed: [] } })` → `This decision was already made.`; `expire`, then the same with `"expired"` → `This decision expired.`; `remove` → `This decision no longer exists.`. Each case shows the request ID, and in each, Refresh list drops the row (the store was changed in every case). **Still listed:** `failNext` 422 alone, with the store left open → Refresh list brings the row back in `seen` |
 | UC-18 | **429:** `failNext(54, { status: 429, code: "TOO_MANY_REQUESTS", data: { retryAfterMs: 3000 } })` → buttons disabled with `Retry in 3s` and the request ID, counting down to enabled; no request re-sent |
 | UC-19 | **Network and 5xx:** `failNext(54, { network: true })`, and then `failNext(54, { status: 500, code: "INTERNAL", data: {} })` → `Couldn't reach the server.` with the request ID; Retry sends the same `Idempotency-Key`, path and body as the recorded failed request |
-| UC-20 | **`IDEMPOTENCY_IN_PROGRESS`** once → re-sent with the same key, then 201 |
+| UC-20 | **`IDEMPOTENCY_IN_PROGRESS`**, with fake timers: once → re-sent with the same key after 500ms, then 201. **Running out:** `failNext(54, { status: 409, code: "IDEMPOTENCY_IN_PROGRESS" }, { times: 4 })` → three re-sends with the same key, 500ms, 1s and 2s apart, the row `Approving…` throughout; then `Couldn't reach the server.` with the fourth request's ID, and no fifth request |
 | UC-21 | **Reason 400:** `failNext(54, { status: 400, code: "BAD_REQUEST", data: { field: "reason" } })` → the dialog reopens with the reason, the error and the request ID; confirming sends a new key |
 | UC-22 | **Panels:** 400 other, 403, `IDEMPOTENCY_KEY_REUSED`, `CONFLICT` and `UNPROCESSABLE_CONTENT` each show their compact `ErrorPanel` with 5.3's title, action (or none) and the request ID. `CONFLICT` is never the stale state |
-| UC-23 | **401** → the page-level `Signed out` panel, with the request ID and no button |
+| UC-23 | **401**, on each route: `failNext(54, { status: 401, code: "UNAUTHORIZED" })`, then confirming; and `failNext(52, { status: 401, code: "UNAUTHORIZED" })` on the first load, without prefetched data. Each → the page-level `Signed out` panel, with the request ID and no button |
 | UC-24 | **Unreadable:** `injectRawItem({ kind: "proposal" })` → the alert band with `1 decision couldn't be shown…`; the other rows show |
 | UC-25 | **Offline:** with `navigator.onLine` false, buttons disabled with `You're offline.` |
-| UC-26 | **Paging:** `fixtures.many` → 50 rows and `50+`; Load more → 100 and `100+`; then 150 and `150`, and the button is gone. `failNext(52, { network: true }, { times: 4 })` on Load more → `Retry loading more` with the request ID, which then loads |
+| UC-26 | **Paging:** `fixtures.many` → 50 rows and `50+`; Load more → 100 and `100+`; then 150 and `150`, and the button is gone. `failNext(52, { network: true }, { times: 4 })` on Load more → `Retry loading more` with the request ID, which then loads. **Across pages:** `injectRawItem({ kind: "proposal" })` before the first Load more → the band reads `1 decision couldn't be shown…` and still reads it after the next Load more (summed over loaded pages, section 3) |
 | UC-27 | **List states:** rendered without prefetched data → `WidgetState` loading. `failNext(52, { network: true }, { times: 4 })` on the first load → exactly `Couldn't load` and `The server did not answer. Nothing was changed.`, the request ID, and Retry, which then loads. `failNext(52, { status: 403, code: "FORBIDDEN", message: "No." })` → `Not allowed` with body `No.`, the request ID and no button. A refetch failing 4 times with rows on screen → `Stale, last good value …`, the request ID and Retry |
 | UC-28 | **Contract version:** a mock whose `contractVersion` differs from the client's → the `staleVersion` banner with `Reload` |
 
@@ -596,3 +597,11 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 | 25 The default `limit` | P3 | Section 2: the mock's 50 is provisional (Decisions), and the page always sends `limit` |
 
 **Folded in from Axis's S1-3** (Decisions, "Axis's S1-3" and "Revision 4"): section 2's `BAD_REQUEST` details `{ field, issues }` and the missing key's `"required"`; section 3's decoding at the link (`decodeErrorBody` as `customErrorResponseBodyDecoder`, `ApiError`); UC-03 and UC-04.
+
+**Review a4's findings (revision 5):**
+
+| Finding | Severity | Answered in |
+| --- | --- | --- |
+| 26 Route 52's infinite `select` | P3 | Sections 1 and 3: `parsePendingPage` parses one page; `selectPendingPages` joins the loaded pages (rows in page order, `unreadable` summed, the last page's `nextCursor`). UC-26 asserts the sum across pages |
+| 27 Scenario gaps | P3 | UC-20: `IDEMPOTENCY_IN_PROGRESS` running out, with fake timers (5.3 names the last request's ID). UC-23: a 401 on route 54 and on route 52's first load |
+| 28 UC-17's Refresh list | P3 | UC-17: the `failNext` cases `resolve` or `expire` first, so every case drops the row; a `failNext` alone shows the row back in `seen`. 5.3's `notAllowedNow` (and so `notFound`) says a row still listed comes back in `seen` |

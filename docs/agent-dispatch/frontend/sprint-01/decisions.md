@@ -297,6 +297,21 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
   - **Appendix A, finding 22;** Ghost's mock task and notes in `plan.toml`, re-rendered.
   - Revision 4's provisional mismatch message is gone with the check.
 
+## 2026-11-07: Revision 5 of the UI contract (Brennan's a4, FAIL on three P3s)
+
+- **Input:** Brennan's a4 (report 033ff65) failed revision 4 (f323450) on 26, 27 and 28, all P3. a3's 16 and 22 to 25 closed, and none reopened. INT asked for a short revision 5 that changes nothing else.
+- **26, route 52's `select`:**
+  - An infinite query's `select` receives every loaded page.
+  - `parsePendingPage` now parses one page, and the new `selectPendingPages` is the `select`. It concatenates `rows` in page order, sums `unreadable` over the loaded pages (the band counts everything the page couldn't draw), and takes the last page's `nextCursor`.
+  - UC-26 asserts the sum across pages.
+- **27, scenario gaps:**
+  - **UC-20:** adds `IDEMPOTENCY_IN_PROGRESS` running out, with fake timers: three re-sends 500ms, 1s and 2s apart, then the `network` band with the fourth request's ID. 5.3's row now names that ID.
+  - **UC-23:** covers a 401 on route 54 and on route 52's first load.
+- **28, UC-17:**
+  - **The `failNext` cases now change the store first** (`resolve`, or `expire`), so Refresh list drops the row in every case.
+  - **A row a refetch still lists** comes back from the server in `seen`, as `stale`'s does. The page keeps no state the server doesn't send. 5.3's `notAllowedNow` row says so (`notFound` follows it), and UC-17 asserts it with `failNext` alone.
+- **Copy:** no new † strings.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).
