@@ -1,4 +1,4 @@
-status: open
+status: fixed (56a079b)
 severity: P3
 title: `WidgetState` `error` with rows on screen draws the request ID chip beside the stale message, in the status row, not under it (W1)
 reviewer: Zero (review-frontend), agent-zero-w0-kit-review-frontend (a1)

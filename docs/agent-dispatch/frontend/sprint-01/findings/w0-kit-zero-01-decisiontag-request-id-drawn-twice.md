@@ -1,4 +1,4 @@
-status: open
+status: fixed (56a079b)
 severity: P3
 title: `DecisionTag` draws the request ID chip twice when a `stale` card also has `actionsDisabledReason`, and draws the footer chip for any disabled reason, not only a 429 countdown
 reviewer: Zero (review-frontend), agent-zero-w0-kit-review-frontend (a1)
