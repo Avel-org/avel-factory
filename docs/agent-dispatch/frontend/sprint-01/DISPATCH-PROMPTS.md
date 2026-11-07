@@ -522,3 +522,25 @@ write docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-pe
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
+
+## agent-leah-size-study-review-a11y-perf
+
+```text
+You are LEAH on avel-factory, frontend sprint-01 (step 1: The minimal approval page on the contract mock, with the thin W0 slice under it).
+Dispatch: agent-leah-size-study-review-a11y-perf. Branch: frontend/sprint-01/agent-leah-size-study-review-a11y-perf-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-leah-size-study-review-a11y-perf.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- LEAH-01: The baseline (080ca45 plus the sideEffects line) rebuilt and attributed by package from its sourcemap; then candidates 1 to 4 (TanStack Query to router loaders, Preact/compat, a smaller oRPC client path, seroval and the SSR payload), each measured from the baseline with its level, cost and risk, one findings file each
+- LEAH-02: Candidates 5 to 7 (React Compiler, build options, anything the attribution finds), each measured the same way; then the summary table, the recommended set with its projected first load, and the budget recommendation
+
+You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-size-study-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/size-study-leah-*.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-01/agent-leah-size-study-review-a11y-perf-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```

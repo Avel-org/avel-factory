@@ -60,6 +60,7 @@ The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.ts
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
+- `agent-leah-size-study-review-a11y-perf`: A size study of /'s first-load JavaScript: measure each way of cutting it on a scratch copy of the page, and report each one's saving, cost and risk, so INT can set sprint-01's budget and choose what to build.
 
 ## 4. Tasks
 
@@ -91,6 +92,7 @@ Do them in order. Finish each one, verified, before the next.
 - Two things to confirm once installed, each a stop-and-report under Deviations if it doesn't hold: OpenAPILink in @orpc/openapi-client 1.16.2 calls customErrorResponseBodyDecoder(deserializedBody, response) before its own error decoding and throws what it returns (Zero read it in dist/shared/openapi-client.DgkI_tTF.mjs); and getRouter() can read the incoming request on the server through TanStack Start's request accessor inside createIsomorphicFn().server(). Name the accessor you used in your report.
 - The web calls the mock's route 54 with the body { version, choice, reason }: OpenAPILink drops path parameters from the body (contract section 1). The path's proposalId wins and a body copy is ignored, as oRPC's handler merges path over body (Axis S1-5, D48): don't read the raw body, and check 1 is the schema check only.
 - Attempt a2 (2026-11-07, revision 9; INT's decision 4, S1-6's web side): the first two tasks are merged (a1). Do only the third. Start after Axis's S1-6 (@avel/contract on zod/mini, backend sprint-01) is merged on main: check that git grep -nE "from ['\"]zod['\"]" packages/contract/src lists nothing before you start, and if it does, stop and report. The two halves land together because either one on classic zod brings all of it back (backend sprint-01 decisions.md, S1-6).
+- Axis's S1-6 spike notes for you (backend sprint-01 decisions.md, S1-6, 'The spike's notes for Ghost'): data/client.ts's type-level SchemaInput/SchemaOutput use z.ZodType, whose mini name is z.ZodMiniType (or take $ZodType from zod/v4/core, which accepts both); in pending-decisions.ts, .regex() becomes .check(z.regex(...)), .optional()/.nullable() become z.optional(x)/z.nullable(x), and .min(1) on an int becomes .check(z.minimum(1)). The spike measured both halves together at 156.28 kB gzip (from 173.53).
 - a2's scope is zod only: Zane's w0-data finding 03 and UiError.stale.message wait for INT's call (decisions.md, 'Revision 9'). packages/contract-mock and apps/web/test aren't in the browser's bundle, so section 3's rule doesn't cover them: leave them as they are unless they stop typechecking.
 
 ## 5. Territory

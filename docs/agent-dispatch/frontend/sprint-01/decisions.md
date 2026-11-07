@@ -496,3 +496,23 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **Leah's re-review (a2)** runs after Leon a2, Fantem's w0-kit a3 and Nemi's w0-split are merged. Its budget figure is final after Ghost's w0-data a2.
 - **Fenn's end-to-end a2:** each test waits for the marker after its SSR checks and before its first click. Fenn commits with `AVEL_LOCK_OVERRIDE` (INT's decision), and after the merge, `locks.md`'s `decisions-e2e` line moves to the new commit.
 - **No new scenarios:** UC-01 to UC-31 are unchanged. UC-31 already asks for 44px and 16px. K1 and R5 meet it.
+
+## 2026-11-07: The size study (INT; planned, not dispatched)
+
+- **Input:** INT. S1-6 saves 17.25 kB (Axis's spike: 173.53 to 156.28 kB gzip), so `/` stays over FM's 150 kB after Ghost's w0-data a2. INT wants the first load lower, measured option by option, and the budget revisited with the numbers.
+- **What's left to spend,** by INT's split: React about 66 kB, TanStack Router, Query and Start about 47, seroval about 9, oRPC 10 to 12.
+- **The plan:** one dispatch, `agent-leah-size-study-review-a11y-perf`. It's Leah's review role, with no territory and no diff, like approvals-uic's review. It starts from main.
+  - **Where she works:** a scratch worktree, thrown away afterwards. She writes only her report and one `findings/size-study-leah-NN-*.md` file per option.
+  - **The baseline:** 080ca45 (Leon's a1 on ceb6d47, 173.53 kB), plus revision 9's `sideEffects` line. The first load is counted as section 8 counts it. S1-6's 17.25 kB is taken as given.
+  - **Candidates:**
+    1. TanStack Query replaced by router loaders;
+    2. Preact with `preact/compat` under Start;
+    3. a smaller oRPC client path, beyond S1-7's 0.37 kB minified router;
+    4. seroval's code and the SSR payload;
+    5. React Compiler;
+    6. build options;
+    7. whatever a fresh sourcemap attribution finds.
+  - **For each option:** the saving (gzip and brotli), how real the number is (A: the page works; B: it builds and hydrates; C: an estimate only), the cost (territories, contract and FM changes, locked tests, dependencies), the risk, and a recommendation.
+  - **The output:** a recommended set, with its projected first load (overlaps not double-counted), and a budget figure.
+- **The budget until then:** 160 kB stands for sprint-01. With Leah's numbers I write the budget proposal here and in contract section 8, and INT decides.
+- **Also folded into Ghost's w0-data a2 notes:** Axis's spike notes for the web side (`z.ZodMiniType` or `$ZodType` in `client.ts`, and the `pending-decisions.ts` rewrites).
