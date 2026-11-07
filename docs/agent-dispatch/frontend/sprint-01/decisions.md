@@ -396,3 +396,11 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **The budget:** the page's first load is held to **160 kB gzip** for sprint-01 (was 150 kB). Ghost's narrowed client (3183bc1) is 153.7 kB: react-dom 62, TanStack router, start, query and seroval about 48, zod 25.6, oRPC 11.6, the contract under 2 (after the subpath exports, backend D58). Leah enforces 160 kB; anything over is a finding.
 - **Later:** moving `@avel/contract` to `zod/mini` (about 20 kB less) is a planned contract change for Step 1 or later, with its own Axis decision; the budget returns to 150 kB when it lands.
 - **Tests:** web tests need `packages/contract` built first (the locked Vitest alias covers only the root import), as CI does.
+
+## 2026-11-07: w0-data merged (INT)
+
+- **Merged** with the three reviews (Zero, Brennan, Zane: PASS). INT switched `@avel/contract-mock` from `link:` to `workspace:*` and regenerated the lockfile at the merge. The web build and typecheck are green on main; the locked w0-data tests pass 85 of 85.
+- **The client is built from the `{ decisions }` route group only** (`@avel/contract/routes/decisions`, backend D58); nothing in `apps/web/src` imports the root `@avel/contract` at runtime. The first-load budget is 160 kB (above). Brennan's finding 01: section 3's wording follows in Zero's next revision.
+- **Zane's finding 02 (P2) is a W5 prerequisite:** the SSR client's `baseUrl` comes from the request's Host today; before W5 puts a real server behind a proxy, the server-side API origin comes from configuration or an allow-list, never from the request. W5's dispatch carries this.
+- **Zane's finding 03 (P3) is a follow-up:** a forwarded `X-Request-Id` is accepted only if it's a UUID or `[A-Za-z0-9-]{1,64}`; otherwise the wrapper makes a new one. Ghost's next data dispatch.
+- **Verify commands:** use `pnpm --filter @avel/web exec vitest run test/data`, since `test -- test/data` doesn't filter (Zero's and Brennan's notes); Zero fixes the plan in the next revision.
