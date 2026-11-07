@@ -12,6 +12,12 @@ export class ApiError extends ORPCError<
   string,
   { details: ErrorBody["details"]; requestId: string }
 > {
+  /**
+   * The `ErrorBody`'s message as sent. `message` is the same, except that `ORPCError` replaces
+   * an empty one with a fallback, so `UiError.stale.message` reads this.
+   */
+  readonly bodyMessage: string;
+
   constructor(body: ErrorBody, status: number) {
     super(body.code, {
       status,
@@ -19,6 +25,7 @@ export class ApiError extends ORPCError<
       data: { details: body.details, requestId: body.requestId },
     });
     this.name = "ApiError";
+    this.bodyMessage = body.message;
   }
 }
 
@@ -47,7 +54,13 @@ type UiErrorBase = { code: string | null; requestId: string | null };
 /** What a screen draws for an error, by `kind` (UI contract section 3, `UiError`). */
 export type UiError = UiErrorBase &
   (
-    | { kind: "stale"; field: string | null; currentVersion: number | string | null }
+    | {
+        kind: "stale";
+        field: string | null;
+        currentVersion: number | string | null;
+        /** The `ErrorBody`'s message, or "" when the body isn't an `ErrorBody` (revision 9). */
+        message: string;
+      }
     | { kind: "notAllowedNow"; state?: "resolved" | "expired" }
     | { kind: "notFound" }
     | { kind: "badRequest"; field?: string }
@@ -72,8 +85,17 @@ function stringField(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-/** The kind for a status and, when the body was an `ErrorBody`, its code and details. */
-function byStatus(base: UiErrorBase, status: number, message: string, details: Fields): UiError {
+/**
+ * The kind for a status and, when the body was an `ErrorBody`, its code, details and message.
+ * `bodyMessage` is the `ErrorBody`'s message, or "" when the body isn't one; `stale` carries it.
+ */
+function byStatus(
+  base: UiErrorBase,
+  status: number,
+  message: string,
+  details: Fields,
+  bodyMessage: string,
+): UiError {
   const { code } = base;
   if (status === 409) {
     // `stale` is keyed on the code STALE_VERSION alone, never on 409 (Decisions, 2026-11-06).
@@ -84,6 +106,7 @@ function byStatus(base: UiErrorBase, status: number, message: string, details: F
         kind: "stale",
         field: stringField(details.field) ?? null,
         currentVersion: typeof current === "number" || typeof current === "string" ? current : null,
+        message: bodyMessage,
       };
     }
     if (code === "IDEMPOTENCY_KEY_REUSED") return { ...base, kind: "idempotencyConflict" };
@@ -126,12 +149,12 @@ export function toUiError(e: unknown): UiError {
   if (e instanceof ApiError) {
     const data = fields(e.data);
     const base = { code: e.code, requestId: stringField(data.requestId) ?? null };
-    return byStatus(base, e.status, e.message, fields(data.details));
+    return byStatus(base, e.status, e.message, fields(data.details), e.bodyMessage);
   }
   if (e instanceof ORPCError) {
     const headers = fields(fields(e.data).headers);
     const base = { code: null, requestId: stringField(headers["x-request-id"]) ?? null };
-    return byStatus(base, e.status, e.message, {});
+    return byStatus(base, e.status, e.message, {}, "");
   }
   if (e instanceof NetworkError) {
     return { kind: "network", code: null, requestId: e.requestId };
