@@ -376,3 +376,9 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **Five dependencies outside section 6 are accepted:** `vite` 8.3.6 (TanStack Start's peer, and the build tool), `@types/react` and `@types/react-dom` 19.3.0, `@testing-library/dom` 10.4.2, `@tanstack/react-router-ssr-query` 1.167.3; and the `dev` script. Zane's w0-app security review checks them.
 - **Root `biome.json` sets `css.parser.tailwindDirectives: true`** (INT, on main), so `@theme` lints.
 - **Merge order:** after its three reviews pass, w0-app merges even though `@avel/web`'s build and typecheck are red until Ghost's `src/router.tsx` and `packages/contract-mock` land (like locked tests failing first). Everything else on main stays green. After Ghost merges, `@avel/contract-mock` switches from `link:` to `workspace:*`, and INT regenerates the lockfile at each merge.
+
+## 2026-11-07: the first-load budget is 160 kB for sprint-01 (INT)
+
+- **The budget:** the page's first load is held to **160 kB gzip** for sprint-01 (was 150 kB). Ghost's narrowed client (3183bc1) is 153.7 kB: react-dom 62, TanStack router, start, query and seroval about 48, zod 25.6, oRPC 11.6, the contract under 2 (after the subpath exports, backend D58). Leah enforces 160 kB; anything over is a finding.
+- **Later:** moving `@avel/contract` to `zod/mini` (about 20 kB less) is a planned contract change for Step 1 or later, with its own Axis decision; the budget returns to 150 kB when it lands.
+- **Tests:** web tests need `packages/contract` built first (the locked Vitest alias covers only the root import), as CI does.
