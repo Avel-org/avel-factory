@@ -1,7 +1,6 @@
 import { type ReactNode, type RefObject, useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
-import { KitStyles } from "./KitStyles";
 
 // DL's Dialog (`Uo`) and its focus handling (`Dy`), the frame ReasonDialog draws in. It isn't one
 // of the kit's components in UI contract section 4, so index.ts doesn't export it.
@@ -82,10 +81,8 @@ export function Dialog({
   const titleId = useId();
   useDialogFocus(open, onClose, panel);
   if (!open || typeof document === "undefined") return null;
-  const width = size === "sm" ? 400 : size === "lg" ? 680 : 520;
   return createPortal(
     <>
-      <KitStyles />
       {/* biome-ignore lint/a11y/noStaticElementInteractions: DL's scrim closes the dialog on a press outside it; Escape and the Close button do the same from the keyboard. */}
       <div
         data-ui="DialogScrim"
@@ -101,10 +98,10 @@ export function Dialog({
           aria-modal="true"
           aria-labelledby={titleId}
           className="av-dialog"
-          style={{ width: `min(${width}px, 100%)` }}
+          data-size={size}
         >
           <div className="av-dialog-head">
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+            <div className="av-dialog-titles">
               <h2 id={titleId} className="av-dialog-title">
                 {title}
               </h2>

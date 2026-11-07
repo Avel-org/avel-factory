@@ -1,5 +1,10 @@
 // The kit (UI contract section 4): DL's components with their data-ui names, taking plain props.
 // Named exports only (Frontend Map v0.6, What every module looks like).
+// kitStylesheetHref is the URL of the kit's one static stylesheet, kit.css, which the page links
+// (UI contract section 4, "The kit's styles"): the kit renders no style element and writes no CSS
+// in JS.
+import kitStylesheetHref from "./kit.css?url";
+
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from "./Button";
 export {
   AV_DECISION_VARIANTS,
@@ -15,3 +20,4 @@ export { ReasonDialog, type ReasonDialogProps } from "./ReasonDialog";
 export { type GlyphStatus, StatusGlyph, type StatusGlyphProps } from "./StatusGlyph";
 export { Tag, type TagProps, type TagToneName } from "./Tag";
 export { WidgetState, type WidgetStateProps } from "./WidgetState";
+export { kitStylesheetHref };

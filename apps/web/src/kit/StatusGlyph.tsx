@@ -34,7 +34,6 @@ export function drawStatusGlyph(status: GlyphStatus, size: number, onColor: bool
       height={n}
       viewBox={viewBox ?? `0 0 ${n} ${n}`}
       aria-hidden="true"
-      style={{ flex: "none", display: "block" }}
     >
       {children}
     </svg>
