@@ -3,103 +3,76 @@
 verdict: DONE
 
 ## Summary
-Attempt a2 did only FANTEM-03. FANTEM-01 and 02 merged in a1. The kit's styles now live in one static stylesheet, `apps/web/src/kit/kit.css`, and `kit/index.ts` exports its URL as `kitStylesheetHref` (a `?url` import). `KitStyles.tsx` and every CSS string and style object are gone. The kit renders no style element, and there's no `dangerouslySetInnerHTML`.
-
-Inline `style` is left in three places only, all values the locked kit tests read from the element:
-- D11's phone grid;
-- D6's stale strike;
-- D12's stamp animation. This one isn't in the contract's list: see Deviation 1.
-
-All 68 locked kit tests pass unchanged, and lint is clean. A browser comparison against main's kit found no computed-style difference (Limitations says how it was checked). The kit's JS drops from 11,096 B to 7,527 B gzip.
+Attempt a3 does FANTEM-04 only, as the task's notes say: K1 and R5 from UI contract section 4 (revision 9). `kit.css` has a `@media (max-width: 899px)` block, written with DL's tokens only. It makes every Button at least `var(--av-touch-min)` tall, gives HashChip's copy button and the dialog's Close button a transparent hit area at least 44px square without changing their drawn size, and sets ReasonDialog's textarea to `var(--av-phone-body)`. The `Dialog` frame now names its description in `aria-describedby`. FANTEM-01 to 03 were merged in a1 and a2. The locked kit tests (UC-08 to UC-10) pass unchanged.
 
 ## Pre-flight
-- **Branch:** `frontend/sprint-01/agent-fantem-w0-kit-build-a2`, starting at `3bf5e3b` (main).
-- **Part 2 files.** All exist. In this attempt I read:
-  1. `.claude/agents/fantem.md`
-  2. `codebase-analysis.md`
-  3. The UI contract (revision 7):
-     - sections 0 and 4 in full, including "The kit's styles";
-     - section 5's route, module and "Styles and loading" paragraphs;
-     - sections 6 and 8.
-  4. `decisions.md`: "Revision 7" in full.
-  5. This task doc, in full.
-- **Part 2 files not re-read in a2:** CR-W2, the Frontend Map, the Step plan and the design library.
-  - a2 changes where values live, not what they are. Every value was copied from a1's merged components, which Zero and Brennan reviewed against DL.
-  - From DL I only checked its Dialog class names, with a grep.
-  - I'm saying this plainly rather than counting those files as read.
-- **Starts conditions:** the w0-kit tests are locked (`locks.md`: w0-kit · 965071b), and Nemi's w0-app is on main.
-- **Part 7 commands:** all available.
-  - `pnpm install --frozen-lockfile` ran clean in this fresh worktree, and the lockfile is unchanged.
-  - `typecheck` needs `packages/contract/dist`, which the Part 7 `build` creates. Run in Part 7's order, it passes.
+- Part 2 files, all read:
+  - `.claude/agents/fantem.md`
+  - `codebase-analysis.md`
+  - `docs/ui-contracts/decisions-approval-page.md`: read in full for sections 0 and 4, skimmed for the rest
+  - `CR-W2 Pending decisions.md`: skimmed, nothing in it touches K1 or R5
+  - `decisions.md`: Revision 9 and the size study read in full
+  - `Frontend Map v0.6`: skimmed
+  - the design library: its token stylesheet, `--av-touch-min` and `--av-phone-body`, and the `[data-density="phone"]` blocks
+  - `Step 0 and Step 1 plan.md`: skimmed
+  - this task doc
+- `locks.md` is at `docs/agent-dispatch/frontend/sprint-01/locks.md`, not at the repo root. Its w0-kit lock is `apps/web/test/kit/**` at 965071b, and nothing under it was touched.
+- Branch: `frontend/sprint-01/agent-fantem-w0-kit-build-a3`, which starts at 9b25f09.
+- Part 7 commands: all available. The fresh worktree first needed `pnpm install --frozen-lockfile`, and `@avel/web` typecheck only passed once the `@avel/web...` build had built `@avel/contract`'s output.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| FANTEM-01 | DONE (a1, merged) | e47b8a5 |
+| FANTEM-01 | DONE (a1, merged) | e47b8a5, 56a079b |
 | FANTEM-02 | DONE (a1, merged) | 14befc1 |
-| FANTEM-03 | DONE | 4f0cf1c |
+| FANTEM-03 | DONE (a2, merged) | 4f0cf1c |
+| FANTEM-04 | DONE | d3ec9a4 |
 
 ## Contract to files
-- **Section 4, "Where they live":** `kit.css` holds every rule as class and `[data-ui]` rules. That covers:
-  - DL's Overlays (Dialog) and field-anatomy rules, word for word from `KitStyles.tsx`;
-  - D12's hole fill and its reduced-motion rule;
-  - every style object that was in `Button`, `Tag`, `Icon`, `StatusGlyph`, `HashChip`, `Dialog`, `ReasonDialog`, `ErrorPanel`, `WidgetState` and `DecisionTag`.
-- **Section 4, "How it's loaded":** `index.ts` exports `kitStylesheetHref` from `./kit.css?url`.
-- **Section 4, "No CSS in JavaScript":** `KitStyles.tsx` is deleted, and its imports are gone from `Dialog.tsx` and `DecisionTag.tsx`.
-- **State the kit tracks in JS** reaches the CSS as data attributes. JS still decides each state, so behaviour is unchanged:
-  - `data-hovered` and `data-pressed` come from DL's `ry`/`ou` in `interaction.ts`;
-  - the variants are `data-variant`, `data-size`, `data-tone`, `data-layout`, `data-block`, `data-icon-only`, `data-copy`, `data-copied`, `data-strike`, `data-compact` and `data-stopped`.
-- **Section 4, "What stays inline":**
-  - D11's grid: `DecisionTag.tsx`, the phone actions `div`;
-  - D6's strike: `DecisionTag.tsx`, `Binds to {label}`;
-  - D12's stamp animation: Deviation 1.
-- **Locked UC-08 to UC-10:** `apps/web/test/kit/**`, unchanged, 68 of 68 passing.
-- **Task 3's Expected (chunk sizes against INT's split):** see "JS gzip, before and after" below.
+- **K1: every Button is at least `var(--av-touch-min)` tall below 900px.** In `apps/web/src/kit/kit.css`, under `@media (max-width: 899px)`: `[data-ui="Button"][data-variant] { min-height: var(--av-touch-min) }`.
+  - Every kit Button carries `data-variant`, and so does D9's anchor. The selector is as specific as the link variant's own `min-height: 24px` rule and comes after it, so it wins over it.
+  - `height: var(--kb-h)` is left as it is, and `min-height` lifts it.
+  - Covered, and measured at 44px: Approve and Reject in D11's grid, `Open on GitHub`, the dialog's Cancel and confirm, and plain, link and small buttons.
+- **K1: the copy and Close tap areas are at least 44px square, with the drawn size unchanged.** In `kit.css`, under the same media query:
+  - `.av-hash-copy` and `.av-icon-close` get `position: relative`;
+  - each gets an empty `::after`, absolutely placed and centred (`top/left: 50%`, `transform: translate(-50%, -50%)`), sized `var(--av-touch-min)` square with `min-width/min-height: 100%`. So when the copy button widens to read "Copied", the area grows with it;
+  - the pseudo-element is transparent, and a tap on it hits the button it belongs to.
+- **K1 and R6: the textarea is 16px.** In `kit.css`: `[data-ui="ReasonDialog"] textarea { font-size: var(--av-phone-body) }` below 900px.
+- **R5: the description is the accessible description.** In `apps/web/src/kit/Dialog.tsx`:
+  - a second `useId()` gives `descriptionId`;
+  - the description `<p>` carries it;
+  - the `role="dialog"` element has `aria-describedby={description ? descriptionId : undefined}`, so there's no attribute when there's no description.
+  - ReasonDialog already passes `description` only when one is given, so it inherits this.
+- **No CSS in JS, and no new literals.** Nothing was added to the TSX apart from markup attributes. The only values in the new rules are the two DL tokens, plus the centring geometry (`50%`, `-50%`, `100%`, `content: ""`), which isn't a colour, size, radius or duration.
 
-### JS gzip, before and after
-- **The app build can't show the kit.** On main no route imports the kit (Leon's `routes/index.tsx` isn't merged), so `pnpm --filter @avel/web build` prints no kit chunk.
-- **So I measured the kit on its own.** Each entry was bundled with Vite library mode, minified, with `react`, `react-dom` and `lucide-react` external, and gzipped with `-9`.
-- **"Before" is main's kit (`3bf5e3b`), measured the same way:**
+**How I measured** (scratch harness, thrown away, not committed):
+- **The page:** I bundled the real kit components with esbuild (a HashChip with `prefix="req"`, Buttons, a phone DecisionTag with a link, and an open ReasonDialog with a description, error and request ID). It loaded the built `app.css` (tokens and base) and `kit.css`.
+- **The browser:** Playwright Chromium 1.65, at 390x844, 899x900, 900x900 and 1280x900.
+- **What I compared:** the new `kit.css` against the pre-change one (`git show HEAD:…kit.css` before the commit).
+- **The hit test:** `document.elementFromPoint` at 21px left, right, above and below each button's centre. A hit counts when the button `contains()` the element returned.
 
-| Entry | JS raw before | JS gzip before | JS raw after | JS gzip after | Gzip change |
-| --- | --- | --- | --- | --- | --- |
-| `kit/index.ts` (the whole kit) | 43,254 | 11,096 | 26,059 | 7,527 | −3,569 (−32%) |
-| `Button.tsx` | 7,502 | 2,522 | 2,928 | 1,306 | −1,216 (−48%) |
-| `DecisionTag.tsx` (with Button, HashChip, Tag, Icon and StatusGlyph) | 29,177 | 7,755 | 15,179 | 4,600 | −3,155 (−41%) |
+| At 390x844 | Before | After |
+| --- | --- | --- |
+| Page HashChip copy button: tap ±21px | 0 of 4 hit | 4 of 4 hit |
+| Page HashChip copy button: drawn size, chip height, row height | 24x24, 22, 22 | 24x24, 22, 22 (unchanged) |
+| Dialog Close: tap ±21px | 0 of 4 hit | 4 of 4 hit |
+| Dialog Close: drawn size, head height | 32x32, 71 | 32x32, 71 (unchanged) |
+| Dialog request ID copy: tap ±21px | 0 of 4 hit | 4 of 4 hit |
+| Dialog request ID copy: drawn size | 24x24 | 24x24 (unchanged) |
+| Button heights: Plain, Link, Small, Reject…, Approve, Open on GitHub, Cancel, Confirm | 32, 32, 28, 38, 38, 32, 32, 32 | 44 for all 8 |
+| Textarea font-size | 14px | 16px |
+| `aria-describedby` | | names the `<p>` reading "Say why, for the record." |
 
-- **CSS:** `kit.css` is a separate asset, 16,920 B raw and 3,644 B gzip. Under section 8 it doesn't count toward the JS budget.
-- **INT's split** (Button 5.2 kB, DecisionTag 5.3 kB gzip) was measured on Leon's branch with that app's chunking, so the absolute numbers don't line up with mine. The ratios are what carry over: Button's JS is about half what it was, and DecisionTag's about 40% smaller. Re-measuring `/` is for Leon's a2 and Leah.
+- **At 899x900:** the same as 390.
+- **At 900x900 and 1280x900:** every element's bounding box, under `#root` and the dialog, is identical between the old and new `kit.css` (`layout identical: true`). Button heights, the 14px textarea and the 0 of 4 hits are unchanged.
 
 ## Deviations
-1. **D12's stamp animation stays inline. The contract's "what stays inline" names only D11 and D6.**
-   - The locked UC-08 test `approved (D12): the stamp's animation reads --av-d-punch` checks `card.outerHTML` for `--av-d-punch`. A stylesheet value can't appear in the HTML.
-   - So the stamp keeps one inline declaration: `animation: av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both`. Its other values (position, border, type, `rotate(-7deg)`) are in `kit.css`.
-   - This is the contract's own rule: "the values the locked kit tests read from the element". The list after it just missed this one.
-   - **Needs:** Zero, to add D12's stamp animation to section 4's "What stays inline" list.
-2. **HashChip's `strike` moved to CSS (`[data-strike]`).** No locked test reads it: `isStruck` is only used on D6's version text. So it follows the general rule, not the D6 exception.
-3. **`Dialog.tsx` still sets `document.documentElement.style.overflow`.** That's DL's scroll lock (`Dy`), a runtime behaviour on `<html>`, not a style rule the kit draws. It's unchanged.
-4. **One `biome-ignore` in `kit.css`** for `noImportantStyles`, on DL's overlay reduced-motion rule (`animation: none !important`). That rule is word for word from DL.
-5. **Biome formatted `kit.css`** to its CSS style: one declaration per line, and `.985` printed as `0.985`. The values are the same.
-6. **Two rules raise specificity on purpose.** Inline styles used to beat every stylesheet, so these keep the cascade's outcome the same:
-   - `a[data-ui="Button"][data-variant]` keeps the D9 link anchor's colour and 3px underline offset over base.css's `a:hover`. Its underline on hover is unchanged: the inline style never set `text-decoration`.
-   - The ReasonDialog field's error edge, `textarea[aria-invalid="true"]`, comes after `:hover` and `:focus-visible`.
+- None from the task.
+- One note on the value rule: the centring uses `50%`, `-50%` and `100%`. These are positioning geometry, not design values, and the contract's own example ("an absolutely placed `::after`") needs something like them.
 
 ## Limitations
-- **The browser comparison** was a temporary harness in `apps/web/src/kit/__cmp__/`, deleted before commit and never committed.
-  - **Setup:** headless Chromium on a Vite dev server, with the app's `app.css` (tokens and base) loaded. The same specimens were rendered from main's kit and from this branch:
-    - every Button variant × size × {label, icons, icon-only, block, disabled, disabledReason, disabledReason + block};
-    - every Tag tone × {default, sm + icon, empty};
-    - HashChip kinds × {prefix + strike, copy on and off, null};
-    - every StatusGlyph, an Icon, and ErrorPanel codes × compact;
-    - all WidgetState states and the stale band;
-    - DecisionTag {desk, phone} × all seven states × {version, sha} × {plain, link + disabledReason + inlineError, approve only};
-    - the open ReasonDialog with an error and a request ID.
-  - **Result:** all computed properties of 5,139 elements at rest, plus 246 hover and press snapshots, matched: **0 differences**.
-    - The hover and press snapshots cover every md Button variant with its modifiers, every DecisionTag state and layout, and the HashChip copy buttons.
-    - Animations were settled before the at-rest pass, and transitions were turned off for the interaction pass. The `transition` values themselves were compared at rest.
-  - **The harness can catch a change.** I changed one token in `kit.css` (`.av-dt-age` font size) and it reported 756 differences. Then I restored the file, byte for byte.
-  - **Not covered:** hover and press at sizes other than md. Those rules key on `data-size` exactly as at rest, and at rest every size matched.
-- **The kit's CSS reaches the page only once the page links `kitStylesheetHref`.** That's Leon's decisions a2 (section 5, "Styles and loading"). Until then the kit draws unstyled, but no page on main draws it yet.
+- Below 900px, the copy button's hit area spreads 10px past the 22px chip, above and below, and 10px over the chip's own text. Nothing in the kit puts another control within that reach. If a later screen puts a control right beside a chip, the two areas could overlap.
+- No chunk sizes to report for this task. On main the kit isn't imported by any route yet (Leon's decisions module isn't merged), so the build has no kit chunk. `kit.css` isn't JS, so K1 doesn't change the JS size.
 
 ## Parked chains
 none
@@ -108,81 +81,88 @@ none
 none
 
 ## Issues for other agents
-- **Leon (decisions a2):** link `kitStylesheetHref` in route `/`'s `head` through `decisionsScreenStylesheets` (section 5). Without it, the kit draws unstyled.
-- **Zero:** please add D12's stamp animation to section 4's "What stays inline" (Deviation 1).
-- **INT, two notes on the app build:**
-  - **The client JS figure changed between my builds, but not because of the kit.** My first `pnpm --filter @avel/web build`, run before `packages/contract/dist` existed, reported `index-*.js` 397.57 kB / 127.47 kB gzip. Every build after `pnpm --filter "@avel/web..." build` reports 496.83 kB / 155.40 kB gzip. The kit isn't in that bundle: a grep of `dist/client/assets/*.js` for `DecisionTag`, `av-dt-` and `kitStylesheet` finds nothing. It may be worth checking which `@avel/contract` build Leah's budget run resolves.
-  - **`app.css` shrank** from 35.26 kB to 31.88 kB (7.51 to 6.94 kB gzip). Tailwind scans the kit's source, and the old inline style strings produced utility class candidates. They're gone now.
+- **INT / Leon:** `pnpm --filter @avel/web test` fails on main as it stands, with 37 tests in 4 files, all in `apps/web/test/modules/decisions/**` (UC-11 to UC-28). They all fail with `apps/web/src/modules/decisions/screens.ts should export the screen as DecisionsScreen`, because Leon's module isn't merged. `test/data` and `test/kit` pass: 10 files, 153 tests. This diff only touches `apps/web/src/kit/**`.
+- **Leah (a11y-perf re-review a2):** K1 and R5 are in. The measurement method above can be rerun on the page once Leon's a2 links `kitStylesheetHref`.
+- **Zero / Brennan (kit review):** the K1 rules are the last block of `kit.css`.
 
 ## Files changed
 ```
-apps/web/src/kit/Button.tsx
-apps/web/src/kit/DecisionTag.tsx
 apps/web/src/kit/Dialog.tsx
-apps/web/src/kit/ErrorPanel.tsx
-apps/web/src/kit/HashChip.tsx
-apps/web/src/kit/Icon.tsx
-apps/web/src/kit/KitStyles.tsx   (deleted)
-apps/web/src/kit/ReasonDialog.tsx
-apps/web/src/kit/StatusGlyph.tsx
-apps/web/src/kit/Tag.tsx
-apps/web/src/kit/WidgetState.tsx
-apps/web/src/kit/index.ts
-apps/web/src/kit/kit.css         (new)
+apps/web/src/kit/kit.css
 docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md
 ```
-Everything is inside Part 5's territory.
 
 ## Verification
-
-**FANTEM-03's verify**, one chain. It exits 0:
-```
-$ pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && test -f apps/web/src/kit/kit.css && ! grep -rlE '<style|KitStyles|dangerouslySetInnerHTML' apps/web/src/kit && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12
-apps/web typecheck: Done
- Test Files  3 passed (3)
-      Tests  68 passed (68)
-(grep: no file listed)
-dist/client/assets/app-CCOL2GSK.css                   31.88 kB │ gzip:   6.94 kB
-dist/client/assets/index-SlPnXw7v.js                 496.83 kB │ gzip: 155.40 kB
-dist/server/assets/empty-plugin-adapters-BsRz-CQL.js         0.26 kB │ gzip:  0.17 kB
-dist/server/assets/start-CX3T2L7y.js                         0.27 kB │ gzip:  0.19 kB
-dist/server/assets/_tanstack-start-manifest_v-CFh7QUvh.js    0.39 kB │ gzip:  0.29 kB
-dist/server/assets/router-Dvq-asiP.js                       27.35 kB │ gzip:  9.27 kB
-dist/server/server.js                                      261.19 kB │ gzip: 63.19 kB
-exit 0
-```
-
-**Part 7:**
 ```
 $ pnpm --filter "@avel/web..." build
-packages/contract build: Done
+packages/contract build$ tsc -p tsconfig.json
+apps/web build$ vite build
 apps/web build: dist/client/assets/app-CCOL2GSK.css                   31.88 kB │ gzip:   6.94 kB
 apps/web build: dist/client/assets/index-SlPnXw7v.js                 496.83 kB │ gzip: 155.40 kB
-apps/web build: ✓ built in 273ms
-apps/web build: dist/server/server.js                                      261.19 kB │ gzip: 63.19 kB
-apps/web build: Done
-exit 0
-
-$ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
-packages/contract typecheck: Done
-packages/contract-mock typecheck: Done
-apps/web typecheck: Done
-exit 0
-
-$ pnpm lint
-> biome check .
-Checked 197 files in 136ms. No fixes applied.
-exit 0
-
-$ pnpm --filter @avel/web test
- Test Files  3 failed | 10 passed (13)
-      Tests  37 failed | 153 passed (190)
-exit 1
+apps/web build: ✓ built in 610ms
+apps/web build: dist/server/assets/empty-plugin-adapters-BsRz-CQL.js         0.26 kB │ gzip:  0.17 kB
+apps/web build: dist/server/assets/start-CX3T2L7y.js                         0.27 kB │ gzip:  0.19 kB
+apps/web build: dist/server/assets/_tanstack-start-manifest_v-B6lNn6Fe.js    0.39 kB │ gzip:  0.29 kB
+apps/web build: dist/server/assets/router-Dvq-asiP.js                       27.35 kB │ gzip:  9.27 kB
+apps/web build: dist/server/server.js                                      261.19 kB │ gzip: 63.18 kB
+apps/web build: ✓ built in 310ms
+exit=0
 ```
 
-**The `test` exit 1 isn't from the kit.** All 37 failures are in `test/modules/decisions/{list,deciding,errors}.test.tsx`: the locked UC-11 to UC-28 tests for Leon's decisions module, which isn't on main (`apps/web/src/modules` doesn't exist). Everything else passes, including the kit's 68 tests and the data tests.
+```
+$ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
+Scope: 3 of 6 workspace projects
+packages/contract typecheck$ tsc -p tsconfig.json --noEmit
+packages/contract typecheck: Done
+packages/contract-mock typecheck$ tsc -p tsconfig.json --noEmit
+packages/contract-mock typecheck: Done
+apps/web typecheck$ node -e "import('vite').then((vite) => vite.resolveConfig({}, 'build'))" && tsc -p tsconfig.json
+apps/web typecheck: Done
+exit=0
+```
+
+```
+$ pnpm lint
+> biome check .
+
+Checked 198 files in 695ms. No fixes applied.
+exit=0
+```
+
+```
+$ pnpm --filter @avel/web test
+
+Environment  |web| jsdom was created 14 times · 23.07s total, 48% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-fantem-w0-kit-build-a3/apps/web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @avel/web@0.0.0 test: `vitest run`
+Exit status 1
+exit=1
+```
+
+```
+$ (FANTEM-04 verify) pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && grep -n "max-width: 899px|--av-touch-min|--av-phone-body" kit.css && grep -n aria-describedby Dialog.tsx && ! grep -rlE "<style|dangerouslySetInnerHTML" apps/web/src/kit
+typecheck ok
+ Test Files  3 passed (3)
+      Tests  68 passed (68)
+939:   only: --av-touch-min (44px) and --av-phone-body (16px). At 900px and over nothing changes. ---- */
+940:@media (max-width: 899px) {
+944:    min-height: var(--av-touch-min);
+959:    width: var(--av-touch-min);
+960:    height: var(--av-touch-min);
+968:    font-size: var(--av-phone-body);
+8:// aria-describedby, beside aria-labelledby; with none, there's no aria-describedby.
+103:          aria-describedby={description ? descriptionId : undefined}
+exit=0
+```
+
+The `test` failure above is the 37 decisions screen tests, which need Leon's unmerged module (see Issues). `vitest run test/data test/kit`: 10 files and 153 tests passed.
 
 ```
 $ git diff --name-only main...HEAD
-(the list under Files changed)
+apps/web/src/kit/Dialog.tsx
+apps/web/src/kit/kit.css
+docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md   (this commit)
 ```
