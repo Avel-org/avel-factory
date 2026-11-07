@@ -239,6 +239,56 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 
   Both layouts are one flat `DecisionTag` list.
 
+## 2026-11-06: Axis's S1-3 — revision 3's decoder stands, and two follow-ups go into the next revision
+
+- **Input:** Axis's S1-3 (backend sprint-01 `decisions.md`) and INT, 2026-11-06.
+  - The wire error stays m1's `ErrorBody` in Step 1. No contract change is planned.
+  - Revision 3's decoder (`toUiError` reads `e.data.body`) "is accepted as is". `parseErrorBody` is optional for the web.
+  - Brennan's a3 runs on revision 3 (c836c29) and isn't stopped.
+- **The two follow-ups are refactors, not fixes.** They go into the **next UI contract revision**, written after a3 reports, not into Ghost's `w0-data` task alone:
+  1. **Decode at the link.** An `OpenAPILink` error decoder or interceptor parses the body once with `ErrorBody.safeParse` (and `@avel/contract`'s `parseErrorBody` once Step 1 exports it). It rethrows `ORPCError` with `code = body.code`, `status` = the HTTP status and `data = { details, requestId }`, and `toUiError` reads `e.code` and `e.data`. This is the same place and rule as the CLI. UC-04's `STALE_VERSION` round trip stays as it is.
+     - **The hook (Axis, via INT):** `@orpc/openapi-client` 1.16.2's `OpenAPILink` has the option `customErrorResponseBodyDecoder(deserializedBody, response) => ORPCError | null`. The next revision names it as the decoder, and Ghost's `w0-data` notes say to confirm it exists in the installed version. If it doesn't, Ghost stops and reports.
+  2. **`BAD_REQUEST` details:** `{ field, issues: [{ field, message }] }`. `field` is the first failing path joined with `.`, or the header name for `Idempotency-Key`. `ErrorBody.message` is the first issue's message. The mock writes `issues`. UC-03 asserts it for check 1 and a missing key. The page still reads only `field`.
+- **Why the revision and not just the task:**
+  - Section 3's decoder, section 2's mock errors, and UC-03 and UC-04 are fixed names in the contract. Fenn's `w0-data` tests lock against them before Ghost builds.
+  - A task-only change would leave the contract and the locked tests saying revision 3 while Ghost builds something else.
+  - The plan's Ghost task follows the revision on the next re-render.
+- **Timing:** the revision lands before Fenn's `agent-fenn-w0-data-test-unit` starts. That dispatch waits for Nemi's merge and backend m1. If a3 fails, the revision answers a3's findings too. If a3 passes, it's a short revision limited to these two items, for INT to send for a quick re-review or accept.
+
+## 2026-11-06: Revision 4 of the UI contract (Brennan's a3, FAIL)
+
+- **Input:** Brennan's a3 (report 44a3e08) failed revision 3 (c836c29) on 16 (P3, narrowed), 22 to 24 (P2) and 25 (P3). No a1 or a2 finding reopened. INT asked for revision 4, with Axis's S1-3 folded in as decided above.
+- **16, the request ID:**
+  - UC-23 (401) asserts it.
+  - In 5.4, the refetch-failed band passes it to `WidgetState` (W1), and `Load more` shows the chip beside `Retry loading more`. UC-26 and UC-27 assert both, and UC-27's 403 too.
+  - **The one exception:** a response body the link can't read or decode reaches `toUiError` as a plain `Error`, with nothing that carries the ID. It shows as `network` with no chip. 5.3 says so.
+- **22, route 54's wire body:**
+  - Under m1's `compact` input, `OpenAPILink` 1.16.2 removes path parameters from the body. The input stays `{ proposalId, version, choice, reason }`, but the wire body is `{ version, choice, reason }`. UC-13, UC-14, UC-19 and the plan's done-when line now say that.
+  - The mock reads the raw body before oRPC's handler for CR-W2's check 1 mismatch, and a body without `proposalId` is valid.
+  - **For Axis, via INT:** oRPC's OpenAPI handler merges `{ ...body, ...params }`, so the server can't see CR-W2 check 1's "`proposalId` in the body doesn't match the path" either. Either the server reads the raw body as the mock does, or the Step 1 slice drops that half of check 1.
+- **23, the sent request ID. The fetch wrapper carries it,** because it's the one place that both makes the ID and sees the outcome:
+  - A rejected fetch becomes a `NetworkError` (a `TypeError`) with `requestId`.
+  - A response with no `X-Request-Id` gets the sent ID in that header, so oRPC's `e.data.headers` always has one.
+  - **Not chosen:**
+    - a module-level "last request ID", which is wrong under concurrent requests;
+    - a link interceptor that wraps errors, which would hide the `TypeError`.
+  - `requests()` now records the requests `failNext` fails, network failures included.
+- **24, one data path:**
+  - **Tests:** one mock per test, through `createApi({ fetch: mock.fetch })`.
+  - **Development and end to end:** one mock instance in the dev server (`apply: "serve"` plugin). The browser fetches its own origin, and the SSR loader fetches the incoming request's origin over HTTP. Both reach that instance.
+  - **`POST /__mock/reset`** is added, because the end-to-end tests now share that one instance. Playwright runs `workers: 1`.
+  - **The API is bound to the `QueryClient`** (`bindApi`, `apiFor`, `useApi`) rather than put in the router context. That way Nemi's `__root.tsx`, built before the data core, only types `{ queryClient }`, and nothing module-level holds a client.
+  - **The SSR client forwards the incoming `X-Request-Id`** (FM line 141). **Cookie forwarding waits for W5:** sprint-01 has no sessions, so there's nothing to forward, and W5 adds it beside the request ID.
+  - **The `X-Contract-Version` check runs in the browser only.** The mismatch store is module state, which the server would share across requests.
+  - `@avel/contract-mock` is a dev dependency of `@avel/web`. Zane's check now also greps the build for `MOCK_OPERATOR_ID`'s value and `apps/web/src` for imports of the mock.
+- **25:** the mock's default `limit` of 50 is **provisional**: m1's `PageQuery` has none. Axis confirms or changes it in the Step 1 slice. The page always sends `limit`, and no scenario relies on the default.
+- **Folded in from S1-3:**
+  - **Decoding:** errors are decoded at the link: `decodeErrorBody` is `OpenAPILink`'s `customErrorResponseBodyDecoder`, and it returns an `ApiError` (an `ORPCError` with the AVEL code). I read the hook in `@orpc/openapi-client` 1.16.2's `dist/shared/openapi-client.DgkI_tTF.mjs`. Ghost still confirms it once installed, or stops and reports.
+  - **`BAD_REQUEST` details** are `{ field, issues }`. The missing key gives `message: "required"` (S1-1 and S1-3, no longer provisional).
+  - **The mismatch issue's message,** `"doesn't match the path"`, is the mock's own and **provisional**.
+  - **Check 5** keeps CR-W2's `{ field: "choice" }` as written. The page reads only `field`.
+- **Copy:** revision 4 adds no † strings.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).

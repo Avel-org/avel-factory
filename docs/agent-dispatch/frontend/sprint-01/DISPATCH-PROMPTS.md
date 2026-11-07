@@ -143,8 +143,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (check 1's { field }), both response headers, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many
-- GHOST-02: apps/web/src/data and lib: createApiClient with the X-Contract-Version check, orpc, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, toUiError reading the ErrorBody from e.data.body (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter
+- GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (BAD_REQUEST details { field, issues }, S1-3), both response headers, the idempotency rules, route 54's checks in CR-W2's order (check 1 reads the raw body for the proposalId mismatch), every request recorded (failed ones too), the dev-only bump and reset paths, and fixtures empty, step1 and many
+- GHOST-02: apps/web/src/data and lib: createApiClient with its fetch wrapper (X-Request-Id, Idempotency-Key, NetworkError, the browser-only X-Contract-Version check) and decodeErrorBody as OpenAPILink's customErrorResponseBodyDecoder, createApi, bindApi, apiFor and useApi, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, ApiError, NetworkError and toUiError's four branches (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter (per request on the server, forwarding the incoming X-Request-Id)
 
 You may change only: apps/web/src/data/**, apps/web/src/lib/**, apps/web/src/router.tsx, packages/contract-mock/**, docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -334,7 +334,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects) and UC-29 to UC-31
+- FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

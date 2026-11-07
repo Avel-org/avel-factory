@@ -24,7 +24,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump path, and D11 (the phone actions)
+9. `docs/ui-contracts/decisions-approval-page.md`: sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump and reset paths, section 3's one data path for development, and D11 (the phone actions)
 10. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
 
 ## 3. Domain
@@ -42,7 +42,7 @@ The approval page end to end with Playwright on AVEL_API=mock, phone and desk: U
 - `agent-ghost-w0-data-build`: The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.tsx) and the contract mock @avel/contract-mock for routes 52 to 54, exactly as UI contract sections 1 to 3 name them.
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
-- `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
+- `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id (the fetch wrapper; the SSR client forwards only the request ID), and that the mock and the dev-only paths never reach a production build.
 - `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-08 to UC-10.
 - `agent-fantem-w0-kit-build`: The kit components the page needs, ported from the design library with UI contract section 4's changes: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog, ErrorPanel, WidgetState and DecisionTag.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
@@ -57,7 +57,7 @@ The approval page end to end with Playwright on AVEL_API=mock, phone and desk: U
 
 Do them in order. Finish each one, verified, before the next.
 
-### FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects) and UC-29 to UC-31 (P0)
+### FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31 (P0)
 
 - **Required:** Each carries its UC ID and fails first with an assertion
 - **Verify:** `pnpm --filter @avel/web exec playwright test 2>&1 | tail -15`
@@ -192,7 +192,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects) and UC-29 to UC-31
+- FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

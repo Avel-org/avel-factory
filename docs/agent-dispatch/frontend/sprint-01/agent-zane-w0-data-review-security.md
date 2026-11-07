@@ -29,7 +29,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 
 ## 3. Domain
 
-Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
+Review how the data core handles Idempotency-Key and X-Request-Id (the fetch wrapper; the SSR client forwards only the request ID), and that the mock and the dev-only paths never reach a production build.
 
 **The rest of this sprint:**
 
@@ -59,7 +59,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### ZANE-01: Review the w0-data diff: one key per intent and reused only on a retry, no key or request ID logged with a body, the mock and /__mock paths absent from a production build (P1)
 
-- **Verify:** `pnpm --filter @avel/web build && ! grep -rl '__mock' apps/web/.output apps/web/dist 2>/dev/null`
+- **Verify:** `pnpm --filter @avel/web build && ! grep -rlE '__mock|0193a000-0000-7000-8000-000000000001' apps/web/.output apps/web/dist 2>/dev/null && ! grep -rl '@avel/contract-mock' apps/web/src`
 - **Expected:** builds; no file listed
 
 ## 5. Territory
