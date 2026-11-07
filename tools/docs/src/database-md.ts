@@ -1,7 +1,8 @@
 // Reads DATABASE.md the way the drift check compares it (DATABASE.md, Source of truth):
 // - the table specs: every code block with no language. An entry starts at the first column
-//   with the table's name, then an optional `key (...)`, then its columns in `{ ... }`;
-//   indented lines continue it. `// ...` and `/* ... */` are comments.
+//   with the table's name, then an optional `key (...)`, then its columns in `{ ... }` (a
+//   table with a key and no other columns may leave the braces out); indented lines continue
+//   it. `// ...` and `/* ... */` are comments.
 // - the relationships: every `parent ||--o{ child : label` line in a mermaid erDiagram.
 
 export interface DocColumn {
@@ -188,7 +189,8 @@ function readEntry(text: string, line: number): DocTable | null {
     }
     for (const item of splitTop(rest.slice(1, close))) readItem(item, table);
     rest = rest.slice(close + 1).trim();
-  } else {
+  } else if (table.key === null) {
+    // Only a table whose key is all its columns (a link table) may leave out the braces.
     table.problems.push("it has no { ... } column list");
   }
   if (rest.length > 0) table.problems.push(`unexpected text after its columns: "${rest}"`);

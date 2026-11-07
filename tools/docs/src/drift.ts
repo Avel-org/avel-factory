@@ -224,9 +224,8 @@ function main(): void {
     console.log(`no drift: ${path} matches the schema (${summary})`);
     return;
   }
-  console.log(
-    `drift: ${differences.length} differences between the schema (${summary}) and ${path}`,
-  );
+  const count = `${differences.length} ${differences.length === 1 ? "difference" : "differences"}`;
+  console.log(`drift: ${count} between the schema (${summary}) and ${path}`);
   for (const d of differences) console.log(`- ${d}`);
   process.exitCode = 1;
 }
