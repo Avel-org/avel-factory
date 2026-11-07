@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "d8da8ca1003f932182bb990defdfc8508c5c4531f369f9dba710b298e2340bac",
-  "packageSha256": "8808e0a1a044badb5ea15bc5df8086d7a31c37282f06ee3292a825080226c5a2",
+  "planSha256": "4476115b0b04abbdb7da1bd434c83cd6c48550f1b60411a4bdf1f55b739dcb26",
+  "packageSha256": "9edf03c8166e4e5601ea7f21f6dfab607ded47b5cd361e0ecf7a71d16e2addf3",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "fcc4640d9f8c51caa945ab5361e045bc5cedeb04b263baf2d0904315f5861578",
-      "bytes": 28556
+      "sha256": "3eca7f9fa9a2e4048ac3d83a1577adab7b37702500c15276271e79554c78d3b9",
+      "bytes": 28708
     },
     {
       "path": "DISPATCH.md",
@@ -20,8 +20,8 @@
     {
       "path": "agent-brennan-approvals-uic-review-spec.md",
       "kind": "task_doc",
-      "sha256": "0b5c2b343df7c9ec693f99214d1c356f9882e7a0e7ce3ede6b36f95981f43485",
-      "bytes": 14614
+      "sha256": "d1a440f70defb9c5be5570d35cf74915861b8f280ea26fc1677618a8ac8a4fd1",
+      "bytes": 14686
     },
     {
       "path": "agent-brennan-decisions-review-spec.md",
@@ -50,8 +50,8 @@
     {
       "path": "agent-fantem-w0-kit-build.md",
       "kind": "task_doc",
-      "sha256": "df41ecdedd59c7cb7493d51cefbb7688233e66212e94983f07d76a9af3a6b7ee",
-      "bytes": 12226
+      "sha256": "4e260a5daef6371721b7b5e1afef50e7bfd4b722865998b35fa6b8c339516d29",
+      "bytes": 12228
     },
     {
       "path": "agent-fenn-decisions-test-e2e.md",
@@ -74,14 +74,14 @@
     {
       "path": "agent-fenn-w0-kit-test-unit.md",
       "kind": "task_doc",
-      "sha256": "067e7d818703df314931cdd83a68edf09ba8e1a4a97b1adfed8db1e649c2e5c0",
+      "sha256": "95bb96af02ebc887ba69897e3c9b2e42f2e708476a5c1c0a80d3b98c34d332c0",
       "bytes": 11097
     },
     {
       "path": "agent-ghost-w0-data-build.md",
       "kind": "task_doc",
-      "sha256": "dcec32b404716d4a2897c4ccb1086d9e041dde9a19e86472861ff62d18f2cf18",
-      "bytes": 13632
+      "sha256": "2799b6390a8ce0155b1b3c6f12c1d25a9aad9d450d1192d0eb7a1c140c5cff1f",
+      "bytes": 13993
     },
     {
       "path": "agent-leah-decisions-review-a11y-perf.md",
@@ -140,7 +140,7 @@
     {
       "path": "codebase-analysis.md",
       "kind": "codebase_analysis",
-      "sha256": "4fb7fedbdd31a16474d46fc61e5f700a4d7023f57fbc3fd0be45a5b957e025b8",
+      "sha256": "de8c4edea98fbcf0e15944a1cf3acc81f77702b993f2ea378e7ef755fbcd08ae",
       "bytes": 2808
     }
   ]

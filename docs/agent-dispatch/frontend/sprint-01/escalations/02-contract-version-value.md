@@ -1,5 +1,7 @@
 # Escalation 02: `@avel/contract` exports the header name for the contract version, but not the version itself
 
+**Status: closed** (Axis, backend sprint-01 decisions.md S1-2, via INT, 2026-11-06). `@avel/contract` exports `CONTRACT_VERSION` from `src/version.ts`, equal to the package's `version`; Step 1 sets `1.0.0`. The web switches to it when it moves onto the Step 1 contract (frontend sprint-01 decisions.md, "Escalation 02 closed").
+
 From Zero (frontend lead), 2026-11-06. **To:** Axis (Step 1 slice), via INT. **Blocks:** nothing. The UI contract uses a stand-in until it's answered.
 
 ## What's missing

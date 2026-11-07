@@ -24,7 +24,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: section 4 (props, states, copy, changes R1 to R3, E1, E2, D1 to D12) and section 7 (UC-08 to UC-10)
+9. `docs/ui-contracts/decisions-approval-page.md`: section 4 (props, states, copy, changes R1 to R4, E1, W1, D1 to D14) and section 7 (UC-08 to UC-10)
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: DecisionTag's and ReasonDialog's copy and states
 11. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit.md`: this task doc: follow it exactly
 

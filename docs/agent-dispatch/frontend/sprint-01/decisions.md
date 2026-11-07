@@ -179,6 +179,66 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
   - `AVEL was updated. Reload to use the new version.`
 - **12:** each kit row lists the library props it ports and the ones it leaves out. `Icon`'s `data-ui` is `Icon`. `formatAgo` takes `number | null`, and a non-finite value gives `—`, as the library's does.
 
+## 2026-11-06: Escalation 02 closed (Axis, backend sprint-01 S1-2)
+
+- **Axis's answer:**
+  - `@avel/contract` will export `CONTRACT_VERSION` from `src/version.ts`, always equal to `packages/contract/package.json`'s `version`. The server sends it in `X-Contract-Version`, and the web imports it.
+  - **Bumps:** `feat(contract)` is minor, `feat(contract)!` is major, `fix(contract)` is a patch.
+  - **Breaking changes:** removing or renaming a route, field, code or event kind; adding a required input; narrowing an input; adding a value to an output list.
+  - **Versions:** m1 stays `0.0.0`. Step 1's api-contract sets `1.0.0`, with CR-W2's changes.
+- **Sprint-01 is unchanged:** it keeps the build-time read. `__AVEL_CONTRACT_VERSION__` comes from `packages/contract/package.json` (Nemi's `vite.config.ts`, Fenn's `vitest.config.ts`), and the data core exports it as `BUILT_CONTRACT_VERSION` (UI contract section 3). Today that's `0.0.0`.
+- **The switch:** it comes with the dispatch that moves the web onto the Step 1 contract (`1.0.0`), alongside replacing the local CR-W2 schema (UI contract section 1). That dispatch:
+  - makes `BUILT_CONTRACT_VERSION` re-export `CONTRACT_VERSION` from `@avel/contract`;
+  - drops `__AVEL_CONTRACT_VERSION__` from both configs;
+  - makes the mock's `createMock({ contractVersion })` default to `CONTRACT_VERSION`.
+
+  The comparison stays an exact string match (FM line 226: "if it differs"). Axis's bump rules decide when the string changes.
+
+## 2026-11-06: Revision 3 of the UI contract (Brennan's a2, FAIL)
+
+- **Input:**
+  - Brennan's a2 (0337449) closed 12 of a1's 14 findings. 04 and 12 stay open, narrowed. 15 to 21 are new.
+  - INT gave 15's shape and asked for revision 3 covering all of them. Brennan's a3 re-reviews it.
+- **Done:**
+  - `docs/ui-contracts/decisions-approval-page.md`, revision 3. Appendix A has a table for a2's findings.
+  - `plan.toml`, re-rendered with `--check` clean:
+    - the `[analysis]` note now says UC-01 to UC-31 (finding 20);
+    - the change ranges are updated (R1 to R4, E1, W1, D1 to D14);
+    - Ghost's tasks name the error-reading rules;
+    - a3's notes point at a2's findings and `git diff ad6d8bf`.
+  - All uncommitted.
+
+**15, the error body (INT's shape; my choice of mechanism):**
+- **The problem:** m1's wire error is `ErrorBody` (`{ code, message, details?, requestId }`). oRPC's client doesn't recognise it, so it throws an `ORPCError` whose `code` is guessed from the status, with the body in `e.data.body`. That turns `STALE_VERSION` into `CONFLICT`.
+- **Chosen: `toUiError` reads `e.data.body`,** parses it with `@avel/contract`'s `ErrorBody`, and takes `code`, `details` and `requestId` from it. A body that isn't an `ErrorBody` maps by status, with `code` null and never to `stale`. A rejected fetch is `network`.
+- **Not chosen: a link interceptor that rethrows with the AVEL code.** Reading the body keeps one function that knows the wire shape, and it needs no change to oRPC's link.
+- **Ghost confirms** that OpenAPILink's codec puts the body in `e.data.body`, as `@orpc/client` 1.16.2's does. If it doesn't, Ghost stops and reports.
+- **The mock** writes every error as `ErrorBody`, its own and `failNext`'s. It converts the OpenAPI handler's errors.
+- **Check 1 (and `PageQuery`) are provisional:** `BAD_REQUEST` with `details: { field: "<first failing path>" }`, the first issue's path joined with `.`. Axis confirms it in the Step 1 slice, and the contract follows any change to the wire shape.
+- **UC-04 adds a round trip:** a mock `STALE_VERSION` through `createApiClient` comes out as `stale`, not `conflict`.
+
+**My choices:**
+- **04, `rejectLabel` (D13):** the button reads `{rejectLabel}…`, keeping DL's ellipsis because it opens a dialog, so `Reject` gives DL's `Reject…`. Absent hides it. Approve reads `approveLabel`, as DL's does.
+- **12:** `Button` now ports DL's `disabledReason`. D10's `actionsDisabledReason` passes through it on Approve (DL's `ButtonWithReason`: the caption beside the button, `aria-describedby`). The other seven Button props, and StatusGlyph's `onColor`, are listed as left out.
+- **16, the request ID** is shown on every error. The six rows that had nowhere to show it now use:
+  - `DecisionTag.requestId` (D14) for stale, Locked and the 429 countdown;
+  - `ReasonDialog.requestId` (R4) for a reason 400;
+  - `WidgetState.requestId` (W1) for the no-data network error;
+  - `inProgress` ends as `network`, whose band shows it.
+
+  The † string `Request ID {id}` is withdrawn: the band uses the chip. UC-15, UC-17, UC-18, UC-21 and UC-27 assert it.
+- **17:**
+  - The no-data network or 5xx state on route 52 is DL's `WidgetState` error exactly (`Couldn't load` / `The server did not answer. Nothing was changed.` / `Retry`). The † `Couldn't reach the server.` panel there is withdrawn, but the † string stays in 5.3 for route 54, where "nothing was changed" isn't certain.
+  - Other no-data panels pass the status as `code` and the server's `message` as `body`, never DL's 403 or 404 specimen bodies.
+- **18:** E2 is withdrawn. DL's `ErrorPanel` already draws the request ID as a copyable `HashChip` (`req`, 12 characters), and every request ID on the page is that chip. Tests find it by `Copy {requestId}`.
+- **19:** `failNext` takes `{ times }` (default 1; a new call replaces a pending one). `createQueryClient` takes `{ retryDelay }`, which only the screen tests set (`0`). UC-26 and UC-27 fail route 52 four times: the page's three retries plus the first try.
+- **21, not drawn from the library's Decisions screen (`Mme`):**
+  - no desk inbox with a detail pane or listbox semantics (that's `/decisions/$ref`, after Step 1);
+  - the lead's first sentence only (the mission-health sentence needs CR-W5);
+  - no "Just decided", project filter, "New project" or projects section.
+
+  Both layouts are one flat `DecisionTag` list.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).

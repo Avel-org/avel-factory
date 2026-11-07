@@ -63,7 +63,7 @@ conventions = [
   "Package names are @avel/web and @avel/contract-mock, after @avel/contract and @avel/db (backend D12)",
 ]
 notes = [
-  "The UI contract's scenario IDs (UC-01 to UC-23) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.",
+  "The UI contract's scenario IDs (UC-01 to UC-31) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.",
   "packages/contract is the backend's: an API change you need is an escalation in docs/agent-dispatch/frontend/sprint-01/escalations/, written by Zero, never an edit.",
 ]
 
@@ -86,7 +86,7 @@ notes = [
   "m1's packages/contract is on branch backend/sprint-00/agent-axis-m1-contract-api-contract-a1 (e36737f) until it merges: git show e36737f:packages/contract/src/dto/decisions.ts and git show e36737f:packages/contract/src/errors.ts.",
   "Each finding cites the contract's line (decisions-approval-page.md:N at your start commit), the source it breaks, and the command that shows it. Copy and props quoted from the design library are checked against the library's bundled source (grep the HTML).",
   "Everything else in this sprint waits for this review to be merged.",
-  "Attempt a1 (report 05e0318, branch frontend/sprint-01/agent-brennan-approvals-uic-review-spec-a1) failed with 14 findings, approvals-uic-brennan-01 to -14. Read them with git show 05e0318:docs/agent-dispatch/frontend/sprint-01/findings/<file> (git show --stat 05e0318 lists them). The contract's Appendix A maps each to its answer; INT decided 01, 13 and 14 (decisions.md, Revision 2). In your report, say for each whether it's closed, and cite the line that closes it. A still-open one keeps its file name; a new finding is numbered from 15. What changed since a1: git diff a138cd6 \"$AVEL_BASE\" -- docs/ui-contracts/decisions-approval-page.md.",
+  "Attempt a2 (report 0337449, branch frontend/sprint-01/agent-brennan-approvals-uic-review-spec-a2) failed: 12 of a1's 14 closed; 04 and 12 open (narrowed); new 15 to 21. Read them with git show 0337449:docs/agent-dispatch/frontend/sprint-01/findings/<file> (git show --stat 0337449 lists them). The contract's Appendix A maps every finding to its answer; INT decided 15's shape (decisions.md, Revision 3). In your report, say for each of 04, 12 and 15 to 21 whether it's closed, citing the line, and check the 12 closed ones haven't reopened. A still-open one keeps its file name; a new finding is numbered from 22. What changed since a2: git diff ad6d8bf \"$AVEL_BASE\" -- docs/ui-contracts/decisions-approval-page.md.",
 ]
 
 [[dispatch.task]]
@@ -256,16 +256,16 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), both response headers, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many"
+title = "packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (check 1's { field }), both response headers, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many"
 priority = "P0"
 required = "The locked UC-01 to UC-03 pass"
 verify = "pnpm --filter @avel/contract-mock typecheck && pnpm --filter @avel/web test -- test/data"
 expected = "typechecks; the locked tests pass"
 
 [[dispatch.task]]
-title = "apps/web/src/data and lib: createApiClient with the X-Contract-Version check, orpc, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, toUiError with section 3's UiError, createQueryClient, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter"
+title = "apps/web/src/data and lib: createApiClient with the X-Contract-Version check, orpc, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, toUiError reading the ErrorBody from e.data.body (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter"
 priority = "P0"
-required = "The locked UC-01 and UC-04 to UC-07 pass; STALE_VERSION alone maps to stale"
+required = "The locked UC-01 and UC-04 to UC-07 pass, including UC-04's round trip: STALE_VERSION through createApiClient is stale, never conflict"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/data"
 expected = "typechecks; the locked tests pass"
 
@@ -322,7 +322,7 @@ domain = "The kit's component tests: UC-08 to UC-10."
 territory = ["apps/web/test/kit/**"]
 after = ["agent-fenn-w0-data-test-unit"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (props, states, copy, changes R1 to R3, E1, E2, D1 to D12) and section 7 (UC-08 to UC-10)" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (props, states, copy, changes R1 to R4, E1, W1, D1 to D14) and section 7 (UC-08 to UC-10)" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "DecisionTag's and ReasonDialog's copy and states" },
 ]
 
@@ -341,7 +341,7 @@ domain = "The kit components the page needs, ported from the design library with
 territory = ["apps/web/src/kit/**"]
 after = ["agent-nemi-w0-app-build"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R3, E1, E2 and D1 to D12" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R4, E1, W1 and D1 to D14" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "each component's source, states and copy (search its data-ui name), and the tokens" },
 ]
 notes = [
@@ -349,14 +349,14 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts"
+title = "Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts"
 priority = "P0"
 required = "The locked UC-09 and UC-10 pass; every value is a token or DL's own literal for that element (section 0)"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/kit"
 expected = "typechecks; UC-08 passes"
 
 [[dispatch.task]]
-title = "DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library"
+title = "DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library"
 priority = "P0"
 required = "The locked UC-08 passes; the stamp uses --av-d-punch, and the hole fill isn't animated under reduced motion (D12)"
 verify = "pnpm --filter @avel/web test -- test/kit"

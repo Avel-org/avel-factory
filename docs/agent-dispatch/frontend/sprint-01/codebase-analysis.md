@@ -35,5 +35,5 @@ A pnpm workspace in TypeScript (Biome, Vitest; tsconfig.base.json strict). The b
 
 ## Notes
 
-- The UI contract's scenario IDs (UC-01 to UC-23) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.
+- The UI contract's scenario IDs (UC-01 to UC-31) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.
 - packages/contract is the backend's: an API change you need is an escalation in docs/agent-dispatch/frontend/sprint-01/escalations/, written by Zero, never an edit.

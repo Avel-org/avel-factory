@@ -24,7 +24,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R3, E1, E2 and D1 to D12
+9. `docs/ui-contracts/decisions-approval-page.md`: section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R4, E1, W1 and D1 to D14
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: each component's source, states and copy (search its data-ui name), and the tokens
 11. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
 
@@ -58,13 +58,13 @@ The kit components the page needs, ported from the design library with UI contra
 
 Do them in order. Finish each one, verified, before the next.
 
-### FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts (P0)
+### FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts (P0)
 
 - **Required:** The locked UC-09 and UC-10 pass; every value is a token or DL's own literal for that element (section 0)
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/kit`
 - **Expected:** typechecks; UC-08 passes
 
-### FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library (P0)
+### FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library (P0)
 
 - **Required:** The locked UC-08 passes; the stamp uses --av-d-punch, and the hole fill isn't animated under reduced motion (D12)
 - **Verify:** `pnpm --filter @avel/web test -- test/kit`
@@ -200,8 +200,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
-- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library
+- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
+- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

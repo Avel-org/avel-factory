@@ -143,8 +143,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), both response headers, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many
-- GHOST-02: apps/web/src/data and lib: createApiClient with the X-Contract-Version check, orpc, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, toUiError with section 3's UiError, createQueryClient, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter
+- GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (check 1's { field }), both response headers, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many
+- GHOST-02: apps/web/src/data and lib: createApiClient with the X-Contract-Version check, orpc, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, toUiError reading the ErrorBody from e.data.body (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter
 
 You may change only: apps/web/src/data/**, apps/web/src/lib/**, apps/web/src/router.tsx, packages/contract-mock/**, docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -249,8 +249,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
-- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library
+- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
+- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
