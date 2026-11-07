@@ -1,6 +1,6 @@
 # UI contract: the approval page (frontend sprint-01, Step 1)
 
-Zero, 2026-11-06. Status: **revision 6**. Revision 5 passed Brennan's a5. Revision 6 records what the merged w0-data build settled (Decisions, "Revision 6"): Brennan's w0-data finding 01 (the client is built over the `{ decisions }` route group) and Ghost's deviations 1 to 5. Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
+Zero, 2026-11-06. Status: **revision 7**. Revision 5 passed Brennan's a5. Revision 6 records what the merged w0-data build settled (Decisions, "Revision 6"): Brennan's w0-data finding 01 (the client is built over the `{ decisions }` route group) and Ghost's deviations 1 to 5. Revision 7 records Leon's decisions build deviations 1 to 4 and the page's styles and budget for the fix round (Decisions, "Revision 7"). Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
 
 This is the one document the sprint's builders and test writer work from:
 - Nemi: the app and tokens.
@@ -276,6 +276,12 @@ These are DL's components, ported with their `data-ui` names, values and copy. T
 | `WidgetState` | `WidgetState` | `state` (`loading`, `empty`, `error` or `staleVersion`), `title`, `message`, `icon`, `actionLabel`, `onAction`, `lastGoodAge`, `children` | `needs`, `height`, `lines`, `compact`; the states `notConfigured` and `populated` | W1, below |
 | `DecisionTag` | `DecisionTag` | below | `compact`, `hideActions`, `onOpen` and the "Open" link button | D1 to D14, below |
 
+**The kit's styles** (revision 7, Decisions):
+- **Where they live:** one static stylesheet, `apps/web/src/kit/kit.css`, holds the kit's style rules as class and `[data-ui]` rules, with DL's values unchanged (section 0's value rule). That covers what `KitStyles.tsx` carries today, and the style objects written in the components.
+- **How it's loaded:** `kit/index.ts` exports its URL as `kitStylesheetHref` (a `?url` import). The page links it (section 5), so it's loaded once and cached, and it's out of the JavaScript.
+- **No CSS in JavaScript:** no CSS as JS strings, and no `<style>` element rendered into the HTML. `KitStyles.tsx` goes.
+- **What stays inline:** a component keeps an inline `style` only for a value that changes per render, and for the values the locked kit tests read from the element: D11's phone grid (`grid-template-columns` `minmax(0, 1fr) minmax(0, 1.4fr)` and `gap` `10px`) and D6's stale strike (inline `text-decoration`, or an `<s>` element).
+
 **The request ID, everywhere it's shown,** is DL's `ErrorPanel` chip: `HashChip` with `kind: "hash"`, `length: 12`, `prefix: "req"` and DL's copy button (`aria-label` `Copy {requestId}`), so the full ID is always one tap away (FM, Errors by code). Tests find it by that `aria-label`.
 
 **`ReasonDialog`:**
@@ -354,10 +360,11 @@ The state tag stays DL's:
 ## 5. The page (Leon, `apps/web/src/modules/decisions/**`, `apps/web/src/routes/index.tsx`)
 
 **Route:** `/`, `ssr: true` (FM, Rendering).
-- The loader runs `ensureInfiniteQueryData` on route 52's `infiniteOptions` (`limit` 50, always sent), from `apiFor(context.queryClient)`.
+- The loader runs `ensureInfiniteQueryData` on route 52's `infiniteOptions` (`limit` 50, always sent), from `apiFor(context.queryClient)`, through `loadDecisionsScreen` (below).
+- **The loader doesn't throw.** It catches the prefetch's rejection. The error stays in the query cache, and the screen draws 5.4's state for it, instead of the router's error page.
 - The component reads the same options with `useSuspenseInfiniteQuery`.
 
-**The module** has `api.ts` (route 52's query options and route 54's mutation, each built from an `Api`: the loader passes `apiFor(context.queryClient)`, and the screen uses `useApi()`), `decisions.ts` (the proposal and factory PR renderers), `screens/DecisionsScreen.tsx`, `index.ts` (named exports only) and `screens.ts`, which exports `DecisionsScreen` (a named export, from `screens/DecisionsScreen.tsx`). `routes/index.tsx` imports only `screens.ts` (FM, What every module looks like).
+**The module** has `api.ts` (route 52's query options and route 54's mutation, each built from an `Api`: the loader passes `apiFor(context.queryClient)`, and the screen uses `useApi()`), `decisions.ts` (the proposal and factory PR renderers), `screens/DecisionsScreen.tsx`, `index.ts` (named exports only) and `screens.ts`, which exports `DecisionsScreen` (a named export, from `screens/DecisionsScreen.tsx`) and `loadDecisionsScreen(queryClient)`, the loader's prefetch (`api.ts`'s `ensurePendingDecisions`). `routes/index.tsx` imports only `screens.ts` (FM, What every module looks like).
 
 **Layout**, from DL's Decisions screen (`Mme`):
 - The root carries `data-ui="DecisionsPage"`†. DL's screen root has no `data-ui`; this one exists so tests and reviews can find the page.
@@ -372,6 +379,11 @@ The state tag stays DL's:
 - **Not drawn:** "Just decided", the project filter, "New project" and the projects section.
 
 **The count** is the number of rows drawn, counted on the client, because route 52 sends no total until CR-W5 (Decisions). While `nextCursor` isn't null, `+` follows it, and a `Load more`† button (`Button`, secondary) sits under the list.
+
+**Styles and loading** (revision 7, Decisions):
+- **The module's styles** live in `apps/web/src/modules/decisions/decisions.css`, a static stylesheet with no CSS in JS strings.
+- **How they're linked:** `screens.ts` exports `decisionsScreenStylesheets`, the kit's `kitStylesheetHref` and the module's own `?url`. Route `/`'s `head` links both. They move to the shell when a second page uses the kit (W2).
+- **`ReasonDialog` isn't in the first load.** The module imports it with `React.lazy` and starts fetching it once the list has rendered, so the first tap doesn't wait on the network. 5.2's 100ms rule for `Approving…` is unchanged.
 
 **Phone** is `max-width: 899px` (DL's Decisions screen). On a phone, tags use `layout="phone"`. On a desk, `layout="desk"`.
 
@@ -418,6 +430,8 @@ The state tag stays DL's:
 
 ### 5.3 Errors on route 54, by `UiError.kind`
 
+**After an `inlineError` panel** (400, 403, `conflict`, `unprocessable`, `idempotencyConflict`), the row's buttons stay enabled: a new tap is a new intent with a new key. **Refresh list and Review** set the row back to `seen` only when the refetch succeeds. If it fails, the row keeps its state, and the list shows 5.4's refetch-failed band.
+
 Every error on the page shows its request ID chip (section 4). Where:
 - an `ErrorPanel`'s `requestId`;
 - `DecisionTag`'s `requestId` (D14) for `stale`, `notAllowedNow`, `notFound` and `rateLimited`;
@@ -429,8 +443,8 @@ The one exception is section 3's fourth branch (a response body the link can't r
 
 | `kind` | What the row does | Action |
 | --- | --- | --- |
-| `stale` with `currentVersion` null | As `conflict` below: without the version there's nothing to review. m1's `STALE_VERSION` always sends it (D21), so only a malformed answer gets here | as `conflict` |
-| `stale` | `state: "stale"`; binding struck; `staleNote: "Version {currentVersion} arrived while you were reading."`; `staleAction: "Review version {currentVersion}"` (DL's B-2 specimen copy) | **Review** refetches route 52, and the row comes back with the new version in `seen`. **Nothing is re-sent, ever** (FM, In short, item 5). If the row is gone after the refetch, the list shows `That decision was settled elsewhere.`† (`role="status"`) |
+| `stale` with `currentVersion` null | As `conflict` below, with `body` = the server's `ErrorBody.message`: without the version there's nothing to review. m1's `STALE_VERSION` always sends it (D21), so only a malformed answer gets here | as `conflict` |
+| `stale` | `state: "stale"`; binding struck; `staleNote: "Version {currentVersion} arrived while you were reading."`; `staleAction: "Review version {currentVersion}"` (DL's B-2 specimen copy) | **Review** refetches route 52, and the row comes back with the new version in `seen`. **Nothing is re-sent, ever** (FM, In short, item 5). If the row is gone after the refetch, the list shows `That decision was settled elsewhere.`† (`role="status"`), which stays until the page reloads |
 | `notAllowedNow` | `state: "notAllowed"`, with `notAllowedReason` set by `state`: | `onRefresh`: `Refresh list`† refetches route 52. A row the refetch still lists comes back from the server in `seen`, as `stale`'s does: the page keeps no state the server doesn't send |
 | | `state` resolved: `This decision was already made.`† | |
 | | `state` expired: `This decision expired.`† | |
@@ -456,7 +470,7 @@ The one exception is section 3's fourth branch (a response body the link can't r
 | Empty: no rows and `nextCursor` is null | DL's empty card: `StatusGlyph` done, **`Nothing needs you.`**, then `A decision appears here the moment the factory needs one.` | — |
 | Error with no data | `signedOut`: as in 5.3 | |
 | | `network` or `server`: DL's `WidgetState` `error` as it is: `Couldn't load`, then `The server did not answer. Nothing was changed.`, with the request ID chip (W1) | `Retry` (DL) refetches |
-| | anything else: `ErrorPanel` with the status as `code`; the title is DL's for 400, 403 and 404, or 5.3's for 409 and 422; **`body` = the server's `message`**, never DL's specimen body | none |
+| | anything else: `ErrorPanel` with the status as `code`; the title is DL's for 400, 403 and 404, 5.3's for 409 and 422, and DL's `ErrorPanel` title for that code for any other status (for example 429); **`body` = the server's `message`**, never DL's specimen body | none |
 | Error with data on screen (a refetch failed) | The rows stay, under `WidgetState` `error` with `lastGoodAge` (DL: `Stale, last good value {age} old`) and the failed request's ID as `requestId` (W1) | `Retry` refetches |
 | Some rows unreadable (`unreadable > 0`) | Above the list, `role="alert"`: `{n} decision couldn't be shown. Reload the page; if it keeps happening, report it.`† (`decisions` when n > 1). No request ID: a successful page doesn't give one to the screen | — |
 | `Load more` fails | The rows stay; the button reads `Retry loading more`†, with the failed request's ID chip (section 4) beside it | It loads the next page again |
@@ -557,7 +571,7 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 - **Zero (`review-frontend`):** each module against sections 1 to 6: names, props, copy (DL's or †), states and values. Nothing invented, and nothing outside its territory.
 - **Brennan (`review-spec`):** this contract against CR-W2, FM, DL and m1, then each module against this contract.
 - **Zane:** the new dependencies (section 6), how keys and request IDs are handled (section 3's fetch wrapper; the SSR client forwards only the request ID), and that `/__mock` and the mock stay out of production builds: nothing under `apps/web/src` imports `@avel/contract-mock`, and the build's output holds neither `__mock` nor `MOCK_OPERATOR_ID`'s value.
-- **Leah:** the page's accessibility on a phone (UC-31, focus, labels), and that the first load of `/` is at most **160 kB gzip** of JavaScript, sprint-01's budget (Decisions, 2026-11-07). FM's 150 kB comes back when `@avel/contract` moves to `zod/mini`. Anything over 160 kB is a finding.
+- **Leah:** the page's accessibility on a phone (UC-31, focus, labels), and that the first load of `/` is at most **160 kB gzip** of JavaScript, sprint-01's budget (Decisions, 2026-11-07). **The budget counts JavaScript only** (FM's "Initial JavaScript" row). Linked stylesheets don't count, but CSS written in JS strings does, because it ships in the JavaScript. A chunk loaded after first paint (the lazy `ReasonDialog`) isn't initial. FM's 150 kB comes back when `@avel/contract` moves to `zod/mini`. Anything over 160 kB is a finding.
 
 ## Appendix A: Brennan's a1 findings and where each is answered
 
@@ -622,3 +636,13 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 | Ghost's deviation 3: nullable `stale` and `rateLimited` fields | Section 3's `UiError` table; 5.3's two rows for a null value |
 | Ghost's deviation 4: other 4xx are `badRequest` | Section 3's `UiError` table |
 | Ghost's deviation 5: an undecodable cursor | Section 2, route 52 |
+
+**Revision 7: Leon's decisions build deviations, and the page's styles** (Decisions, "Revision 7"):
+
+| Source | Answered in |
+| --- | --- |
+| Leon's deviation 1: `loadDecisionsScreen` from `screens.ts` | Section 5, the module and route lines |
+| Leon's deviation 2: the loader catches the prefetch | Section 5, the route lines |
+| Leon's deviation 3: a null-version `stale` shown as `conflict` with the server's message | 5.3, that row |
+| Leon's deviation 4: four choices where the contract was silent | 5.3, buttons after a panel and Refresh/Review; the settled-elsewhere note; 5.4, the title for other statuses |
+| INT's build split (~23 kB of the page is CSS in JS) | Section 4, "The kit's styles"; section 5, "Styles and loading"; section 8, the budget counts JavaScript only |

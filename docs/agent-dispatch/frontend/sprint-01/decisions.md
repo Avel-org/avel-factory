@@ -428,3 +428,33 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **No new scenarios:** UC-01 to UC-31 are unchanged. Fenn's decisions tests are locked (dcd0468), and the two null rows are for malformed answers only.
 
 - **Revision 6 has no separate review (INT).** It records Ghost's reviewed data core and adds two 5.3 error rows; no scenario or locked test changes. Brennan's decisions review-spec checks Leon's page against revision 6, so a gap surfaces there.
+
+## 2026-11-07: Revision 7 of the UI contract (Leon's decisions build a1, PARTIAL; INT's build split)
+
+- **Input:** INT. Leon's decisions build a1 is PARTIAL (report c3effb3). INT asked me to record Leon's Deviations 1 to 4 here, accepted or changed, and to fold their wording into the contract. Separately, INT's build split shows that about 23 kB gzip of `/` is the page's own code, and most of it is CSS written as JS strings.
+- **Leon's deviations:**
+  1. **`screens.ts` also exports `loadDecisionsScreen`, the loader's prefetch. Accepted.** It's the only way to keep "`routes/index.tsx` imports only `screens.ts`" and still give the loader its options. Section 5 now names it.
+  2. **The route loader catches the prefetch's rejection. Accepted.** Otherwise a failed first load shows the router's error page instead of 5.4's states. The error stays in the query cache, and the screen draws it. Section 5 now says the loader doesn't throw.
+  3. **A `stale` with a null `currentVersion` is shown as `conflict`, with the server's `ErrorBody.message` as the body. Accepted, then changed later.** The body comes from 5.3's `conflict` row, and 5.3 now says so. But Leon reads the message from the raw error, outside `toUiError`, the one error mapper (section 3). **The change, in Ghost's next data dispatch (with Zane's 03):** `UiError.stale` gets `message`, and the page reads it from there. Until then it stays as built.
+  4. **The four choices where the contract was silent. All accepted, and written into 5.3 and 5.4:**
+     - after a 5.3 panel, the row's buttons stay enabled (a new tap is a new intent with a new key);
+     - Refresh list and Review set the row back to `seen` only once the refetch succeeds;
+     - the settled-elsewhere note stays until the page reloads;
+     - a first-load error with a status 5.4 doesn't name uses DL's `ErrorPanel` title for that code, with the server's message as the body.
+  5. *(not asked; noted)* **`--av-d-punch` is read from the computed style, and 0 where it can't be read (jsdom). Accepted:** the token stays the only source.
+- **The budget counts JavaScript only** (confirmed to INT). It's FM's "Initial JavaScript" row, and section 8 now says so:
+  - linked stylesheets don't count;
+  - CSS written in JS strings does, because it ships in the JavaScript;
+  - a chunk fetched after first paint isn't initial.
+- **The styles fix, INT's proposal, accepted:**
+  - **The kit:** its styles move to one static stylesheet, `apps/web/src/kit/kit.css`, exported as `kitStylesheetHref`. `KitStyles.tsx` and the CSS strings and style objects go, with values unchanged (section 4, "The kit's styles").
+  - **The module:** its styles move to `modules/decisions/decisions.css`. `screens.ts` exports `decisionsScreenStylesheets`, which route `/`'s `head` links.
+  - **`ReasonDialog`** is loaded with `React.lazy` and fetched once the list has rendered (section 5, "Styles and loading").
+  - **What stays inline:** the values the locked kit tests read from the element. Those are D11's grid columns and gap, and D6's strike (`<s>` also passes).
+  - **Who links the sheets:** the page, not `__root.tsx`, because sprint-01 has one page and `__root.tsx` is w0-fonts' territory. They move to the shell at W2.
+  - **FM line 439** gives `apps/web/src/styles/**` to Nemi for tokens and global styles. A component layer's own sheet sits with that layer's code.
+- **Dispatch: Fantem as w0-kit a2, not a new dispatch.** `render.py` refuses a second build on `apps/web/src/kit/**`, and w0-kit has no other path it could keep. With w0-fonts that was possible, here it isn't. So w0-kit gets a third task, and its notes say a2 does only that task.
+  - **Leon:** decisions a2 gets a third task (the module's styles and the lazy dialog), after fixing what a1 left PARTIAL. It starts after Fantem's a2 merges.
+  - **The kit's reviews** re-run on a2 at INT's call.
+- **No new scenarios.** UC-29's inline-selector count is part of Fenn's fix round.
+

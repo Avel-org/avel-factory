@@ -390,6 +390,7 @@ context = [
 ]
 notes = [
   "The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.",
+  "Attempt a2 (2026-11-07, INT's build split of Leon's branch): the first two tasks are merged (a1). Do only the third, the kit's styles moved to apps/web/src/kit/kit.css (UI contract section 4, 'The kit's styles'; decisions.md, 'Revision 7'). Button's and DecisionTag's style strings are most of their gzipped size. Keep every value; change where it lives. The locked kit tests must still pass unchanged. If one can't without CSS in JS, stop and report it under Deviations.",
 ]
 
 [[dispatch.task]]
@@ -405,6 +406,13 @@ priority = "P0"
 required = "The locked UC-08 passes; the stamp uses --av-d-punch, and the hole fill isn't animated under reduced motion (D12)"
 verify = "pnpm --filter @avel/web exec vitest run test/kit"
 expected = "the locked tests pass"
+
+[[dispatch.task]]
+title = "Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike)"
+priority = "P0"
+required = "No CSS written in JS and no <style> rendered by the kit; values unchanged (section 0); the locked UC-08 to UC-10 pass unchanged"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && test -f apps/web/src/kit/kit.css && ! grep -rlE '<style|KitStyles|dangerouslySetInnerHTML' apps/web/src/kit && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12"
+expected = "typechecks; the locked kit tests pass; kit.css exists; no file listed; the chunk sizes, which you report against INT's split (Button 5.2 kB, DecisionTag 5.3 kB gzip)"
 
 [[dispatch]]
 agent = "zero"
@@ -489,6 +497,9 @@ context = [
   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "What every module looks like, Data layer (writes), Rendering and SSR" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "the Decisions screen (its layout and copy)" },
 ]
+notes = [
+  "Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third task, the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.",
+]
 
 [[dispatch.task]]
 title = "api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader"
@@ -503,6 +514,13 @@ priority = "P0"
 required = "Every locked UC-11 to UC-31 passes; a stale version is never re-sent"
 verify = "pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test"
 expected = "all locked tests pass"
+
+[[dispatch.task]]
+title = "Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')"
+priority = "P0"
+required = "No CSS written in JS in the module; the first load of / is at most 160 kB gzip of JavaScript (section 8), with ReasonDialog outside it; every locked test still passes"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12"
+expected = "typechecks; the locked tests pass; the chunk sizes, with the first load of / at most 160 kB gzip, which you report"
 
 [[dispatch]]
 agent = "zero"

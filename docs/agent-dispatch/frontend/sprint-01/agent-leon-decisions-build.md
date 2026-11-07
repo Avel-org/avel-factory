@@ -74,6 +74,16 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test`
 - **Expected:** all locked tests pass
 
+### LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading') (P0)
+
+- **Required:** No CSS written in JS in the module; the first load of / is at most 160 kB gzip of JavaScript (section 8), with ReasonDialog outside it; every locked test still passes
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12`
+- **Expected:** typechecks; the locked tests pass; the chunk sizes, with the first load of / at most 160 kB gzip, which you report
+
+**Notes:**
+
+- Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third task, the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.
+
 ## 5. Territory
 
 **You may change only:**
@@ -154,6 +164,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | --- | --- | --- |
 | LEON-01 | DONE / PARKED / BLOCKED | |
 | LEON-02 | DONE / PARKED / BLOCKED | |
+| LEON-03 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -202,6 +213,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader
 - LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)
+- LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

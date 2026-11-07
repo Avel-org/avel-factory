@@ -293,6 +293,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
 - FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library
+- FANTEM-03: Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike)
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -399,6 +400,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader
 - LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)
+- LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

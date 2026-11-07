@@ -72,9 +72,16 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/kit`
 - **Expected:** the locked tests pass
 
+### FANTEM-03: Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike) (P0)
+
+- **Required:** No CSS written in JS and no <style> rendered by the kit; values unchanged (section 0); the locked UC-08 to UC-10 pass unchanged
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && test -f apps/web/src/kit/kit.css && ! grep -rlE '<style|KitStyles|dangerouslySetInnerHTML' apps/web/src/kit && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12`
+- **Expected:** typechecks; the locked kit tests pass; kit.css exists; no file listed; the chunk sizes, which you report against INT's split (Button 5.2 kB, DecisionTag 5.3 kB gzip)
+
 **Notes:**
 
 - The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.
+- Attempt a2 (2026-11-07, INT's build split of Leon's branch): the first two tasks are merged (a1). Do only the third, the kit's styles moved to apps/web/src/kit/kit.css (UI contract section 4, 'The kit's styles'; decisions.md, 'Revision 7'). Button's and DecisionTag's style strings are most of their gzipped size. Keep every value; change where it lives. The locked kit tests must still pass unchanged. If one can't without CSS in JS, stop and report it under Deviations.
 
 ## 5. Territory
 
@@ -156,6 +163,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | --- | --- | --- |
 | FANTEM-01 | DONE / PARKED / BLOCKED | |
 | FANTEM-02 | DONE / PARKED / BLOCKED | |
+| FANTEM-03 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -204,6 +212,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
 - FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library
+- FANTEM-03: Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike)
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

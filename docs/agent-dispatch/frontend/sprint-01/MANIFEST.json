@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "8eb74fb99c627b9e4a9017beb6f88c5fc8bd3949e0ab3733521478582c11bac7",
-  "packageSha256": "20a06989ffe3353aac85958f65a58d91b940449cce7a7825a6691c04a9332ab7",
+  "planSha256": "9b92a23833e8bad05983cc0dda3eaf964a908df4f962e1b0b8eda7bda540dc6a",
+  "packageSha256": "89352c134eb7ee6e24958a86de1217d7fc5c3d571ced139c6726b74ba1ee192a",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "12137489b22dc805ae9fca19d6c8eabc322d50744c50ccb46ec546083a7587e1",
-      "bytes": 32238
+      "sha256": "dfaa18dda10149e75a137ee9afb92b25e2c438b93ca27a6e0f88adca1dcf0885",
+      "bytes": 32895
     },
     {
       "path": "DISPATCH.md",
@@ -50,8 +50,8 @@
     {
       "path": "agent-fantem-w0-kit-build.md",
       "kind": "task_doc",
-      "sha256": "0cca6a6367c44df1f0cfae95cd4867ff6a0f763cbc94641fa65cc7b657f6553d",
-      "bytes": 12592
+      "sha256": "c52552c40e95008306edc528d38020559de41ed47dd9aa35d21dbd8cbe08f73c",
+      "bytes": 14388
     },
     {
       "path": "agent-fenn-decisions-test-e2e.md",
@@ -92,8 +92,8 @@
     {
       "path": "agent-leon-decisions-build.md",
       "kind": "task_doc",
-      "sha256": "17edefa8ea63205d01cd6fb00515228df3588fdfe44580e20a36b3d6776229f4",
-      "bytes": 12835
+      "sha256": "e793d69ae4b97ba749d3f19705de6db7e35a0be092991b9f53bcffe5b51e5f6e",
+      "bytes": 14484
     },
     {
       "path": "agent-nemi-w0-app-build.md",
