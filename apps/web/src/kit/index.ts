@@ -1,6 +1,13 @@
 // The kit (UI contract section 4): DL's components with their data-ui names, taking plain props.
 // Named exports only (Frontend Map v0.6, What every module looks like).
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from "./Button";
+export {
+  AV_DECISION_VARIANTS,
+  type DecisionState,
+  DecisionTag,
+  type DecisionTagProps,
+  type DecisionVariant,
+} from "./DecisionTag";
 export { AV_ERROR_COPY, ErrorPanel, type ErrorPanelProps } from "./ErrorPanel";
 export { HashChip, type HashChipProps } from "./HashChip";
 export { Icon, type IconName, type IconProps } from "./Icon";
