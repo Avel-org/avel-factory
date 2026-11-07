@@ -39,7 +39,7 @@ Your tasks:
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 
-You may change only: apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
+You may change only: apps/web/{vite.config.ts,tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
@@ -86,6 +86,48 @@ Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
 write docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```
+
+## agent-nemi-w0-split-build
+
+```text
+You are NEMI on avel-factory, frontend sprint-01 (step 1: The minimal approval page on the contract mock, with the thin W0 slice under it).
+Dispatch: agent-nemi-w0-split-build. Branch: frontend/sprint-01/agent-nemi-w0-split-build-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- NEMI-01: apps/web/package.json: "sideEffects": ["**/*.css"], and no other change
+
+You may change only: apps/web/package.json, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```
+
+## agent-zero-w0-split-review-frontend
+
+```text
+You are ZERO on avel-factory, frontend sprint-01 (step 1: The minimal approval page on the contract mock, with the thin W0 slice under it).
+Dispatch: agent-zero-w0-split-review-frontend. Branch: frontend/sprint-01/agent-zero-w0-split-review-frontend-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-split-review-frontend.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- ZERO-01: Review the w0-split diff: one sideEffects field naming CSS files only, no dependency or script change, nothing outside apps/web/package.json
+
+You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-split-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zero-*.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-split-review-frontend-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -187,6 +229,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (BAD_REQUEST details { field, issues }, S1-3), both response headers, the idempotency rules, route 54's checks in CR-W2's order (check 1 the schema check only; the path's proposalId wins, S1-5), every request recorded (failed ones too), the dev-only bump and reset paths, and fixtures empty, step1 and many
 - GHOST-02: apps/web/src/data and lib: createApiClient with its fetch wrapper (X-Request-Id, Idempotency-Key, NetworkError, the browser-only X-Contract-Version check) and decodeErrorBody as OpenAPILink's customErrorResponseBodyDecoder, createApi, bindApi, apiFor and useApi, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, ApiError, NetworkError and toUiError's four branches (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas, parsePendingPage (one page) and selectPendingPages (route 52's infinite select), formatAgo and formatClock; apps/web/src/router.tsx with getRouter (per request on the server, forwarding the incoming X-Request-Id)
+- GHOST-03: Attempt a2: no classic zod in apps/web/src (UI contract section 3, 'Which zod the web may import'). data/pending-decisions.ts written in zod/mini with the same fields, parse results and issue paths; client.ts's type import from zod/mini; decodeErrorBody keeps ErrorBody from @avel/contract/errors
 
 You may change only: apps/web/src/data/**, apps/web/src/lib/**, apps/web/src/router.tsx, packages/contract-mock/**, docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -208,6 +251,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-data diff: every export and UiError member as section 3 names it, the mock's surface as section 2 fixes it, no field derived on the client, nothing outside the territory
+- ZERO-02: Attempt a2: review the zod/mini move against section 3, 'Which zod the web may import': no classic zod in apps/web/src, pending-decisions.ts field for field the same schema as a1's, the same parse results
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-data-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-data-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -294,6 +338,7 @@ Your tasks:
 - FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
 - FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library
 - FANTEM-03: Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike)
+- FANTEM-04: Attempt a3: K1 in kit.css under @media (max-width: 899px), Button at least var(--av-touch-min) tall, HashChip's copy and the dialog's Close button with a tap area of at least var(--av-touch-min) square and their drawn size unchanged, ReasonDialog's textarea at var(--av-phone-body); R5, the Dialog frame's aria-describedby naming its description when there is one
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -315,6 +360,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
+- ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -378,6 +424,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
+- FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -401,6 +448,7 @@ Your tasks:
 - LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader
 - LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)
 - LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')
+- LEON-04: Attempt a2: the hydration marker, data-hydrated="true" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9)
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

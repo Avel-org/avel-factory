@@ -26,7 +26,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
 9. `docs/ui-contracts/decisions-approval-page.md`: sections 4, 5 and UC-31
 10. `docs/design/AVEL Web App — Frontend Map v0.6.md`: Performance budgets (Decisions under 150 KB gzipped; sprint-01 holds 160 kB, decisions.md 2026-11-07)
-11. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, the first-load budget is 160 kB for sprint-01 (INT)
+11. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, the first-load budget is 160 kB for sprint-01 (INT); 'Revision 9': what a2 re-checks
 12. `docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf.md`: this task doc: follow it exactly
 
 ## 3. Domain
@@ -39,6 +39,8 @@ Review the approval page on a phone: labels, focus, 44px targets, the reason dia
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
+- `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
+- `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -71,6 +73,11 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web build && grep -n -A4 'rel: "preload"' apps/web/src/routes/__root.tsx`
 - **Expected:** two font preloads (Inter Variable, IBM Plex Mono 500); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not
 
+**Notes:**
+
+- Attempt a2 (revision 9): re-check your a1 findings (decisions-leah-01 to 04, on main at 3d3ccfc) after Leon's decisions a2, Fantem's w0-kit a3 and Nemi's w0-split are merged. For each, say whether it's closed, citing file:line. A still-open finding keeps its file name; a new one is numbered from 05.
+- The first load is section 8's: every JS file / loads before it can be used (the entry, and every chunk the server's HTML loads or preloads for /, the route's chunk included), gzipped and summed; not the lazy dialog. Over 160 kB is still a finding until Ghost's w0-data a2 and Axis's S1-6 are merged; from then, over 150 kB is. Say which held at your start commit.
+
 ## 5. Territory
 
 **You may change only:**
@@ -81,6 +88,7 @@ Do them in order. Finish each one, verified, before the next.
 **You may not change:**
 
 - `apps/web/e2e/**` (FENN, locked tests)
+- `apps/web/package.json` (NEMI)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/data/**` (GHOST)
 - `apps/web/src/kit/**` (FANTEM)
@@ -95,7 +103,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)

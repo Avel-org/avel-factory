@@ -41,6 +41,8 @@ The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.ts
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
+- `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
+- `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -75,6 +77,12 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/data`
 - **Expected:** typechecks; the locked tests pass
 
+### GHOST-03: Attempt a2: no classic zod in apps/web/src (UI contract section 3, 'Which zod the web may import'). data/pending-decisions.ts written in zod/mini with the same fields, parse results and issue paths; client.ts's type import from zod/mini; decodeErrorBody keeps ErrorBody from @avel/contract/errors (P0)
+
+- **Required:** No runtime or type import of "zod" or "zod/v4" under apps/web/src; the locked w0-data tests pass unchanged; the first load of / (every JS file it loads, gzipped and summed, section 8) is lower than before, by the amount you report
+- **Verify:** `! grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src && pnpm --filter "@avel/web..." typecheck && pnpm --filter @avel/web exec vitest run test/data && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js'`
+- **Expected:** no line listed; typechecks; the locked tests pass; the client chunks, with /'s first load before and after (measure main's build first), which you report
+
 **Notes:**
 
 - The mock serves the contract through oRPC's OpenAPI handler over @avel/contract, so a mistake shows up as a type error, not drift.
@@ -82,6 +90,8 @@ Do them in order. Finish each one, verified, before the next.
 - pnpm-lock.yaml isn't in your territory (escalation 01): run pnpm install so your commands work, but don't commit the lockfile. List the dependencies you added, with their resolved versions, under Contract to files.
 - Two things to confirm once installed, each a stop-and-report under Deviations if it doesn't hold: OpenAPILink in @orpc/openapi-client 1.16.2 calls customErrorResponseBodyDecoder(deserializedBody, response) before its own error decoding and throws what it returns (Zero read it in dist/shared/openapi-client.DgkI_tTF.mjs); and getRouter() can read the incoming request on the server through TanStack Start's request accessor inside createIsomorphicFn().server(). Name the accessor you used in your report.
 - The web calls the mock's route 54 with the body { version, choice, reason }: OpenAPILink drops path parameters from the body (contract section 1). The path's proposalId wins and a body copy is ignored, as oRPC's handler merges path over body (Axis S1-5, D48): don't read the raw body, and check 1 is the schema check only.
+- Attempt a2 (2026-11-07, revision 9; INT's decision 4, S1-6's web side): the first two tasks are merged (a1). Do only the third. Start after Axis's S1-6 (@avel/contract on zod/mini, backend sprint-01) is merged on main: check that git grep -nE "from ['\"]zod['\"]" packages/contract/src lists nothing before you start, and if it does, stop and report. The two halves land together because either one on classic zod brings all of it back (backend sprint-01 decisions.md, S1-6).
+- a2's scope is zod only: Zane's w0-data finding 03 and UiError.stale.message wait for INT's call (decisions.md, 'Revision 9'). packages/contract-mock and apps/web/test aren't in the browser's bundle, so section 3's rule doesn't cover them: leave them as they are unless they stop typechecking.
 
 ## 5. Territory
 
@@ -96,6 +106,7 @@ Do them in order. Finish each one, verified, before the next.
 **You may not change:**
 
 - `apps/web/e2e/**` (FENN, locked tests)
+- `apps/web/package.json` (NEMI)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/kit/**` (FANTEM)
 - `apps/web/src/modules/decisions/**` (LEON)
@@ -107,7 +118,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
 - `packages/contract/**` (the other team)
@@ -163,6 +174,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | --- | --- | --- |
 | GHOST-01 | DONE / PARKED / BLOCKED | |
 | GHOST-02 | DONE / PARKED / BLOCKED | |
+| GHOST-03 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -211,6 +223,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (BAD_REQUEST details { field, issues }, S1-3), both response headers, the idempotency rules, route 54's checks in CR-W2's order (check 1 the schema check only; the path's proposalId wins, S1-5), every request recorded (failed ones too), the dev-only bump and reset paths, and fixtures empty, step1 and many
 - GHOST-02: apps/web/src/data and lib: createApiClient with its fetch wrapper (X-Request-Id, Idempotency-Key, NetworkError, the browser-only X-Contract-Version check) and decodeErrorBody as OpenAPILink's customErrorResponseBodyDecoder, createApi, bindApi, apiFor and useApi, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, ApiError, NetworkError and toUiError's four branches (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas, parsePendingPage (one page) and selectPendingPages (route 52's infinite select), formatAgo and formatClock; apps/web/src/router.tsx with getRouter (per request on the server, forwarding the incoming X-Request-Id)
+- GHOST-03: Attempt a2: no classic zod in apps/web/src (UI contract section 3, 'Which zod the web may import'). data/pending-decisions.ts written in zod/mini with the same fields, parse results and issue paths; client.ts's type import from zod/mini; decodeErrorBody keeps ErrorBody from @avel/contract/errors
 
 You may change only: apps/web/src/data/**, apps/web/src/lib/**, apps/web/src/router.tsx, packages/contract-mock/**, docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

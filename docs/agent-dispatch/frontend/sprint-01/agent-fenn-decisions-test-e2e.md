@@ -25,7 +25,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
 9. `docs/ui-contracts/decisions-approval-page.md`: sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump and reset paths, section 3's one data path for development, and D11 (the phone actions)
-10. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
+10. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md`: a2: why the first click is lost (on main at 3d3ccfc)
+11. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -37,6 +38,8 @@ The approval page end to end with Playwright on AVEL_API=mock, phone and desk: U
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
+- `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
+- `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -65,6 +68,17 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec playwright test 2>&1 | tail -15`
 - **Expected:** the UC-29 to UC-31 tests fail on assertions
 
+### FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes (P0)
+
+- **Required:** The SSR assertions still run on the server's HTML before the wait; one commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); each test fails first on the wait, since the marker isn't built yet
+- **Verify:** `grep -c 'data-hydrated' apps/web/e2e/*.spec.ts && pnpm --filter @avel/web exec playwright test 2>&1 | tail -15 && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** one wait per test; the tests fail waiting for the marker (or later, on an assertion); only apps/web/e2e changed
+
+**Notes:**
+
+- Attempt a2 (2026-11-07, revision 9; INT's decision 2): a1 is merged and locked (locks.md, decisions-e2e). Do only the second task. It changes a locked test, which INT decided: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a2: wait for the hydration marker before the first click (INT, revision 9)" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's decisions-e2e line to your commit.
+- The marker is section 5's data-hydrated="true" on the DecisionsPage root, added by Leon's decisions a2. It isn't on main yet, so the specs wait and time out first. Use Playwright's own wait (for example expect(locator).toBeVisible() or toHaveAttribute), with no fixed sleep.
+
 ## 5. Territory
 
 **You may change only:**
@@ -75,6 +89,7 @@ Do them in order. Finish each one, verified, before the next.
 
 **You may not change:**
 
+- `apps/web/package.json` (NEMI)
 - `apps/web/src/data/**` (GHOST)
 - `apps/web/src/kit/**` (FANTEM)
 - `apps/web/src/lib/**` (GHOST)
@@ -88,7 +103,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
@@ -142,6 +157,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | FENN-01 | DONE / PARKED / BLOCKED | |
+| FENN-02 | DONE / PARKED / BLOCKED | |
 
 ## Tests
 Each test: its scenario ID, its file and name, and its failure line (or "pins existing behaviour: passes").
@@ -195,6 +211,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
+- FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

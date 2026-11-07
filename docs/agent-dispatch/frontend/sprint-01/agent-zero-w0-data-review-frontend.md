@@ -38,6 +38,8 @@ Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
+- `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
+- `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -65,6 +67,11 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/data`
 - **Expected:** the locked tests pass
 
+### ZERO-02: Attempt a2: review the zod/mini move against section 3, 'Which zod the web may import': no classic zod in apps/web/src, pending-decisions.ts field for field the same schema as a1's, the same parse results (P1)
+
+- **Verify:** `! grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src && pnpm --filter @avel/web exec vitest run test/data && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** no line listed; the locked tests pass; only files under apps/web/src/data changed
+
 ## 5. Territory
 
 **You may change only:**
@@ -75,6 +82,7 @@ Do them in order. Finish each one, verified, before the next.
 **You may not change:**
 
 - `apps/web/e2e/**` (FENN, locked tests)
+- `apps/web/package.json` (NEMI)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/data/**` (GHOST)
 - `apps/web/src/kit/**` (FANTEM)
@@ -89,7 +97,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
@@ -145,6 +153,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | ZERO-01 | DONE / PARKED / BLOCKED | |
+| ZERO-02 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/w0-data-zero-*.md`): its path, severity and title. "none" if none.
@@ -195,6 +204,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-data diff: every export and UiError member as section 3 names it, the mock's surface as section 2 fixes it, no field derived on the client, nothing outside the territory
+- ZERO-02: Attempt a2: review the zod/mini move against section 3, 'Which zod the web may import': no classic zod in apps/web/src, pending-decisions.ts field for field the same schema as a1's, the same parse results
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-data-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-data-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

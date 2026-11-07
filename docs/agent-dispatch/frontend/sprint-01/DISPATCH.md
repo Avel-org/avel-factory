@@ -36,6 +36,8 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | [`agent-nemi-w0-app-build`](agent-nemi-w0-app-build.md) | NEMI | build | w0-app | at once (no test dispatch in this module); after `agent-brennan-approvals-uic-review-spec`, `backend/sprint-00/agent-axis-m1-contract-api-contract` is merged into main |
 | [`agent-nemi-w0-fonts-build`](agent-nemi-w0-fonts-build.md) | NEMI | build | w0-fonts | at once (no test dispatch in this module); after `agent-nemi-w0-app-build` is merged into main |
 | [`agent-zero-w0-fonts-review-frontend`](agent-zero-w0-fonts-review-frontend.md) | ZERO | review-frontend | w0-fonts | once `agent-nemi-w0-fonts-build` has its completion report, checked out at its result commit |
+| [`agent-nemi-w0-split-build`](agent-nemi-w0-split-build.md) | NEMI | build | w0-split | at once (no test dispatch in this module); after `agent-nemi-w0-app-build` is merged into main |
+| [`agent-zero-w0-split-review-frontend`](agent-zero-w0-split-review-frontend.md) | ZERO | review-frontend | w0-split | once `agent-nemi-w0-split-build` has its completion report, checked out at its result commit |
 | [`agent-zero-w0-app-review-frontend`](agent-zero-w0-app-review-frontend.md) | ZERO | review-frontend | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
 | [`agent-zane-w0-app-review-security`](agent-zane-w0-app-review-security.md) | ZANE | review-security | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
 | [`agent-brennan-w0-app-review-spec`](agent-brennan-w0-app-review-spec.md) | BRENNAN | review-spec | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
@@ -59,9 +61,10 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 
 | Paths | Owner |
 | --- | --- |
-| `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` | NEMI (build) |
+| `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` | NEMI (build) |
 | `apps/web/src/styles/**` | NEMI (build) |
 | `apps/web/src/routes/__root.tsx` | NEMI (build) |
+| `apps/web/package.json` | NEMI (build) |
 | `apps/web/vitest.config.ts` | FENN (test-unit) |
 | `apps/web/test/setup/**` | FENN (test-unit) |
 | `apps/web/test/data/**` | FENN (test-unit) |
@@ -78,6 +81,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | `apps/web/src/routes/index.tsx` | LEON (build) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/approvals-uic-brennan-*.md` | BRENNAN (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md` | ZERO (findings) |
+| `docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-zane-*.md` | ZANE (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-brennan-*.md` | BRENNAN (findings) |
@@ -108,9 +112,10 @@ Nothing waits for a wave: each dispatch starts when its own rule above is met (t
 4. `agent-fenn-decisions-test-unit`
 5. `agent-fenn-decisions-test-e2e`
 6. `agent-nemi-w0-fonts-build`
-7. `agent-ghost-w0-data-build`
-8. `agent-fantem-w0-kit-build`
-9. `agent-leon-decisions-build`
+7. `agent-nemi-w0-split-build`
+8. `agent-ghost-w0-data-build`
+9. `agent-fantem-w0-kit-build`
+10. `agent-leon-decisions-build`
 
 ## Closing the sprint
 

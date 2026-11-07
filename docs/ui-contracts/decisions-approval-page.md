@@ -1,6 +1,6 @@
 # UI contract: the approval page (frontend sprint-01, Step 1)
 
-Zero, 2026-11-06. Status: **revision 8**. Revision 5 passed Brennan's a5. Revision 6 records what the merged w0-data build settled (Decisions, "Revision 6"): Brennan's w0-data finding 01 (the client is built over the `{ decisions }` route group) and Ghost's deviations 1 to 5. Revision 7 records Leon's decisions build deviations 1 to 4 and the page's styles and budget for the fix round (Decisions, "Revision 7"). Revision 8 adds D12's stamp animation to section 4's "What stays inline" (Fantem's w0-kit a2 deviation 1; Decisions, "Revision 8"). Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
+Zero, 2026-11-06. Status: **revision 9**. Revision 5 passed Brennan's a5. Revision 6 records what the merged w0-data build settled (Decisions, "Revision 6"): Brennan's w0-data finding 01 (the client is built over the `{ decisions }` route group) and Ghost's deviations 1 to 5. Revision 7 records Leon's decisions build deviations 1 to 4 and the page's styles and budget for the fix round (Decisions, "Revision 7"). Revision 8 adds D12's stamp animation to section 4's "What stays inline" (Fantem's w0-kit a2 deviation 1; Decisions, "Revision 8"). Revision 9 answers Leah's decisions a11y-perf a1 (findings decisions-leah-01 to 04) with INT's decisions: the kit's phone targets and input size, the dialog's description, the hydration marker the end-to-end tests wait for, the route split, and S1-6's rule that the web imports no classic `zod` (Decisions, "Revision 9"). Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
 
 This is the one document the sprint's builders and test writer work from:
 - Nemi: the app and tokens.
@@ -44,7 +44,7 @@ Each scenario has an ID (`UC-NN`, section 7), and a test carries it in its name.
 
 In m1, route 52 returns `Page(Placeholder)` (D30). The Step 1 slice makes it CR-W2's union (CR-W2 section 8, item 5). Until then:
 
-- **The data core holds CR-W2's row as a Zod schema:** `apps/web/src/data/pending-decisions.ts`, transcribed from CR-W2 sections 2.1 to 2.3, field for field. That gives `PendingDecisionRow`, `DecisionChoice` and `CostImpact`. It is the only copy on the web side. The mock's tests check the mock's rows against it.
+- **The data core holds CR-W2's row as a Zod schema** (in `zod/mini` from Ghost's w0-data a2, section 3): `apps/web/src/data/pending-decisions.ts`, transcribed from CR-W2 sections 2.1 to 2.3, field for field. That gives `PendingDecisionRow`, `DecisionChoice` and `CostImpact`. It is the only copy on the web side. The mock's tests check the mock's rows against it.
 - **Each item route 52 returns** is parsed with it, one page at a time (`parsePendingPage`), inside the route's infinite query `select` (`selectPendingPages`), which joins the loaded pages (section 3).
   - Rows that parse are listed.
   - A row that doesn't parse is counted in `unreadable` and not drawn. The page shows the unreadable band (UC-24).
@@ -258,6 +258,15 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 
 `stale` is keyed on the code `STALE_VERSION` alone, never on the status 409 (Decisions, 2026-11-06).
 
+**Which zod the web may import** (revision 9; S1-6; Decisions, "after S1-6" and "Revision 9"):
+- `apps/web/src` gets its schemas only from `@avel/contract`'s exports, or writes them with `zod/mini`.
+- **It never imports `"zod"` or `"zod/v4"` (classic zod)** at runtime. Classic zod's methods sit on shared classes, so one classic schema brings all of it into the first load (section 8).
+- Type-only imports (`import type`) don't reach the bundle, but they come from `zod/mini` too, so there's one source.
+- **Where it applies today:** `data/pending-decisions.ts` (section 1's interim row schema) is written in `zod/mini`, with the same fields, the same parse results and the same issue paths. `client.ts`'s type import moves to `zod/mini`. `decodeErrorBody` keeps `ErrorBody` from `@avel/contract/errors`, which S1-6 rewrites in `zod/mini`.
+- **When:** Ghost's w0-data a2, after Axis's S1-6 is merged. The two land together, because either package left on classic zod brings all of it back (backend sprint-01, S1-6). Until then, `pending-decisions.ts` stays on classic zod, inside sprint-01's 160 kB.
+- **The check:** `grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src` lists nothing.
+- `packages/contract-mock` and the tests aren't in the browser's bundle, so the rule doesn't cover them.
+
 ## 4. The kit (Fantem, `apps/web/src/kit/**`)
 
 These are DL's components, ported with their `data-ui` names, values and copy. They take plain props and know nothing about oRPC or routes (FM, Layers).
@@ -266,12 +275,12 @@ These are DL's components, ported with their `data-ui` names, values and copy. T
 
 | Component | `data-ui` | Props ported | Left out of DL's | Changes |
 | --- | --- | --- | --- | --- |
-| `Button` | `Button` (with a reason: `ButtonWithReason`) | `variant`, `size`, `block`, `disabled`, `disabledReason`, `icon`, `iconRight`, `onClick`, `children` | `holdToConfirm`, `onConfirm`, `pressed`, `type`, `title`, `ariaLabel`, `style` | none |
+| `Button` | `Button` (with a reason: `ButtonWithReason`) | `variant`, `size`, `block`, `disabled`, `disabledReason`, `icon`, `iconRight`, `onClick`, `children` | `holdToConfirm`, `onConfirm`, `pressed`, `type`, `title`, `ariaLabel`, `style` | Its phone height: K1, below |
 | `Tag` | `Tag` | `tone`, `size`, `icon`, `title`, `children` | `glyph`, `style` | none |
 | `Icon` | `Icon` (DL: `data-ui="Icon"`, `data-icon={name}`) | `name`, `size` (16), `strokeWidth` (1.75), `title` (gives `role="img"`) | `style` | Per-icon imports from `lucide-react` instead of DL's registry |
 | `StatusGlyph` | `StatusGlyph` | `status`, `size` | `onColor` | none |
-| `HashChip` | `HashChip` | `value`, `kind`, `length`, `prefix`, `strike`, `copy` | `verified`, `href`, `title` | none. DL's copy button is kept: `aria-label` `Copy {value}` |
-| `ReasonDialog` | `ReasonDialog` | `open`, `onClose`, `onConfirm(reason)`, `title`, `description`, `confirmLabel`, `destructive`, `placeholder`, `minLength` (3) | none | R1 to R4, below |
+| `HashChip` | `HashChip` | `value`, `kind`, `length`, `prefix`, `strike`, `copy` | `verified`, `href`, `title` | DL's copy button is kept: `aria-label` `Copy {value}`. Its phone tap area: K1, below |
+| `ReasonDialog` | `ReasonDialog` | `open`, `onClose`, `onConfirm(reason)`, `title`, `description`, `confirmLabel`, `destructive`, `placeholder`, `minLength` (3) | none | R1 to R6, below |
 | `ErrorPanel` | `ErrorPanel` | `code`, `title`, `body`, `actionLabel`, `onAction`, `requestId`, `compact` | none | E1, below |
 | `WidgetState` | `WidgetState` | `state` (`loading`, `empty`, `error` or `staleVersion`), `title`, `message`, `icon`, `actionLabel`, `onAction`, `lastGoodAge`, `children` | `needs`, `height`, `lines`, `compact`; the states `notConfigured` and `populated` | W1, below |
 | `DecisionTag` | `DecisionTag` | below | `compact`, `hideActions`, `onOpen` and the "Open" link button | D1 to D14, below |
@@ -281,6 +290,11 @@ These are DL's components, ported with their `data-ui` names, values and copy. T
 - **How it's loaded:** `kit/index.ts` exports its URL as `kitStylesheetHref` (a `?url` import). The page links it (section 5), so it's loaded once and cached, and it's out of the JavaScript.
 - **No CSS in JavaScript:** no CSS as JS strings, and no `<style>` element rendered into the HTML. `KitStyles.tsx` goes.
 - **What stays inline:** a component keeps an inline `style` only for a value that changes per render, and for the values the locked kit tests read from the element: D11's phone grid (`grid-template-columns` `minmax(0, 1fr) minmax(0, 1.4fr)` and `gap` `10px`), D6's stale strike (inline `text-decoration`, or an `<s>` element), and D12's stamp animation (the one declaration `animation: av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both`, because UC-08 reads `--av-d-punch` from the card's HTML; the stamp's other values are in `kit.css`) (revision 8, Decisions).
+- **K1. Touch sizes on a phone** (revision 9; Leah's finding 02; DL v1.8: "Every target 44px minimum"). DL gets these from `[data-density="phone"]`, which nothing in sprint-01 sets, and `ReasonDialog` draws in a portal on `body`, outside any page element. So `kit.css` holds them under `@media (max-width: 899px)` (the page's phone width, section 5), with DL's tokens and no new values:
+  - every `Button` is at least `var(--av-touch-min)` (44px) tall. That covers Approve and Reject in D11's grid, D9's `Open on GitHub` link button, and the dialog's Cancel and confirm;
+  - the tap area of `HashChip`'s copy button and of the dialog's Close button is at least `var(--av-touch-min)` in both directions. The drawn chip and icon keep DL's size: the larger area is a transparent hit area (for example an absolutely placed `::after`), so a row doesn't get taller;
+  - `ReasonDialog`'s textarea is `font-size: var(--av-phone-body)` (16px), so iOS doesn't zoom on focus.
+  - At 900px and over, nothing changes.
 
 **The request ID, everywhere it's shown,** is DL's `ErrorPanel` chip: `HashChip` with `kind: "hash"`, `length: 12`, `prefix: "req"` and DL's copy button (`aria-label` `Copy {requestId}`), so the full ID is always one tap away (FM, Errors by code). Tests find it by that `aria-label`.
 
@@ -289,6 +303,8 @@ These are DL's components, ported with their `data-ui` names, values and copy. T
 - **R2. `defaultReason?: string`.** On open, the text is set to `defaultReason ?? ""`. DL clears it to `""` on every open, so this replaces that. It lets the page reopen the dialog with the reason it sent (5.3, reason 400).
 - **R3. `onConfirm` doesn't close the dialog.** DL's calls `onClose` after `onConfirm`. Here the caller closes it.
 - **R4. `requestId?: string`** draws the request ID chip under `error` (finding 16).
+- **R5. The description is the dialog's accessible description** (revision 9; Leah's finding 02). When `description` is given, the dialog element (`role="dialog"`) carries `aria-describedby` with the description paragraph's ID, beside its `aria-labelledby`. With no description there's no `aria-describedby`. The change is in the kit's `Dialog` frame, which `ReasonDialog` draws in.
+- **R6. The textarea is 16px on a phone:** K1, above.
 
 **`ErrorPanel`:**
 - **E1. No action unless `onAction` is given.** DL always draws its button. Here the button (`actionLabel ?? DL's action copy`) is drawn only when `onAction` is set.
@@ -384,6 +400,15 @@ The state tag stays DL's:
 - **The module's styles** live in `apps/web/src/modules/decisions/decisions.css`, a static stylesheet with no CSS in JS strings.
 - **How they're linked:** `screens.ts` exports `decisionsScreenStylesheets`, the kit's `kitStylesheetHref` and the module's own `?url`. Route `/`'s `head` links both. They move to the shell when a second page uses the kit (W2).
 - **`ReasonDialog` isn't in the first load.** The module imports it with `React.lazy` and starts fetching it once the list has rendered, so the first tap doesn't wait on the network. 5.2's 100ms rule for `Approving…` is unchanged.
+- **Linked from the first paint** (revision 9; Leah's findings 02 and 04): route `/`'s `head` links both sheets, so the server's HTML carries them and the first paint is styled. With `kit.css` linked, `HashChip` draws in IBM Plex Mono 500 on the first paint, and the font `__root.tsx` preloads is used.
+- **The route split** (revision 9; INT; FM line 285, "Automatic code splitting per route"). TanStack Start always runs the router's code splitter: `autoCodeSplitting` isn't an option in Start's config, so `vite.config.ts` doesn't change. The route's `component` goes to its own chunk. The loader stays in the route file.
+  - **What keeps it split:** `@avel/web`'s `package.json` declares `"sideEffects": ["**/*.css"]` (section 6). Without it, the loader's import of `screens.ts` brings `DecisionsScreen` and the kit into the entry chunk, and the component's chunk is a 0.07 kB re-export (Zero's measurement on Leon's a1, Decisions, "Revision 9").
+  - On `/`, the route's chunk is part of the first load (section 8). The split keeps every later route's screens out of `/`, and `ReasonDialog` stays out of both.
+
+**The hydration marker** (revision 9; INT; Leah's finding 03): the `data-ui="DecisionsPage"` root carries `data-hydrated="true"` once React has hydrated it.
+- The server's HTML doesn't have it, and nor does the hydration render, so hydration doesn't mismatch. The client render that follows adds it.
+- It's read with `useSyncExternalStore`, with the server snapshot `false` and the client snapshot `true`, and no `useEffect`.
+- It's for tests and nothing is styled on it. The end-to-end tests wait for it before their first click (section 7).
 
 **Phone** is `max-width: 899px` (DL's Decisions screen). On a phone, tags use `layout="phone"`. On a desk, `layout="desk"`.
 
@@ -492,10 +517,11 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
   - `@orpc/client`, `@orpc/openapi-client` and `@orpc/tanstack-query`, at the exact version `@avel/contract` pins for `@orpc/contract`;
   - `@tanstack/react-start`, `@tanstack/react-router` and `@tanstack/react-query`;
   - `react` and `react-dom`;
-  - `zod`, at the contract's exact version;
+  - `zod`, at the contract's exact version. `apps/web/src` imports only its `zod/mini` subpath, never classic `zod` (section 3, revision 9), and `zod` ships `zod/mini`, so the dependency doesn't change;
   - `lucide-react`;
   - Tailwind CSS v4 and its Vite plugin;
   - for tests: `vitest` (the workspace's version), `@testing-library/react`, `@testing-library/user-event`, `jsdom` and `@playwright/test`.
+- **`package.json` declares `"sideEffects": ["**/*.css"]`** (revision 9). Only CSS files run for their effect on import (`__root.tsx`'s token and base sheets). Everything else in `@avel/web` is free to drop when unused, so the route split holds (section 5, "The route split").
 - **`apps/web/src/styles/tokens.css`** carries DL's token stylesheet: every custom property between DL's `Theme-independent AVEL tokens` and `Base element defaults` comments, with the same value under the same selectors.
   - The check in Nemi's task compares 533 name and value pairs.
   - `--av-stall-after: 8m` is copied as it is (FM's follow-up changes DL's source).
@@ -558,7 +584,7 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 | UC-27 | **List states:** rendered without prefetched data → `WidgetState` loading. `failNext(52, { network: true }, { times: 4 })` on the first load → exactly `Couldn't load` and `The server did not answer. Nothing was changed.`, the request ID, and Retry, which then loads. `failNext(52, { status: 403, code: "FORBIDDEN", message: "No." })` → `Not allowed` with body `No.`, the request ID and no button. A refetch failing 4 times with rows on screen → `Stale, last good value …`, the request ID and Retry |
 | UC-28 | **Contract version:** a mock whose `contractVersion` differs from the client's → the `staleVersion` banner with `Reload` |
 
-**End to end** (`apps/web/e2e/`, Playwright, `AVEL_API=mock`, phone 390×844 and desk 1280×800). Playwright starts the dev server, so every test talks to its one mock instance (section 3). Each test first calls `POST /__mock/reset`, and the tests run one at a time (`workers: 1`):
+**End to end** (`apps/web/e2e/`, Playwright, `AVEL_API=mock`, phone 390×844 and desk 1280×800). Playwright starts the dev server, so every test talks to its one mock instance (section 3). Each test first calls `POST /__mock/reset`, and the tests run one at a time (`workers: 1`). **After its SSR checks and before its first click, each test waits for `[data-ui="DecisionsPage"][data-hydrated="true"]`** (section 5, the hydration marker; revision 9). A click on the server's HTML before React has hydrated is lost, and that was Leah's finding 03:
 
 | ID | Flow |
 | --- | --- |
@@ -571,7 +597,11 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 - **Zero (`review-frontend`):** each module against sections 1 to 6: names, props, copy (DL's or †), states and values. Nothing invented, and nothing outside its territory.
 - **Brennan (`review-spec`):** this contract against CR-W2, FM, DL and m1, then each module against this contract.
 - **Zane:** the new dependencies (section 6), how keys and request IDs are handled (section 3's fetch wrapper; the SSR client forwards only the request ID), and that `/__mock` and the mock stay out of production builds: nothing under `apps/web/src` imports `@avel/contract-mock`, and the build's output holds neither `__mock` nor `MOCK_OPERATOR_ID`'s value.
-- **Leah:** the page's accessibility on a phone (UC-31, focus, labels), and that the first load of `/` is at most **160 kB gzip** of JavaScript, sprint-01's budget (Decisions, 2026-11-07). **The budget counts JavaScript only** (FM's "Initial JavaScript" row). Linked stylesheets don't count, but CSS written in JS strings does, because it ships in the JavaScript. A chunk loaded after first paint (the lazy `ReasonDialog`) isn't initial. FM's 150 kB comes back when `@avel/contract` moves to `zod/mini`. Anything over 160 kB is a finding.
+- **Leah:** the page's accessibility on a phone (UC-31, K1, R5, focus, labels), and that the first load of `/` is at most **160 kB gzip** of JavaScript, sprint-01's budget (Decisions, 2026-11-07). **The budget counts JavaScript only** (FM's "Initial JavaScript" row). Linked stylesheets don't count, but CSS written in JS strings does, because it ships in the JavaScript.
+  - **The first load is every JavaScript file `/` loads before it can be used:** the entry chunk, and every chunk the server's HTML loads or preloads for `/`, including the route's own chunk (section 5, "The route split"). Summed, gzipped (revision 9).
+  - A chunk fetched after first paint (the lazy `ReasonDialog`) isn't initial.
+  - **FM's 150 kB comes back** once both halves of S1-6 are merged: Axis's `@avel/contract` on `zod/mini`, and Ghost's w0-data a2 (section 3). From then, over 150 kB is a finding. Until then, over 160 kB is.
+- **Zero and Zane, from Ghost's w0-data a2:** `grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src` lists nothing (section 3).
 
 ## Appendix A: Brennan's a1 findings and where each is answered
 
@@ -646,3 +676,12 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 | Leon's deviation 3: a null-version `stale` shown as `conflict` with the server's message | 5.3, that row |
 | Leon's deviation 4: four choices where the contract was silent | 5.3, buttons after a panel and Refresh/Review; the settled-elsewhere note; 5.4, the title for other statuses |
 | INT's build split (~23 kB of the page is CSS in JS) | Section 4, "The kit's styles"; section 5, "Styles and loading"; section 8, the budget counts JavaScript only |
+
+**Revision 9: Leah's decisions a11y-perf a1 (report 3d3ccfc) and INT's decisions**
+
+| Finding | Severity | Where it's answered |
+| --- | --- | --- |
+| decisions-leah-01 First load 173.5 kB over 160 kB | P1 | Section 3, which zod the web may import (Ghost's w0-data a2, with Axis's S1-6); section 5, the route split; section 6, `sideEffects`; section 8, what the first load counts and when 150 kB returns |
+| decisions-leah-02 Targets under 44px, a 14px input, sheets not linked | P1 | Section 5, linked from the first paint (Leon); section 4, K1 and R5 (Fantem) |
+| decisions-leah-03 End-to-end clicks before hydration | P2 | Section 5, the hydration marker (Leon); section 7, each test waits for it (Fenn, a locked-test change) |
+| decisions-leah-04 Mono 500 preloaded, unused on first paint | P2 | Section 5, linked from the first paint |

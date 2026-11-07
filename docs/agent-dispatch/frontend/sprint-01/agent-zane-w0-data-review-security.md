@@ -37,6 +37,8 @@ Review how the data core handles Idempotency-Key and X-Request-Id (the fetch wra
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
+- `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
+- `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -74,6 +76,7 @@ Do them in order. Finish each one, verified, before the next.
 **You may not change:**
 
 - `apps/web/e2e/**` (FENN, locked tests)
+- `apps/web/package.json` (NEMI)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/data/**` (GHOST)
 - `apps/web/src/kit/**` (FANTEM)
@@ -88,7 +91,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)

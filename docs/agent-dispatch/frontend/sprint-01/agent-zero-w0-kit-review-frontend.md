@@ -38,6 +38,8 @@ Review the kit against UI contract section 4 and the design library.
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
+- `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
+- `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -65,6 +67,11 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && ! grep -rn '@orpc\|@tanstack/react-router\|#[0-9a-fA-F]\{6\}' apps/web/src/kit`
 - **Expected:** the locked tests pass; no line listed
 
+### ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description (P1)
+
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && git diff "$(git merge-base main HEAD)"..HEAD -- apps/web/src/kit/kit.css | grep '^+' | grep -nE '[0-9]+px' ; git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** the locked tests pass; the only px literals added are the 899px breakpoint and DL's own; only apps/web/src/kit files changed
+
 ## 5. Territory
 
 **You may change only:**
@@ -75,6 +82,7 @@ Do them in order. Finish each one, verified, before the next.
 **You may not change:**
 
 - `apps/web/e2e/**` (FENN, locked tests)
+- `apps/web/package.json` (NEMI)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/data/**` (GHOST)
 - `apps/web/src/kit/**` (FANTEM)
@@ -89,7 +97,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
@@ -145,6 +153,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | ZERO-01 | DONE / PARKED / BLOCKED | |
+| ZERO-02 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md`): its path, severity and title. "none" if none.
@@ -195,6 +204,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
+- ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

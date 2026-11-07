@@ -470,3 +470,29 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **Leon (decisions a2):** route `/`'s `head` must link `kitStylesheetHref` through `decisionsScreenStylesheets`, or the kit draws unstyled. LEON-03 and section 5 ("Styles and loading") already require it, so his task doc doesn't change.
 - **No new scenarios, no locked test changes, no re-render:** no task's paths or verify commands change. My w0-kit a2 review checks the kit against revision 8.
 - **A separate contract review is INT's call.** My view is that none is needed, as with revision 6: it records a reviewed build's deviation and widens a list by one item that a locked test already requires.
+
+## 2026-11-07: Revision 9 of the UI contract (Leah's decisions a11y-perf a1, FAIL; INT's decisions)
+
+- **Input:** INT. Leah's review is FAIL, with four findings (report and findings on main at 3d3ccfc, cherry-picked from 45c715c without Leon's a1 code). INT decided:
+  1. Leon a2 takes findings 02 and 04, the lazy `ReasonDialog`, and a hydration marker;
+  2. Fenn's locked end-to-end tests wait for that marker (a locked-test change, with the override);
+  3. the routes are code-split;
+  4. S1-6 comes forward now. Axis plans the contract side, I plan Ghost's web side, and the rule goes into the contract now.
+- **What changed in routing, and why** (for INT to confirm or overrule):
+  - **Finding 02 is split across two territories.** The 44px targets (Approve and Reject, `Open on GitHub`, the copy buttons), the 16px input and `aria-describedby` are all drawn by the kit, in `apps/web/src/kit/**`. That's Fantem's, and Leon's territory doesn't reach it. So they go to **Fantem as w0-kit a3** (section 4, K1 and R5), and Leon keeps what's in his territory: linking the sheets, the lazy dialog and the marker.
+  - **Why not page CSS:** `decisions.css` could size the buttons, but the dialog renders in a portal on `body`, outside the page. And `aria-describedby` is markup.
+  - **The route split needs no `vite.config.ts` change.** TanStack Start (start-plugin-core 1.171.55) always adds the router's code splitter, and its config schema omits `autoCodeSplitting`, so there's nothing to set. It doesn't split today, though. Measured on Leon's a1 (c3effb3), `vite build`:
+    - as built: `routes-*.js` 0.07 kB, a re-export from the entry, and the entry 176.6 kB gzip. The loader's import of `screens.ts` brings the screen and the kit into the entry;
+    - with `"sideEffects": ["**/*.css"]` in `apps/web/package.json`: the route's chunk is 20.0 kB and the entry 157.3 kB.
+    - So the change is that one line, and it goes to **Nemi as a new module, w0-split**, with `apps/web/package.json` moved to it from w0-app (one writer per path, as w0-fonts did with `__root.tsx`).
+  - **The split doesn't cut `/`'s own first load.** The route's chunk loads on `/` too. Section 8 now says the first load sums the entry and `/`'s chunks. What the split buys is W2: later routes stay out of `/`.
+- **The budget for Leon a2:** his task no longer requires 160 kB. The cut that clears it is zod/mini (Leah's estimate is 15 to 20 kB), which isn't his. He reports the sizes. Leah's re-review holds the page to 160 kB, and to 150 kB once both halves of S1-6 are merged.
+- **S1-6, the web side:** the rule is in section 3 and section 6's `zod` line now, which supersedes "Not before" in the S1-6 entry above, at INT's call.
+  - **The work is Ghost's w0-data a2,** a new task on w0-data, because `apps/web/src/data/**` is w0-data's: `pending-decisions.ts` moves to `zod/mini`, with the same parse results and issue paths, and `client.ts`'s type import follows. The locked w0-data tests run unchanged.
+  - **It starts after Axis's S1-6 is merged.** Backend sprint-01 has no `plan.toml` yet, so the wait is in the task's notes, not in `after`.
+  - **Not folded in:** Zane's w0-data 03 and `UiError.stale.message` (Revision 7, deviation 3), both earmarked for "Ghost's next data dispatch". That's INT's call.
+- **The hydration marker** is `data-hydrated="true"` on the `DecisionsPage` root, read through `useSyncExternalStore` (server snapshot `false`), so hydration doesn't mismatch and there's no `useEffect`.
+- **My decisions review:** its verify drops the `useEffect` grep. Leon's a1 uses `useEffect` for the dialog's prefetch and the timers, which the contract allows. I judge state use by reading the code: no server data in state.
+- **Leah's re-review (a2)** runs after Leon a2, Fantem's w0-kit a3 and Nemi's w0-split are merged. Its budget figure is final after Ghost's w0-data a2.
+- **Fenn's end-to-end a2:** each test waits for the marker after its SSR checks and before its first click. Fenn commits with `AVEL_LOCK_OVERRIDE` (INT's decision), and after the merge, `locks.md`'s `decisions-e2e` line moves to the new commit.
+- **No new scenarios:** UC-01 to UC-31 are unchanged. UC-31 already asks for 44px and 16px. K1 and R5 meet it.

@@ -28,7 +28,13 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 10. `docs/design/CR-W2 Pending decisions.md`: the row you render and what route 54 takes
 11. `docs/design/AVEL Web App — Frontend Map v0.6.md`: What every module looks like, Data layer (writes), Rendering and SSR
 12. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: the Decisions screen (its layout and copy)
-13. `docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build.md`: this task doc: follow it exactly
+13. `docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md`: a2: Leah's review of your a1 (FAIL; on main at 3d3ccfc): her measurements, the bundle breakdown and what she couldn't check
+14. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-01-first-load-over-budget.md`: a2: the first load, 173.5 kB gzip; which cuts are yours (the lazy dialog) and which aren't (zod/mini)
+15. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-02-page-unstyled-targets-and-input-below-minimum.md`: a2: the sheets aren't linked; the target and input sizes, which the kit's K1 and R5 fix
+16. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md`: a2: the first click lost before hydration; your hydration marker
+17. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-04-mono-500-preload-unused-on-first-paint.md`: a2: Mono 500 unused until kit.css is linked
+18. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, 'Revision 7' and 'Revision 9': what a2 takes from Leah's review, and what goes to Fantem, Fenn, Nemi and Ghost
+19. `docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -40,6 +46,8 @@ The decisions module and its route: the approval page at /, exactly as UI contra
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
+- `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
+- `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -76,13 +84,22 @@ Do them in order. Finish each one, verified, before the next.
 
 ### LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading') (P0)
 
-- **Required:** No CSS written in JS in the module; the first load of / is at most 160 kB gzip of JavaScript (section 8), with ReasonDialog outside it; every locked test still passes
+- **Required:** No CSS written in JS in the module; both sheets in the server's HTML of /; ReasonDialog in its own chunk, outside /'s first load (section 8); every locked test still passes
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12`
-- **Expected:** typechecks; the locked tests pass; the chunk sizes, with the first load of / at most 160 kB gzip, which you report
+- **Expected:** typechecks; the locked tests pass; the chunk sizes and /'s first load as section 8 counts it, which you report
+
+### LEON-04: Attempt a2: the hydration marker, data-hydrated="true" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9) (P0)
+
+- **Required:** No hydration mismatch warning; the server's HTML of / has no data-hydrated; the hydrated page has it; Fenn's e2e a2 passes
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test`
+- **Expected:** typechecks; the locked tests pass, end to end included
 
 **Notes:**
 
-- Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third task, the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.
+- Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third and fourth tasks: the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'), and the hydration marker (revision 9). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.
+- Leah's review of a1 (revision 9; report and findings on main at 3d3ccfc, in Context). Yours: link kit.css and decisions.css from /'s head so the server's HTML carries them (findings 02 and 04: with kit.css linked, HashChip draws in Mono 500 on first paint), the lazy ReasonDialog, and the hydration marker (finding 03). Not yours, and don't work around them in decisions.css: the 44px tap targets, the 16px input and the dialog's aria-describedby are the kit's (Fantem's w0-kit a3, section 4, K1 and R5); Fenn's end-to-end a2 waits for your marker; Nemi's w0-split makes the route split real; zod/mini is Ghost's, after Axis's S1-6.
+- Your end-to-end run needs Fenn's e2e a2 and Fantem's w0-kit a3 on main, and your chunk sizes need Nemi's w0-split. INT dispatches you once they're merged. If one isn't when you reach the verify, run what you can, say which wasn't merged, and report the failures it explains under Limitations.
+- The budget: report /'s first load as section 8 counts it (every JS file / loads, gzipped and summed, without the lazy dialog's chunk). Over 160 kB isn't yours to fix in a2: zod/mini is the cut that clears it.
 
 ## 5. Territory
 
@@ -95,6 +112,7 @@ Do them in order. Finish each one, verified, before the next.
 **You may not change:**
 
 - `apps/web/e2e/**` (FENN, locked tests)
+- `apps/web/package.json` (NEMI)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/data/**` (GHOST)
 - `apps/web/src/kit/**` (FANTEM)
@@ -107,7 +125,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
@@ -165,6 +183,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | LEON-01 | DONE / PARKED / BLOCKED | |
 | LEON-02 | DONE / PARKED / BLOCKED | |
 | LEON-03 | DONE / PARKED / BLOCKED | |
+| LEON-04 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -214,6 +233,7 @@ Your tasks:
 - LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader
 - LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)
 - LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')
+- LEON-04: Attempt a2: the hydration marker, data-hydrated="true" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9)
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

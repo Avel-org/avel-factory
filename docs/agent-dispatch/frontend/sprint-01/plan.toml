@@ -116,8 +116,10 @@ domain = "apps/web as @avel/web: the TanStack Start app config, its dependencies
 # 2026-11-07: w0-app is merged, and it wrote apps/web/src/routes/__root.tsx (with the paths below).
 # The path moved to w0-fonts, its next writer, because the kit allows one writer per path
 # (decisions.md, "w0-fonts"). w0-app's merged work is unchanged.
+# 2026-11-07 (revision 9): apps/web/package.json moved to w0-split, its next writer, the same way
+# (decisions.md, "Revision 9"). w0-app's merged work is unchanged.
 territory = [
-  "apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}",
+  "apps/web/{vite.config.ts,tsconfig.json,.gitignore}",
   "apps/web/src/styles/**",
 ]
 after = ["agent-brennan-approvals-uic-review-spec", "backend/sprint-00/agent-axis-m1-contract-api-contract"]
@@ -193,6 +195,48 @@ context = [
 title = "Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in Inter's link form, no Mono 400 preload, no fallback metrics, nothing else changed in __root.tsx, nothing outside the territory"
 verify = "pnpm --filter @avel/web build && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "builds; only apps/web/src/routes/__root.tsx changed"
+
+# ------------------------------------------------------------------ w0-split: Nemi (revision 9)
+# Added 2026-11-07 after Leah's decisions a11y-perf a1 (decisions.md, "Revision 9"; INT's decision 3).
+# No tests module: one line in package.json, measured by the build.
+[[dispatch]]
+agent = "nemi"
+module = "w0-split"
+role = "build"
+domain = "The route split: @avel/web's package.json declares \"sideEffects\": [\"**/*.css\"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6)."
+territory = ["apps/web/package.json"]
+after = ["agent-nemi-w0-app-build"]
+context = [
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 5, 'The route split', and section 6, the sideEffects bullet" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Revision 9': Zero's measurement, and why vite.config.ts doesn't change" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "line 285 (automatic code splitting per route) and lines 113 to 114 (screens.ts and light index.ts)" },
+]
+notes = [
+  "This is a follow-up to your merged w0-app: package.json is already on main. Add one field, \"sideEffects\": [\"**/*.css\"], after \"type\". Nothing else in the file changes, and no dependency changes, so pnpm-lock.yaml doesn't either.",
+  "Don't touch vite.config.ts: TanStack Start always runs the router's code splitter, and autoCodeSplitting isn't an option in its config (start-plugin-core's schema omits it). The field is what makes the split real: without it, the loader's import of screens.ts keeps the screen in the entry chunk.",
+  "On main today, / has no screen yet (Leon's decisions isn't merged), so the split shows little. Zero measured it on Leon's a1 (c3effb3): the route chunk went from 0.07 kB to 20.0 kB gzip, and the entry from 176.6 to 157.3 kB. Report your build's chunk list as it is. If a CSS file stops loading (the page's tokens or base styles missing in the dev server), stop and report it under Deviations.",
+]
+
+[[dispatch.task]]
+title = "apps/web/package.json: \"sideEffects\": [\"**/*.css\"], and no other change"
+priority = "P1"
+required = "The build, typecheck and the web's tests pass as before; __root.tsx's tokens.css and base.css still load in the dev server and the build"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*(js|css)' && grep -n '\"sideEffects\"' apps/web/package.json && git diff \"$(git merge-base main HEAD)\" --stat"
+expected = "each exits 0; the client chunks and the app CSS, which you report; one sideEffects line; only apps/web/package.json changed"
+
+[[dispatch]]
+agent = "zero"
+module = "w0-split"
+role = "review-frontend"
+domain = "Review the w0-split diff against UI contract sections 5 ('The route split') and 6."
+context = [
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 5, 'The route split', and section 6" },
+]
+
+[[dispatch.task]]
+title = "Review the w0-split diff: one sideEffects field naming CSS files only, no dependency or script change, nothing outside apps/web/package.json"
+verify = "pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*(js|css)' && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "builds, with the app CSS still emitted; only apps/web/package.json changed"
 
 [[dispatch]]
 agent = "zero"
@@ -297,6 +341,8 @@ notes = [
   "pnpm-lock.yaml isn't in your territory (escalation 01): run pnpm install so your commands work, but don't commit the lockfile. List the dependencies you added, with their resolved versions, under Contract to files.",
   "Two things to confirm once installed, each a stop-and-report under Deviations if it doesn't hold: OpenAPILink in @orpc/openapi-client 1.16.2 calls customErrorResponseBodyDecoder(deserializedBody, response) before its own error decoding and throws what it returns (Zero read it in dist/shared/openapi-client.DgkI_tTF.mjs); and getRouter() can read the incoming request on the server through TanStack Start's request accessor inside createIsomorphicFn().server(). Name the accessor you used in your report.",
   "The web calls the mock's route 54 with the body { version, choice, reason }: OpenAPILink drops path parameters from the body (contract section 1). The path's proposalId wins and a body copy is ignored, as oRPC's handler merges path over body (Axis S1-5, D48): don't read the raw body, and check 1 is the schema check only.",
+  "Attempt a2 (2026-11-07, revision 9; INT's decision 4, S1-6's web side): the first two tasks are merged (a1). Do only the third. Start after Axis's S1-6 (@avel/contract on zod/mini, backend sprint-01) is merged on main: check that git grep -nE \"from ['\\\"]zod['\\\"]\" packages/contract/src lists nothing before you start, and if it does, stop and report. The two halves land together because either one on classic zod brings all of it back (backend sprint-01 decisions.md, S1-6).",
+  "a2's scope is zod only: Zane's w0-data finding 03 and UiError.stale.message wait for INT's call (decisions.md, 'Revision 9'). packages/contract-mock and apps/web/test aren't in the browser's bundle, so section 3's rule doesn't cover them: leave them as they are unless they stop typechecking.",
 ]
 
 [[dispatch.task]]
@@ -313,6 +359,13 @@ required = "The locked UC-01 and UC-04 to UC-07 pass, including UC-04's round tr
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/data"
 expected = "typechecks; the locked tests pass"
 
+[[dispatch.task]]
+title = "Attempt a2: no classic zod in apps/web/src (UI contract section 3, 'Which zod the web may import'). data/pending-decisions.ts written in zod/mini with the same fields, parse results and issue paths; client.ts's type import from zod/mini; decodeErrorBody keeps ErrorBody from @avel/contract/errors"
+priority = "P0"
+required = "No runtime or type import of \"zod\" or \"zod/v4\" under apps/web/src; the locked w0-data tests pass unchanged; the first load of / (every JS file it loads, gzipped and summed, section 8) is lower than before, by the amount you report"
+verify = "! grep -rnE \"from ['\\\"]zod(/v4)?['\\\"]\" apps/web/src && pnpm --filter \"@avel/web...\" typecheck && pnpm --filter @avel/web exec vitest run test/data && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js'"
+expected = "no line listed; typechecks; the locked tests pass; the client chunks, with /'s first load before and after (measure main's build first), which you report"
+
 [[dispatch]]
 agent = "zero"
 module = "w0-data"
@@ -327,6 +380,11 @@ context = [
 title = "Review the w0-data diff: every export and UiError member as section 3 names it, the mock's surface as section 2 fixes it, no field derived on the client, nothing outside the territory"
 verify = "pnpm --filter @avel/web exec vitest run test/data"
 expected = "the locked tests pass"
+
+[[dispatch.task]]
+title = "Attempt a2: review the zod/mini move against section 3, 'Which zod the web may import': no classic zod in apps/web/src, pending-decisions.ts field for field the same schema as a1's, the same parse results"
+verify = "! grep -rnE \"from ['\\\"]zod(/v4)?['\\\"]\" apps/web/src && pnpm --filter @avel/web exec vitest run test/data && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "no line listed; the locked tests pass; only files under apps/web/src/data changed"
 
 [[dispatch]]
 agent = "brennan"
@@ -391,6 +449,8 @@ context = [
 notes = [
   "The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.",
   "Attempt a2 (2026-11-07, INT's build split of Leon's branch): the first two tasks are merged (a1). Do only the third, the kit's styles moved to apps/web/src/kit/kit.css (UI contract section 4, 'The kit's styles'; decisions.md, 'Revision 7'). Button's and DecisionTag's style strings are most of their gzipped size. Keep every value; change where it lives. The locked kit tests must still pass unchanged. If one can't without CSS in JS, stop and report it under Deviations.",
+  "Attempt a3 (2026-11-07, revision 9; Leah's decisions a11y-perf a1, finding 02, on main at 3d3ccfc): a1 and a2 are merged. Do only the fourth task, K1 and R5 in section 4. Values come from DL's tokens only: --av-touch-min (44px) and --av-phone-body (16px), under @media (max-width: 899px). DL sets them through [data-density=\"phone\"], which nothing in sprint-01 sets, and the dialog draws in a portal on body, so a page attribute wouldn't reach it. Don't add a data-density attribute.",
+  "For the copy and Close buttons, the tap area grows and the drawn size doesn't: a row or chip that gets taller is a defect. Say in your report how you made the area and how you measured it (for example document.elementFromPoint at 21px from the button's centre, at 390x844).",
 ]
 
 [[dispatch.task]]
@@ -414,6 +474,13 @@ required = "No CSS written in JS and no <style> rendered by the kit; values unch
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && test -f apps/web/src/kit/kit.css && ! grep -rlE '<style|KitStyles|dangerouslySetInnerHTML' apps/web/src/kit && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12"
 expected = "typechecks; the locked kit tests pass; kit.css exists; no file listed; the chunk sizes, which you report against INT's split (Button 5.2 kB, DecisionTag 5.3 kB gzip)"
 
+[[dispatch.task]]
+title = "Attempt a3: K1 in kit.css under @media (max-width: 899px), Button at least var(--av-touch-min) tall, HashChip's copy and the dialog's Close button with a tap area of at least var(--av-touch-min) square and their drawn size unchanged, ReasonDialog's textarea at var(--av-phone-body); R5, the Dialog frame's aria-describedby naming its description when there is one"
+priority = "P1"
+required = "No new literal values (section 0); nothing changes at 900px and over; no CSS in JS; the locked UC-08 to UC-10 pass unchanged"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && grep -n 'max-width: 899px\\|--av-touch-min\\|--av-phone-body' apps/web/src/kit/kit.css && grep -n 'aria-describedby' apps/web/src/kit/Dialog.tsx && ! grep -rlE '<style|dangerouslySetInnerHTML' apps/web/src/kit"
+expected = "typechecks; the locked kit tests pass; the K1 rules listed; Dialog's aria-describedby listed; no file listed; the measurements, which you report"
+
 [[dispatch]]
 agent = "zero"
 module = "w0-kit"
@@ -428,6 +495,11 @@ context = [
 title = "Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import"
 verify = "pnpm --filter @avel/web exec vitest run test/kit && ! grep -rn '@orpc\\|@tanstack/react-router\\|#[0-9a-fA-F]\\{6\\}' apps/web/src/kit"
 expected = "the locked tests pass; no line listed"
+
+[[dispatch.task]]
+title = "Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description"
+verify = "pnpm --filter @avel/web exec vitest run test/kit && git diff \"$(git merge-base main HEAD)\"..HEAD -- apps/web/src/kit/kit.css | grep '^+' | grep -nE '[0-9]+px' ; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the locked tests pass; the only px literals added are the 899px breakpoint and DL's own; only apps/web/src/kit files changed"
 
 [[dispatch]]
 agent = "brennan"
@@ -475,6 +547,11 @@ territory = ["apps/web/e2e/**", "apps/web/playwright.config.ts"]
 after = ["agent-fenn-w0-data-test-unit"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump and reset paths, section 3's one data path for development, and D11 (the phone actions)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md", why = "a2: why the first click is lost (on main at 3d3ccfc)" },
+]
+notes = [
+  "Attempt a2 (2026-11-07, revision 9; INT's decision 2): a1 is merged and locked (locks.md, decisions-e2e). Do only the second task. It changes a locked test, which INT decided: make the commit with AVEL_LOCK_OVERRIDE=\"decisions-e2e a2: wait for the hydration marker before the first click (INT, revision 9)\" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's decisions-e2e line to your commit.",
+  "The marker is section 5's data-hydrated=\"true\" on the DecisionsPage root, added by Leon's decisions a2. It isn't on main yet, so the specs wait and time out first. Use Playwright's own wait (for example expect(locator).toBeVisible() or toHaveAttribute), with no fixed sleep.",
 ]
 
 [[dispatch.task]]
@@ -483,6 +560,13 @@ priority = "P0"
 required = "Each carries its UC ID and fails first with an assertion"
 verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -15"
 expected = "the UC-29 to UC-31 tests fail on assertions"
+
+[[dispatch.task]]
+title = "Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui=\"DecisionsPage\"][data-hydrated=\"true\"] (UI contract section 7, revision 9); nothing else in the specs changes"
+priority = "P0"
+required = "The SSR assertions still run on the server's HTML before the wait; one commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); each test fails first on the wait, since the marker isn't built yet"
+verify = "grep -c 'data-hydrated' apps/web/e2e/*.spec.ts && pnpm --filter @avel/web exec playwright test 2>&1 | tail -15 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "one wait per test; the tests fail waiting for the marker (or later, on an assertion); only apps/web/e2e changed"
 
 [[dispatch]]
 agent = "leon"
@@ -496,9 +580,18 @@ context = [
   { path = "docs/design/CR-W2 Pending decisions.md", why = "the row you render and what route 54 takes" },
   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "What every module looks like, Data layer (writes), Rendering and SSR" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "the Decisions screen (its layout and copy)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md", why = "a2: Leah's review of your a1 (FAIL; on main at 3d3ccfc): her measurements, the bundle breakdown and what she couldn't check" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-01-first-load-over-budget.md", why = "a2: the first load, 173.5 kB gzip; which cuts are yours (the lazy dialog) and which aren't (zod/mini)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-02-page-unstyled-targets-and-input-below-minimum.md", why = "a2: the sheets aren't linked; the target and input sizes, which the kit's K1 and R5 fix" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md", why = "a2: the first click lost before hydration; your hydration marker" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-04-mono-500-preload-unused-on-first-paint.md", why = "a2: Mono 500 unused until kit.css is linked" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Revision 7' and 'Revision 9': what a2 takes from Leah's review, and what goes to Fantem, Fenn, Nemi and Ghost" },
 ]
 notes = [
-  "Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third task, the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.",
+  "Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third and fourth tasks: the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'), and the hydration marker (revision 9). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.",
+  "Leah's review of a1 (revision 9; report and findings on main at 3d3ccfc, in Context). Yours: link kit.css and decisions.css from /'s head so the server's HTML carries them (findings 02 and 04: with kit.css linked, HashChip draws in Mono 500 on first paint), the lazy ReasonDialog, and the hydration marker (finding 03). Not yours, and don't work around them in decisions.css: the 44px tap targets, the 16px input and the dialog's aria-describedby are the kit's (Fantem's w0-kit a3, section 4, K1 and R5); Fenn's end-to-end a2 waits for your marker; Nemi's w0-split makes the route split real; zod/mini is Ghost's, after Axis's S1-6.",
+  "Your end-to-end run needs Fenn's e2e a2 and Fantem's w0-kit a3 on main, and your chunk sizes need Nemi's w0-split. INT dispatches you once they're merged. If one isn't when you reach the verify, run what you can, say which wasn't merged, and report the failures it explains under Limitations.",
+  "The budget: report /'s first load as section 8 counts it (every JS file / loads, gzipped and summed, without the lazy dialog's chunk). Over 160 kB isn't yours to fix in a2: zod/mini is the cut that clears it.",
 ]
 
 [[dispatch.task]]
@@ -518,9 +611,16 @@ expected = "all locked tests pass"
 [[dispatch.task]]
 title = "Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')"
 priority = "P0"
-required = "No CSS written in JS in the module; the first load of / is at most 160 kB gzip of JavaScript (section 8), with ReasonDialog outside it; every locked test still passes"
+required = "No CSS written in JS in the module; both sheets in the server's HTML of /; ReasonDialog in its own chunk, outside /'s first load (section 8); every locked test still passes"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12"
-expected = "typechecks; the locked tests pass; the chunk sizes, with the first load of / at most 160 kB gzip, which you report"
+expected = "typechecks; the locked tests pass; the chunk sizes and /'s first load as section 8 counts it, which you report"
+
+[[dispatch.task]]
+title = "Attempt a2: the hydration marker, data-hydrated=\"true\" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9)"
+priority = "P0"
+required = "No hydration mismatch warning; the server's HTML of / has no data-hydrated; the hydrated page has it; Fenn's e2e a2 passes"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test"
+expected = "typechecks; the locked tests pass, end to end included"
 
 [[dispatch]]
 agent = "zero"
@@ -533,8 +633,8 @@ context = [
 
 [[dispatch.task]]
 title = "Review the decisions diff: each row's props, the reason step, the exact route 54 body, every error state and copy string as section 5 gives them; no fetch, no server data in state, index.ts light"
-verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test && ! grep -rn 'fetch(\\|useEffect' apps/web/src/modules/decisions"
-expected = "all locked tests pass; no line listed"
+verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test && ! grep -rn 'fetch(' apps/web/src/modules/decisions"
+expected = "all locked tests pass; no line listed (state use is judged by reading: no server data in state; decisions.md, 'Revision 9')"
 
 [[dispatch]]
 agent = "brennan"
@@ -560,7 +660,11 @@ after = ["agent-nemi-w0-fonts-build"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 4, 5 and UC-31" },
   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets (Decisions under 150 KB gzipped; sprint-01 holds 160 kB, decisions.md 2026-11-07)" },
-  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, the first-load budget is 160 kB for sprint-01 (INT)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, the first-load budget is 160 kB for sprint-01 (INT); 'Revision 9': what a2 re-checks" },
+]
+notes = [
+  "Attempt a2 (revision 9): re-check your a1 findings (decisions-leah-01 to 04, on main at 3d3ccfc) after Leon's decisions a2, Fantem's w0-kit a3 and Nemi's w0-split are merged. For each, say whether it's closed, citing file:line. A still-open finding keeps its file name; a new one is numbered from 05.",
+  "The first load is section 8's: every JS file / loads before it can be used (the entry, and every chunk the server's HTML loads or preloads for /, the route's chunk included), gzipped and summed; not the lazy dialog. Over 160 kB is still a finding until Ghost's w0-data a2 and Axis's S1-6 are merged; from then, over 150 kB is. Say which held at your start commit.",
 ]
 
 [[dispatch.task]]
