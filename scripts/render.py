@@ -758,8 +758,10 @@ def ready(team, sprint):
         return board.get((team, sprint, name))
 
     def merged(name):
+        # A branch with no commits of its own is "merged" to git (its tip is on main),
+        # so a dispatch counts as merged only once its completion report is on main too.
         t = task(name)
-        return bool(t and any(a.merged for a in t.attempts))
+        return bool(t and t.report_on_main and any(a.merged for a in t.attempts))
 
     for d in plan.dispatches:
         t = task(d.name)
