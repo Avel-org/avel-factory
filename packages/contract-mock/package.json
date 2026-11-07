@@ -7,6 +7,11 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "imports": {
+    "#fixtures": "./src/fixtures.ts",
+    "#mock": "./src/mock.ts",
+    "#rows": "./src/rows.ts"
+  },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

@@ -1,4 +1,4 @@
-import type { SeedRow } from "./rows.js";
+import type { SeedRow } from "#rows";
 
 /**
  * The mock's fixtures (UI contract section 2, "Fixtures"). Times are relative to when the

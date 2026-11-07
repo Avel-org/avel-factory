@@ -17,7 +17,7 @@ import {
   type StoredProposal,
   toPendingRow,
   toStoredProposal,
-} from "./rows.js";
+} from "#rows";
 
 /**
  * The contract mock (UI contract section 2): m1's routes 52, 53 and 54 served through
