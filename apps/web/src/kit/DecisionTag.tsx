@@ -250,19 +250,21 @@ export function DecisionTag({
     );
   }
 
+  // D14: at most one request ID chip per card. stale and notAllowed draw theirs under the note
+  // or the reason; the countdown's is drawn only in seen, the state 5.3 gives a 429.
+  const countdownChip = !!requestId && actionsDisabledReason != null && state === "seen";
+
   const footer = approved ? (
     <span style={LABEL_MUTED}>
       {`Approved by you${approvedAt ? ` at ${approvedAt}` : ""}. Logged with ${binds ? binds.label : "this version"}.`}
     </span>
   ) : rejected ? (
     <span style={LABEL_MUTED}>Rejected. Reason sent to the agents and logged.</span>
-  ) : actions || (requestId && actionsDisabledReason != null) ? (
+  ) : actions || countdownChip ? (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {actions}
       {/* D14: the request ID under the countdown. */}
-      {requestId && actionsDisabledReason != null && decidable ? (
-        <RequestIdChip requestId={requestId} />
-      ) : null}
+      {countdownChip ? <RequestIdChip requestId={requestId as string} /> : null}
     </div>
   ) : null;
 

@@ -203,11 +203,16 @@ export function WidgetState({
           <span style={{ color: "var(--av-muted)", fontWeight: 500, flex: "1 1 auto" }}>
             {message || `Stale, last good value ${ago(lastGoodAge)} old`}
           </span>
-          {requestId ? <RequestIdChip requestId={requestId} /> : null}
           <Button size="sm" variant="ghost" icon="refresh-cw" onClick={onAction}>
             {actionLabel || "Retry"}
           </Button>
         </div>
+        {/* W1: the request ID on its own line under the status row, in the band's gap. */}
+        {requestId ? (
+          <div>
+            <RequestIdChip requestId={requestId} />
+          </div>
+        ) : null}
         <div
           style={{
             opacity: 0.72,
