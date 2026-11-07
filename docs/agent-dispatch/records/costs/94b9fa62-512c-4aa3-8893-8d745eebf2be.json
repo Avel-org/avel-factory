@@ -1,0 +1,24 @@
+{
+ "session_id": "94b9fa62-512c-4aa3-8893-8d745eebf2be",
+ "name": "BRENNAN approvals-uic-review-spec a4",
+ "branch": "frontend/sprint-01/agent-brennan-approvals-uic-review-spec-a4",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-brennan-approvals-uic-review-spec-a4",
+ "first_at": "2026-11-07T05:51:58.977Z",
+ "last_at": "2026-11-07T05:58:00.728Z",
+ "updated_at": "2026-11-07T05:58:13Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 96,
+   "output": 36153,
+   "cache_write_5m": 0,
+   "cache_write_1h": 175126,
+   "cache_read": 5729845,
+   "messages": 48
+  }
+ },
+ "cost_usd": 3.2704,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 3.2704
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

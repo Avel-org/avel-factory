@@ -325,3 +325,4 @@ Atlas's m3 report (c595719, `agent-atlas-m3-docs-build-completion.md`) is DONE: 
 - **D54 (D-6). `skill_loads` moves from Execution to Library** in DATABASE.md, following the map's domain; `design_systems` is under Library.
 - **D55 (D-7). `@avel/docs` runs from `src` under Node's type stripping,** with no build step; it needs `@avel/db` and `@avel/contract` built first, as CI does.
 - **D56 (D-8). Two tools/docs config files sit outside `src`** (see the report).
+- **D57. Axis's m3 finding 01 (P3): DATABASE.md line 44's implied columns aren't checked by the drift check.** Deferred to Step 1, before the stale-version 409 is built: Atlas names the exceptions on line 44 (the three tables without `created_at`, Better Auth's tables without `row_version`) and makes `drift.ts` check the implied columns against that rule, with a planted case. Axis's m3 review: PASS (877c90a). Sprint-00 is complete: m0 to m3 merged, 657 of 657 tests pass.
