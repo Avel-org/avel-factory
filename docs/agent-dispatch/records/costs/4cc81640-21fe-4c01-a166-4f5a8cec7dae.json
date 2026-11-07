@@ -1,0 +1,24 @@
+{
+ "session_id": "4cc81640-21fe-4c01-a166-4f5a8cec7dae",
+ "name": "RIGG m2-db-test-unit a1",
+ "branch": "backend/sprint-00/agent-rigg-m2-db-test-unit-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/backend-sprint-00-agent-rigg-m2-db-test-unit-a1",
+ "first_at": "2026-11-07T00:25:36.381Z",
+ "last_at": "2026-11-07T00:50:19.350Z",
+ "updated_at": "2026-11-07T00:50:28Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 138,
+   "output": 151486,
+   "cache_write_5m": 0,
+   "cache_write_1h": 273358,
+   "cache_read": 12683368,
+   "messages": 69
+  }
+ },
+ "cost_usd": 5.1452,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 5.1452
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
