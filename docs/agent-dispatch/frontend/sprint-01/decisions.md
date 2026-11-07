@@ -265,7 +265,7 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **22, route 54's wire body:**
   - Under m1's `compact` input, `OpenAPILink` 1.16.2 removes path parameters from the body. The input stays `{ proposalId, version, choice, reason }`, but the wire body is `{ version, choice, reason }`. UC-13, UC-14, UC-19 and the plan's done-when line now say that.
   - The mock reads the raw body before oRPC's handler for CR-W2's check 1 mismatch, and a body without `proposalId` is valid.
-  - **For Axis, via INT:** oRPC's OpenAPI handler merges `{ ...body, ...params }`, so the server can't see CR-W2 check 1's "`proposalId` in the body doesn't match the path" either. Either the server reads the raw body as the mock does, or the Step 1 slice drops that half of check 1.
+  - **For Axis, via INT:** oRPC's OpenAPI handler merges `{ ...body, ...params }`, so the server can't see CR-W2 check 1's "`proposalId` in the body doesn't match the path" either. Either the server reads the raw body as the mock does, or the Step 1 slice drops that half of check 1. **Decided by Axis: S1-5 and D48, below.**
 - **23, the sent request ID. The fetch wrapper carries it,** because it's the one place that both makes the ID and sees the outcome:
   - A rejected fetch becomes a `NetworkError` (a `TypeError`) with `requestId`.
   - A response with no `X-Request-Id` gets the sent ID in that header, so oRPC's `e.data.headers` always has one.
@@ -285,9 +285,17 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **Folded in from S1-3:**
   - **Decoding:** errors are decoded at the link: `decodeErrorBody` is `OpenAPILink`'s `customErrorResponseBodyDecoder`, and it returns an `ApiError` (an `ORPCError` with the AVEL code). I read the hook in `@orpc/openapi-client` 1.16.2's `dist/shared/openapi-client.DgkI_tTF.mjs`. Ghost still confirms it once installed, or stops and reports.
   - **`BAD_REQUEST` details** are `{ field, issues }`. The missing key gives `message: "required"` (S1-1 and S1-3, no longer provisional).
-  - **The mismatch issue's message,** `"doesn't match the path"`, is the mock's own and **provisional**.
-  - **Check 5** keeps CR-W2's `{ field: "choice" }` as written. The page reads only `field`.
+    - **Check 5** keeps CR-W2's `{ field: "choice" }` as written. The page reads only `field`.
 - **Copy:** revision 4 adds no † strings.
+
+## 2026-11-06: S1-5 taken into revision 4 before a4 (Axis's S1-5; D48)
+
+- **Input:** INT, 2026-11-06. Axis decided S1-5: path parameters win on every route. A body `proposalId` is ignored, never compared or refused, as oRPC's decode `{ ...body, ...params }` already does. Check 1 is the schema check only. CR-W2 section 5 row 1 is edited on main (3fb5b04).
+- **The change:** revision 4 (4b6bf65) had the mock read the raw body to refuse a mismatch, and UC-03 asserted that 400. That no longer matches CR-W2 on main, so a4 would have to raise it. The fix is small, so it goes in **before a4 starts**, as a follow-up commit to revision 4, not a new revision:
+  - **Section 2:** the path wins, and the mock doesn't read the raw body. Check 1 is the schema check only.
+  - **UC-03:** a body with a different `proposalId` is ignored, and the path's proposal is checked and decided.
+  - **Appendix A, finding 22;** Ghost's mock task and notes in `plan.toml`, re-rendered.
+  - Revision 4's provisional mismatch message is gone with the check.
 
 ## Open: for INT before sprint-01 is planned
 

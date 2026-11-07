@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "1bb7f495c08b706047241e85773cb53596920289e23d5d3b4020503fb3977981",
-  "packageSha256": "404826f3f08b105aa0512817b67206c6ddae95510dd653844dad51c9f63f1077",
+  "planSha256": "269c01a2b22ffe13c482337d09ee3d897b7438a47edd07e5aacd154e1a64a91e",
+  "packageSha256": "05e632d449ce3e333834b6b54e749930412e3d5fe5a90327eedbca95cbc3ef00",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "7b952f47b8a3cbe204aef201c4c3bfc608eb86c821acbf7b4e55904dba863662",
-      "bytes": 29146
+      "sha256": "7efa84e171d5bd5f1726dd18b2d0d69f1e7e192b3f097d9282f6c1acf5711ce0",
+      "bytes": 29155
     },
     {
       "path": "DISPATCH.md",
@@ -20,8 +20,8 @@
     {
       "path": "agent-brennan-approvals-uic-review-spec.md",
       "kind": "task_doc",
-      "sha256": "250617caa4d91a86bf5eb5211d0e04b887622a7d657afb8e95419a044bd5a4cc",
-      "bytes": 15001
+      "sha256": "6f64a867007d57f41b843a95aa0e31bf6aab0db7eb77979a00142a21c6699d12",
+      "bytes": 15128
     },
     {
       "path": "agent-brennan-decisions-review-spec.md",
@@ -80,8 +80,8 @@
     {
       "path": "agent-ghost-w0-data-build.md",
       "kind": "task_doc",
-      "sha256": "28512170b3152fa6cc356a8b0460818a208d17af93405862be8e5d3c3ced3725",
-      "bytes": 15595
+      "sha256": "8dbd257ea695801ae2860d1a779d5fd5b29a3d34d873b64e6ad26b2332b298cc",
+      "bytes": 15681
     },
     {
       "path": "agent-leah-decisions-review-a11y-perf.md",
