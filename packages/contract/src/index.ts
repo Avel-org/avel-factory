@@ -9,7 +9,7 @@
  * - E6 the completion report schema: `completion-report.ts`
  * - E7 no rep fields anywhere
  */
-export * from "./base.js";
+export type { RouteMeta } from "./base.js";
 export * from "./completion-report.js";
 export * from "./dto/agent.js";
 export * from "./dto/audit.js";

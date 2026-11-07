@@ -233,3 +233,5 @@ One commit on this branch, before the merge (the commit that adds this section; 
 - **D31:** the template `itemId` format `<slug>@<version>` is written into A9 above and the `TemplateIdInput` comment. The schema is still `z.string().min(1)`, and the server parses it.
 
 Outcome: `pnpm build`, `pnpm typecheck` and `pnpm lint` exit 0 (`Checked 58 files ... No fixes applied.`). A built-contract check gives these inputs: route 5 `[sessionId]`; route 39 `[checkpointId, rowVersion]`; route 44 `[questionId, rowVersion, answer]`; route 52's item accepts any JSON record. `pnpm-lock.yaml` is untouched.
+
+**Done-when 5 fix (INT, after Rigg's m1 tests locked at 6a61fb2):** `src/index.ts` exported `base` through `export * from "./base.js"`. `base` is an oRPC builder with `~orpc.route = {}`, so the route walk found 103 routes, one of them with no method or path, and 3 tests failed. `src/index.ts` now has `export type { RouteMeta } from "./base.js"`, so `base` stays internal to `routes/`. `pnpm-lock.yaml` and `packages/contract/test/**` are untouched.
