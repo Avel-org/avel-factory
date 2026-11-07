@@ -7,6 +7,12 @@ The kit is built in `apps/web/src/kit/**` and exported by name from `index.ts`: 
 
 `@avel/web`'s build and typecheck are still red, and so are its data and decisions tests. The cause is outside this territory: Ghost's `src/router.tsx` and `packages/contract-mock` haven't landed. decisions.md (2026-11-07, "INT's answers on Nemi's w0-app report") expects this until Ghost merges.
 
+**After review:** Zero's kit review passed with two P3s, both fixed in `56a079b`:
+- **01:** DecisionTag draws at most one request ID chip per card. It goes under the stale note in `stale`, under the Locked reason in `notAllowed`, and under the countdown only in `seen`.
+- **02:** WidgetState's stale band draws the chip on its own line under the status row, before the dashed rows, in the band's gap 10. DL's row (glyph, message, Retry) is unchanged.
+
+The locked kit tests still pass (68 of 68), lint is clean, and `tsc` reports no kit errors. A scratch render counted one chip each for stale, stale + offline, seen + 429 and notAllowed + offline, and none for approving.
+
 ## Pre-flight
 - **Part 2 files, all read:**
   1. `.claude/agents/fantem.md`
