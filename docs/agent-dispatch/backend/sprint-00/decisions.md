@@ -312,3 +312,16 @@ Soap's m2 report (0eb89e5, `agent-soap-m2-db-build-completion.md`) is PARTIAL: 5
 - **D46. Done-when 6 test (c) is a locked-test defect (Soap's D-1), fixed by Rigg under `AVEL_LOCK_OVERRIDE`.** Its `listOf` reads the first `ARRAY[...]` of every CHECK, so it flags 15 rule CHECKs (e.g. `jobs_finished_ck`) that hold a subset of a list and that done-when 8 requires word for word; no schema passes both. Soap showed it against the locked helpers' own expected schema. The fix narrows (c) to the value-list CHECKs (the columns in the contract's `checkedColumns`); the lock moves to the fix's commit. The lockfile for `packages/db` lands with the m2 merge (INT).
 - **D47. Brennan's m2 finding 01 (P3): the `missions.kind` freeze can be bypassed by clearing `onboarding_started_at` first.** INT: m2 merges as is; Axis's Step 1 slice closes it with a trigger that keeps `onboarding_started_at` from being cleared once set (`freeze_once_set('onboarding_started_at')`, e.g. `missions_started_frozen`), a contract.md change and its own done-when test, in Step 1's migration. No route can clear it before then (the server never moves a mission back to `draft`). Axis's m2 review: PASS, no findings (538f24f). Brennan's m2 review: PASS (3dfaefd).
 - **D48. CR-W2 follow-up (D37): check 1 loses its body-versus-path half** (Axis's S1-5, from Zero's revision 4, finding 22). oRPC's OpenAPI handler decodes `{...body, ...params}`, and route 54's generated body has no `proposalId`, so a body copy is ignored, never compared or refused; path params win on every route. The schema half stays (`BAD_REQUEST`, S1-3). CR-W2 section 5, row 1, is edited to match.
+
+## 2026-11-07: m3 docs build: Atlas's choices D-1 to D-8
+
+Atlas's m3 report (c595719, `agent-atlas-m3-docs-build-completion.md`) is DONE: 21 of 21 locked m3 tests, 657 in the whole suite, DATABASE.md with no drift. INT accepts D-1 to D-8 as below; Axis's m3 review checks them (full text in the report).
+
+- **D49 (D-1). The OpenAPI document describes errors as the contract's `ErrorBody`** (`{ code, message, details?, requestId }`), not oRPC's default error JSON, matching S1-3. Step 1's error mapper sends exactly that, or the generator changes with it.
+- **D50 (D-2). DTOs are named OpenAPI components** (every exported `...Dto`); inputs stay inline. `info` is `AVEL API` at the contract package's version. The file is 734 KB instead of 3.5 MB.
+- **D51 (D-3). The ERD is grouped by owning module** (`tableOwners`), since the map's domains aren't in `packages/db`; DATABASE.md keeps the domains for reading.
+- **D52 (D-4). "Drift" is defined in `drift.ts`'s header:** tables, columns, optionality, primary keys, every foreign key both ways, value lists and the ERD's relationships.
+- **D53 (D-5). DATABASE.md's diagrams draw all 197 relationship pairs,** grouped by the child's domain, the 24 to `users` included.
+- **D54 (D-6). `skill_loads` moves from Execution to Library** in DATABASE.md, following the map's domain; `design_systems` is under Library.
+- **D55 (D-7). `@avel/docs` runs from `src` under Node's type stripping,** with no build step; it needs `@avel/db` and `@avel/contract` built first, as CI does.
+- **D56 (D-8). Two tools/docs config files sit outside `src`** (see the report).
