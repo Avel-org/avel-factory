@@ -6,7 +6,8 @@ import {
 } from "@tanstack/react-query";
 import {
   Component,
-  type CSSProperties,
+  type ComponentType,
+  lazy,
   type ReactNode,
   Suspense,
   useEffect,
@@ -30,7 +31,7 @@ import {
   type DecisionTagProps,
   ErrorPanel,
   HashChip,
-  ReasonDialog,
+  type ReasonDialogProps,
   StatusGlyph,
   WidgetState,
 } from "../../../kit";
@@ -92,6 +93,32 @@ function durationTokenMs(name: string): number {
   return match[2] === "s" ? value * 1000 : value;
 }
 
+/**
+ * `ReasonDialog` isn't in the first load (section 5, "Styles and loading"): it's imported with
+ * `React.lazy`, and the list starts fetching it once it has rendered, so the first tap doesn't
+ * wait on the network. One promise, so the prefetch and the lazy component share one fetch.
+ */
+// The one import that reaches past kit/index.ts: a dynamic import of the index would land in the
+// same chunk as the index's static importers, so the dialog would stay in the first load.
+let reasonDialogModule: Promise<{ default: ComponentType<ReasonDialogProps> }> | null = null;
+function loadReasonDialog() {
+  reasonDialogModule ??= import("../../../kit/ReasonDialog").then(
+    (kit) => ({ default: kit.ReasonDialog }),
+    (error: unknown) => {
+      // A failed fetch isn't kept: the next try (the dialog's own render) fetches again.
+      reasonDialogModule = null;
+      throw error;
+    },
+  );
+  return reasonDialogModule;
+}
+
+/** The prefetch: a failure here is retried when the dialog renders, where it's thrown. */
+function prefetchReasonDialog(): void {
+  loadReasonDialog().catch(() => {});
+}
+const ReasonDialog = lazy(loadReasonDialog);
+
 function reloadPage(): void {
   window.location.reload();
 }
@@ -131,6 +158,25 @@ function useOnline(): boolean {
   );
 }
 
+// ---- the hydration marker (section 5, revision 9) ----
+
+function subscribeNever(): () => void {
+  return () => {};
+}
+
+/**
+ * False on the server and in the hydration render, true in every client render after it, so
+ * `data-hydrated` is absent from the server's HTML and hydration doesn't mismatch. For tests only:
+ * nothing is styled on it.
+ */
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+}
+
 // ---- the page ----
 
 type SignedOut = { requestId: string | null };
@@ -138,9 +184,14 @@ type SignedOut = { requestId: string | null };
 export function DecisionsScreen() {
   const mismatch = useContractMismatch();
   const [signedOut, setSignedOut] = useState<SignedOut | null>(null);
+  const hydrated = useHydrated();
 
   return (
-    <div data-ui="DecisionsPage" style={PAGE}>
+    <div
+      data-ui="DecisionsPage"
+      className="dec-page"
+      {...(hydrated ? { "data-hydrated": "true" } : {})}
+    >
       {/* 5.5: the contract version banner, above the header. */}
       {mismatch ? (
         <WidgetState
@@ -187,10 +238,10 @@ export function DecisionsScreen() {
 
 function PageHeader({ lead }: { lead: string | null }) {
   return (
-    <header style={HEAD}>
-      <span style={EYEBROW}>Home</span>
-      <h1 style={TITLE}>Decisions</h1>
-      {lead ? <p style={LEAD}>{lead}</p> : null}
+    <header className="dec-head">
+      <span className="dec-eyebrow">Home</span>
+      <h1 className="dec-title">Decisions</h1>
+      {lead ? <p className="dec-lead">{lead}</p> : null}
     </header>
   );
 }
@@ -296,6 +347,11 @@ function DecisionsList({ onSignedOut }: { onSignedOut: (value: SignedOut) => voi
   const failure = query.error ? toUiError(query.error) : null;
   const failedRequestId = failure?.requestId ?? undefined;
 
+  // The list has rendered: start fetching the reason dialog, so the first tap doesn't wait on it.
+  useEffect(() => {
+    prefetchReasonDialog();
+  }, []);
+
   /** Refetches route 52; true when the fresh list landed. */
   const refreshList = async (): Promise<boolean> => {
     const result = await query.refetch();
@@ -316,7 +372,7 @@ function DecisionsList({ onSignedOut }: { onSignedOut: (value: SignedOut) => voi
   const layout = phone ? "phone" : "desk";
 
   const list = (
-    <ul aria-label="Waiting for you" style={LIST}>
+    <ul aria-label="Waiting for you" className="dec-list">
       {rows.map((row) => (
         <li key={row.ref}>
           <RowView
@@ -336,19 +392,19 @@ function DecisionsList({ onSignedOut }: { onSignedOut: (value: SignedOut) => voi
   return (
     <>
       <PageHeader lead={leadLine(count)} />
-      <section aria-labelledby={headingId} style={SECTION}>
-        <div style={SECTION_HEAD}>
-          <h2 id={headingId} style={H2}>
-            Waiting for you <span style={COUNT}>{`${count}${more ? "+" : ""}`}</span>
+      <section aria-labelledby={headingId} className="dec-sec">
+        <div className="dec-sec-head">
+          <h2 id={headingId} className="dec-h2">
+            Waiting for you <span className="dec-count">{`${count}${more ? "+" : ""}`}</span>
           </h2>
         </div>
         {unreadable > 0 ? (
-          <div role="alert" style={BAND}>
+          <div role="alert" className="dec-band">
             {`${unreadable} ${unreadable === 1 ? "decision" : "decisions"} couldn't be shown. Reload the page; if it keeps happening, report it.`}
           </div>
         ) : null}
         {settledElsewhere ? (
-          <div role="status" style={BAND}>
+          <div role="status" className="dec-band">
             {SETTLED_ELSEWHERE}
           </div>
         ) : null}
@@ -368,7 +424,7 @@ function DecisionsList({ onSignedOut }: { onSignedOut: (value: SignedOut) => voi
           list
         )}
         {more ? (
-          <div style={LOAD_MORE}>
+          <div className="dec-more">
             <Button variant="secondary" onClick={() => void query.fetchNextPage()}>
               {query.isFetchNextPageError ? "Retry loading more" : "Load more"}
             </Button>
@@ -385,11 +441,11 @@ function DecisionsList({ onSignedOut }: { onSignedOut: (value: SignedOut) => voi
 /** DL's empty card (`.dec-empty`): a done glyph, "Nothing needs you.", then the promise. */
 function EmptyCard() {
   return (
-    <div style={EMPTY}>
+    <div className="dec-empty">
       <StatusGlyph status="done" size={16} />
       <span>
-        <strong style={EMPTY_STRONG}>Nothing needs you.</strong> A decision appears here the moment
-        the factory needs one.
+        <strong>Nothing needs you.</strong> A decision appears here the moment the factory needs
+        one.
       </span>
     </div>
   );
@@ -638,19 +694,21 @@ function ProposalDecision({
         onReject={() => setDialog({ row, effect: "reject" })}
       />
       {dialog && copy ? (
-        <ReasonDialog
-          open
-          onClose={() => setDialog(null)}
-          onConfirm={confirm}
-          title={copy.title}
-          description={copy.description}
-          confirmLabel={copy.confirmLabel}
-          destructive={false}
-          minLength={3}
-          {...(dialog.defaultReason !== undefined ? { defaultReason: dialog.defaultReason } : {})}
-          {...(dialog.error ? { error: dialog.error } : {})}
-          {...(dialog.requestId ? { requestId: dialog.requestId } : {})}
-        />
+        <Suspense fallback={null}>
+          <ReasonDialog
+            open
+            onClose={() => setDialog(null)}
+            onConfirm={confirm}
+            title={copy.title}
+            description={copy.description}
+            confirmLabel={copy.confirmLabel}
+            destructive={false}
+            minLength={3}
+            {...(dialog.defaultReason !== undefined ? { defaultReason: dialog.defaultReason } : {})}
+            {...(dialog.error ? { error: dialog.error } : {})}
+            {...(dialog.requestId ? { requestId: dialog.requestId } : {})}
+          />
+        </Suspense>
       ) : null}
     </>
   );
@@ -747,12 +805,12 @@ function UnreachableBand({
   onRetry: () => void;
 }) {
   return (
-    <div role="alert" style={UNREACHABLE_BAND}>
-      <div style={ROW_CENTER}>
+    <div role="alert" className="dec-unreachable">
+      <div className="dec-unreachable-line">
         <StatusGlyph status="stopped" size={12} />
-        <span style={{ fontWeight: 500 }}>{UNREACHABLE}</span>
+        <span className="dec-unreachable-text">{UNREACHABLE}</span>
       </div>
-      <div style={ROW_CENTER}>
+      <div className="dec-unreachable-line">
         <Button size="sm" icon="refresh-cw" onClick={onRetry}>
           Retry
         </Button>
@@ -761,95 +819,3 @@ function UnreachableBand({
     </div>
   );
 }
-
-// ---- styles: DL's Decisions screen (`Mme`, `.scr-*`, `.dec-*`, `.lib-*`) ----
-
-const PAGE: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 18,
-  maxWidth: 1480,
-  margin: "0 auto",
-  padding: "28px clamp(16px, 4vw, 52px) 160px",
-};
-const HEAD: CSSProperties = { display: "flex", flexDirection: "column", gap: 6 };
-const EYEBROW: CSSProperties = { color: "var(--av-muted)", fontSize: 13, fontWeight: 500 };
-const TITLE: CSSProperties = {
-  margin: 0,
-  fontSize: "clamp(26px, 3vw, 32px)",
-  lineHeight: 1.15,
-  fontWeight: 650,
-  letterSpacing: "-0.024em",
-};
-const LEAD: CSSProperties = {
-  margin: 0,
-  fontSize: 17,
-  lineHeight: "26px",
-  color: "var(--av-ink)",
-  maxWidth: "64ch",
-};
-const SECTION: CSSProperties = { display: "flex", flexDirection: "column", gap: 12 };
-const SECTION_HEAD: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px 16px",
-  flexWrap: "wrap",
-  minHeight: 32,
-};
-const H2: CSSProperties = {
-  display: "flex",
-  alignItems: "baseline",
-  gap: 8,
-  margin: 0,
-  fontSize: 18,
-  lineHeight: "26px",
-  fontWeight: 620,
-  letterSpacing: "-0.012em",
-};
-const COUNT: CSSProperties = {
-  fontSize: 15,
-  fontWeight: 500,
-  color: "var(--av-muted)",
-  fontVariantNumeric: "tabular-nums",
-};
-const LIST: CSSProperties = {
-  listStyle: "none",
-  margin: 0,
-  padding: 0,
-  display: "flex",
-  flexDirection: "column",
-  gap: 12,
-  minWidth: 0,
-};
-const BAND: CSSProperties = {
-  padding: "10px 12px",
-  borderRadius: "var(--av-radius-control)",
-  background: "var(--av-inset)",
-  fontWeight: 500,
-};
-const EMPTY: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  padding: "22px 24px",
-  color: "var(--av-muted)",
-  background: "var(--av-faceplate)",
-  borderRadius: 12,
-  boxShadow: "var(--av-shadow-faceplate)",
-  backdropFilter: "var(--av-glass-blur)",
-  WebkitBackdropFilter: "var(--av-glass-blur)",
-};
-const EMPTY_STRONG: CSSProperties = { color: "var(--av-ink)", fontWeight: 600 };
-const LOAD_MORE: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  flexWrap: "wrap",
-};
-const ROW_CENTER: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  flexWrap: "wrap",
-};
-const UNREACHABLE_BAND: CSSProperties = { display: "flex", flexDirection: "column", gap: 8 };
