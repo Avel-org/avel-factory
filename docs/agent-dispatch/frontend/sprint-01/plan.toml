@@ -113,10 +113,12 @@ agent = "nemi"
 module = "w0-app"
 role = "build"
 domain = "apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens."
+# 2026-11-07: w0-app is merged, and it wrote apps/web/src/routes/__root.tsx (with the paths below).
+# The path moved to w0-fonts, its next writer, because the kit allows one writer per path
+# (decisions.md, "w0-fonts"). w0-app's merged work is unchanged.
 territory = [
   "apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}",
   "apps/web/src/styles/**",
-  "apps/web/src/routes/__root.tsx",
 ]
 after = ["agent-brennan-approvals-uic-review-spec", "backend/sprint-00/agent-axis-m1-contract-api-contract"]
 context = [
@@ -151,6 +153,46 @@ priority = "P1"
 required = "No theme flash: the server's HTML already carries data-theme"
 verify = "pnpm --filter @avel/web build && grep -rl 'data-theme' apps/web/src/routes/__root.tsx"
 expected = "builds; the file is listed"
+
+# ------------------------------------------------------------------ w0-fonts: Nemi (follow-up to w0-app)
+# Added 2026-11-07 after w0-app merged (decisions.md, "Fonts"; INT's OK). No tests module: one link in the head.
+[[dispatch]]
+agent = "nemi"
+module = "w0-fonts"
+role = "build"
+domain = "The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289)."
+territory = ["apps/web/src/routes/__root.tsx"]
+after = ["agent-nemi-w0-app-build"]
+context = [
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 6, the __root.tsx bullets: which font files are preloaded and which aren't" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Fonts': why Mono 500 and not 400, and why there's no size-matched fallback yet" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets, line 289: fonts self-hosted, subset, preloaded" },
+]
+notes = [
+  "This is a follow-up to your merged w0-app: __root.tsx is already on main. Change only its head links: add the Mono 500 preload in the same form as Inter Variable's (a ?url import of apps/web/src/styles/fonts/ibm-plex-mono-500.woff2, rel preload, as font, type font/woff2, crossOrigin anonymous). Nothing else in the file changes.",
+  "Don't preload ibm-plex-mono-400.woff2, and don't add fallback metrics (size-adjust and the like): neither is in section 6, and the design library has no fallback values (decisions.md, 'Fonts').",
+]
+
+[[dispatch.task]]
+title = "apps/web/src/routes/__root.tsx: preload IBM Plex Mono 500 beside Inter Variable, in the same link form; no Mono 400 preload, no other change"
+priority = "P2"
+required = "Exactly two font preloads (Inter Variable, IBM Plex Mono 500) in the root head, both in the built SSR HTML of /"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build && grep -c 'rel: \"preload\"' apps/web/src/routes/__root.tsx && grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx"
+expected = "each exits 0; 2; ibm-plex-mono-500.woff2 only"
+
+[[dispatch]]
+agent = "zero"
+module = "w0-fonts"
+role = "review-frontend"
+domain = "Review the w0-fonts diff against UI contract section 6's font bullets."
+context = [
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 6, the __root.tsx bullets" },
+]
+
+[[dispatch.task]]
+title = "Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in Inter's link form, no Mono 400 preload, no fallback metrics, nothing else changed in __root.tsx, nothing outside the territory"
+verify = "pnpm --filter @avel/web build && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "builds; only apps/web/src/routes/__root.tsx changed"
 
 [[dispatch]]
 agent = "zero"
@@ -496,6 +538,7 @@ agent = "leah"
 module = "decisions"
 role = "review-a11y-perf"
 domain = "Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light."
+after = ["agent-nemi-w0-fonts-build"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 4, 5 and UC-31" },
   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets (Decisions under 150 KB gzipped)" },

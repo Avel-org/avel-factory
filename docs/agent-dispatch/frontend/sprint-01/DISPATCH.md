@@ -34,6 +34,8 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | --- | --- | --- | --- | --- |
 | [`agent-brennan-approvals-uic-review-spec`](agent-brennan-approvals-uic-review-spec.md) | BRENNAN | review-spec | approvals-uic | at once |
 | [`agent-nemi-w0-app-build`](agent-nemi-w0-app-build.md) | NEMI | build | w0-app | at once (no test dispatch in this module); after `agent-brennan-approvals-uic-review-spec`, `backend/sprint-00/agent-axis-m1-contract-api-contract` is merged into main |
+| [`agent-nemi-w0-fonts-build`](agent-nemi-w0-fonts-build.md) | NEMI | build | w0-fonts | at once (no test dispatch in this module); after `agent-nemi-w0-app-build` is merged into main |
+| [`agent-zero-w0-fonts-review-frontend`](agent-zero-w0-fonts-review-frontend.md) | ZERO | review-frontend | w0-fonts | once `agent-nemi-w0-fonts-build` has its completion report, checked out at its result commit |
 | [`agent-zero-w0-app-review-frontend`](agent-zero-w0-app-review-frontend.md) | ZERO | review-frontend | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
 | [`agent-zane-w0-app-review-security`](agent-zane-w0-app-review-security.md) | ZANE | review-security | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
 | [`agent-brennan-w0-app-review-spec`](agent-brennan-w0-app-review-spec.md) | BRENNAN | review-spec | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
@@ -51,7 +53,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | [`agent-leon-decisions-build`](agent-leon-decisions-build.md) | LEON | build | decisions | once `agent-fenn-decisions-test-unit`, `agent-fenn-decisions-test-e2e` is merged and listed in `locks.md`; after `agent-ghost-w0-data-build`, `agent-fantem-w0-kit-build` is merged into main |
 | [`agent-zero-decisions-review-frontend`](agent-zero-decisions-review-frontend.md) | ZERO | review-frontend | decisions | once `agent-leon-decisions-build` has its completion report, checked out at its result commit |
 | [`agent-brennan-decisions-review-spec`](agent-brennan-decisions-review-spec.md) | BRENNAN | review-spec | decisions | once `agent-leon-decisions-build` has its completion report, checked out at its result commit |
-| [`agent-leah-decisions-review-a11y-perf`](agent-leah-decisions-review-a11y-perf.md) | LEAH | review-a11y-perf | decisions | once `agent-leon-decisions-build` has its completion report, checked out at its result commit |
+| [`agent-leah-decisions-review-a11y-perf`](agent-leah-decisions-review-a11y-perf.md) | LEAH | review-a11y-perf | decisions | once `agent-leon-decisions-build` has its completion report, checked out at its result commit; after `agent-nemi-w0-fonts-build` is merged into main |
 
 ## Territory map
 
@@ -75,6 +77,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | `apps/web/src/modules/decisions/**` | LEON (build) |
 | `apps/web/src/routes/index.tsx` | LEON (build) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/approvals-uic-brennan-*.md` | BRENNAN (findings) |
+| `docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-zane-*.md` | ZANE (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-brennan-*.md` | BRENNAN (findings) |
@@ -104,9 +107,10 @@ Nothing waits for a wave: each dispatch starts when its own rule above is met (t
 3. `agent-fenn-w0-kit-test-unit`
 4. `agent-fenn-decisions-test-unit`
 5. `agent-fenn-decisions-test-e2e`
-6. `agent-ghost-w0-data-build`
-7. `agent-fantem-w0-kit-build`
-8. `agent-leon-decisions-build`
+6. `agent-nemi-w0-fonts-build`
+7. `agent-ghost-w0-data-build`
+8. `agent-fantem-w0-kit-build`
+9. `agent-leon-decisions-build`
 
 ## Closing the sprint
 

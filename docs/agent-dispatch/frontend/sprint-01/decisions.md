@@ -343,6 +343,15 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
   - **If it's over and the swap is the cause:** it becomes a finding. The override values would then be derived from the shipped WOFF2 files' own metrics and recorded as derived values, which needs INT's approval as new values.
 - **`plan.toml`:** Leah's dispatch gets the fonts task, re-rendered.
 
+## 2026-11-07: w0-fonts, Nemi's fonts follow-up (INT's OK)
+
+- **The dispatch:** `agent-nemi-w0-fonts-build` has one task: the IBM Plex Mono 500 preload in `__root.tsx`, beside Inter's (the "Fonts" entry above).
+  - Zero reviews it (`agent-zero-w0-fonts-review-frontend`).
+  - It has no tests module: it's one head link, and its verify counts the preloads.
+  - Leon's decisions build doesn't wait for it. Leah's review does (`after`).
+- **The territory moves:** `apps/web/src/routes/__root.tsx` moves from w0-app's territory to w0-fonts'. The kit (`render.py`) refuses two builds that write the same path, even one after the other. w0-app is merged, and its work is unchanged. The plan carries a comment saying w0-app wrote that file. Re-rendering changes w0-app's task doc to the narrower territory.
+  - **The alternative, if INT prefers:** run it as a w0-app retry. I didn't pick it, because a retry re-runs w0-app's whole task doc for one link.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).

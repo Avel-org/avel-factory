@@ -39,11 +39,53 @@ Your tasks:
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 
-You may change only: apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}, apps/web/src/styles/**, apps/web/src/routes/__root.tsx, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
+You may change only: apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
 write docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```
+
+## agent-nemi-w0-fonts-build
+
+```text
+You are NEMI on avel-factory, frontend sprint-01 (step 1: The minimal approval page on the contract mock, with the thin W0 slice under it).
+Dispatch: agent-nemi-w0-fonts-build. Branch: frontend/sprint-01/agent-nemi-w0-fonts-build-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- NEMI-01: apps/web/src/routes/__root.tsx: preload IBM Plex Mono 500 beside Inter Variable, in the same link form; no Mono 400 preload, no other change
+
+You may change only: apps/web/src/routes/__root.tsx, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```
+
+## agent-zero-w0-fonts-review-frontend
+
+```text
+You are ZERO on avel-factory, frontend sprint-01 (step 1: The minimal approval page on the contract mock, with the thin W0 slice under it).
+Dispatch: agent-zero-w0-fonts-review-frontend. Branch: frontend/sprint-01/agent-zero-w0-fonts-review-frontend-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- ZERO-01: Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in Inter's link form, no Mono 400 preload, no fallback metrics, nothing else changed in __root.tsx, nothing outside the territory
+
+You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```

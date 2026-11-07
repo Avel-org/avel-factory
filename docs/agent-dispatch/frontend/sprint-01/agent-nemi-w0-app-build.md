@@ -37,6 +37,8 @@ apps/web as @avel/web: the TanStack Start app config, its dependencies, the toke
 **The rest of this sprint:**
 
 - `agent-brennan-approvals-uic-review-spec`: Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your start commit, against CR-W2, the Frontend Map v0.6, the design library and backend m1's packages/contract, before anything is built on it.
+- `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+- `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -90,7 +92,6 @@ Do them in order. Finish each one, verified, before the next.
 
 - `apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}`
 - `apps/web/src/styles/**`
-- `apps/web/src/routes/__root.tsx`
 - `docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md`
 
 **You may not change:**
@@ -102,6 +103,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/lib/**` (GHOST)
 - `apps/web/src/modules/decisions/**` (LEON)
 - `apps/web/src/router.tsx` (GHOST)
+- `apps/web/src/routes/__root.tsx` (NEMI)
 - `apps/web/src/routes/index.tsx` (LEON)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/kit/**` (FENN, locked tests)
@@ -215,7 +217,7 @@ Your tasks:
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 
-You may change only: apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}, apps/web/src/styles/**, apps/web/src/routes/__root.tsx, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
+You may change only: apps/web/{package.json,vite.config.ts,tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
