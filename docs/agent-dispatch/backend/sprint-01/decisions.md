@@ -30,6 +30,7 @@ Lead: Axis. Step 1 (the scaffold). The slice isn't written yet: sprint-00 comes 
     - changing an output field's type or nullability;
     - adding a value to an output value list or union, because an old bundle can't render it (Frontend Map v0.6 line 74: a new kind is a type error until registered).
   - **Additive changes** bump the minor: a new route, a new optional input field, or a new optional output field.
+  - **Packaging-only changes don't bump** (D58, INT, 2026-11-07). A change to how the package is built or exported, with no route, field, error code, event kind or type change, keeps the version. The first one was the subpath exports, `fix/contract-subpaths` at da5b3c0.
   - **Who bumps and who checks:** the api-contract dispatch bumps `package.json` and `CONTRACT_VERSION` in the same commit as the change. The contract's reviewer (Brennan, review-spec) checks the bump against this rule.
   - **Start value:** m1 stays `0.0.0`, since it's reviewed and unreleased. This slice's api-contract dispatch sets `1.0.0` together with the CR-W2 changes. After that, the rule above applies.
   - **What a mismatch does** is a client choice, not set here:
@@ -91,3 +92,45 @@ Lead: Axis. Step 1 (the scaffold). The slice isn't written yet: sprint-00 comes 
     - A server that read the raw body to refuse a mismatch would be checking a field its own OpenAPI document doesn't have. It would also need a second parse outside oRPC on every such route.
   - **The mock:** `packages/contract-mock` should drop its raw-body read for check 1, so it behaves like the server: a mismatched body `proposalId` is ignored. That's for Zero, through INT. Backend doesn't touch the mock.
   - **CR-W2 change:** section 5's check 1 and a note under the request, edited on main's working tree (uncommitted, for INT to commit; CR-W2 is accepted, D37).
+- **S1-6. `@avel/contract` moves to `zod/mini`** (INT, 2026-11-07: the web pays 25.6 kB gzip for zod, and the target is about 20 kB less; the frontend budget is 160 kB until then). It's a planned contract change, with its own module in the Step 1 slice.
+  - **Why `zod/mini`:** classic `zod` puts its methods on shared classes, so any schema pulls in all of zod. `zod/mini` exposes the same checks as functions that tree-shake, on the same `zod/v4/core`.
+  - **The web imports zod too** (INT's correction, 2026-11-07). Ghost's w0-data, at 3183bc1 and not yet on main, has `apps/web/src/data/pending-decisions.ts` importing `{ z } from "zod"` at runtime. It builds CR-W2's row shapes itself (`DecisionChoice`, `CostImpact`, …), because the contract doesn't have them until Step 1. `client.ts` also has a type-only import. So the saving needs **both** packages off classic zod, in the same change:
+    - **Contract side** (this module): Axis.
+    - **Web side** (frontend territory, a dispatch Zero plans, through INT; backend never touches `apps/web`): the web's runtime zod moves to `zod/mini`. Better still, once this slice's contract exports CR-W2's shapes (`DecisionChoice`, `ProposalViewDto`, the union), the web imports them from `@avel/contract/dto/decisions` and drops its own copies. Type-only imports cost nothing at runtime, but `import type { z } from "zod/mini"` keeps a single source.
+    - **Lands together:** the two land together, and the measured saving counts both. Measuring one alone would show little, because either package left on classic zod pulls all of classic back in.
+  - **What changes:** schema construction in `packages/contract/src` only. About 377 chained calls get rewritten:
+    - `.nullable()` 167 → `z.nullable(x)`;
+    - `.min()` 79 → `.check(z.minLength(n))` or `z.minimum(n)`;
+    - `.int()` 54 → `z.int()`;
+    - `.optional()` 50 → `z.optional(x)`;
+    - `.array()` 49 → `z.array(x)`;
+    - `.extend()` 15 → `z.extend(S, shape)`;
+    - `.trim()` 11 → `.check(z.trim())`;
+    - `.refine` 2, `.pick` 2 and `.meta` 1 get their `zod/mini` forms.
+
+    Package metadata stays the same: the subpaths (D58), `sideEffects: false` and the dependency on `zod` 4.6.7, which ships `zod/mini`.
+  - **What doesn't change:**
+    - the wire (routes, fields, codes, event kinds);
+    - every `z.infer<>` type;
+    - S1-3's `BAD_REQUEST` details: `zod/mini` raises the same core issues, with the same paths.
+  - **Version (INT, 2026-11-07): no separate bump.** S1-6 lands ahead of the CR-W2 contract changes in this same slice, and those set `1.0.0` (S1-2). Nothing changes on the wire or in the inferred types, which is D58's spirit.
+  - **Gate first: a spike** (Axis, in a scratch worktree, discarded) on oRPC 1.16.2 and zod 4.6.7, checking five things. If (2) or (4) fails, stop and report.
+    1. `@orpc/contract` accepts `zod/mini` schemas as Standard Schema, for input and output.
+    2. The OpenAPI generator, Step 1's CI step, converts them. `@orpc/zod`'s zod 4 converter works on `zod/v4/core`, so this has to be shown, not assumed. The OpenAPI document for routes 52 to 54 must come out byte for byte the same.
+    3. `z.json()`, the `Placeholder` record and the `Page<T>` generic have `zod/mini` forms.
+    4. **The measured saving:** the web's production build of the decisions page, with both `@avel/contract` and `apps/web/src` on classic and then both on mini (the web side on a scratch copy of Ghost's w0-data), from Leah's first-load budget check. Target: at least about 20 kB gzip less.
+    5. Error issues and their paths are the same as classic's for route 54's bad inputs (S1-3).
+  - **The module** (Step 1 slice, before the CR-W2 contract changes, so the new DTOs are written in `zod/mini` once):
+    - **Builder:** Axis (api-contract).
+    - **Test-unit (Rigg):** a test that no file in `packages/contract/src` imports `"zod"` (only `zod/mini` and `zod/v4/core`), and a type-level test that the `z.infer` types of every exported DTO are unchanged against the pre-move snapshot. The locked contract tests (44) don't touch zod's API (they use only route metadata), so they run unchanged as the regression.
+    - **Lint:** Biome's `noRestrictedImports` bans `"zod"` in `packages/contract/**`.
+    - **Review:** Brennan (review-spec).
+    - **Done when:**
+      - build, typecheck and lint pass;
+      - 44/44 plus the new tests pass;
+      - the OpenAPI document is unchanged;
+      - with the web's matching change, the web's first-load gzip drops by about 20 kB, with the number in the report.
+  - **Consumers:**
+    - The server (Step 1) and `packages/contract-mock` use the contract's schemas as they are, or the `zod/mini` functions to derive from them.
+    - The server may use classic zod for its own internal schemas.
+    - The web uses only `zod/mini`, or the contract's own schemas (Zero, through INT; see above).
