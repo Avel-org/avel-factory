@@ -292,3 +292,7 @@ Axis's m1 report (0dce235, `agent-axis-m1-contract-api-contract-completion.md`, 
 ### Merge order for m1
 
 INT's call: Rigg's m1 tests are locked and run against the contract before m1 merges. The lockfile (`@orpc/contract` 1.16.2, `zod` 4.6.7) lands with the m1 merge.
+
+## 2026-11-06: CR-W2 accepted
+
+- **D37. CR-W2 is accepted** as `docs/design/CR-W2 Pending decisions.md`, written fresh by Axis from Zero's needs (`docs/agent-dispatch/frontend/sprint-01/cr-w2-needs.md`); the Nov 3 write-up is lost. INT's calls: `clientName` (nullable, via `missions.client_id`), not `missionName`; `costImpact` optional and never sent in Step 1; `ProposalOptions` fixed; a proposal whose options don't parse is listed as not decidable; no single factory-PR read in Step 1 (route 103 later). Its `packages/contract` changes (the route 52 union, `ProposalViewDto`, `DecisionChoice`, `ProposalOptions`, D30's change for routes 52 and 72) go into the Step 1 slice; m1 stays as reviewed. The Step 1 slice also lists `missions` and `clients` as read for route 52 (Plan line 89).
