@@ -40,17 +40,17 @@ apps/web as @avel/web: the TanStack Start app config, its dependencies, the toke
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
-- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06.
+- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07.
 - `agent-ghost-w0-data-build`: The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.tsx) and the contract mock @avel/contract-mock for routes 52 to 54, exactly as UI contract sections 1 to 3 name them.
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
 - `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
-- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-07 and UC-08.
+- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-08 to UC-10.
 - `agent-fantem-w0-kit-build`: The kit components the page needs, ported from the design library with UI contract section 4's changes: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog, ErrorPanel, WidgetState and DecisionTag.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-w0-kit-review-spec`: Review the kit against UI contract section 4 and the design library.
-- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-09 to UC-20.
-- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23.
+- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-11 to UC-28.
+- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31.
 - `agent-leon-decisions-build`: The decisions module and its route: the approval page at /, exactly as UI contract section 5 gives it.
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
@@ -60,7 +60,7 @@ apps/web as @avel/web: the TanStack Start app config, its dependencies, the toke
 
 Do them in order. Finish each one, verified, before the next.
 
-### NEMI-01: apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4 and the AVEL_API=mock dev middleware, and .gitignore for the generated route tree (P0)
+### NEMI-01: apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4, __AVEL_CONTRACT_VERSION__ and the AVEL_API=mock dev middleware (/api and /__mock), and .gitignore for the generated route tree (P0)
 
 - **Required:** pnpm install resolves; the route tree is generated before typecheck and build; no dependency outside section 6
 - **Verify:** `pnpm install && pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build`
@@ -211,7 +211,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-bu
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- NEMI-01: apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4 and the AVEL_API=mock dev middleware, and .gitignore for the generated route tree
+- NEMI-01: apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4, __AVEL_CONTRACT_VERSION__ and the AVEL_API=mock dev middleware (/api and /__mock), and .gitignore for the generated route tree
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 

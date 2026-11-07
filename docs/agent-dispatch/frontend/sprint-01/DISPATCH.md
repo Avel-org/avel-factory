@@ -12,11 +12,12 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 ## Done when
 
 1. The web app builds, typechecks and lints, and its token stylesheet carries every token in the design library's token section with the same value (533 declarations).
-2. On the contract mock, a seeded open proposal shows on / as waiting, with its title, client name, age, evidence, consequence and 'Binds to Version N'; a factory PR shows read-only with its GitHub link; a proposal whose options don't parse shows Locked; an empty list shows 'Nothing needs you.' (UC-09, UC-10).
-3. Approving or rejecting asks for a reason first, then sends route 54 exactly { proposalId, version as shown, the row's choice, reason } with one Idempotency-Key, which a retry reuses; the row leaves the list after the 2xx (UC-11, UC-12, UC-16).
-4. A stale version opens the stale state with the current version and never re-sends; 'Review version N' shows the new version, which can then be decided (UC-13, UC-22).
-5. 422, 404, 429, 403, network and 5xx, IDEMPOTENCY_KEY_REUSED and IDEMPOTENCY_IN_PROGRESS each show the state the UI contract gives, with the request ID (UC-14 to UC-17).
-6. The flow works end to end at 390px and 1280px on the mock, with SSR rows on first paint (UC-21 to UC-23).
+2. On the contract mock, a seeded open proposal shows on / as waiting, with its title, client name, age, evidence, consequence and 'Binds to Version N'; a factory PR shows read-only with its GitHub link; a proposal whose options don't parse shows Locked; an empty list shows 'Nothing needs you.' (UC-11, UC-12).
+3. Approving or rejecting asks for a reason first, then sends route 54 exactly { proposalId, version as shown, the row's choice, reason } with one Idempotency-Key, which a retry reuses; the row leaves the list after the 201 (UC-13, UC-14, UC-19, UC-21).
+4. A stale version opens the stale state with the current version and never re-sends; 'Review version N' shows the new version, which can then be decided (UC-15, UC-16, UC-30).
+5. 422, 404, 429, 400, 401, 403, 409, network and 5xx, IDEMPOTENCY_KEY_REUSED and IDEMPOTENCY_IN_PROGRESS each show the state the UI contract gives, with the request ID; the list's loading, error, unreadable and paging states too (UC-17 to UC-27).
+6. A response whose X-Contract-Version differs from the version the web was built with shows the reload banner (UC-07, UC-28).
+7. The flow works end to end at 390px and 1280px on the mock, with SSR rows on first paint (UC-29 to UC-31).
 
 ## Sources
 

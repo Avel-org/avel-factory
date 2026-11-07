@@ -39,17 +39,17 @@ Review the approval page against CR-W2 and UI contract section 5.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
-- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06.
+- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07.
 - `agent-ghost-w0-data-build`: The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.tsx) and the contract mock @avel/contract-mock for routes 52 to 54, exactly as UI contract sections 1 to 3 name them.
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
 - `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
-- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-07 and UC-08.
+- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-08 to UC-10.
 - `agent-fantem-w0-kit-build`: The kit components the page needs, ported from the design library with UI contract section 4's changes: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog, ErrorPanel, WidgetState and DecisionTag.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-w0-kit-review-spec`: Review the kit against UI contract section 4 and the design library.
-- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-09 to UC-20.
-- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23.
+- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-11 to UC-28.
+- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31.
 - `agent-leon-decisions-build`: The decisions module and its route: the approval page at /, exactly as UI contract section 5 gives it.
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
@@ -58,7 +58,7 @@ Review the approval page against CR-W2 and UI contract section 5.
 
 Do them in order. Finish each one, verified, before the next.
 
-### BRENNAN-01: Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client (P1)
+### BRENNAN-01: Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client beyond the count section 5 allows (P1)
 
 - **Verify:** `pnpm --filter @avel/web test -- test/modules/decisions`
 - **Expected:** the locked tests pass
@@ -192,7 +192,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-brennan-decisi
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- BRENNAN-01: Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client
+- BRENNAN-01: Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client beyond the count section 5 allows
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-brennan-decisions-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

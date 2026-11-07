@@ -24,13 +24,13 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: sections 1 to 3 (the mock's and the data core's exact names) and section 7 (UC-01 to UC-06)
+9. `docs/ui-contracts/decisions-approval-page.md`: sections 1 to 3 (the mock's and the data core's exact names) and section 7 (UC-01 to UC-07)
 10. `docs/design/CR-W2 Pending decisions.md`: the row, the order, and route 54's checks in order
 11. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-data-test-unit.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06.
+The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07.
 
 **The rest of this sprint:**
 
@@ -43,12 +43,12 @@ The web's test config, and the data core's and the contract mock's tests: UC-01 
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
 - `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
-- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-07 and UC-08.
+- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-08 to UC-10.
 - `agent-fantem-w0-kit-build`: The kit components the page needs, ported from the design library with UI contract section 4's changes: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog, ErrorPanel, WidgetState and DecisionTag.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-w0-kit-review-spec`: Review the kit against UI contract section 4 and the design library.
-- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-09 to UC-20.
-- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23.
+- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-11 to UC-28.
+- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31.
 - `agent-leon-decisions-build`: The decisions module and its route: the approval page at /, exactly as UI contract section 5 gives it.
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
@@ -63,7 +63,7 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web test -- --reporter=verbose 2>&1 | tail -20`
 - **Expected:** Vitest runs; the w0-data tests fail on assertions
 
-### FENN-02: UC-01 to UC-06 as Vitest tests in apps/web/test/data/ (P0)
+### FENN-02: UC-01 to UC-07 as Vitest tests in apps/web/test/data/ (P0)
 
 - **Required:** Each carries its UC ID, fails first with an assertion, three runs in a row
 - **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web test -- test/data 2>&1 | tail -5; done`
@@ -73,7 +73,7 @@ Do them in order. Finish each one, verified, before the next.
 
 - The mock and the data core don't exist yet: import them by the names section 2 and 3 fix. A test that can't import its subject fails with an import error, which doesn't count as failing first (Part 6). Add a type-only stub in apps/web/test/setup/ so each test fails on its assertion.
 - There's no Postgres here: the web's tests run against the contract mock, never a database.
-- apps/web/vitest.config.ts uses jsdom and apps/web/test/setup/ for the shared helpers (a mock-backed client and a render helper with a QueryClient), which the kit and decisions tests reuse.
+- apps/web/vitest.config.ts uses jsdom and apps/web/test/setup/ for the shared helpers (a mock-backed client and a render helper with a QueryClient), which the kit and decisions tests reuse. It defines __AVEL_CONTRACT_VERSION__ from packages/contract/package.json's version, as Nemi's vite.config.ts does (contract section 3).
 
 ## 5. Territory
 
@@ -206,7 +206,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - FENN-01: apps/web/vitest.config.ts and apps/web/test/setup/ (jsdom, the mock-backed client helper, the render helper)
-- FENN-02: UC-01 to UC-06 as Vitest tests in apps/web/test/data/
+- FENN-02: UC-01 to UC-07 as Vitest tests in apps/web/test/data/
 
 You may change only: apps/web/vitest.config.ts, apps/web/test/setup/**, apps/web/test/data/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-data-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

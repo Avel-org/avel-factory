@@ -24,7 +24,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: section 5: the route, layout, each row's props, deciding, errors, the list's states and all copy
+9. `docs/ui-contracts/decisions-approval-page.md`: section 5: the route, layout, each row's props, deciding, errors and their actions, the list's states, the contract version banner and all copy
 10. `docs/design/CR-W2 Pending decisions.md`: the row you render and what route 54 takes
 11. `docs/design/AVEL Web App — Frontend Map v0.6.md`: What every module looks like, Data layer (writes), Rendering and SSR
 12. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: the Decisions screen (its layout and copy)
@@ -41,17 +41,17 @@ The decisions module and its route: the approval page at /, exactly as UI contra
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
-- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06.
+- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07.
 - `agent-ghost-w0-data-build`: The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.tsx) and the contract mock @avel/contract-mock for routes 52 to 54, exactly as UI contract sections 1 to 3 name them.
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
 - `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
-- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-07 and UC-08.
+- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-08 to UC-10.
 - `agent-fantem-w0-kit-build`: The kit components the page needs, ported from the design library with UI contract section 4's changes: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog, ErrorPanel, WidgetState and DecisionTag.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-w0-kit-review-spec`: Review the kit against UI contract section 4 and the design library.
-- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-09 to UC-20.
-- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23.
+- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-11 to UC-28.
+- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31.
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
@@ -62,13 +62,13 @@ Do them in order. Finish each one, verified, before the next.
 
 ### LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader (P0)
 
-- **Required:** The locked UC-09, UC-10 and UC-20 pass
+- **Required:** The locked UC-11, UC-12 and UC-26 pass
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/modules/decisions`
 - **Expected:** typechecks; those tests pass
 
-### LEON-02: Deciding (section 5.2) and every error and list state (sections 5.3 and 5.4) (P0)
+### LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5) (P0)
 
-- **Required:** Every locked UC-09 to UC-23 passes; a stale version is never re-sent
+- **Required:** Every locked UC-11 to UC-31 passes; a stale version is never re-sent
 - **Verify:** `pnpm --filter @avel/web test -- test/modules/decisions && pnpm --filter @avel/web exec playwright test`
 - **Expected:** all locked tests pass
 
@@ -199,7 +199,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader
-- LEON-02: Deciding (section 5.2) and every error and list state (sections 5.3 and 5.4)
+- LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

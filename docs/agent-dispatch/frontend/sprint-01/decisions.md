@@ -115,11 +115,75 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 
 **Blocked:** escalation 01 (`escalations/01-workspace-apps-and-lockfile.md`). The workspace root doesn't list `apps/*`, Vitest's workspace doesn't collect `apps`, and `pnpm-lock.yaml` has no frontend owner. The proposal is that INT regenerates the lockfile when merging. Only Brennan's review of the UI contract can start before this is resolved.
 
+## 2026-11-06: Revision 2 of the UI contract (Brennan's a1, FAIL, 14 findings)
+
+- **Input:**
+  - Brennan's `approvals-uic` review a1 is a FAIL (report 05e0318).
+  - INT asked for all 14 findings to be fixed, P1s first, and decided 01, 13 and 14.
+  - a1 isn't merged. Brennan's a2 re-reviews the new commit.
+- **Done:**
+  - `docs/ui-contracts/decisions-approval-page.md`, revision 2. Its Appendix A maps each finding to its answer.
+  - `plan.toml`, re-rendered with `--check` clean:
+    - the scenario ranges are renumbered (UC-01 to UC-31; end to end is now UC-29 to UC-31);
+    - the done-when lines are updated;
+    - a2's notes are added;
+    - the BRENNAN-01 verify now finds CR-W2's `## 5.` and `## 6.`;
+    - the BRENNAN-02 verify now lists the contract's data-ui names missing from the library (only `DecisionsPage`).
+  - Escalation 02 (the contract version value).
+  - All uncommitted.
+
+**INT's calls:**
+- **01:** the mock answers route 54 with **201**, as m1's `route()` and D26 do. The "isn't a create" claim is dropped.
+- **13, missing `Idempotency-Key`:** `BAD_REQUEST` with `details: { field: "Idempotency-Key" }`. This is **provisional until Axis confirms it in the Step 1 slice**: no source gives the code or the details (API routes.md line 16 and the slice's contract.md say only "required").
+- **13, the success answer:** it adds `state: "resolved"` and `resolvedBy`. In the mock, `resolvedBy` is a fixed UUIDv7, `MOCK_OPERATOR_ID = 0193a000-0000-7000-8000-000000000001`.
+- **14, `X-Contract-Version`:**
+  - The check is built in sprint-01. The data client compares the header against the version it was built with; the mock sends the header; a mismatch shows the reload banner.
+  - The banner sits on the page (section 5.5), because sprint-01 has one page. It moves to the shell with W2.
+  - m1 exports the header name but no version value. So `__AVEL_CONTRACT_VERSION__` is read from `packages/contract/package.json` at build time until Axis exports a constant (escalation 02).
+  - A response without the header is ignored, not treated as a mismatch.
+- **14, the waiting count:** **stays client-counted until CR-W5** sends a server count. The lead line and the `Waiting for you` count are the number of rows drawn, with `+` while more pages exist. FM line 134 asks for a server number. This one is presentation of what's on screen (the library's own lead counts the same way), and CR-W5 isn't accepted.
+
+**My choices in revision 2:**
+- **02, the reason dialog:** option (b). The dialog closes on confirm, so the row shows `Approving…` within 100ms. On a reason 400 it reopens with the reason it sent (`defaultReason`, change R2) and the error. Sending it again is a new body, so it takes a new key.
+- **03, `ErrorPanel`:**
+  - A panel draws its action only when the caller passes `onAction` (E1).
+  - `conflict` gets the title `This couldn't be recorded.`†, and `unprocessable` gets FM line 220's `Not allowed now`. Neither ever uses the library's 409 copy (which is the stale copy) or its 422 copy (`A reason is required`).
+  - Every panel row in 5.3 and 5.4 now names its action, or says it has none.
+- **04, `DecisionTag`:** D1 to D12 list every difference from the library, each with its reason.
+  - **Buttons per state (D8):** `stale` disables both, and `notAllowed` draws none, even with labels: route 54 would refuse either way.
+  - **The phone actions (D11)** come from the library's Decisions card, `.pd[data-phone] .pd-actions`: a two-column grid, with Reject left and Approve right.
+- **05:** screen scenarios added for every row in 5.3 and 5.4: 403, `IDEMPOTENCY_KEY_REUSED`, 401, other 400s, `CONFLICT`, `UNPROCESSABLE_CONTENT`, "settled elsewhere", loading, the two error states, `Load more` failing, and the version banner. UC-19 and UC-22 assert the request ID.
+- **06:** a `limit` over 100 is `BAD_REQUEST` (m1's `PageQuery`). Nothing is clamped.
+- **07:**
+  - `failNext` has one signature, and its error body is written raw, past m1's error schemas. That's how a test sends Step 1's `INVALID_TRANSITION.state`.
+  - `remove` is added.
+  - UC-17 names the reason each case shows.
+- **08:** the unreadable-rows band has no request ID. A successful page gives none to the screen, and its copy no longer asks for one.
+- **09:** the approved time is route 54's `resolvedAt` (`formatClock`), not the browser's clock.
+- **10, the value rule:** a value is a `--av-*` token, or the literal the library's own source uses for that element. Under reduced motion, the hole fill (the library's literal `160ms`) isn't animated (D12).
+- **11:** every string and `data-ui` name that isn't the library's is marked † in the contract:
+  - `data-ui="DecisionsPage"`;
+  - `Approve this decision?`, and the approve description;
+  - `Rejecting…`;
+  - `Version {n}`;
+  - `Open on GitHub`;
+  - `Refresh list`, `Load more` and `Retry loading more`;
+  - `This decision's options can't be read, so it can't be decided here.`;
+  - `This decision was already made.`, `This decision expired.`, `This can't be decided now.` and `This decision no longer exists.`;
+  - `The server didn't accept this reason. Write a few more words.`;
+  - `This couldn't be recorded.` and `Couldn't reach the server.`;
+  - `That decision was settled elsewhere.`;
+  - `You're offline.`;
+  - the unreadable-rows band;
+  - `Request ID {id}`;
+  - `AVEL was updated. Reload to use the new version.`
+- **12:** each kit row lists the library props it ports and the ones it leaves out. `Icon`'s `data-ui` is `Icon`. `formatAgo` takes `number | null`, and a non-finite value gives `—`, as the library's does.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).
 2. ~~Ghost's time.~~ Decided above: alongside `avel-cli`. Was: INT has started Ghost on `avel-cli` (backend team, Axis reviews; Roster setup and sessions, rule 4). If sprint-01 takes option (a), Ghost's frontend-data dispatch comes after that, or runs alongside it with a separate task doc. INT to decide the order.
-3. **Decision kinds in Step 1 (still open, waits on Axis's contract).** The page lists whatever `GET /api/pending-decisions` returns, but Frontend Map v0.6 (Decision kinds belong to the module that owns the work) has each module register its own kinds. For the minimal page I plan one generic proposal row (summary, approve or reject with a reason, `version` bound: D25, corrected 2026-11-06), and a 409 shows the stale state. Per-kind tags wait for W1. Confirmed once the contract says which kinds exist in Step 1. Route 52 is a plain `Placeholder` in m1 (D30), so this now waits on Step 1's decision on CR-W2, not on m1.
+3. ~~Decision kinds in Step 1.~~ Settled by CR-W2 (D37) and the UI contract, section 5.1: one generic proposal row, with the kind label from the kit's variant map; per-kind registries wait for W1. Was: **Decision kinds in Step 1 (still open, waits on Axis's contract).** The page lists whatever `GET /api/pending-decisions` returns, but Frontend Map v0.6 (Decision kinds belong to the module that owns the work) has each module register its own kinds. For the minimal page I plan one generic proposal row (summary, approve or reject with a reason, `version` bound: D25, corrected 2026-11-06), and a 409 shows the stale state. Per-kind tags wait for W1. Confirmed once the contract says which kinds exist in Step 1. Route 52 is a plain `Placeholder` in m1 (D30), so this now waits on Step 1's decision on CR-W2, not on m1.
 4. ~~Factory PRs in the list.~~ Decided above: read-only. Was: Route 52 returns "proposals of every kind, plus open factory PRs". A factory PR is approved through route 73 `POST /api/factory/changes/{changeId}/merges`, not route 54. Step 1's tables include `proposals` (read and decide only) but no factory-change table. Plan: the minimal page decides proposals only, and shows a factory PR row read-only if the contract returns one. Confirm once the contract is locked.
 
 ## 2026-11-06: INT's answers before dispatch

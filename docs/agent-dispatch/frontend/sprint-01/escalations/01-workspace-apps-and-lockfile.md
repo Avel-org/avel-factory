@@ -1,5 +1,7 @@
 # Escalation 01: the workspace root doesn't hold apps/web, and the lockfile has no frontend owner
 
+**Status: resolved** (INT, 2026-11-06; a7d0323, and decisions.md "INT answers before dispatch"). INT regenerates the lockfile at merges.
+
 From Zero (frontend lead), 2026-11-06. **To:** INT, and Axis for the backend files. **Blocks:** every frontend sprint-01 dispatch except Brennan's review of the UI contract.
 
 ## What's missing

@@ -14,7 +14,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - BRENNAN-01: Data and API: section 1's interim, section 2's mock and section 5.3's error handling follow CR-W2 sections 2 to 6, m1's error map and D21, D23 and D25; nothing the page reads is derived on the client
 - BRENNAN-02: Design: every component, prop, state, copy string and token in sections 4 to 6 is the design library's, or is listed as a change with a decision behind it
-- BRENNAN-03: Scenarios: UC-01 to UC-23 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified
+- BRENNAN-03: Scenarios: UC-01 to UC-31 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-brennan-approvals-uic-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/approvals-uic-brennan-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -35,7 +35,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-bu
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- NEMI-01: apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4 and the AVEL_API=mock dev middleware, and .gitignore for the generated route tree
+- NEMI-01: apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4, __AVEL_CONTRACT_VERSION__ and the AVEL_API=mock dev middleware (/api and /__mock), and .gitignore for the generated route tree
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 
@@ -122,7 +122,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - FENN-01: apps/web/vitest.config.ts and apps/web/test/setup/ (jsdom, the mock-backed client helper, the render helper)
-- FENN-02: UC-01 to UC-06 as Vitest tests in apps/web/test/data/
+- FENN-02: UC-01 to UC-07 as Vitest tests in apps/web/test/data/
 
 You may change only: apps/web/vitest.config.ts, apps/web/test/setup/**, apps/web/test/data/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-data-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -143,8 +143,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- GHOST-01: packages/contract-mock: createMock with the exact surface in section 2, routes 52 to 54 through the contract, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many
-- GHOST-02: apps/web/src/data and lib: createApiClient, orpc, newIdempotencyKey, toUiError with section 3's UiError, createQueryClient, the CR-W2 row schemas and parsePendingPage, formatAgo; apps/web/src/router.tsx with getRouter
+- GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), both response headers, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many
+- GHOST-02: apps/web/src/data and lib: createApiClient with the X-Contract-Version check, orpc, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, toUiError with section 3's UiError, createQueryClient, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter
 
 You may change only: apps/web/src/data/**, apps/web/src/lib/**, apps/web/src/router.tsx, packages/contract-mock/**, docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -228,7 +228,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-te
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: UC-07 (DecisionTag, one test per state) and UC-08 (ReasonDialog) in apps/web/test/kit/
+- FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/
 
 You may change only: apps/web/test/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -249,8 +249,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (with error), ErrorPanel, WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
-- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and its eight changes from the library
+- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
+- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -271,7 +271,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-re
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, tokens only, plain props with no oRPC or router import
+- ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -292,7 +292,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-brennan-w0-kit
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- BRENNAN-01: Review the w0-kit diff: every component is the library's with only section 4's changes
+- BRENNAN-01: Review the w0-kit diff: every component is the library's with only section 4's listed changes
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-brennan-w0-kit-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-brennan-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -313,7 +313,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: UC-09 to UC-20 as screen tests in apps/web/test/modules/decisions/
+- FENN-01: UC-11 to UC-28 as screen tests in apps/web/test/modules/decisions/
 
 You may change only: apps/web/test/modules/decisions/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -334,7 +334,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects) and UC-21 to UC-23
+- FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects) and UC-29 to UC-31
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -356,7 +356,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader
-- LEON-02: Deciding (section 5.2) and every error and list state (sections 5.3 and 5.4)
+- LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -398,7 +398,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-brennan-decisi
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- BRENNAN-01: Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client
+- BRENNAN-01: Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client beyond the count section 5 allows
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-brennan-decisions-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

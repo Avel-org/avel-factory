@@ -24,13 +24,13 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: section 4 (props, states, copy) and section 7 (UC-07, UC-08)
+9. `docs/ui-contracts/decisions-approval-page.md`: section 4 (props, states, copy, changes R1 to R3, E1, E2, D1 to D12) and section 7 (UC-08 to UC-10)
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: DecisionTag's and ReasonDialog's copy and states
 11. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The kit's component tests: UC-07 and UC-08.
+The kit's component tests: UC-08 to UC-10.
 
 **The rest of this sprint:**
 
@@ -39,7 +39,7 @@ The kit's component tests: UC-07 and UC-08.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
-- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06.
+- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07.
 - `agent-ghost-w0-data-build`: The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.tsx) and the contract mock @avel/contract-mock for routes 52 to 54, exactly as UI contract sections 1 to 3 name them.
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
@@ -47,8 +47,8 @@ The kit's component tests: UC-07 and UC-08.
 - `agent-fantem-w0-kit-build`: The kit components the page needs, ported from the design library with UI contract section 4's changes: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog, ErrorPanel, WidgetState and DecisionTag.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-w0-kit-review-spec`: Review the kit against UI contract section 4 and the design library.
-- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-09 to UC-20.
-- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23.
+- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-11 to UC-28.
+- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31.
 - `agent-leon-decisions-build`: The decisions module and its route: the approval page at /, exactly as UI contract section 5 gives it.
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
@@ -58,7 +58,7 @@ The kit's component tests: UC-07 and UC-08.
 
 Do them in order. Finish each one, verified, before the next.
 
-### FENN-01: UC-07 (DecisionTag, one test per state) and UC-08 (ReasonDialog) in apps/web/test/kit/ (P0)
+### FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/ (P0)
 
 - **Required:** Queries by role, data-ui and text; each carries its UC ID and fails first with an assertion, three runs in a row
 - **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web test -- test/kit 2>&1 | tail -5; done`
@@ -193,7 +193,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-te
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: UC-07 (DecisionTag, one test per state) and UC-08 (ReasonDialog) in apps/web/test/kit/
+- FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/
 
 You may change only: apps/web/test/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

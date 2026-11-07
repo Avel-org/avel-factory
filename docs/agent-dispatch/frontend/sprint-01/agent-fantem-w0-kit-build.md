@@ -24,7 +24,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: section 4: the components, exact props and the eight changes to DecisionTag
+9. `docs/ui-contracts/decisions-approval-page.md`: section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R3, E1, E2 and D1 to D12
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: each component's source, states and copy (search its data-ui name), and the tokens
 11. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
 
@@ -39,16 +39,16 @@ The kit components the page needs, ported from the design library with UI contra
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
-- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06.
+- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07.
 - `agent-ghost-w0-data-build`: The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.tsx) and the contract mock @avel/contract-mock for routes 52 to 54, exactly as UI contract sections 1 to 3 name them.
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
 - `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
-- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-07 and UC-08.
+- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-08 to UC-10.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-w0-kit-review-spec`: Review the kit against UI contract section 4 and the design library.
-- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-09 to UC-20.
-- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23.
+- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-11 to UC-28.
+- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31.
 - `agent-leon-decisions-build`: The decisions module and its route: the approval page at /, exactly as UI contract section 5 gives it.
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
@@ -58,15 +58,15 @@ The kit components the page needs, ported from the design library with UI contra
 
 Do them in order. Finish each one, verified, before the next.
 
-### FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (with error), ErrorPanel, WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts (P0)
+### FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts (P0)
 
-- **Required:** The locked UC-08 passes; no colour, size or duration outside the tokens
+- **Required:** The locked UC-09 and UC-10 pass; every value is a token or DL's own literal for that element (section 0)
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/kit`
 - **Expected:** typechecks; UC-08 passes
 
-### FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and its eight changes from the library (P0)
+### FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library (P0)
 
-- **Required:** The locked UC-07 passes; the punch uses --av-d-punch and holds still under reduced motion
+- **Required:** The locked UC-08 passes; the stamp uses --av-d-punch, and the hole fill isn't animated under reduced motion (D12)
 - **Verify:** `pnpm --filter @avel/web test -- test/kit`
 - **Expected:** the locked tests pass
 
@@ -200,8 +200,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (with error), ErrorPanel, WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
-- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and its eight changes from the library
+- FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts
+- FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

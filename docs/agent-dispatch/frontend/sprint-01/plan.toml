@@ -3,7 +3,7 @@
 # fix this and re-render. Format: docs/agent-dispatch/avel/dispatch-kit.md
 #
 # 2026-11-06: written against CR-W2 (accepted, D37) and the UI contract
-# docs/ui-contracts/decisions-approval-page.md. Brennan reviews the UI contract first; every
+# docs/ui-contracts/decisions-approval-page.md (revision 2 answers Brennan's a1 findings). Brennan reviews the UI contract first; every
 # other dispatch waits for that review to merge. Nothing dispatches until escalation 01 (the
 # workspace lists apps/*, and who commits pnpm-lock.yaml) is resolved and backend m1 (packages/contract) is merged (decisions.md).
 team = "frontend"
@@ -20,11 +20,12 @@ goals = [
 # Step 1 item 13 and test 14 are the backend's; these are the frontend's half, from the UI contract's scenarios.
 done_when = [
   "The web app builds, typechecks and lints, and its token stylesheet carries every token in the design library's token section with the same value (533 declarations).",
-  "On the contract mock, a seeded open proposal shows on / as waiting, with its title, client name, age, evidence, consequence and 'Binds to Version N'; a factory PR shows read-only with its GitHub link; a proposal whose options don't parse shows Locked; an empty list shows 'Nothing needs you.' (UC-09, UC-10).",
-  "Approving or rejecting asks for a reason first, then sends route 54 exactly { proposalId, version as shown, the row's choice, reason } with one Idempotency-Key, which a retry reuses; the row leaves the list after the 2xx (UC-11, UC-12, UC-16).",
-  "A stale version opens the stale state with the current version and never re-sends; 'Review version N' shows the new version, which can then be decided (UC-13, UC-22).",
-  "422, 404, 429, 403, network and 5xx, IDEMPOTENCY_KEY_REUSED and IDEMPOTENCY_IN_PROGRESS each show the state the UI contract gives, with the request ID (UC-14 to UC-17).",
-  "The flow works end to end at 390px and 1280px on the mock, with SSR rows on first paint (UC-21 to UC-23).",
+  "On the contract mock, a seeded open proposal shows on / as waiting, with its title, client name, age, evidence, consequence and 'Binds to Version N'; a factory PR shows read-only with its GitHub link; a proposal whose options don't parse shows Locked; an empty list shows 'Nothing needs you.' (UC-11, UC-12).",
+  "Approving or rejecting asks for a reason first, then sends route 54 exactly { proposalId, version as shown, the row's choice, reason } with one Idempotency-Key, which a retry reuses; the row leaves the list after the 201 (UC-13, UC-14, UC-19, UC-21).",
+  "A stale version opens the stale state with the current version and never re-sends; 'Review version N' shows the new version, which can then be decided (UC-15, UC-16, UC-30).",
+  "422, 404, 429, 400, 401, 403, 409, network and 5xx, IDEMPOTENCY_KEY_REUSED and IDEMPOTENCY_IN_PROGRESS each show the state the UI contract gives, with the request ID; the list's loading, error, unreadable and paging states too (UC-17 to UC-27).",
+  "A response whose X-Contract-Version differs from the version the web was built with shows the reload banner (UC-07, UC-28).",
+  "The flow works end to end at 390px and 1280px on the mock, with SSR rows on first paint (UC-29 to UC-31).",
 ]
 sources = [
   "docs/ui-contracts/decisions-approval-page.md",
@@ -85,25 +86,26 @@ notes = [
   "m1's packages/contract is on branch backend/sprint-00/agent-axis-m1-contract-api-contract-a1 (e36737f) until it merges: git show e36737f:packages/contract/src/dto/decisions.ts and git show e36737f:packages/contract/src/errors.ts.",
   "Each finding cites the contract's line (decisions-approval-page.md:N at your start commit), the source it breaks, and the command that shows it. Copy and props quoted from the design library are checked against the library's bundled source (grep the HTML).",
   "Everything else in this sprint waits for this review to be merged.",
+  "Attempt a1 (report 05e0318, branch frontend/sprint-01/agent-brennan-approvals-uic-review-spec-a1) failed with 14 findings, approvals-uic-brennan-01 to -14. Read them with git show 05e0318:docs/agent-dispatch/frontend/sprint-01/findings/<file> (git show --stat 05e0318 lists them). The contract's Appendix A maps each to its answer; INT decided 01, 13 and 14 (decisions.md, Revision 2). In your report, say for each whether it's closed, and cite the line that closes it. A still-open one keeps its file name; a new finding is numbered from 15. What changed since a1: git diff a138cd6 \"$AVEL_BASE\" -- docs/ui-contracts/decisions-approval-page.md.",
 ]
 
 [[dispatch.task]]
 title = "Data and API: section 1's interim, section 2's mock and section 5.3's error handling follow CR-W2 sections 2 to 6, m1's error map and D21, D23 and D25; nothing the page reads is derived on the client"
 priority = "P0"
-verify = "git show e36737f:packages/contract/src/errors.ts | grep -n 'STALE_VERSION\\|INVALID_TRANSITION\\|TOO_MANY_REQUESTS' && grep -n '^### 5\\|^## 6' 'docs/design/CR-W2 Pending decisions.md'"
-expected = "the three codes and CR-W2's route 54 and answers sections, each of which you've checked against the contract"
+verify = "git show e36737f:packages/contract/src/errors.ts | grep -n 'STALE_VERSION\\|INVALID_TRANSITION\\|TOO_MANY_REQUESTS' && grep -n '^## [56]\\.' 'docs/design/CR-W2 Pending decisions.md'"
+expected = "the three codes, and CR-W2's '## 5. Route 54' and '## 6. Answers' headings, each of which you've checked against the contract"
 
 [[dispatch.task]]
 title = "Design: every component, prop, state, copy string and token in sections 4 to 6 is the design library's, or is listed as a change with a decision behind it"
 priority = "P0"
-verify = "grep -c 'data-ui' 'docs/design/AVEL Enclosure Grid · Design library v1.1.html'"
-expected = "a count; every data-ui name the contract uses is found in the library"
+verify = '''comm -23 <({ sed -n '/^| Component |/,/^$/p' docs/ui-contracts/decisions-approval-page.md | cut -d'|' -f3 | grep -oE '^ .[A-Z][A-Za-z]+.' | tr -dc 'A-Za-z\n'; grep -o 'data-ui="[A-Za-z]*' docs/ui-contracts/decisions-approval-page.md | cut -d'"' -f2; } | sort -u) <(grep -oE '(data-ui":"|dataUi:")[A-Za-z]*' 'docs/design/AVEL Enclosure Grid · Design library v1.1.html' | sed 's/.*"//' | sort -u)'''
+expected = "only DecisionsPage, the one name the contract marks † (not in the library), with its decision"
 
 [[dispatch.task]]
-title = "Scenarios: UC-01 to UC-23 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified"
+title = "Scenarios: UC-01 to UC-31 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified"
 priority = "P1"
 verify = "grep -o 'UC-[0-9][0-9]' docs/ui-contracts/decisions-approval-page.md | sort -u | wc -l"
-expected = "23"
+expected = "31"
 
 # ------------------------------------------------------------------ w0-app: Nemi
 [[dispatch]]
@@ -130,7 +132,7 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4 and the AVEL_API=mock dev middleware, and .gitignore for the generated route tree"
+title = "apps/web/package.json (@avel/web) with exactly section 6's dependencies at pinned versions (oRPC and zod at packages/contract's exact versions), tsconfig.json extending tsconfig.base.json for a DOM and JSX app, vite.config.ts with TanStack Start, Tailwind v4, __AVEL_CONTRACT_VERSION__ and the AVEL_API=mock dev middleware (/api and /__mock), and .gitignore for the generated route tree"
 priority = "P0"
 required = "pnpm install resolves; the route tree is generated before typecheck and build; no dependency outside section 6"
 verify = 'pnpm install && pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build'
@@ -198,7 +200,7 @@ expected = "533 library tokens, 0 missing []"
 agent = "fenn"
 module = "w0-data"
 role = "test-unit"
-domain = "The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06."
+domain = "The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07."
 territory = [
   "apps/web/vitest.config.ts",
   "apps/web/test/setup/**",
@@ -206,13 +208,13 @@ territory = [
 ]
 after = ["agent-nemi-w0-app-build", "backend/sprint-00/agent-axis-m1-contract-api-contract"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 1 to 3 (the mock's and the data core's exact names) and section 7 (UC-01 to UC-06)" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 1 to 3 (the mock's and the data core's exact names) and section 7 (UC-01 to UC-07)" },
   { path = "docs/design/CR-W2 Pending decisions.md", why = "the row, the order, and route 54's checks in order" },
 ]
 notes = [
   "The mock and the data core don't exist yet: import them by the names section 2 and 3 fix. A test that can't import its subject fails with an import error, which doesn't count as failing first (Part 6). Add a type-only stub in apps/web/test/setup/ so each test fails on its assertion.",
   "There's no Postgres here: the web's tests run against the contract mock, never a database.",
-  "apps/web/vitest.config.ts uses jsdom and apps/web/test/setup/ for the shared helpers (a mock-backed client and a render helper with a QueryClient), which the kit and decisions tests reuse.",
+  "apps/web/vitest.config.ts uses jsdom and apps/web/test/setup/ for the shared helpers (a mock-backed client and a render helper with a QueryClient), which the kit and decisions tests reuse. It defines __AVEL_CONTRACT_VERSION__ from packages/contract/package.json's version, as Nemi's vite.config.ts does (contract section 3).",
 ]
 
 [[dispatch.task]]
@@ -222,7 +224,7 @@ verify = "pnpm --filter @avel/web test -- --reporter=verbose 2>&1 | tail -20"
 expected = "Vitest runs; the w0-data tests fail on assertions"
 
 [[dispatch.task]]
-title = "UC-01 to UC-06 as Vitest tests in apps/web/test/data/"
+title = "UC-01 to UC-07 as Vitest tests in apps/web/test/data/"
 priority = "P0"
 required = "Each carries its UC ID, fails first with an assertion, three runs in a row"
 verify = "for i in 1 2 3; do pnpm --filter @avel/web test -- test/data 2>&1 | tail -5; done"
@@ -254,16 +256,16 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "packages/contract-mock: createMock with the exact surface in section 2, routes 52 to 54 through the contract, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many"
+title = "packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), both response headers, the idempotency rules, route 54's checks in CR-W2's order, the dev-only bump path, and fixtures empty, step1 and many"
 priority = "P0"
 required = "The locked UC-01 to UC-03 pass"
 verify = "pnpm --filter @avel/contract-mock typecheck && pnpm --filter @avel/web test -- test/data"
 expected = "typechecks; the locked tests pass"
 
 [[dispatch.task]]
-title = "apps/web/src/data and lib: createApiClient, orpc, newIdempotencyKey, toUiError with section 3's UiError, createQueryClient, the CR-W2 row schemas and parsePendingPage, formatAgo; apps/web/src/router.tsx with getRouter"
+title = "apps/web/src/data and lib: createApiClient with the X-Contract-Version check, orpc, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, toUiError with section 3's UiError, createQueryClient, the CR-W2 row schemas and parsePendingPage, formatAgo and formatClock; apps/web/src/router.tsx with getRouter"
 priority = "P0"
-required = "The locked UC-01 and UC-04 to UC-06 pass; STALE_VERSION alone maps to stale"
+required = "The locked UC-01 and UC-04 to UC-07 pass; STALE_VERSION alone maps to stale"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/data"
 expected = "typechecks; the locked tests pass"
 
@@ -316,16 +318,16 @@ expected = "builds; no file listed"
 agent = "fenn"
 module = "w0-kit"
 role = "test-unit"
-domain = "The kit's component tests: UC-07 and UC-08."
+domain = "The kit's component tests: UC-08 to UC-10."
 territory = ["apps/web/test/kit/**"]
 after = ["agent-fenn-w0-data-test-unit"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (props, states, copy) and section 7 (UC-07, UC-08)" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (props, states, copy, changes R1 to R3, E1, E2, D1 to D12) and section 7 (UC-08 to UC-10)" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "DecisionTag's and ReasonDialog's copy and states" },
 ]
 
 [[dispatch.task]]
-title = "UC-07 (DecisionTag, one test per state) and UC-08 (ReasonDialog) in apps/web/test/kit/"
+title = "UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/"
 priority = "P0"
 required = "Queries by role, data-ui and text; each carries its UC ID and fails first with an assertion, three runs in a row"
 verify = "for i in 1 2 3; do pnpm --filter @avel/web test -- test/kit 2>&1 | tail -5; done"
@@ -339,7 +341,7 @@ domain = "The kit components the page needs, ported from the design library with
 territory = ["apps/web/src/kit/**"]
 after = ["agent-nemi-w0-app-build"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4: the components, exact props and the eight changes to DecisionTag" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R3, E1, E2 and D1 to D12" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "each component's source, states and copy (search its data-ui name), and the tokens" },
 ]
 notes = [
@@ -347,16 +349,16 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (with error), ErrorPanel, WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts"
+title = "Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R3), ErrorPanel (E1, E2), WidgetState: DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts"
 priority = "P0"
-required = "The locked UC-08 passes; no colour, size or duration outside the tokens"
+required = "The locked UC-09 and UC-10 pass; every value is a token or DL's own literal for that element (section 0)"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/kit"
 expected = "typechecks; UC-08 passes"
 
 [[dispatch.task]]
-title = "DecisionTag with DecisionTagProps exactly as section 4 gives them, and its eight changes from the library"
+title = "DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D12 from the library"
 priority = "P0"
-required = "The locked UC-07 passes; the punch uses --av-d-punch and holds still under reduced motion"
+required = "The locked UC-08 passes; the stamp uses --av-d-punch, and the hole fill isn't animated under reduced motion (D12)"
 verify = "pnpm --filter @avel/web test -- test/kit"
 expected = "the locked tests pass"
 
@@ -371,7 +373,7 @@ context = [
 ]
 
 [[dispatch.task]]
-title = "Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, tokens only, plain props with no oRPC or router import"
+title = "Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import"
 verify = "pnpm --filter @avel/web test -- test/kit && ! grep -rn '@orpc\\|@tanstack/react-router\\|#[0-9a-fA-F]\\{6\\}' apps/web/src/kit"
 expected = "the locked tests pass; no line listed"
 
@@ -385,7 +387,7 @@ context = [
 ]
 
 [[dispatch.task]]
-title = "Review the w0-kit diff: every component is the library's with only section 4's changes"
+title = "Review the w0-kit diff: every component is the library's with only section 4's listed changes"
 verify = "pnpm --filter @avel/web test -- test/kit"
 expected = "the locked tests pass"
 
@@ -394,11 +396,11 @@ expected = "the locked tests pass"
 agent = "fenn"
 module = "decisions"
 role = "test-unit"
-domain = "The approval page's screen tests on the contract mock: UC-09 to UC-20."
+domain = "The approval page's screen tests on the contract mock: UC-11 to UC-28."
 territory = ["apps/web/test/modules/decisions/**"]
 after = ["agent-fenn-w0-data-test-unit"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 5 (the page, every state and copy string) and section 7 (UC-09 to UC-20)" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 5 (the page, every state, action and copy string) and section 7 (UC-11 to UC-28)" },
   { path = "docs/design/CR-W2 Pending decisions.md", why = "what route 54 must receive" },
 ]
 notes = [
@@ -406,9 +408,9 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "UC-09 to UC-20 as screen tests in apps/web/test/modules/decisions/"
+title = "UC-11 to UC-28 as screen tests in apps/web/test/modules/decisions/"
 priority = "P0"
-required = "Each carries its UC ID and fails first with an assertion, three runs in a row; UC-13 asserts exactly one request to route 54"
+required = "Each carries its UC ID and fails first with an assertion, three runs in a row; UC-15 asserts exactly one request to route 54; UC-19 and UC-22 assert the request ID on screen"
 verify = "for i in 1 2 3; do pnpm --filter @avel/web test -- test/modules/decisions 2>&1 | tail -5; done"
 expected = "the same assertion failures three times"
 
@@ -416,19 +418,19 @@ expected = "the same assertion failures three times"
 agent = "fenn"
 module = "decisions"
 role = "test-e2e"
-domain = "The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23."
+domain = "The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31."
 territory = ["apps/web/e2e/**", "apps/web/playwright.config.ts"]
 after = ["agent-fenn-w0-data-test-unit"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 5 and 7 (UC-21 to UC-23), and section 2's dev-only bump path" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump path, and D11 (the phone actions)" },
 ]
 
 [[dispatch.task]]
-title = "apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects) and UC-21 to UC-23"
+title = "apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects) and UC-29 to UC-31"
 priority = "P0"
 required = "Each carries its UC ID and fails first with an assertion"
 verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -15"
-expected = "the UC-21 to UC-23 tests fail on assertions"
+expected = "the UC-29 to UC-31 tests fail on assertions"
 
 [[dispatch]]
 agent = "leon"
@@ -438,7 +440,7 @@ domain = "The decisions module and its route: the approval page at /, exactly as
 territory = ["apps/web/src/modules/decisions/**", "apps/web/src/routes/index.tsx"]
 after = ["agent-ghost-w0-data-build", "agent-fantem-w0-kit-build"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 5: the route, layout, each row's props, deciding, errors, the list's states and all copy" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 5: the route, layout, each row's props, deciding, errors and their actions, the list's states, the contract version banner and all copy" },
   { path = "docs/design/CR-W2 Pending decisions.md", why = "the row you render and what route 54 takes" },
   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "What every module looks like, Data layer (writes), Rendering and SSR" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "the Decisions screen (its layout and copy)" },
@@ -447,14 +449,14 @@ context = [
 [[dispatch.task]]
 title = "api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader"
 priority = "P0"
-required = "The locked UC-09, UC-10 and UC-20 pass"
+required = "The locked UC-11, UC-12 and UC-26 pass"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/modules/decisions"
 expected = "typechecks; those tests pass"
 
 [[dispatch.task]]
-title = "Deciding (section 5.2) and every error and list state (sections 5.3 and 5.4)"
+title = "Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)"
 priority = "P0"
-required = "Every locked UC-09 to UC-23 passes; a stale version is never re-sent"
+required = "Every locked UC-11 to UC-31 passes; a stale version is never re-sent"
 verify = "pnpm --filter @avel/web test -- test/modules/decisions && pnpm --filter @avel/web exec playwright test"
 expected = "all locked tests pass"
 
@@ -483,7 +485,7 @@ context = [
 ]
 
 [[dispatch.task]]
-title = "Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client"
+title = "Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client beyond the count section 5 allows"
 verify = "pnpm --filter @avel/web test -- test/modules/decisions"
 expected = "the locked tests pass"
 
@@ -493,7 +495,7 @@ module = "decisions"
 role = "review-a11y-perf"
 domain = "Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light."
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 4, 5 and UC-23" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 4, 5 and UC-31" },
   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets (Decisions under 150 KB gzipped)" },
 ]
 

@@ -41,17 +41,17 @@ Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your 
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
-- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-06.
+- `agent-fenn-w0-data-test-unit`: The web's test config, and the data core's and the contract mock's tests: UC-01 to UC-07.
 - `agent-ghost-w0-data-build`: The web's data core (apps/web/src/data, apps/web/src/lib, apps/web/src/router.tsx) and the contract mock @avel/contract-mock for routes 52 to 54, exactly as UI contract sections 1 to 3 name them.
 - `agent-zero-w0-data-review-frontend`: Review the data core and the contract mock against UI contract sections 1 to 3.
 - `agent-brennan-w0-data-review-spec`: Review the contract mock and the data core against CR-W2 and UI contract sections 1 to 3.
 - `agent-zane-w0-data-review-security`: Review how the data core handles Idempotency-Key and X-Request-Id, and that the dev-only mock path never reaches a production build.
-- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-07 and UC-08.
+- `agent-fenn-w0-kit-test-unit`: The kit's component tests: UC-08 to UC-10.
 - `agent-fantem-w0-kit-build`: The kit components the page needs, ported from the design library with UI contract section 4's changes: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog, ErrorPanel, WidgetState and DecisionTag.
 - `agent-zero-w0-kit-review-frontend`: Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-w0-kit-review-spec`: Review the kit against UI contract section 4 and the design library.
-- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-09 to UC-20.
-- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-21 to UC-23.
+- `agent-fenn-decisions-test-unit`: The approval page's screen tests on the contract mock: UC-11 to UC-28.
+- `agent-fenn-decisions-test-e2e`: The approval page end to end with Playwright on AVEL_API=mock, phone and desk: UC-29 to UC-31.
 - `agent-leon-decisions-build`: The decisions module and its route: the approval page at /, exactly as UI contract section 5 gives it.
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
@@ -63,18 +63,18 @@ Do them in order. Finish each one, verified, before the next.
 
 ### BRENNAN-01: Data and API: section 1's interim, section 2's mock and section 5.3's error handling follow CR-W2 sections 2 to 6, m1's error map and D21, D23 and D25; nothing the page reads is derived on the client (P0)
 
-- **Verify:** `git show e36737f:packages/contract/src/errors.ts | grep -n 'STALE_VERSION\|INVALID_TRANSITION\|TOO_MANY_REQUESTS' && grep -n '^### 5\|^## 6' 'docs/design/CR-W2 Pending decisions.md'`
-- **Expected:** the three codes and CR-W2's route 54 and answers sections, each of which you've checked against the contract
+- **Verify:** `git show e36737f:packages/contract/src/errors.ts | grep -n 'STALE_VERSION\|INVALID_TRANSITION\|TOO_MANY_REQUESTS' && grep -n '^## [56]\.' 'docs/design/CR-W2 Pending decisions.md'`
+- **Expected:** the three codes, and CR-W2's '## 5. Route 54' and '## 6. Answers' headings, each of which you've checked against the contract
 
 ### BRENNAN-02: Design: every component, prop, state, copy string and token in sections 4 to 6 is the design library's, or is listed as a change with a decision behind it (P0)
 
-- **Verify:** `grep -c 'data-ui' 'docs/design/AVEL Enclosure Grid · Design library v1.1.html'`
-- **Expected:** a count; every data-ui name the contract uses is found in the library
+- **Verify:** `comm -23 <({ sed -n '/^| Component |/,/^$/p' docs/ui-contracts/decisions-approval-page.md | cut -d'|' -f3 | grep -oE '^ .[A-Z][A-Za-z]+.' | tr -dc 'A-Za-z\n'; grep -o 'data-ui="[A-Za-z]*' docs/ui-contracts/decisions-approval-page.md | cut -d'"' -f2; } | sort -u) <(grep -oE '(data-ui":"|dataUi:")[A-Za-z]*' 'docs/design/AVEL Enclosure Grid · Design library v1.1.html' | sed 's/.*"//' | sort -u)`
+- **Expected:** only DecisionsPage, the one name the contract marks † (not in the library), with its decision
 
-### BRENNAN-03: Scenarios: UC-01 to UC-23 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified (P1)
+### BRENNAN-03: Scenarios: UC-01 to UC-31 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified (P1)
 
 - **Verify:** `grep -o 'UC-[0-9][0-9]' docs/ui-contracts/decisions-approval-page.md | sort -u | wc -l`
-- **Expected:** 23
+- **Expected:** 31
 
 **Notes:**
 
@@ -82,6 +82,7 @@ Do them in order. Finish each one, verified, before the next.
 - m1's packages/contract is on branch backend/sprint-00/agent-axis-m1-contract-api-contract-a1 (e36737f) until it merges: git show e36737f:packages/contract/src/dto/decisions.ts and git show e36737f:packages/contract/src/errors.ts.
 - Each finding cites the contract's line (decisions-approval-page.md:N at your start commit), the source it breaks, and the command that shows it. Copy and props quoted from the design library are checked against the library's bundled source (grep the HTML).
 - Everything else in this sprint waits for this review to be merged.
+- Attempt a1 (report 05e0318, branch frontend/sprint-01/agent-brennan-approvals-uic-review-spec-a1) failed with 14 findings, approvals-uic-brennan-01 to -14. Read them with git show 05e0318:docs/agent-dispatch/frontend/sprint-01/findings/<file> (git show --stat 05e0318 lists them). The contract's Appendix A maps each to its answer; INT decided 01, 13 and 14 (decisions.md, Revision 2). In your report, say for each whether it's closed, and cite the line that closes it. A still-open one keeps its file name; a new finding is numbered from 15. What changed since a1: git diff a138cd6 "$AVEL_BASE" -- docs/ui-contracts/decisions-approval-page.md.
 
 ## 5. Territory
 
@@ -216,7 +217,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - BRENNAN-01: Data and API: section 1's interim, section 2's mock and section 5.3's error handling follow CR-W2 sections 2 to 6, m1's error map and D21, D23 and D25; nothing the page reads is derived on the client
 - BRENNAN-02: Design: every component, prop, state, copy string and token in sections 4 to 6 is the design library's, or is listed as a change with a decision behind it
-- BRENNAN-03: Scenarios: UC-01 to UC-23 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified
+- BRENNAN-03: Scenarios: UC-01 to UC-31 cover every done-when line in plan.toml and every row of sections 5.3 and 5.4, and each can be tested on the mock as specified
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-brennan-approvals-uic-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/approvals-uic-brennan-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
