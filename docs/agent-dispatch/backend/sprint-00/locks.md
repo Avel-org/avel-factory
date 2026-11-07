@@ -4,3 +4,4 @@ One lock per line: module · tests commit · paths (scripts/check_locks.py).
 
 - m3-docs · ae759fb · tools/docs/test/**
 - m2-db · 803b869 · packages/db/test/**
+- m1-contract · 6a61fb2 · packages/contract/test/**
