@@ -269,7 +269,7 @@ expected = "Vitest runs; the w0-data tests fail on assertions"
 title = "UC-01 to UC-07 as Vitest tests in apps/web/test/data/"
 priority = "P0"
 required = "Each carries its UC ID, fails first with an assertion, three runs in a row"
-verify = "for i in 1 2 3; do pnpm --filter @avel/web test -- test/data 2>&1 | tail -5; done"
+verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/data 2>&1 | tail -5; done"
 expected = "the same assertion failures three times"
 
 [[dispatch]]
@@ -303,14 +303,14 @@ notes = [
 title = "packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (BAD_REQUEST details { field, issues }, S1-3), both response headers, the idempotency rules, route 54's checks in CR-W2's order (check 1 the schema check only; the path's proposalId wins, S1-5), every request recorded (failed ones too), the dev-only bump and reset paths, and fixtures empty, step1 and many"
 priority = "P0"
 required = "The locked UC-01 to UC-03 pass"
-verify = "pnpm --filter @avel/contract-mock typecheck && pnpm --filter @avel/web test -- test/data"
+verify = "pnpm --filter @avel/contract-mock typecheck && pnpm --filter @avel/web exec vitest run test/data"
 expected = "typechecks; the locked tests pass"
 
 [[dispatch.task]]
 title = "apps/web/src/data and lib: createApiClient with its fetch wrapper (X-Request-Id, Idempotency-Key, NetworkError, the browser-only X-Contract-Version check) and decodeErrorBody as OpenAPILink's customErrorResponseBodyDecoder, createApi, bindApi, apiFor and useApi, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, ApiError, NetworkError and toUiError's four branches (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas, parsePendingPage (one page) and selectPendingPages (route 52's infinite select), formatAgo and formatClock; apps/web/src/router.tsx with getRouter (per request on the server, forwarding the incoming X-Request-Id)"
 priority = "P0"
 required = "The locked UC-01 and UC-04 to UC-07 pass, including UC-04's round trip: STALE_VERSION through createApiClient is stale, never conflict"
-verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/data"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/data"
 expected = "typechecks; the locked tests pass"
 
 [[dispatch]]
@@ -325,7 +325,7 @@ context = [
 
 [[dispatch.task]]
 title = "Review the w0-data diff: every export and UiError member as section 3 names it, the mock's surface as section 2 fixes it, no field derived on the client, nothing outside the territory"
-verify = "pnpm --filter @avel/web test -- test/data"
+verify = "pnpm --filter @avel/web exec vitest run test/data"
 expected = "the locked tests pass"
 
 [[dispatch]]
@@ -340,7 +340,7 @@ context = [
 
 [[dispatch.task]]
 title = "Review the w0-data diff: the mock's route 52 rows are CR-W2's, route 54's checks run in CR-W2's order with m1's error data, the interim schema matches CR-W2 sections 2.1 to 2.3 field for field"
-verify = "pnpm --filter @avel/web test -- test/data"
+verify = "pnpm --filter @avel/web exec vitest run test/data"
 expected = "the locked tests pass"
 
 [[dispatch]]
@@ -374,7 +374,7 @@ context = [
 title = "UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/"
 priority = "P0"
 required = "Queries by role, data-ui and text; each carries its UC ID and fails first with an assertion, three runs in a row"
-verify = "for i in 1 2 3; do pnpm --filter @avel/web test -- test/kit 2>&1 | tail -5; done"
+verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done"
 expected = "the same assertion failures three times"
 
 [[dispatch]]
@@ -396,14 +396,14 @@ notes = [
 title = "Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts"
 priority = "P0"
 required = "The locked UC-09 and UC-10 pass; every value is a token or DL's own literal for that element (section 0)"
-verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/kit"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit"
 expected = "typechecks; UC-08 passes"
 
 [[dispatch.task]]
 title = "DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library"
 priority = "P0"
 required = "The locked UC-08 passes; the stamp uses --av-d-punch, and the hole fill isn't animated under reduced motion (D12)"
-verify = "pnpm --filter @avel/web test -- test/kit"
+verify = "pnpm --filter @avel/web exec vitest run test/kit"
 expected = "the locked tests pass"
 
 [[dispatch]]
@@ -418,7 +418,7 @@ context = [
 
 [[dispatch.task]]
 title = "Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import"
-verify = "pnpm --filter @avel/web test -- test/kit && ! grep -rn '@orpc\\|@tanstack/react-router\\|#[0-9a-fA-F]\\{6\\}' apps/web/src/kit"
+verify = "pnpm --filter @avel/web exec vitest run test/kit && ! grep -rn '@orpc\\|@tanstack/react-router\\|#[0-9a-fA-F]\\{6\\}' apps/web/src/kit"
 expected = "the locked tests pass; no line listed"
 
 [[dispatch]]
@@ -432,7 +432,7 @@ context = [
 
 [[dispatch.task]]
 title = "Review the w0-kit diff: every component is the library's with only section 4's listed changes"
-verify = "pnpm --filter @avel/web test -- test/kit"
+verify = "pnpm --filter @avel/web exec vitest run test/kit"
 expected = "the locked tests pass"
 
 # ------------------------------------------------------------------ decisions: Fenn's tests, then Leon
@@ -455,7 +455,7 @@ notes = [
 title = "UC-11 to UC-28 as screen tests in apps/web/test/modules/decisions/"
 priority = "P0"
 required = "Each carries its UC ID and fails first with an assertion, three runs in a row; UC-15 asserts exactly one request to route 54; UC-19 and UC-22 assert the request ID on screen"
-verify = "for i in 1 2 3; do pnpm --filter @avel/web test -- test/modules/decisions 2>&1 | tail -5; done"
+verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/modules/decisions 2>&1 | tail -5; done"
 expected = "the same assertion failures three times"
 
 [[dispatch]]
@@ -494,14 +494,14 @@ context = [
 title = "api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader"
 priority = "P0"
 required = "The locked UC-11, UC-12 and UC-26 pass"
-verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/modules/decisions"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions"
 expected = "typechecks; those tests pass"
 
 [[dispatch.task]]
 title = "Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)"
 priority = "P0"
 required = "Every locked UC-11 to UC-31 passes; a stale version is never re-sent"
-verify = "pnpm --filter @avel/web test -- test/modules/decisions && pnpm --filter @avel/web exec playwright test"
+verify = "pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test"
 expected = "all locked tests pass"
 
 [[dispatch]]
@@ -530,7 +530,7 @@ context = [
 
 [[dispatch.task]]
 title = "Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client beyond the count section 5 allows"
-verify = "pnpm --filter @avel/web test -- test/modules/decisions"
+verify = "pnpm --filter @avel/web exec vitest run test/modules/decisions"
 expected = "the locked tests pass"
 
 [[dispatch]]

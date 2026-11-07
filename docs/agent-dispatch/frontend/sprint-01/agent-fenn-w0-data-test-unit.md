@@ -68,7 +68,7 @@ Do them in order. Finish each one, verified, before the next.
 ### FENN-02: UC-01 to UC-07 as Vitest tests in apps/web/test/data/ (P0)
 
 - **Required:** Each carries its UC ID, fails first with an assertion, three runs in a row
-- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web test -- test/data 2>&1 | tail -5; done`
+- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/data 2>&1 | tail -5; done`
 - **Expected:** the same assertion failures three times
 
 **Notes:**

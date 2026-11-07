@@ -404,3 +404,27 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **Zane's finding 02 (P2) is a W5 prerequisite:** the SSR client's `baseUrl` comes from the request's Host today; before W5 puts a real server behind a proxy, the server-side API origin comes from configuration or an allow-list, never from the request. W5's dispatch carries this.
 - **Zane's finding 03 (P3) is a follow-up:** a forwarded `X-Request-Id` is accepted only if it's a UUID or `[A-Za-z0-9-]{1,64}`; otherwise the wrapper makes a new one. Ghost's next data dispatch.
 - **Verify commands:** use `pnpm --filter @avel/web exec vitest run test/data`, since `test -- test/data` doesn't filter (Zero's and Brennan's notes); Zero fixes the plan in the next revision.
+
+## 2026-11-07: Revision 6 of the UI contract (what the merged w0-data settled)
+
+- **Input:** INT. w0-data merged (Ghost; Zero, Brennan and Zane PASS). Fold in Brennan's w0-data finding 01, Ghost's deviations 1 to 5 and the verify fix. I made it now, not later, because Leon builds the page against section 3 and 5.3 next.
+- **Brennan 01:** section 3 says the client is built over the route groups the web calls, from `@avel/contract`'s subpaths (D58): `webContract = { decisions }` in sprint-01.
+  - A module that needs another group adds it there.
+  - Nothing in `apps/web/src` imports the root `@avel/contract` at runtime.
+  - The budget is in section 8 (160 kB, entry above).
+- **Ghost's deviations, recorded as built:**
+  1. `ApiOptions.fetch` is `(request: Request, init?: RequestInit) => Promise<Response>`. `typeof fetch` didn't fit the mock's `fetch(request)` under `strict`.
+  2. `data/index.ts`, with named exports only, is the data core's entry for modules. `lib/time.ts` stays a direct import.
+  3. **`UiError` nulls:**
+     - `stale` has `field: string | null` and `currentVersion: number | string | null`. `rateLimited` has `retryAfterMs: number | null`.
+     - **What the page does with them, so Leon doesn't guess** (5.3, two new rows):
+       - a `stale` with no `currentVersion` is shown as `conflict`;
+       - a `rateLimited` with no `retryAfterMs` is shown as `server`.
+     - Both reuse existing copy. No new † strings.
+  4. A 4xx that the table doesn't name maps to `badRequest`, so it's never retried.
+  5. The mock answers an undecodable route 52 `cursor` with `BAD_REQUEST`, `{ field: "cursor", issues: [{ field: "cursor", message: "invalid cursor" }] }`. The message is provisional.
+- **Not folded in:** Ghost's deviations 6 to 12. INT named 1 to 5, and 6 to 12 are inside the mock and the client, not part of the contract's surface. Ghost's report keeps them.
+- **The verify fix:** every `pnpm --filter @avel/web test -- test/<dir>` in `plan.toml` is now `pnpm --filter @avel/web exec vitest run test/<dir>`, because `test -- <dir>` doesn't filter. Re-rendered.
+- **No new scenarios:** UC-01 to UC-31 are unchanged. Fenn's decisions tests are locked (dcd0468), and the two null rows are for malformed answers only.
+
+- **Revision 6 has no separate review (INT).** It records Ghost's reviewed data core and adds two 5.3 error rows; no scenario or locked test changes. Brennan's decisions review-spec checks Leon's page against revision 6, so a gap surfaces there.

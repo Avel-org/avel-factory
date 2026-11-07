@@ -63,7 +63,7 @@ Do them in order. Finish each one, verified, before the next.
 ### FENN-01: UC-11 to UC-28 as screen tests in apps/web/test/modules/decisions/ (P0)
 
 - **Required:** Each carries its UC ID and fails first with an assertion, three runs in a row; UC-15 asserts exactly one request to route 54; UC-19 and UC-22 assert the request ID on screen
-- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web test -- test/modules/decisions 2>&1 | tail -5; done`
+- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/modules/decisions 2>&1 | tail -5; done`
 - **Expected:** the same assertion failures three times
 
 **Notes:**

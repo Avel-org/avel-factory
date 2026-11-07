@@ -61,7 +61,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### BRENNAN-01: Review the w0-kit diff: every component is the library's with only section 4's listed changes (P1)
 
-- **Verify:** `pnpm --filter @avel/web test -- test/kit`
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit`
 - **Expected:** the locked tests pass
 
 ## 5. Territory

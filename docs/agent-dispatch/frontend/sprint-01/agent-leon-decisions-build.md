@@ -65,13 +65,13 @@ Do them in order. Finish each one, verified, before the next.
 ### LEON-01: api.ts (route 52's infiniteOptions with parsePendingPage, route 54's mutation with the key in the client context), decisions.ts (section 5.1's row mapping), screens/DecisionsScreen.tsx, index.ts, screens.ts, and routes/index.tsx with ssr true and the loader (P0)
 
 - **Required:** The locked UC-11, UC-12 and UC-26 pass
-- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/modules/decisions`
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions`
 - **Expected:** typechecks; those tests pass
 
 ### LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5) (P0)
 
 - **Required:** Every locked UC-11 to UC-31 passes; a stale version is never re-sent
-- **Verify:** `pnpm --filter @avel/web test -- test/modules/decisions && pnpm --filter @avel/web exec playwright test`
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test`
 - **Expected:** all locked tests pass
 
 ## 5. Territory

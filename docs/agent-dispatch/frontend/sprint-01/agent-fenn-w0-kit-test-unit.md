@@ -63,7 +63,7 @@ Do them in order. Finish each one, verified, before the next.
 ### FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/ (P0)
 
 - **Required:** Queries by role, data-ui and text; each carries its UC ID and fails first with an assertion, three runs in a row
-- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web test -- test/kit 2>&1 | tail -5; done`
+- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done`
 - **Expected:** the same assertion failures three times
 
 ## 5. Territory

@@ -62,7 +62,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import (P1)
 
-- **Verify:** `pnpm --filter @avel/web test -- test/kit && ! grep -rn '@orpc\|@tanstack/react-router\|#[0-9a-fA-F]\{6\}' apps/web/src/kit`
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && ! grep -rn '@orpc\|@tanstack/react-router\|#[0-9a-fA-F]\{6\}' apps/web/src/kit`
 - **Expected:** the locked tests pass; no line listed
 
 ## 5. Territory

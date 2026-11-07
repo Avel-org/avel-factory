@@ -63,13 +63,13 @@ Do them in order. Finish each one, verified, before the next.
 ### FANTEM-01: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1): DL's, with section 4's props, exported by name from apps/web/src/kit/index.ts (P0)
 
 - **Required:** The locked UC-09 and UC-10 pass; every value is a token or DL's own literal for that element (section 0)
-- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test -- test/kit`
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit`
 - **Expected:** typechecks; UC-08 passes
 
 ### FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library (P0)
 
 - **Required:** The locked UC-08 passes; the stamp uses --av-d-punch, and the hole fill isn't animated under reduced motion (D12)
-- **Verify:** `pnpm --filter @avel/web test -- test/kit`
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit`
 - **Expected:** the locked tests pass
 
 **Notes:**

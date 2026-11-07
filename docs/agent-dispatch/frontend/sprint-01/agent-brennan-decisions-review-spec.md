@@ -62,7 +62,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### BRENNAN-01: Review the decisions diff: approve what you saw (the body from the drawn row), a stale version never re-sent, nothing derived on the client beyond the count section 5 allows (P1)
 
-- **Verify:** `pnpm --filter @avel/web test -- test/modules/decisions`
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/modules/decisions`
 - **Expected:** the locked tests pass
 
 ## 5. Territory

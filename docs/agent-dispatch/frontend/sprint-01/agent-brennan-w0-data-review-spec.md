@@ -62,7 +62,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### BRENNAN-01: Review the w0-data diff: the mock's route 52 rows are CR-W2's, route 54's checks run in CR-W2's order with m1's error data, the interim schema matches CR-W2 sections 2.1 to 2.3 field for field (P1)
 
-- **Verify:** `pnpm --filter @avel/web test -- test/data`
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/data`
 - **Expected:** the locked tests pass
 
 ## 5. Territory

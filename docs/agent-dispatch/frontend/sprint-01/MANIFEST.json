@@ -2,8 +2,8 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "ea4e62f437bb0c7b62bc6aba8583c34a3c37fa75aedbe420bb20e187db2030c7",
-  "packageSha256": "d235bbeb95203cf8e00746cde581f04bada5b05cb2e52d1bb628960c81c103f7",
+  "planSha256": "8eb74fb99c627b9e4a9017beb6f88c5fc8bd3949e0ab3733521478582c11bac7",
+  "packageSha256": "20a06989ffe3353aac85958f65a58d91b940449cce7a7825a6691c04a9332ab7",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
@@ -26,8 +26,8 @@
     {
       "path": "agent-brennan-decisions-review-spec.md",
       "kind": "task_doc",
-      "sha256": "1b4f8286b7eaec34744014a1eb2f44ff46f3a5a16c83881a3a0625a2fa8e1fea",
-      "bytes": 11519
+      "sha256": "bd7008af73bc84b27fcdd30c88d5607bfe56c5086e1196b6d5f9e23fe5bcf8d0",
+      "bytes": 11527
     },
     {
       "path": "agent-brennan-w0-app-review-spec.md",
@@ -38,20 +38,20 @@
     {
       "path": "agent-brennan-w0-data-review-spec.md",
       "kind": "task_doc",
-      "sha256": "863e961d17350f034d18b510d005c1cc4cb7832bc9a0b0281cb820d94b57d6d2",
-      "bytes": 11523
+      "sha256": "306d95b477e973f709cfdd87d87ae650a156a1e32791e687dd07a68bb3563451",
+      "bytes": 11531
     },
     {
       "path": "agent-brennan-w0-kit-review-spec.md",
       "kind": "task_doc",
-      "sha256": "afd3eed228429f12672af91a159dfb263201e1e215ec14a98e3f202aa6a28ac1",
-      "bytes": 11216
+      "sha256": "9feaebd132a835d62e74f4ddd91d981fb7a1cef347675e92ab9e60107cadd520",
+      "bytes": 11224
     },
     {
       "path": "agent-fantem-w0-kit-build.md",
       "kind": "task_doc",
-      "sha256": "f2bc6d4cf20150e61ad006975a3a274a154d7f244f07c90d05a58f88644bcfd7",
-      "bytes": 12576
+      "sha256": "0cca6a6367c44df1f0cfae95cd4867ff6a0f763cbc94641fa65cc7b657f6553d",
+      "bytes": 12592
     },
     {
       "path": "agent-fenn-decisions-test-e2e.md",
@@ -62,26 +62,26 @@
     {
       "path": "agent-fenn-decisions-test-unit.md",
       "kind": "task_doc",
-      "sha256": "de33e8960622a791af0d0c03424fed64d296545f868a39ae576906e0e8bbadd7",
-      "bytes": 11641
+      "sha256": "c6dfc0a256f46dd3121bf850266e3ec14f1e8fc13f2776bcb0d6021f3b9ffbb4",
+      "bytes": 11649
     },
     {
       "path": "agent-fenn-w0-data-test-unit.md",
       "kind": "task_doc",
-      "sha256": "670bc2246f3eb4f427a1c0949d2eecfa09a792fc38ee5fa1220665433c2bdba7",
-      "bytes": 12509
+      "sha256": "7e0ace949df56cfa6db447c8a815edac0c07c45a6440cb45aa3227038c5cfd2d",
+      "bytes": 12517
     },
     {
       "path": "agent-fenn-w0-kit-test-unit.md",
       "kind": "task_doc",
-      "sha256": "4cf3a90fac7f465266d23dc17d5639d32468d192b133abbe70eeabaef77f7e82",
-      "bytes": 11445
+      "sha256": "bd47b5949876e9118937606576ddfeac962ab566b53e64fbf1a628343f85b991",
+      "bytes": 11453
     },
     {
       "path": "agent-ghost-w0-data-build.md",
       "kind": "task_doc",
-      "sha256": "2a70502b1770473de3b873d06a3f40a41c3d469bfd0550d9e6f9a75f1d2c3d92",
-      "bytes": 16077
+      "sha256": "53be13410f235a7b584eef8fe1cb8effb408cb587ca42748ade1058be28fd2be",
+      "bytes": 16093
     },
     {
       "path": "agent-leah-decisions-review-a11y-perf.md",
@@ -92,8 +92,8 @@
     {
       "path": "agent-leon-decisions-build.md",
       "kind": "task_doc",
-      "sha256": "0b1908c9095bd9def83159a57b667227fa0f7eb4934f24ceb205735b5c00f44d",
-      "bytes": 12819
+      "sha256": "17edefa8ea63205d01cd6fb00515228df3588fdfe44580e20a36b3d6776229f4",
+      "bytes": 12835
     },
     {
       "path": "agent-nemi-w0-app-build.md",
@@ -134,8 +134,8 @@
     {
       "path": "agent-zero-w0-data-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "901397a31b6e783ff80f3efea63e3d905497f884b40121de8e803a2ca0cd7c2b",
-      "bytes": 11476
+      "sha256": "ebe8de35a221ff9f1a1e44ae0dff29e1c6606b978f0cc97e377bc7537147cc93",
+      "bytes": 11484
     },
     {
       "path": "agent-zero-w0-fonts-review-frontend.md",
@@ -146,8 +146,8 @@
     {
       "path": "agent-zero-w0-kit-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "83984c7961e57508cf5ad4156d7f1fcd1a0957b862fd56dfed05baf14a15268f",
-      "bytes": 11516
+      "sha256": "d92566e32185eac5882c60ceef719546f658fa3a8b56c8232485e5fb077275b6",
+      "bytes": 11524
     },
     {
       "path": "codebase-analysis.md",

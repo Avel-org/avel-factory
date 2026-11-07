@@ -1,6 +1,6 @@
 # UI contract: the approval page (frontend sprint-01, Step 1)
 
-Zero, 2026-11-06. Status: **revision 5, for Brennan's re-review** (`agent-brennan-approvals-uic-review-spec`, a5). Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
+Zero, 2026-11-06. Status: **revision 6**. Revision 5 passed Brennan's a5. Revision 6 records what the merged w0-data build settled (Decisions, "Revision 6"): Brennan's w0-data finding 01 (the client is built over the `{ decisions }` route group) and Ghost's deviations 1 to 5. Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
 
 This is the one document the sprint's builders and test writer work from:
 - Nemi: the app and tokens.
@@ -166,6 +166,7 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 - **What it lists:** open proposals with `expiresAt > now`, and every factory PR.
 - **Order:** oldest first, by `createdAt` and then `ref`.
 - **Paging:** `limit` must be 1 to 100. m1's `PageQuery` refuses anything else with `BAD_REQUEST`; there's no clamping (D23). `nextCursor` is opaque.
+  - **A `cursor` the mock can't decode** gives `BAD_REQUEST`, `{ field: "cursor", issues: [{ field: "cursor", message: "invalid cursor" }] }`, in S1-3's shape. The message is the mock's, **provisional**. The page never shows it.
   - **With no `limit`, the mock serves 50.** This is **provisional**: m1's `PageQuery` has no default, and no source gives one (finding 25; Decisions, "Revision 4"). Axis confirms or changes it in the Step 1 slice. The page always sends `limit` 50 (section 5), and no scenario relies on the default.
 - **Each item is the CR-W2 row:**
   - `ref` is `proposal:<id>` or `factory_change:<prNumber>`;
@@ -193,7 +194,7 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 
 | Export | From | What |
 | --- | --- | --- |
-| `createApiClient(opts?: ApiOptions)`, with `ApiOptions = { fetch?: typeof fetch; baseUrl?: string; contractVersion?: string; requestId?: string }` | `data/client.ts` | `createORPCClient` with `OpenAPILink` over `@avel/contract` (FM, Data layer). The link's `url` is `baseUrl`: by default `window.location.origin` in the browser, and required on the server. Its `fetch` is the wrapper below, and its `customErrorResponseBodyDecoder` is `decodeErrorBody` ("Reading an error") |
+| `createApiClient(opts?: ApiOptions)`, with `ApiOptions = { fetch?: (request: Request, init?: RequestInit) => Promise<Response>; baseUrl?: string; contractVersion?: string; requestId?: string }` | `data/client.ts` | `createORPCClient` with `OpenAPILink` over **the contract's route groups the web calls**, imported from `@avel/contract`'s subpath exports (backend D58): `webContract = { decisions }` (`@avel/contract/routes/decisions`) in sprint-01 (FM, Data layer). A module that calls another group adds that group to `webContract`. Nothing under `apps/web/src` imports the root `@avel/contract` at runtime, so the first load stays inside the budget (section 8). `fetch` takes a `Request`, so both `globalThis.fetch` and the mock's `fetch` fit (section 2). The link's `url` is `baseUrl`: by default `window.location.origin` in the browser, and required on the server. Its `fetch` is the wrapper below, and its `customErrorResponseBodyDecoder` is `decodeErrorBody` ("Reading an error") |
 | | | **The fetch wrapper** is the only place the client sets headers. On every request it sets `X-Request-Id` to `requestId` when given, else to a new UUID. On a write it sets `Idempotency-Key` from the call's client context (`{ context: { idempotencyKey } }`; the link passes the context to `fetch`). Then it calls `opts.fetch ?? globalThis.fetch` |
 | | | **If that fetch rejects,** the wrapper throws `NetworkError` carrying the ID it sent. **If a response has no `X-Request-Id`,** the wrapper returns it with the sent ID in that header. So every response the link reads carries a request ID (finding 23) |
 | | | **The contract check, in the browser only:** the wrapper compares each response's `X-Contract-Version` with `contractVersion` (default `BUILT_CONTRACT_VERSION`). When the header is present and differs, it sets the mismatch store. When it's absent, nothing happens. On the server the check is skipped: the store is a module store, which the server would share across requests |
@@ -203,6 +204,7 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 | `useContractMismatch(): { serverVersion: string } \| null` | `data/contract-version.ts` | Reads the mismatch store (`useSyncExternalStore`). Null until the first mismatch, then fixed until reload |
 | `newIdempotencyKey(): string` | `data/idempotency.ts` | `crypto.randomUUID()`, made once per user intent (FM 206) |
 | `toUiError(e: unknown): UiError` | `data/errors.ts` | The only error mapper (FM, Errors by code), below |
+| (the data core's entry) | `data/index.ts` | Named exports only. Modules import the data core only through it (FM, What every module looks like). `lib/time.ts` is imported directly |
 | `decodeErrorBody`, `ApiError`, `NetworkError` | `data/errors.ts` | Below, "Reading an error" |
 | `createQueryClient(opts?: { retryDelay?: number }): QueryClient` | `data/query.ts` | **Queries:** `staleTime` 30s (FM's freshness table, "reconnecting or down", because sprint-01 has no stream); refetch on focus and on reconnect; retry up to 3 times, only on `network` and `server` |
 | | | **The retry delay:** TanStack's default unless `retryDelay` is given (in ms). Screen tests pass `0`; the page never does |
@@ -225,7 +227,7 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 **Reading an error.** The wire body is m1's `ErrorBody`, not oRPC's error JSON (Axis, S1-3). Left alone, oRPC's client guesses the code from the status, so a 409 `STALE_VERSION` would arrive as `CONFLICT`. So the body is decoded **once, at the link** (Decisions, "Revision 4"; it replaces revision 3's reading of `e.data.body` in `toUiError`):
 - **`decodeErrorBody(body: unknown, response: { status: number }): ApiError | null`** is the link's `customErrorResponseBodyDecoder`.
   - `@orpc/openapi-client` 1.16.2 calls it with the deserialized body and the response before its own error decoding, and throws what it returns (`dist/shared/openapi-client.DgkI_tTF.mjs`, `#decodeResponse`). If the installed version differs, Ghost stops and reports under Deviations.
-  - If `ErrorBody.safeParse(body)` succeeds (`ErrorBody` from `@avel/contract`), it returns `new ApiError(body, response.status)`. Otherwise it returns null, and oRPC throws its own `ORPCError`, with a code guessed from the status and `e.data = { status, headers, body }`.
+  - If `ErrorBody.safeParse(body)` succeeds (`ErrorBody` from `@avel/contract/errors`), it returns `new ApiError(body, response.status)`. Otherwise it returns null, and oRPC throws its own `ORPCError`, with a code guessed from the status and `e.data = { status, headers, body }`.
   - When the Step 1 contract exports `parseErrorBody(status, body)` (S1-3), it replaces the `safeParse` here, and nothing else changes.
 - **`ApiError`** extends `ORPCError`: `code` = `body.code`, `status` = the HTTP status, `message` = `body.message`, and `data = { details: body.details, requestId: body.requestId }`.
 - **`NetworkError`** extends `TypeError`, with `requestId: string` (the ID sent) and `cause` (what `fetch` threw). Only the fetch wrapper throws it.
@@ -240,13 +242,13 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 
 | `kind` | When | Extra fields |
 | --- | --- | --- |
-| `stale` | 409 `STALE_VERSION` | `field`, `currentVersion` |
+| `stale` | 409 `STALE_VERSION` | `field: string \| null`, `currentVersion: number \| string \| null` (null when `details` isn't D21's shape) |
 | `notAllowedNow` | 422 `INVALID_TRANSITION` | `state?: 'resolved' \| 'expired'` (when `details.state` is sent) |
 | `notFound` | 404 (any code) | |
-| `badRequest` | 400 | `field?: string` (from `details.field`) |
+| `badRequest` | 400, and any 4xx not named in this table (405, 410, 413, …), so it's never retried | `field?: string` (from `details.field`, when it's a string) |
 | `signedOut` | 401 | |
 | `forbidden` | 403 (any code) | `message` |
-| `rateLimited` | 429 | `retryAfterMs` (from `details.retryAfterMs`) |
+| `rateLimited` | 429 | `retryAfterMs: number \| null` (from `details.retryAfterMs`; null when it isn't sent, for example a 429 that isn't an `ErrorBody`) |
 | `idempotencyConflict` | 409 `IDEMPOTENCY_KEY_REUSED` | |
 | `inProgress` | 409 `IDEMPOTENCY_IN_PROGRESS` | |
 | `conflict` | 409, any other code (`CONFLICT`, `ALREADY_EXISTS`, …) | `message` |
@@ -427,6 +429,7 @@ The one exception is section 3's fourth branch (a response body the link can't r
 
 | `kind` | What the row does | Action |
 | --- | --- | --- |
+| `stale` with `currentVersion` null | As `conflict` below: without the version there's nothing to review. m1's `STALE_VERSION` always sends it (D21), so only a malformed answer gets here | as `conflict` |
 | `stale` | `state: "stale"`; binding struck; `staleNote: "Version {currentVersion} arrived while you were reading."`; `staleAction: "Review version {currentVersion}"` (DL's B-2 specimen copy) | **Review** refetches route 52, and the row comes back with the new version in `seen`. **Nothing is re-sent, ever** (FM, In short, item 5). If the row is gone after the refetch, the list shows `That decision was settled elsewhere.`† (`role="status"`) |
 | `notAllowedNow` | `state: "notAllowed"`, with `notAllowedReason` set by `state`: | `onRefresh`: `Refresh list`† refetches route 52. A row the refetch still lists comes back from the server in `seen`, as `stale`'s does: the page keeps no state the server doesn't send |
 | | `state` resolved: `This decision was already made.`† | |
@@ -437,6 +440,7 @@ The one exception is section 3's fourth branch (a response body the link can't r
 | `badRequest`, other | `inlineError`: `ErrorPanel` compact, code 400, DL's 400 title and body | `Reload` (DL) reloads the page |
 | `signedOut` | A page-level `ErrorPanel` code 401, DL's title and body (DL's 401 body is generic: "Your session ended…") | none: there's no `/login` in sprint-01 (E1) |
 | `forbidden` | `inlineError`: `ErrorPanel` compact, code 403, title `Not allowed` (DL), `body` = `message` | none (E1) |
+| `rateLimited` with `retryAfterMs` null | As `server`: there's no time to count down | as `server` |
 | `rateLimited` | Back to `seen`; `actionsDisabledReason: "Retry in {s}s"` (DL 429 copy), counting down each second from `retryAfterMs`; at 0 the buttons come back | Nothing is re-sent automatically |
 | `idempotencyConflict` | `inlineError`: `ErrorPanel` compact, code 400, DL's 400 title and body (FM: "a bug report, not a user message") | `Reload` (DL) reloads the page |
 | `inProgress` | Stay `approving` or `rejecting`; re-send with the same key after 500ms, 1s and 2s; then as `network`, with the last request's ID | — |
@@ -607,3 +611,14 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 | 26 Route 52's infinite `select` | P3 | Sections 1 and 3: `parsePendingPage` parses one page; `selectPendingPages` joins the loaded pages (rows in page order, `unreadable` summed, the last page's `nextCursor`). UC-26 asserts the sum across pages |
 | 27 Scenario gaps | P3 | UC-20: `IDEMPOTENCY_IN_PROGRESS` running out, with fake timers (5.3 names the last request's ID). UC-23: a 401 on route 54 and on route 52's first load |
 | 28 UC-17's Refresh list | P3 | UC-17: the `failNext` cases `resolve` or `expire` first, so every case drops the row; a `failNext` alone shows the row back in `seen`. 5.3's `notAllowedNow` (and so `notFound`) says a row still listed comes back in `seen` |
+
+**Revision 6: what the merged w0-data settled** (Decisions, "Revision 6"):
+
+| Source | Answered in |
+| --- | --- |
+| Brennan's w0-data finding 01 (P3): the client over `{ decisions }` | Section 3, `createApiClient` |
+| Ghost's deviation 1: `ApiOptions.fetch` takes a `Request` | Section 3, `createApiClient` |
+| Ghost's deviation 2: `data/index.ts` | Section 3's table |
+| Ghost's deviation 3: nullable `stale` and `rateLimited` fields | Section 3's `UiError` table; 5.3's two rows for a null value |
+| Ghost's deviation 4: other 4xx are `badRequest` | Section 3's `UiError` table |
+| Ghost's deviation 5: an undecodable cursor | Section 2, route 52 |

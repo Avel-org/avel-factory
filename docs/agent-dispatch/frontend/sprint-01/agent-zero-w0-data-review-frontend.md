@@ -62,7 +62,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### ZERO-01: Review the w0-data diff: every export and UiError member as section 3 names it, the mock's surface as section 2 fixes it, no field derived on the client, nothing outside the territory (P1)
 
-- **Verify:** `pnpm --filter @avel/web test -- test/data`
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/data`
 - **Expected:** the locked tests pass
 
 ## 5. Territory
