@@ -19,8 +19,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "generate": "drizzle-kit generate",
-    "migrate:up": "node src/migrate.ts up",
-    "migrate:down": "node src/migrate.ts down"
+    "migrate:up": "node --experimental-strip-types src/migrate.ts up",
+    "migrate:down": "node --experimental-strip-types src/migrate.ts down"
   },
   "dependencies": {
     "@avel/contract": "workspace:*",
