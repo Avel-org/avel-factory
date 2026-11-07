@@ -458,3 +458,15 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
   - **The kit's reviews** re-run on a2 at INT's call.
 - **No new scenarios.** UC-29's inline-selector count is part of Fenn's fix round.
 
+
+## 2026-11-07: Revision 8 of the UI contract (Fantem's w0-kit a2, deviation 1)
+
+- **Input:** INT. Fantem's w0-kit a2 is DONE (report d3535b1, build 4f0cf1c). INT asked me to add D12's stamp animation to section 4's "What stays inline" and log it here.
+- **Deviation 1, accepted:** D12's stamp keeps one inline declaration, `animation: av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both`.
+  - **Why:** the locked UC-08 test `approved (D12): the stamp's animation reads --av-d-punch` checks `card.outerHTML` for `--av-d-punch`, and a stylesheet value can't appear in the HTML.
+  - **It's revision 7's own rule** ("the values the locked kit tests read from the element"). The list after it missed this one.
+  - **The rest of the stamp** (position, border, type, `rotate(-7deg)`) is in `kit.css`. The hole fill's animation stays in `kit.css`, held still under reduced motion (D12 unchanged).
+- **The change:** section 4's "What stays inline" now names D11's grid, D6's strike and D12's stamp animation. Nothing else in the contract changes.
+- **Leon (decisions a2):** route `/`'s `head` must link `kitStylesheetHref` through `decisionsScreenStylesheets`, or the kit draws unstyled. LEON-03 and section 5 ("Styles and loading") already require it, so his task doc doesn't change.
+- **No new scenarios, no locked test changes, no re-render:** no task's paths or verify commands change. My w0-kit a2 review checks the kit against revision 8.
+- **A separate contract review is INT's call.** My view is that none is needed, as with revision 6: it records a reviewed build's deviation and widens a list by one item that a locked test already requires.
