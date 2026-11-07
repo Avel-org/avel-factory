@@ -1,0 +1,45 @@
+{
+  "renderer": "scripts/render.py (minimal, CR-16)",
+  "team": "backend",
+  "sprint": "sprint-01",
+  "planSha256": "9c97c0c210b7e7401b7ed4fc7b6778710ca6b528df704137b8d8841a9eaec90e",
+  "packageSha256": "28d00979c0738d369b6f949c02f2ed7464d49adc1df236c929ada5a8af687835",
+  "files": [
+    {
+      "path": "DISPATCH-PROMPTS.md",
+      "kind": "prompts_archive",
+      "sha256": "f9b8c4c48a7c9288c7feaab08611f2590c9f1cc0dcd8778abf149489e63c3f99",
+      "bytes": 4839
+    },
+    {
+      "path": "DISPATCH.md",
+      "kind": "dispatch_md",
+      "sha256": "77cb8872c861200d8feeac176505dba6d206585d0ba94727a40b821604ef4fa5",
+      "bytes": 3497
+    },
+    {
+      "path": "agent-axis-zod-mini-api-contract.md",
+      "kind": "task_doc",
+      "sha256": "48861bbda8932e7ae59b557fc28b296235ba3b36e771bc62cfcbc9e3c5e5b766",
+      "bytes": 10302
+    },
+    {
+      "path": "agent-brennan-zod-mini-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "81d239313609a5a66e4aa9766212c67bf3348f4a5036cbeecc9423f0907bc7a9",
+      "bytes": 8947
+    },
+    {
+      "path": "agent-rigg-zod-mini-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "ba0f091286a992fd3a987920d535322be99705a72e7ac5db077c37b402bab83e",
+      "bytes": 11101
+    },
+    {
+      "path": "codebase-analysis.md",
+      "kind": "codebase_analysis",
+      "sha256": "456d39b8dd6efd08d369e320ca3844f88bbabe8ff063d76a3dee20036a90438c",
+      "bytes": 2207
+    }
+  ]
+}
