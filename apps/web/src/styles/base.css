@@ -1,0 +1,26 @@
+/* biome-ignore-all format: a copy of the design library's Base element defaults, kept character for character. */
+/* The design library v1.1's "Base element defaults" block, word for word: every rule from that comment up
+   to its "AVEL field anatomy" comment (UI contract section 6). It loads after tokens.css. Don't edit it
+   here: change the library and copy it again. */
+
+/* Base element defaults. The theme attribute is set on <html> by the server before first paint. */
+html { background: var(--av-floor); }
+body {
+  margin: 0;
+  background: var(--av-floor);
+  color: var(--av-ink);
+  font-family: var(--av-font-sans);
+  font-size: var(--av-fs-body);
+  line-height: var(--av-lh-body);
+  font-weight: var(--av-weight-body);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a { color: var(--av-accent); text-decoration: none; }
+a:hover { color: var(--av-accent-hover); text-decoration: underline; text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--av-focus-ring); outline-offset: 2px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--av-field-focus); outline-offset: 1px; }
+::selection { background: var(--color-text-selection); color: var(--av-ink); }
+button, input, textarea, select { font: inherit; color: inherit; }
+code, kbd, samp { font-family: var(--av-font-mono); }

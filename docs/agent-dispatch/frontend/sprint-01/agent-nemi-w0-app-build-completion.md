@@ -179,12 +179,32 @@ none
 - **Zane:** the dependency table is under Contract to files. A production build made with `AVEL_API=mock` set was checked for `__mock`, `contract-mock` and `MOCK_OPERATOR_ID`'s value: none found.
 - **Leah:** only Inter Variable (48 KB WOFF2) is preloaded. The stand-in build's client entry was one JS chunk. The real numbers come with Leon's route.
 
+## After review
+- **2026-11-07, INT (Zero's w0-app review, Issues, b13979f; UI contract section 6 on main, bc4aafa):** the design library's `Base element defaults` block is copied word for word into the new `apps/web/src/styles/base.css`. That's every rule from its comment up to `AVEL field anatomy`:
+  - `html` and `body` background `var(--av-floor)`;
+  - `body` ink `var(--av-ink)`, type, and font smoothing;
+  - links and their hover;
+  - focus rings;
+  - selection;
+  - form and code inheritance.
+- **Load order:** `app.css` imports it after `tokens.css`. It's unlayered, so it follows Tailwind's preflight. This closes Limitations 6.
+- **One extra line:** a `biome-ignore-all format` comment at the top, as in `tokens.css`, so Biome keeps the library's text as it is.
+- **Checks:**
+  - the block is in `base.css` verbatim, and declares 0 custom properties;
+  - NEMI-02's check: 533 library tokens, 0 missing (unchanged);
+  - `biome check --css-parse-tailwind-directives=true apps/web`: clean, 8 files;
+  - `pnpm lint`: the same 3 `@theme` errors in `tokens.css` as before, waiting on the root `biome.json`. My branch starts before INT's e5d4484;
+  - compiling `app.css` with Tailwind puts the `html` and `body` rules after the tokens, unlayered;
+  - `pnpm --filter "@avel/web..." build`: `packages/contract` builds, and `apps/web` still stops on Ghost's missing `src/router.tsx` (Limitations 1).
+- **Files changed:** `apps/web/src/styles/base.css` (new) and `apps/web/src/styles/app.css` (one import, and its comment).
+
 ## Files changed
 ```
 apps/web/.gitignore
 apps/web/package.json
 apps/web/src/routes/__root.tsx
 apps/web/src/styles/app.css
+apps/web/src/styles/base.css
 apps/web/src/styles/fonts.css
 apps/web/src/styles/fonts/ibm-plex-mono-400.woff2
 apps/web/src/styles/fonts/ibm-plex-mono-500.woff2
