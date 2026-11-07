@@ -16,7 +16,9 @@ test("UC-29: / is server-rendered with its rows, and approving a proposal with a
   expect(ssr.status()).toBe(200);
   const html = await ssr.text();
   expect(html, "the page root is in the first HTML").toContain('data-ui="DecisionsPage"');
-  expect(html.match(/data-ui="DecisionTag"/g)?.length, "four rows in the first HTML").toBe(4);
+  // Elements, not attribute text: the kit's inline <style> also holds [data-ui="DecisionTag"] selectors.
+  const tags = html.match(/<article\b[^>]*\bdata-ui="DecisionTag"/g);
+  expect(tags?.length, "four rows in the first HTML").toBe(4);
   expect(html).toContain("4 things need you.");
   expect(html, "no loading state on first paint").not.toContain('data-ui="WidgetState"');
 
