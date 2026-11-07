@@ -61,7 +61,7 @@ importers:
         version: 4.6.7
     devDependencies:
       '@avel/contract-mock':
-        specifier: link:../../packages/contract-mock
+        specifier: workspace:*
         version: link:../../packages/contract-mock
       '@playwright/test':
         specifier: 1.65.0
@@ -100,6 +100,21 @@ importers:
   packages/contract:
     dependencies:
       '@orpc/contract':
+        specifier: 1.16.2
+        version: 1.16.2
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  packages/contract-mock:
+    dependencies:
+      '@avel/contract':
+        specifier: workspace:*
+        version: link:../contract
+      '@orpc/openapi':
+        specifier: 1.16.2
+        version: 1.16.2
+      '@orpc/server':
         specifier: 1.16.2
         version: 1.16.2
       zod:
