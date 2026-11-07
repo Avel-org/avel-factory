@@ -932,3 +932,39 @@ button[data-ui="Button"][data-variant="link"][data-hovered] {
   line-height: var(--av-lh-title);
   transform: rotate(-7deg);
 }
+
+/* ---- K1. Touch sizes on a phone (UI contract section 4, revision 9). DL sets these through
+   [data-density="phone"], which nothing in sprint-01 sets, and ReasonDialog draws in a portal on
+   body, outside any page element. So they're keyed on the page's phone width, with DL's tokens
+   only: --av-touch-min (44px) and --av-phone-body (16px). At 900px and over nothing changes. ---- */
+@media (max-width: 899px) {
+  /* Every Button (an anchor in the Button's look, D9's link, included) is at least 44px tall.
+     [data-variant] matches the link variant's own min-height rule, which it follows. */
+  [data-ui="Button"][data-variant] {
+    min-height: var(--av-touch-min);
+  }
+
+  /* HashChip's copy button and the dialog's Close button keep DL's drawn size; a transparent hit
+     area, centred on each and at least 44px square, takes the tap, so no row or chip gets taller. */
+  .av-hash-copy,
+  .av-icon-close {
+    position: relative;
+  }
+  .av-hash-copy::after,
+  .av-icon-close::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--av-touch-min);
+    height: var(--av-touch-min);
+    min-width: 100%;
+    min-height: 100%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* R6: the reason field is 16px, so iOS doesn't zoom on focus. */
+  [data-ui="ReasonDialog"] textarea {
+    font-size: var(--av-phone-body);
+  }
+}

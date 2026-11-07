@@ -4,6 +4,8 @@ import { Icon } from "./Icon";
 
 // DL's Dialog (`Uo`) and its focus handling (`Dy`), the frame ReasonDialog draws in. It isn't one
 // of the kit's components in UI contract section 4, so index.ts doesn't export it.
+// R5 (UI contract section 4, revision 9): with a description, the dialog element names it in
+// aria-describedby, beside aria-labelledby; with none, there's no aria-describedby.
 
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select, [tabindex]:not([tabindex="-1"])';
@@ -79,6 +81,7 @@ export function Dialog({
 }: DialogProps) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const descriptionId = useId();
   useDialogFocus(open, onClose, panel);
   if (!open || typeof document === "undefined") return null;
   return createPortal(
@@ -97,6 +100,7 @@ export function Dialog({
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
+          aria-describedby={description ? descriptionId : undefined}
           className="av-dialog"
           data-size={size}
         >
@@ -105,7 +109,11 @@ export function Dialog({
               <h2 id={titleId} className="av-dialog-title">
                 {title}
               </h2>
-              {description ? <p className="av-dialog-desc">{description}</p> : null}
+              {description ? (
+                <p id={descriptionId} className="av-dialog-desc">
+                  {description}
+                </p>
+              ) : null}
             </div>
             <button type="button" className="av-icon-close" onClick={onClose} aria-label="Close">
               <Icon name="x" size={16} />
