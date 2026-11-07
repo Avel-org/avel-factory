@@ -461,7 +461,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against the 150 KB budget
+- LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against sprint-01's 160 kB gzip budget (Frontend Map's 150 kB returns with zod/mini)
 - LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md.

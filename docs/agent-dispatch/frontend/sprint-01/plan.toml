@@ -541,13 +541,14 @@ domain = "Review the approval page on a phone: labels, focus, 44px targets, the 
 after = ["agent-nemi-w0-fonts-build"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 4, 5 and UC-31" },
-  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets (Decisions under 150 KB gzipped)" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets (Decisions under 150 KB gzipped; sprint-01 holds 160 kB, decisions.md 2026-11-07)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, the first-load budget is 160 kB for sprint-01 (INT)" },
 ]
 
 [[dispatch.task]]
-title = "Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against the 150 KB budget"
+title = "Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against sprint-01's 160 kB gzip budget (Frontend Map's 150 kB returns with zod/mini)"
 verify = "pnpm --filter @avel/web build && pnpm --filter @avel/web exec playwright test"
-expected = "builds; the locked end-to-end tests pass; the route's gzipped JS size, which you report"
+expected = "builds; the locked end-to-end tests pass; the route's gzipped first-load JS size, which you report; over 160 kB is a finding"
 
 [[dispatch.task]]
 title = "Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')"

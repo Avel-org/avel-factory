@@ -553,7 +553,7 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 - **Zero (`review-frontend`):** each module against sections 1 to 6: names, props, copy (DL's or †), states and values. Nothing invented, and nothing outside its territory.
 - **Brennan (`review-spec`):** this contract against CR-W2, FM, DL and m1, then each module against this contract.
 - **Zane:** the new dependencies (section 6), how keys and request IDs are handled (section 3's fetch wrapper; the SSR client forwards only the request ID), and that `/__mock` and the mock stay out of production builds: nothing under `apps/web/src` imports `@avel/contract-mock`, and the build's output holds neither `__mock` nor `MOCK_OPERATOR_ID`'s value.
-- **Leah:** the page's accessibility on a phone (UC-31, focus, labels), and that the route's bundle stays light.
+- **Leah:** the page's accessibility on a phone (UC-31, focus, labels), and that the first load of `/` is at most **160 kB gzip** of JavaScript, sprint-01's budget (Decisions, 2026-11-07). FM's 150 kB comes back when `@avel/contract` moves to `zod/mini`. Anything over 160 kB is a finding.
 
 ## Appendix A: Brennan's a1 findings and where each is answered
 

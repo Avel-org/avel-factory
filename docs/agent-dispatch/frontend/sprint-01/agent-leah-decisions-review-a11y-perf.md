@@ -25,8 +25,9 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
 9. `docs/ui-contracts/decisions-approval-page.md`: sections 4, 5 and UC-31
-10. `docs/design/AVEL Web App — Frontend Map v0.6.md`: Performance budgets (Decisions under 150 KB gzipped)
-11. `docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf.md`: this task doc: follow it exactly
+10. `docs/design/AVEL Web App — Frontend Map v0.6.md`: Performance budgets (Decisions under 150 KB gzipped; sprint-01 holds 160 kB, decisions.md 2026-11-07)
+11. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, the first-load budget is 160 kB for sprint-01 (INT)
+12. `docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -60,10 +61,10 @@ Review the approval page on a phone: labels, focus, 44px targets, the reason dia
 
 Do them in order. Finish each one, verified, before the next.
 
-### LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against the 150 KB budget (P1)
+### LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against sprint-01's 160 kB gzip budget (Frontend Map's 150 kB returns with zod/mini) (P1)
 
 - **Verify:** `pnpm --filter @avel/web build && pnpm --filter @avel/web exec playwright test`
-- **Expected:** builds; the locked end-to-end tests pass; the route's gzipped JS size, which you report
+- **Expected:** builds; the locked end-to-end tests pass; the route's gzipped first-load JS size, which you report; over 160 kB is a finding
 
 ### LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts') (P2)
 
@@ -200,7 +201,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against the 150 KB budget
+- LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against sprint-01's 160 kB gzip budget (Frontend Map's 150 kB returns with zod/mini)
 - LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md.
