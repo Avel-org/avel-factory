@@ -35,9 +35,24 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **This differs from Frontend Map v0.6**, line 393, which defines `CONFLICT` as "stale version, not 'already exists'". The contract wins (the contract is the only API, Frontend Map v0.6, In short, item 3). The UI contract will cite the contract, and the Map's line needs updating in its next version. That's INT's doc, so I'm only flagging it.
 - **Provisional:** this is the slice under Brennan's re-review (D22, a2), not the locked `packages/contract`. It's re-checked against the locked contract before the UI contract is written. Still on hold.
 
+## 2026-11-06: m1 contract passed review; route 52 is a plain `Placeholder`
+
+- **Input (INT, 2026-11-06):** Axis's m1 contract passed Brennan's review (review-spec a1, PASS, de8b053). Checked against `docs/agent-dispatch/backend/sprint-00/decisions.md`, D21, D25 and D30.
+- **Route 52 (D30, finding 02):** `PendingDecisionDto` is a plain `Placeholder` (a JSON record). Axis's `source: 'proposal' | 'factory_change'` union is gone; CR-W2 (still open) asks for a different shape, and Step 1's routes 52 to 54 decide it.
+- **Decision:** nothing frontend codes against a route 52 shape yet: no UI contract field list for the pending-decision row, no contract-mock fixture with fields, no data-core type beyond `Placeholder`. The plan for the factory PR row (read-only, open item 4) stands but can't be keyed on `source` until the shape is decided.
+- **Stale versions (D21), re-confirmed:** `STALE_VERSION` 409 with `details: { field, currentVersion }`. The 2026-11-06 entry above stands, and is no longer only provisional on the slice: m1 carries it.
+- **Correction to open item 3:** route 54 sends `version`, not `rowVersion` (D25: "Approvals send Q4's field: `version` (finalize, decisions)"). So on route 54 a stale decision comes back as `STALE_VERSION` with `field: 'version'` and a numeric `currentVersion`. The minimal page binds the proposal's `version`.
+- **Still on hold:** m1 merges only after Rigg's m1 tests lock (D36, "Merge order for m1"). No UI contract, no tests lock, no dispatch until then, and the pending-decision row waits on Step 1's decision on CR-W2.
+
+## 2026-11-06: CR-W2 is written fresh, Step 1 only
+
+- **Input (INT):** the Nov 3 write-up is lost, so CR-W2 is written again. Scope is Step 1 only: proposals through routes 52 to 54 (approve or reject, bound to `proposals.version`, a reason always, one `Idempotency-Key` per tap), plus factory PRs, read-only.
+- **Done:** what the page needs is in `cr-w2-needs.md` (uncommitted). INT and Axis are told. Axis owns the shape. Its section 4 has 7 open questions, and its section 5 lists frontend-only items for the UI contract: a reason on Approve too, the reason's minimum length, a "Version N" binding in the kit, and the 6s Undo hold.
+- **Still on hold:** no UI contract until Axis answers and m1 merges.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).
 2. ~~Ghost's time.~~ Decided above: alongside `avel-cli`. Was: INT has started Ghost on `avel-cli` (backend team, Axis reviews; Roster setup and sessions, rule 4). If sprint-01 takes option (a), Ghost's frontend-data dispatch comes after that, or runs alongside it with a separate task doc. INT to decide the order.
-3. **Decision kinds in Step 1 (still open, waits on Axis's contract).** The page lists whatever `GET /api/pending-decisions` returns, but Frontend Map v0.6 (Decision kinds belong to the module that owns the work) has each module register its own kinds. For the minimal page I plan one generic proposal row (summary, approve or reject with a reason, `rowVersion` bound), and a 409 shows the stale state. Per-kind tags wait for W1. Confirmed once the contract says which kinds exist in Step 1.
+3. **Decision kinds in Step 1 (still open, waits on Axis's contract).** The page lists whatever `GET /api/pending-decisions` returns, but Frontend Map v0.6 (Decision kinds belong to the module that owns the work) has each module register its own kinds. For the minimal page I plan one generic proposal row (summary, approve or reject with a reason, `version` bound: D25, corrected 2026-11-06), and a 409 shows the stale state. Per-kind tags wait for W1. Confirmed once the contract says which kinds exist in Step 1. Route 52 is a plain `Placeholder` in m1 (D30), so this now waits on Step 1's decision on CR-W2, not on m1.
 4. ~~Factory PRs in the list.~~ Decided above: read-only. Was: Route 52 returns "proposals of every kind, plus open factory PRs". A factory PR is approved through route 73 `POST /api/factory/changes/{changeId}/merges`, not route 54. Step 1's tables include `proposals` (read and decide only) but no factory-change table. Plan: the minimal page decides proposals only, and shows a factory PR row read-only if the contract returns one. Confirm once the contract is locked.
