@@ -355,7 +355,7 @@ The state tag stays DL's:
 - The loader runs `ensureInfiniteQueryData` on route 52's `infiniteOptions` (`limit` 50, always sent), from `apiFor(context.queryClient)`.
 - The component reads the same options with `useSuspenseInfiniteQuery`.
 
-**The module** has `api.ts` (route 52's query options and route 54's mutation, each built from an `Api`: the loader passes `apiFor(context.queryClient)`, and the screen uses `useApi()`), `decisions.ts` (the proposal and factory PR renderers), `screens/DecisionsScreen.tsx`, `index.ts` (named exports only) and `screens.ts`. `routes/index.tsx` imports only `screens.ts` (FM, What every module looks like).
+**The module** has `api.ts` (route 52's query options and route 54's mutation, each built from an `Api`: the loader passes `apiFor(context.queryClient)`, and the screen uses `useApi()`), `decisions.ts` (the proposal and factory PR renderers), `screens/DecisionsScreen.tsx`, `index.ts` (named exports only) and `screens.ts`, which exports `DecisionsScreen` (a named export, from `screens/DecisionsScreen.tsx`). `routes/index.tsx` imports only `screens.ts` (FM, What every module looks like).
 
 **Layout**, from DL's Decisions screen (`Mme`):
 - The root carries `data-ui="DecisionsPage"`†. DL's screen root has no `data-ui`; this one exists so tests and reviews can find the page.

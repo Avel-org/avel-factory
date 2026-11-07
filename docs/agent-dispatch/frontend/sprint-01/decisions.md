@@ -352,6 +352,12 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **The territory moves:** `apps/web/src/routes/__root.tsx` moves from w0-app's territory to w0-fonts'. The kit (`render.py`) refuses two builds that write the same path, even one after the other. w0-app is merged, and its work is unchanged. The plan carries a comment saying w0-app wrote that file. Re-rendering changes w0-app's task doc to the narrower territory.
   - **The alternative, if INT prefers:** run it as a w0-app retry. I didn't pick it, because a retry re-runs w0-app's whole task doc for one link.
 
+## 2026-11-07: `screens.ts` exports `DecisionsScreen` (INT)
+
+- **The gap:** Fenn's decisions unit tests, locked at dcd0468, import `DecisionsScreen` from `apps/web/src/modules/decisions/screens.ts`. Section 5 named the file `screens/DecisionsScreen.tsx` and `screens.ts`, but not the export.
+- **INT confirmed the name `DecisionsScreen`.** Section 5's module line now says that `screens.ts` exports `DecisionsScreen` as a named export, from `screens/DecisionsScreen.tsx`. That matches the locked tests, and Leon builds to it.
+- **No other change.** `plan.toml` and the rendered docs are untouched: Leon's task points at section 5.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).

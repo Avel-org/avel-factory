@@ -3,11 +3,37 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "description": "AVEL's API contract: value lists, DTOs and inputs, oRPC route definitions, the error map, the event-owner map and the completion report schema.",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./routes/index": null,
+    "./routes/*": {
+      "types": "./dist/routes/*.d.ts",
+      "default": "./dist/routes/*.js"
+    },
+    "./dto/*": {
+      "types": "./dist/dto/*.d.ts",
+      "default": "./dist/dto/*.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./dist/errors.js"
+    },
+    "./value-lists": {
+      "types": "./dist/value-lists.d.ts",
+      "default": "./dist/value-lists.js"
+    },
+    "./events": {
+      "types": "./dist/events.d.ts",
+      "default": "./dist/events.js"
+    },
+    "./completion-report": {
+      "types": "./dist/completion-report.d.ts",
+      "default": "./dist/completion-report.js"
     }
   },
   "files": [
