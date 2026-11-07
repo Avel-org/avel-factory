@@ -26,7 +26,7 @@ while IFS=$'\t' read -r state name a b; do
   case $state in
     READY)
       if $dry; then echo "would start  $name (from ${b:0:12})"; continue; fi
-      if out=$("$repo/scripts/agent.sh" "$team" "$sprint" "$name" "$a" "$b" 2>&1); then
+      if out=$("$repo/scripts/agent.sh" "$team" "$sprint" "$name" "$a" "$b" 2>&1 </dev/null); then
         echo "$out"; started=$((started + 1))
       else
         echo "not started  $name: $out" >&2
