@@ -1,0 +1,24 @@
+{
+ "session_id": "55938450-9dec-4b9e-a34f-684739badaf5",
+ "name": "RIGG",
+ "branch": "fix/m2-dw6c",
+ "cwd": "/home/jt0629/projects/avel-wt/crew-rigg",
+ "first_at": "2026-11-07T04:42:01.767Z",
+ "last_at": "2026-11-07T04:45:45.305Z",
+ "updated_at": "2026-11-07T04:46:00Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 44,
+   "output": 6895,
+   "cache_write_5m": 0,
+   "cache_write_1h": 24587,
+   "cache_read": 332006,
+   "messages": 22
+  }
+ },
+ "cost_usd": 0.2338,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.2338
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
