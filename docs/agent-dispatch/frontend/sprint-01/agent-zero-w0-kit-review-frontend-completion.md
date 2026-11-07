@@ -3,70 +3,75 @@
 verdict: PASS
 
 ## Summary
-I reviewed Fantem's w0-kit diff (3cb8f64, base 61d37ca) line by line against UI contract section 4 and DL's own source for each component. All nine components carry the props, `data-ui` names, copy and values section 4 gives them, and the changes D1 to D14, R1 to R4, E1 and W1 are in. The kit imports nothing outside itself, and the 68 locked kit tests pass. There are two P3 findings, both about where the request ID chip goes: neither blocks the merge.
+This is a2. Per INT, I reviewed only Fantem's w0-kit a2, the third task: the kit's styles moved to `apps/web/src/kit/kit.css`, with `kitStylesheetHref` exported (UI contract revision 7, section 4, "The kit's styles"). Head d3535b1 on `frontend/sprint-01/agent-fantem-w0-kit-build-a2` (code 4f0cf1c), base 3bf5e3b. a1 is merged and was reviewed, so I didn't review it again.
+
+The kit no longer writes CSS in JS and renders no `<style>`, and `KitStyles.tsx` is gone. Going rule by rule, every value in `kit.css` is the one the old inline style object or `KitStyles` string carried, and each cascade outcome is the same. The 68 locked kit tests pass unchanged. There are no findings. One contract gap is mine: D12's stamp animation must stay inline, and section 4's list doesn't name it.
 
 ## Pre-flight
-- Part 2 files, all read: `.claude/agents/zero.md`, `codebase-analysis.md`, `docs/ui-contracts/decisions-approval-page.md` (section 0 and section 4 in full; section 5 and the UC-08 to UC-10 rows for how the page uses the kit), `CR-W2 Pending decisions.md`, `decisions.md` (the section 4 design choices), the Frontend Map v0.6 (Layers, What every module looks like, Territories), the design library (component source `te`, `ee`/`d8`, `ne`, `dt`, `Ze`/`h8`, `y8`/`v8`, `ly`/`x8`, `BH`, `n$`/`LH`, `Uo`/`Dy`, `Go`, `jr`, `ou`/`ry`; the `.pd` CSS; the step-up field error), the Step 0 and Step 1 plan, and this task doc. None missing. My Read first list's `API and data reference.md` and `CR-16 Dispatch package contract.md` exist too. The kit doesn't touch the API, so I only skimmed them.
-- Branch `frontend/sprint-01/agent-zero-w0-kit-review-frontend-a1`, start commit 3cb8f64 (Fantem's report), `AVEL_BASE` 61d37ca.
-- Part 7 commands: all available once I ran `pnpm install --frozen-lockfile --prefer-offline`, because the worktree had no `node_modules`. Build and typecheck fail for a reason outside the kit (see Verification).
+- **Part 2 files:** all read, none missing: `.claude/agents/zero.md`, `codebase-analysis.md`, `docs/ui-contracts/decisions-approval-page.md` (section 0, section 4 in full including "The kit's styles", section 8), `CR-W2 Pending decisions.md`, `decisions.md` ("Revision 7" in full), the Frontend Map v0.6, the design library, the Step 0 and Step 1 plan, and this task doc. I also read w0-kit's plan entry (a2 note and third task) in `plan.toml`.
+- **Branch:** `frontend/sprint-01/agent-zero-w0-kit-review-frontend-a2`, start commit e4674f0 (main), `AVEL_BASE` e4674f0.
+- **The session wasn't checked out at the builder's commit.** HEAD equalled `AVEL_BASE`, so `git diff "$base"..HEAD` was empty. INT then named the work: `git diff main...frontend/sprint-01/agent-fantem-w0-kit-build-a2`. I reviewed that diff. I ran the commands in a throwaway detached worktree at d3535b1 under my scratchpad, which I removed afterwards (see Deviations).
+- **Part 7 commands:** all available in that worktree after `pnpm install --frozen-lockfile --prefer-offline`.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| ZERO-01 | DONE | this report's commit |
+| ZERO-01 | DONE (a2 scope: the third task only) | this report's commit |
 
-ZERO-01 verify, in two parts:
-- `pnpm --filter @avel/web test -- test/kit`: through pnpm the `--` is passed on to vitest, so it ran the whole suite (see Deviations). The kit's own run, `cd apps/web && pnpm exec vitest run test/kit`: `Test Files 3 passed (3)`, `Tests 68 passed (68)`. `git diff --stat 965071b HEAD -- apps/web/test/kit` is empty, so the lock is intact.
-- `! grep -rn '@orpc\|@tanstack/react-router\|#[0-9a-fA-F]\{6\}' apps/web/src/kit`: nothing listed, exit 0. The kit also has no relative import outside `src/kit`.
+ZERO-01 verify, run at d3535b1:
+```
+$ pnpm --filter @avel/web exec vitest run test/kit
+ Test Files  3 passed (3)
+      Tests  68 passed (68)
+$ ! grep -rn '@orpc\|@tanstack/react-router\|#[0-9a-fA-F]\{6\}' apps/web/src/kit; echo "exit $?"
+exit 0          (nothing listed)
+$ ! grep -rlE '<style|KitStyles|dangerouslySetInnerHTML' apps/web/src/kit; echo "exit $?"
+exit 0          (nothing listed: Fantem's task 3 check)
+$ git diff --stat 965071b frontend/sprint-01/agent-fantem-w0-kit-build-a2 -- apps/web/test/kit
+(empty: the w0-kit lock in locks.md is intact)
+```
 
 ## Findings
-- `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-01-decisiontag-request-id-drawn-twice.md`, P3: `DecisionTag` draws the request ID chip twice when a `stale` card also has `actionsDisabledReason` (5.2's offline reason does that), and draws the footer chip for any disabled reason, not only a 429 (D14).
-- `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-02-widgetstate-stale-band-chip-beside-message.md`, P3: `WidgetState` `error` with rows on screen draws the chip beside the stale message, not under it (W1).
+none
 
 ## Contract to files
-- **Value rule (section 0):** no hex anywhere (grep above). Every other literal is DL's own for that element: the Button sheen gradient, HashChip's `fontSize: 12`, `borderRadius: 4` and 1200ms, the hole fill's `160ms`, `.pd-actions`' `10px`, and the dialog CSS copied from DL's "Overlays: Dialog" rules. Every token the kit uses exists in `apps/web/src/styles/tokens.css`, including the keyframes `av-hole-fill`, `av-stamp-land` and `av-skeleton`.
-- **Plain props, no oRPC or router:** `apps/web/src/kit/*`. The props are exactly section 4's ported subsets, and the left-out props are absent.
-- **Button** (`Button.tsx`): DL `ee`/`d8`, with the same variants, sizes, disabled look, sheen and `ButtonWithReason`.
-- **Tag** (`Tag.tsx`): `Ze`/`h8`. DL's `count.num` is dropped, but DL never reads it.
-- **Icon** (`Icon.tsx`): lucide-react per-icon imports, `data-ui="Icon"`, `data-icon`, 16 and 1.75, and `title` giving `role="img"`.
-- **StatusGlyph** (`StatusGlyph.tsx`): `ne`, the same for every status. `onColor` is reached only by Tag, through `drawStatusGlyph`.
-- **HashChip** (`HashChip.tsx`): `dt`, with the copy button's `aria-label` `Copy {value}`.
-- **ReasonDialog** (`ReasonDialog.tsx`, `Dialog.tsx`, `KitStyles.tsx`):
-  - `Go`, `Uo` and `Dy`, with the copy `Why?`, `Cancel`, `Confirm` and the placeholder.
-  - R1 is in DL's step-up field-error form.
-  - R2: the text is reset to `defaultReason` on each open.
-  - R3: `onConfirm` doesn't call `onClose`.
-  - R4: the request ID chip.
-- **ErrorPanel** (`ErrorPanel.tsx`): `y8`/`v8`, with DL's copy word for word. E1: no button without `onAction`.
-- **WidgetState** (`WidgetState.tsx`, `ago.ts`):
-  - `ly`/`x8`, with only the four states.
-  - W1 is right in the plain error state. In the stale band the chip is beside the message (finding 02).
-- **DecisionTag** (`DecisionTag.tsx`): `n$`/`BH`/`LH`.
-  - D1: flat props, and an unknown variant is drawn as `Decision`/`circle`.
-  - D2: the `aria-label` with and without `idLabel`.
-  - D3: `clientName` after the kind label, at 13px desk, which is `.pd-project`'s.
-  - D4: Approve and Reject only call back.
-  - D5: the approved line uses `binds.label`.
-  - D6: a version binding is text, struck in `stale`.
-  - D7: `Rejecting…`.
-  - D8: buttons by state.
-  - D9: an `<a>` in the link look, `target="_blank"`, `rel="noopener noreferrer"`, `arrow-up-right`.
-  - D10: `disabledReason` on Approve, and `inlineError` above the actions.
-  - D11: the grid `minmax(0, 1fr) minmax(0, 1.4fr)`, gap 10px, Reject left.
-  - D12: `--av-d-punch`, and the hole fill isn't animated under reduced motion.
-  - D13: `{rejectLabel}…`.
-  - D14: the chip under the stale note, the Locked reason and the countdown, except for the duplicate in finding 01.
-  - The state tags are DL's.
-- **UC-08 to UC-10:** Fenn's locked `apps/web/test/kit/**`, all passing.
+- **One static stylesheet** (section 4, "Where they live"): `apps/web/src/kit/kit.css` (934 lines). It has DL's "Overlays: Dialog" rules and its field-anatomy textarea rules as they were in `KitStyles`. Each component's former style objects are now class or `[data-ui]` rules. Per-render state reaches the CSS through data attributes: `data-variant`, `data-size`, `data-block`, `data-icon-only`, `data-hovered`, `data-pressed`, `data-tone`, `data-copy`, `data-copied`, `data-strike`, `data-compact`, `data-stopped`, `data-layout`, `data-state`, `aria-invalid`.
+- **How it's loaded** (section 4): `kit/index.ts:7` `import kitStylesheetHref from "./kit.css?url"`, and `index.ts:23` exports it by name. Typecheck passes, so the `?url` import resolves.
+- **No CSS in JS** (section 4): `KitStyles.tsx` is deleted, and its two users (`Dialog.tsx`, `DecisionTag.tsx`) no longer import it. `git grep 'style='` over the kit on the branch lists only three lines:
+  - `DecisionTag.tsx:197`: D11's phone grid, read by the locked UC-08 (`decision-tag.test.tsx:307,310`).
+  - `DecisionTag.tsx:298`: D6's version strike, inline `text-decoration`, read by the locked UC-08.
+  - `DecisionTag.tsx:357`: D12's stamp animation, `av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both`. It stays inline because the locked UC-08 at `decision-tag.test.tsx:95-97` checks `card.outerHTML` for `--av-d-punch`. That follows the contract's rule ("the values the locked kit tests read from the element"). The contract's list of examples leaves it out: see Issues.
+- **Values unchanged** (section 0). I checked each moved declaration against the removed inline value, and each override against the old conditional, by specificity and source order:
+  - **Button:**
+    - **Size, variant and icon-only order:** the old ternaries ran icon-only, then link, then segment or sm, then lg, then md. The rules now come in size, link, segment, icon-only order, all at equal specificity (`kit.css:304-329`). So the same one wins.
+    - **Hover versus press:** the old chain was disabled, then pressed, then hovered and not sheen, then rest. In CSS, `:disabled` (0,2,0) beats the variant rules because it comes later. Hover and press both carry `:not(:disabled)`, at (0,3,0) each, and press comes later (`:356`, `:365`). So the same one wins.
+    - **Disabled shadow:** `none` for link, ghost and segment (`:382-388`, at (0,3,0)), and the hairline for the rest.
+    - **Sheen:** `position` and `isolation` apply only when the button is primary or danger and enabled (`:336`). The sheen's opacity follows hovered and not pressed (`:350`).
+    - **Link underline:** hovered link only (`:362`, at (0,3,1), over `button[data-ui=Button]`'s `none`).
+    - **Segment:** never translates (`:370`), and its hover colour is ink (`:359`).
+  - **D9's anchor:** it has `data-ui="Button" data-variant="link"` (`DecisionTag.tsx:172-174`), so it takes link's padding, min-height and colour. It gets no `text-decoration` rule, as before. `a[data-ui][data-variant]` (0,2,1) keeps its colour and offset over base.css's `a:hover`.
+  - **Tag:** a tone's own height, padding and font size beat `size="sm"`, as `s.h || …` did, because the tone rules come after `:441` at equal specificity. `count` alone gets `justify-content: center`. `estimated` and `unconfigured` get dashed borders. An unknown tone falls back to neutral's variables.
+  - **HashChip:** the copy padding is applied on `data-copy`, including on the null `—` chip, as before. `strike` is `[data-strike]`, and no locked test reads it (Fantem's Deviation 2).
+  - **ReasonDialog:** the error edge was an inline `borderColor`, which beat `:hover` and `:focus-visible`. It's now `textarea[aria-invalid="true"]` at the same (0,2,1), placed after both (`kit.css:163`). `ReasonDialog.tsx:95` sets `aria-invalid` exactly when `error` is set.
+  - **WidgetState:** loading's `flex-start` and staleVersion's row overrides sit at (0,2,0) over `.av-ws-frame`. The skeleton widths match the old `i === 0 ? 42% : i % 2 ? 86% : 64%`: `:first-child` gives 42% and 22px, `:nth-child(even)` gives 86%, and the rest get 64%.
+  - **DecisionTag:**
+    - **Phone values:** inset 18 against 16, head gap 8 with wrap, facts in one column with row-gap 2, and dt margin-top 4 and 8, all on `data-layout="phone"`.
+    - **Approved title:** `padding-right: 96px`.
+    - **Hover lift:** applies only when the card isn't done (`:749`).
+    - **Hole fill:** DL's 160ms, and `none` under reduced motion (D12).
+  - **Icon and StatusGlyph:** the svgs carry `data-ui="Icon"` (`Icon.tsx:63`) and `data-ui="StatusGlyph"` (`StatusGlyph.tsx:32`), so `[data-ui=Icon],[data-ui=StatusGlyph]` still gives them `flex: none; display: block`.
+- **No hex, no new literals:** the grep above lists nothing. The literals in `kit.css` are those the removed code had (DL's), and Biome reprinted `.985` as `0.985`.
+- **Plain props, no oRPC or router import:** grep above. No prop changed, apart from the `ButtonVariant` union now being written out, with the same nine members.
 
 ## Deviations
-- **ZERO-01's verify command:** `pnpm --filter @avel/web test -- test/kit` passes the `--` on to vitest (`vitest run -- test/kit`), so it ran the whole suite, and the w0-data and decisions tests fail on this base (see Verification). I ran the kit's tests with `pnpm exec vitest run test/kit` instead. The plan's verify line should drop the `--`.
-- **`git diff --name-only main...HEAD`** lists Fantem's kit files and build report as well as mine, because this branch starts at the build's result commit. My own changes are `git diff --name-only 3cb8f64..HEAD`, and both are shown below.
-- **One scratch render probe**, for the findings' evidence: a vitest file and config in the session scratchpad, outside the repo. Nothing in the repo changed for it.
+1. **Scope:** only the a2 diff (the third task), as INT's message said. a1 was reviewed and merged (6aeb690).
+2. **Where I ran the commands.** The session started at main, not at the builder's result commit, and Part 1 forbids switching branches. So I ran every verification in a detached worktree at d3535b1, which I made with `git worktree add --detach` in my session scratchpad and removed when I was done. My own branch never moved.
+3. **What Part 7's last command shows.** `git diff --name-only main...HEAD` is run on my branch, so it lists my report only. Fantem's files are listed in Files changed under "reviewed".
 
 ## Limitations
-- I didn't look at the kit in a browser. I compared values and structure against DL's source, and checked rendered markup by server render. Motion, hover and the 390px dialog are for Leah's a11y-perf review.
-- The full build and typecheck can't pass on this base, because the w0-data paths aren't in it. `tsc` reports no error in `src/kit` or `test/kit`.
+- **I didn't repeat Fantem's browser comparison.** Fantem reports 0 computed-style differences over 5,139 elements and 246 hover and press snapshots. The harness wasn't committed, so I couldn't re-run it. My check is the rule-by-rule cascade reading above, and it agrees.
+- **Hover and press at sizes other than md** weren't in Fantem's comparison. By my reading the size rules don't interact with the state rules: the states set only background, colour, shadow, transform and text-decoration, and the sizes set only height, padding and font size.
+- **Selector scope (an observation, not a finding).** A few DecisionTag rules key on an ancestor attribute: `[data-layout="phone"] .av-dt-head`, `.av-dt-facts` and `[data-state="approved"] .av-dt-title`, rather than `[data-ui="DecisionTag"][data-layout="phone"] …`. Nothing outside the card uses `data-layout` or `data-state="approved"` today: `git grep data-layout main -- apps/web/src` is empty, and so is Leon's a1 branch's `modules`. If a page later sets `data-layout="phone"` on a wrapper, a desk card inside it would get the phone values.
 
 ## Parked chains
 none
@@ -75,70 +80,47 @@ none
 none
 
 ## Issues for other agents
-- **Fantem:** findings 01 and 02.
-- **Leon:**
-  - Section 5.4's empty card (`StatusGlyph` done and `Nothing needs you.`) is DL's `.dec-empty` from the Decisions screen, not the kit's `WidgetState` `empty`, whose `icon` takes only an `IconName`. Draw it in the module.
-  - The kit also exports `AV_ERROR_COPY` and `AV_DECISION_VARIANTS` (DL's own), for DL's 400 title and body.
-- **Leah:**
-  - `WidgetState` `loading` keeps DL's `aria-label` on a div with no role (`WidgetState.tsx:61-66`, with a biome-ignore). That's DL as it is.
-  - On a phone, both decision buttons are `size="lg"` (`--av-control-h-lg`, 44px on touch). DL's Decisions card sets `.pd[data-phone] [data-ui="Button"] { min-height: 48px; }`, which D11 doesn't carry.
-- **INT:**
-  - The w0-kit verify line in `plan.toml` (the `--`, see Deviations).
-  - The merge of w0-kit is yours. The two P3 findings can follow it.
+- **ZERO (me), next contract revision:** add D12's stamp animation (inline `animation` naming `--av-d-punch`, read by the locked UC-08 at `decision-tag.test.tsx:95-97`) to section 4's "What stays inline" list, beside D11 and D6. This is Fantem's Deviation 1, and I accept it.
+- **INT and Leon:** once a2 merges, the kit draws unstyled until something links `kitStylesheetHref`. That's Leon's decisions a2 (section 5, "Styles and loading"). No page on main draws the kit yet: main has no `apps/web/src/modules`.
+- **Leah and INT:** Fantem's report, Limitations, says the client `index-*.js` reads 155.40 kB gzip after `pnpm --filter "@avel/web..." build`, against 127.47 kB before `packages/contract/dist` existed. My build at d3535b1 is consistent with that. The kit isn't in that chunk. So check which `@avel/contract` build the budget run resolves: it's near the 160 kB limit before the page is added.
+- **Full web suite:** 37 tests fail, all in `test/modules/decisions/**` (locked UC-11 to UC-28). They fail with "screens.ts should export the screen as DecisionsScreen", because the module isn't on main yet. That's expected and not caused by this diff.
 
 ## Files changed
-`git diff --name-only 3cb8f64..HEAD` (this review):
-```
-docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md
-docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-01-decisiontag-request-id-drawn-twice.md
-docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-02-widgetstate-stale-band-chip-beside-message.md
-```
-`git diff --name-only main...HEAD` (adds the build under review): the 14 files in `apps/web/src/kit/`, `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md`, and the three files above.
+`git diff --name-only main...HEAD` on my branch:
+- `docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md`
+
+Reviewed, on Fantem's branch (`git diff --name-only main...frontend/sprint-01/agent-fantem-w0-kit-build-a2`): `apps/web/src/kit/{Button,DecisionTag,Dialog,ErrorPanel,HashChip,Icon,ReasonDialog,StatusGlyph,Tag,WidgetState}.tsx`, `apps/web/src/kit/KitStyles.tsx` (deleted), `apps/web/src/kit/index.ts`, `apps/web/src/kit/kit.css` (new), and Fantem's completion report.
 
 ## Verification
+All run at d3535b1 (see Deviations 2), apart from the last command.
+
 ```
 $ pnpm --filter "@avel/web..." build
-apps/web build: error during build:
-apps/web build: Error: Could not resolve entry for router entry: router in …/apps/web/src
-apps/web build: Failed
-EXIT=1
-```
-`src/router.tsx` is w0-data's (Ghost's). It isn't in base 61d37ca. main has since merged w0-data (79ce639).
+exit 0
+apps/web build: dist/server/assets/router-Dvq-asiP.js        27.35 kB │ gzip:  9.27 kB
+apps/web build: dist/server/server.js                       261.19 kB │ gzip: 63.18 kB
+apps/web build: ✓ built in 176ms
+apps/web build: Done
 
-```
 $ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
-apps/web typecheck: Error: Could not resolve entry for router entry: router in …/apps/web/src
-apps/web typecheck: Failed
-EXIT=1
-$ cd apps/web && pnpm exec tsc -p tsconfig.json --noEmit | grep 'error TS' | cut -d'(' -f1 | sort | uniq -c
-  29 errors, all in test/data/*, test/modules/decisions/*, test/setup/*, vite.config.ts
-  (missing @avel/contract-mock, src/data/*, src/modules/decisions/*). None in src/kit or test/kit.
-```
+exit 0
+packages/contract typecheck: Done
+packages/contract-mock typecheck: Done
+apps/web typecheck: Done
 
-```
 $ pnpm lint
+exit 0
 > biome check .
-Checked 182 files in 130ms. No fixes applied.
-EXIT=0
-```
+Checked 197 files in 121ms. No fixes applied.
 
-```
 $ pnpm --filter @avel/web test
- Test Files  10 failed | 3 passed (13)
-      Tests  122 failed | 68 passed (190)
-EXIT=1
-```
-- The 3 files that pass are `test/kit/**`. They're all 68 passes, and no test in `test/kit` fails.
-- The failures are in `test/data/**` (85) and `test/modules/decisions/**` (37). Their modules aren't on this base.
+exit 1
+ Test Files  3 failed | 10 passed (13)
+      Tests  37 failed | 153 passed (190)
+(all 37 in test/modules/decisions/{list,deciding,errors}.test.tsx:
+ "apps/web/src/modules/decisions/screens.ts should export the screen as DecisionsScreen";
+ the module isn't on main. test/kit: 68/68 pass.)
 
+$ git diff --name-only main...HEAD     # on my branch
+docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md
 ```
-$ cd apps/web && pnpm exec vitest run test/kit
- Test Files  3 passed (3)
-      Tests  68 passed (68)
-
-$ ! grep -rn '@orpc\|@tanstack/react-router\|#[0-9a-fA-F]\{6\}' apps/web/src/kit
-(no output) exit 0
-
-$ git diff --name-only main...HEAD   # only paths from Part 5
-```
-Listed under Files changed. Of these paths, only the three in this review's list are mine, and all three are in Part 5.
