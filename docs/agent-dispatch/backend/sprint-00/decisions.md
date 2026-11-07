@@ -263,3 +263,32 @@ Nothing. F01's shape was settled after 5e45543 (above).
   - **F08, `usage_log.vendor` had no definition.** It's now `vendor text NOT NULL`, no default, in `contract.md` section 6. That's derived from the map, not a choice: CR-5 says only "add it", and the map's `attempts.vendor` and `price_table.vendor` (which CR-5 says already carry it) and `usage_log.model` are all `text NOT NULL` with no default.
   - **F09, two inaccurate lines here.** D3 item 1 is marked superseded (the map landed in e1ed7ae), and the B7 recheck says five CHECKs, not four.
 - **Not reviewed by a2:** the F01 branch change and these two fixes. Brennan's m1 review checks the `by_kind` branches.
+
+## 2026-11-06: m1 contract: Axis's choices A1 to A13, and Brennan's m1 review
+
+Axis's m1 report (0dce235, `agent-axis-m1-contract-api-contract-completion.md`, Deviations) lists A1 to A13; agents can't write here, so INT copies them in. Brennan's m1 review-spec a1 is **PASS** (de8b053) with two P3 findings, answered below. Each D is a summary; the report has the full text.
+
+- **D23 (A1). Paging:** `PageQuery = { cursor?, limit? (1 to 100) }`, `Page<T> = { items, nextCursor: string | null }`. The 100 is Frontend Map v0.6, Data layer.
+- **D24 (A2). A row DTO is every map column, camelCased, with section 6's changes, minus rule 3's list** (and CR-6's old `lease_epoch`, `lease_until`). Value-list columns take their list; `events.kind` takes `EventKind`. It keeps `missions.plan_state`, `repo_connections.read_secret_id` and `write_secret_id` (ids, not secrets) and `uploads.blob_key`.
+- **D25 (A3, narrowed by INT on finding 01). Which writes send a version:** a write that changes an existing mutable row named in its path sends that row's `rowVersion`; creating a child row doesn't. Approvals send Q4's field: `version` (finalize, decisions), `receiptHash` (pass approvals, releases), `headSha` (factory merges). Route 2 sends only the user code.
+  - **Finding 01 (INT):** routes 39 (`POST /api/checkpoints/{checkpointId}/drafts`) and 44 (`POST /api/questions/{questionId}/answers`) **add `rowVersion`**: two tabs regenerating one draft or answering one question get `STALE_VERSION`. Route 5 (`DELETE /api/cli/sessions/{sessionId}`) is **exempt**: revoking is one-way and idempotent, so a stale check adds nothing. Axis makes the change on the m1 branch before the merge.
+- **D26 (A4). Route metadata:** `RouteMeta = { write, stepUp, caller, routeNo }` on every route through `route()`; a POST answers 201 (Frontend Map v0.6).
+- **D27 (A5). Error details:** `ALREADY_EXISTS`, `DELETE_REFUSED` and `CONSTRAINT_VIOLATION` carry `{ constraint }`; `INVALID_TRANSITION` carries `{ allowed: string[] }`. CR-16's four codes are only on its three routes.
+- **D28 (A6). `Module`** is the build plan's 19 modules (section 4), with the contract's server side named `platform` (CR-15 item 3).
+- **D29 (A7). The completion report body:** the Canon template's sections (`tasks`, `parkedTasks`, `p0Discoveries`, `issuesForOthers`, `dependencyRequests`, `escalations`) plus CR-10's (`preflight`, at least one; `contractToFiles`; `deviations`; `limitations`). `CompletionTaskStatus` = `done`, `parked`, `blocked`, a contract-only list.
+- **D30 (A8, changed by INT on finding 02). Placeholders** are `Placeholder` (a JSON record), or a known field plus one, for routes 7, 21, 47, 48, 52, 56, 69, 72, 73 and 92.
+  - **Finding 02 (INT):** route 52's `PendingDecisionDto` becomes a **plain `Placeholder`**, like the rest: Axis's `source: 'proposal' | 'factory_change'` union traces to no doc, and CR-W2 asks for a different shape. Step 1's routes 52 to 54 decide it. Zero is told the shape is provisional. Axis makes the change on the m1 branch before the merge.
+- **D31 (A9, format named by INT). A template's `itemId` is the string `<slug>@<version>`** (for example `landing-page@3`), since `templates` is keyed by `(slug, version)` and has no `id`; the server parses it. So a template slug can't contain `@`. The other three Library kinds use the UUID `id`.
+- **D32 (A10). Fields named from their route's row, not a column:** `deviceCode` (1), `token` (3), `readToken`/`writeToken` (13, 17), `RepoTokenCheckDto`'s `ok`/`scopes`/`expiresAt` (16), `value` (45), `section` (38), `verified` (61), `missionIds`/`kbReleases` (71), route 65's three bodies on `source: 'commit' | 'heartbeat' | 'time'`, `files` (75), `body` (79, 83), `query` (99).
+- **D33 (A11). Route 57's gate is typed `3 | 4`;** other gates are 400 `BAD_REQUEST`, not 422.
+- **D34 (A12). Server-set, not inputs:** route 20's `budget_micros` ($150 per mission from config, CR-13), route 13's token expiries (from GitHub), the design-system pin at finalize (from the plan), `clientKind`. Route 11 can't change `kind`.
+- **D35 (A13). Event payloads stay `Json`,** except `MissionCreatedPayload` (`{ kind }`, CR-13), until CR-W1 is decided.
+
+### Rigg's m2 test assumptions (locked at 803b869)
+
+- **D36. The function behaviour Rigg's done-when 9 tests assume is accepted** (the map has no function bodies): `freeze_plan` freezes an approved plan's `brief_snapshot`, `price_micros`, `package_key`, `roster_version`, `version` and `mission_id`, and lets it move to `superseded`; `freeze_plan_detail` refuses insert, update and delete once the plan is `approved` (`superseded` untested); `freeze_once_set` lets a null column be set once, then freezes it; `refuse_update` refuses `UPDATE` only; `touch_updated_at` adds 1 to `row_version` on every update. Soap builds to these.
+- **Test 6's export shape:** checked by INT against the m1 contract built at 0dce235: 99 exports read as lists, no two with the same values. `checkedColumns` and `eventOwners` (string maps) are read as lists too; harmless today, but a new string map with repeated values would trip it.
+
+### Merge order for m1
+
+INT's call: Rigg's m1 tests are locked and run against the contract before m1 merges. The lockfile (`@orpc/contract` 1.16.2, `zod` 4.6.7) lands with the m1 merge.
