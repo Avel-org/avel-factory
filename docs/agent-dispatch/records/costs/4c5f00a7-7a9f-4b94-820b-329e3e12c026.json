@@ -1,0 +1,24 @@
+{
+ "session_id": "4c5f00a7-7a9f-4b94-820b-329e3e12c026",
+ "name": "NEMI w0-fonts-build a1",
+ "branch": "frontend/sprint-01/agent-nemi-w0-fonts-build-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-nemi-w0-fonts-build-a1",
+ "first_at": "2026-11-07T06:40:47.078Z",
+ "last_at": "2026-11-07T06:42:23.526Z",
+ "updated_at": "2026-11-07T06:42:37Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 30,
+   "output": 7708,
+   "cache_write_5m": 0,
+   "cache_write_1h": 35831,
+   "cache_read": 346850,
+   "messages": 15
+  }
+ },
+ "cost_usd": 0.5103,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 0.5103
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
