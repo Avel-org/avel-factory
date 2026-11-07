@@ -283,7 +283,7 @@ Quote each DTO and error from `packages/contract` with its file path. Don't para
 | --- | --- | --- | --- |
 
 ## Requirements
-- **R1:** (EARS form, for example: "When a write arrives without an Idempotency-Key, the server shall answer 400 with code IDEMPOTENCY_KEY_REQUIRED.")
+- **R1:** (EARS form, for example: "When a write arrives without an Idempotency-Key, the server shall answer 400 BAD_REQUEST with details `{ field: 'Idempotency-Key' }`.")
 
 ## Scenarios
 | ID | Requirement | Level | Given | When | Then |
