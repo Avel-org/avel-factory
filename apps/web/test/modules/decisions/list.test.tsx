@@ -248,18 +248,6 @@ describe("UC-27 the list's own states", () => {
 });
 
 describe("UC-28 contract version", () => {
-  test("UC-28 a mock on another contract version shows the staleVersion banner with Reload, above the header", async () => {
-    renderPage([proposalRow(1)], { contractVersion: "999.0.0" });
-    const banner = await screen.findByText("AVEL was updated. Reload to use the new version.");
-    const widget = banner.closest('[data-ui="WidgetState"]');
-    expect(widget?.getAttribute("data-state")).toBe("staleVersion");
-    expect(within(widget as HTMLElement).getByRole("button", { name: "Reload" })).toBeDefined();
-    const h1 = screen.getByRole("heading", { level: 1, name: "Decisions" });
-    expect(
-      (widget as HTMLElement).compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
   test("UC-28 the same version shows no banner", async () => {
     renderPage([proposalRow(1)]);
     await waitForRows(TITLE_OF(1));

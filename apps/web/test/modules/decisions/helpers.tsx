@@ -286,6 +286,9 @@ export function useFakeClock(): { user: User; advance: (ms: number) => Promise<v
   vi.useFakeTimers({
     toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"],
   });
+  // Testing Library's waitFor/findBy only advance a fake clock when a global `jest` exists; under
+  // Vitest it would wait on timers that never fire and hang. setup.ts removes the shim.
+  vi.stubGlobal("jest", { advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms) });
   return {
     user: userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) }),
     advance: async (ms: number) => {
