@@ -1,0 +1,24 @@
+{
+ "session_id": "12d2c8be-3590-4f10-881d-a80328ccce6f",
+ "name": "RIGG zod-mini-test-unit a1",
+ "branch": "backend/sprint-01/agent-rigg-zod-mini-test-unit-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/backend-sprint-01-agent-rigg-zod-mini-test-unit-a1",
+ "first_at": "2026-11-07T23:16:33.052Z",
+ "last_at": "2026-11-07T23:32:03.147Z",
+ "updated_at": "2026-11-07T23:32:16Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 76,
+   "output": 38769,
+   "cache_write_5m": 0,
+   "cache_write_1h": 144439,
+   "cache_read": 3747101,
+   "messages": 37
+  }
+ },
+ "cost_usd": 1.715,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 1.715
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

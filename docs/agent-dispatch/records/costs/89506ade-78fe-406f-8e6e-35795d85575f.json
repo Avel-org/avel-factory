@@ -1,0 +1,24 @@
+{
+ "session_id": "89506ade-78fe-406f-8e6e-35795d85575f",
+ "name": "AXIS",
+ "branch": "main",
+ "cwd": "/home/jt0629/projects/avel-factory",
+ "first_at": "2026-11-07T23:05:46.063Z",
+ "last_at": "2026-11-07T23:16:46.524Z",
+ "updated_at": "2026-11-07T23:16:50Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 124,
+   "output": 48510,
+   "cache_write_5m": 0,
+   "cache_write_1h": 132770,
+   "cache_read": 4987531,
+   "messages": 61
+  }
+ },
+ "cost_usd": 3.0304,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 3.0304
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
