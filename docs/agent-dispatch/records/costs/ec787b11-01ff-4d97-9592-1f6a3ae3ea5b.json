@@ -4,21 +4,21 @@
  "branch": "backend/sprint-00/agent-rigg-m1-contract-test-unit-a1",
  "cwd": "/home/jt0629/projects/avel-wt/backend-sprint-00-agent-rigg-m1-contract-test-unit-a1",
  "first_at": "2026-11-07T00:25:34.345Z",
- "last_at": "2026-11-07T00:29:51.901Z",
- "updated_at": "2026-11-07T01:34:35Z",
+ "last_at": "2026-11-07T03:38:46.932Z",
+ "updated_at": "2026-11-07T03:38:54Z",
  "tokens": {
   "claude-sonnet-5-5": {
-   "input": 34,
-   "output": 34371,
+   "input": 52,
+   "output": 38939,
    "cache_write_5m": 0,
-   "cache_write_1h": 113724,
-   "cache_read": 1219544,
-   "messages": 17
+   "cache_write_1h": 343124,
+   "cache_read": 1688827,
+   "messages": 23
   }
  },
- "cost_usd": 1.0426,
+ "cost_usd": 2.0998,
  "cost_usd_by_model": {
-  "claude-sonnet-5-5": 1.0426
+  "claude-sonnet-5-5": 2.0998
  },
  "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
 }
