@@ -125,15 +125,39 @@ describe("done-when 6: value lists are defined once", () => {
     const lists = await contractLists();
     const known = new Set(lists.map((l) => JSON.stringify([...l.values].sort())));
     const url = db();
+    // Only the value-list CHECKs: the columns @avel/contract names in checkedColumns.
+    // The map's rule CHECKs (jobs_finished_ck and the like) may hold a subset of a list; done-when 8 checks those.
+    const contract = (await import(/* @vite-ignore */ "@avel/contract")) as {
+      checkedColumns: Record<string, string>;
+    };
+    const columns = Object.keys(contract.checkedColumns);
+    expect(columns.length, "the contract names the CHECKed columns").toBeGreaterThanOrEqual(104);
+    const valueListCheck = (table: string, def: string): string | undefined =>
+      columns
+        .filter((k) => k.startsWith(`${table}.`))
+        .map((k) => k.slice(table.length + 1))
+        .find((col) =>
+          new RegExp(
+            `^\\(+(?:\\(${col} IS NULL\\) OR \\()?${col} = ANY \\(ARRAY\\[[^\\]]*\\]\\)\\)+$`,
+          ).test(def),
+        );
     const unmatched: string[] = [];
+    const found = new Set<string>();
     for (const t of readCatalog(url)) {
       for (const c of t.checks) {
+        const col = valueListCheck(t.name, c.def);
+        if (!col) continue;
+        found.add(`${t.name}.${col}`);
         const v = listOf(c.def);
-        if (v && !known.has(JSON.stringify([...v].sort())))
-          unmatched.push(`${t.name}.${c.name}: ${v.join(", ")}`);
+        if (!v || !known.has(JSON.stringify([...v].sort())))
+          unmatched.push(`${t.name}.${c.name}: ${v ? v.join(", ") : c.def}`);
       }
     }
     expect(unmatched, "CHECK lists that no contract list has").toEqual([]);
+    expect(
+      columns.filter((k) => !found.has(k)),
+      "checkedColumns with no value-list CHECK in the schema",
+    ).toEqual([]);
     expect(checkedLists.length, "the map's lists were found").toBeGreaterThan(90);
   });
 });
