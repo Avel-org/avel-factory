@@ -1,0 +1,24 @@
+{
+ "session_id": "293e5ede-8a05-4abf-a835-e9e38f10b26a",
+ "name": "ZERO w0-data-review-frontend a1",
+ "branch": "frontend/sprint-01/agent-zero-w0-data-review-frontend-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-zero-w0-data-review-frontend-a1",
+ "first_at": "2026-11-07T07:44:15.358Z",
+ "last_at": "2026-11-07T07:44:40.602Z",
+ "updated_at": "2026-11-07T07:44:48Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 18,
+   "output": 2267,
+   "cache_write_5m": 0,
+   "cache_write_1h": 82175,
+   "cache_read": 202290,
+   "messages": 8
+  }
+ },
+ "cost_usd": 0.7433,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 0.7433
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
