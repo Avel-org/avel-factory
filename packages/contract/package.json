@@ -1,0 +1,25 @@
+{
+  "name": "@avel/contract",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AVEL's API contract: value lists, DTOs and inputs, oRPC route definitions, the error map, the event-owner map and the completion report schema.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@orpc/contract": "1.16.2",
+    "zod": "4.6.7"
+  }
+}
