@@ -1,0 +1,21 @@
+{
+  "name": "@avel/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AVEL's generated docs: the ERD from the Drizzle schema, the OpenAPI document from the contract, and the DATABASE.md drift check (Step 0 item 4).",
+  "scripts": {
+    "generate": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/generate.ts",
+    "drift": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/drift.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@avel/contract": "workspace:*",
+    "@avel/db": "workspace:*",
+    "@orpc/openapi": "1.16.2",
+    "@orpc/zod": "1.16.2",
+    "drizzle-orm": "0.45.4",
+    "zod": "4.6.7"
+  }
+}
