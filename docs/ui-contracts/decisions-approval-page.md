@@ -481,6 +481,7 @@ It's the page's because sprint-01 has one page. It moves to the shell with W2 (F
 - **`apps/web/src/styles/tokens.css`** carries DL's token stylesheet: every custom property between DL's `Theme-independent AVEL tokens` and `Base element defaults` comments, with the same value under the same selectors.
   - The check in Nemi's task compares 533 name and value pairs.
   - `--av-stall-after: 8m` is copied as it is (FM's follow-up changes DL's source).
+- **`apps/web/src/styles/base.css`** carries DL's `Base element defaults` block word for word: every rule from that comment up to the `AVEL field anatomy` comment (`html` and `body` background `var(--av-floor)`, `body` ink `var(--av-ink)` and type, links, focus rings, selection, and form and code inheritance). It loads after `tokens.css` (INT, 2026-11-07; Decisions).
 - **`apps/web/src/routes/__root.tsx`** is the shell:
   - `<html>` gets `data-theme` from the `avel-theme` cookie (`light` or `night`, default `light`), read on the server before first paint;
   - it loads Inter Variable and IBM Plex Mono;

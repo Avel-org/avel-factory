@@ -312,6 +312,17 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
   - **A row a refetch still lists** comes back from the server in `seen`, as `stale`'s does. The page keeps no state the server doesn't send. 5.3's `notAllowedNow` row says so (`notFound` follows it), and UC-17 asserts it with `failNext` alone.
 - **Copy:** no new † strings.
 
+## 2026-11-07: DL's base element defaults go to Nemi (INT)
+
+- **INT's call:** the base element defaults (the body's background and ink) are Nemi's, in `apps/web/src/styles/**`, and land before the w0-app merge. Brennan's w0-app review-spec checks them against this line.
+- **Section 6 adds one line:** `apps/web/src/styles/base.css` carries DL's whole `Base element defaults` block, word for word, from that comment to the `AVEL field anatomy` comment. That covers:
+  - `html` and `body` background `var(--av-floor)`;
+  - `body` colour `var(--av-ink)`, with DL's font, size, line height, weight and numerals;
+  - links, `:focus-visible`, `::selection`;
+  - `font: inherit` on form controls, and the mono font on `code`, `kbd` and `samp`.
+- **Why the whole block, not just background and ink:** it's one block in DL. Cutting it at background and ink would invent a boundary DL doesn't draw. Every value in it is a `--av-*` token or DL's own literal (section 0's value rule).
+- **The token check is unaffected:** the block declares no custom properties, so the check still counts 533 pairs.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).
