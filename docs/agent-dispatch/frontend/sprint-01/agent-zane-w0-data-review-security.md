@@ -67,6 +67,11 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web build && ! grep -rlE '__mock|0193a000-0000-7000-8000-000000000001' apps/web/.output apps/web/dist 2>/dev/null && ! grep -rl '@avel/contract-mock' apps/web/src`
 - **Expected:** builds; no file listed
 
+### ZANE-02: Attempt a2: review Ghost's fix for your finding 03: the forwarded X-Request-Id is checked against a UUID or ^[A-Za-z0-9-]{1,64}$ before it's used, and an invalid one is replaced, never echoed (P1)
+
+- **Verify:** `grep -n 'A-Za-z0-9-' apps/web/src/router.tsx && pnpm --filter @avel/web exec vitest run test/data`
+- **Expected:** the check listed; the locked tests pass
+
 ## 5. Territory
 
 **You may change only:**
@@ -148,6 +153,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | ZANE-01 | DONE / PARKED / BLOCKED | |
+| ZANE-02 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/w0-data-zane-*.md`): its path, severity and title. "none" if none.
@@ -198,6 +204,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZANE-01: Review the w0-data diff: one key per intent and reused only on a retry, no key or request ID logged with a body, the mock and /__mock paths absent from a production build
+- ZANE-02: Attempt a2: review Ghost's fix for your finding 03: the forwarded X-Request-Id is checked against a UUID or ^[A-Za-z0-9-]{1,64}$ before it's used, and an invalid one is replaced, never echoed
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zane-w0-data-review-security-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-data-zane-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

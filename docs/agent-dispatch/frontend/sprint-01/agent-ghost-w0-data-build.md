@@ -84,6 +84,18 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `! grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src && pnpm --filter "@avel/web..." typecheck && pnpm --filter @avel/web exec vitest run test/data && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js'`
 - **Expected:** no line listed; typechecks; the locked tests pass; the client chunks, with /'s first load before and after (measure main's build first), which you report
 
+### GHOST-04: Attempt a2 (Zane's w0-data 03): router.tsx's getRouter() forwards the incoming X-Request-Id only if it's a UUID or matches ^[A-Za-z0-9-]{1,64}$; otherwise no requestId, so the fetch wrapper makes a new one (section 3, 'On the server') (P2)
+
+- **Required:** A valid incoming ID is still forwarded as before; an empty, 65-character, or control-character value isn't; the locked w0-data tests pass unchanged
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/data && grep -n 'A-Za-z0-9-' apps/web/src/router.tsx`
+- **Expected:** typechecks; the locked tests pass; the check listed, with how you exercised a forged value, which you report
+
+### GHOST-05: Attempt a2: UiError's stale member carries message: string, the ErrorBody's message, or "" when the body isn't an ErrorBody (section 3's UiError table) (P2)
+
+- **Required:** toUiError sets it on every stale; nothing else in UiError changes; the locked w0-data tests pass unchanged
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/data && pnpm --filter @avel/web exec vitest run test/modules/decisions`
+- **Expected:** typechecks; the locked w0-data tests pass; the decisions tests are as they were before your change (report any that changed)
+
 **Notes:**
 
 - The mock serves the contract through oRPC's OpenAPI handler over @avel/contract, so a mistake shows up as a type error, not drift.
@@ -93,7 +105,7 @@ Do them in order. Finish each one, verified, before the next.
 - The web calls the mock's route 54 with the body { version, choice, reason }: OpenAPILink drops path parameters from the body (contract section 1). The path's proposalId wins and a body copy is ignored, as oRPC's handler merges path over body (Axis S1-5, D48): don't read the raw body, and check 1 is the schema check only.
 - Attempt a2 (2026-11-07, revision 9; INT's decision 4, S1-6's web side): the first two tasks are merged (a1). Do only the third. Start after Axis's S1-6 (@avel/contract on zod/mini, backend sprint-01) is merged on main: check that git grep -nE "from ['\"]zod['\"]" packages/contract/src lists nothing before you start, and if it does, stop and report. The two halves land together because either one on classic zod brings all of it back (backend sprint-01 decisions.md, S1-6).
 - Axis's S1-6 spike notes for you (backend sprint-01 decisions.md, S1-6, 'The spike's notes for Ghost'): data/client.ts's type-level SchemaInput/SchemaOutput use z.ZodType, whose mini name is z.ZodMiniType (or take $ZodType from zod/v4/core, which accepts both); in pending-decisions.ts, .regex() becomes .check(z.regex(...)), .optional()/.nullable() become z.optional(x)/z.nullable(x), and .min(1) on an int becomes .check(z.minimum(1)). The spike measured both halves together at 156.28 kB gzip (from 173.53).
-- a2's scope is zod only: Zane's w0-data finding 03 and UiError.stale.message wait for INT's call (decisions.md, 'Revision 9'). packages/contract-mock and apps/web/test aren't in the browser's bundle, so section 3's rule doesn't cover them: leave them as they are unless they stop typechecking.
+- a2 also takes two earmarked follow-ups (INT, 2026-11-07; decisions.md, 'Ghost's w0-data a2 scope'), as the fourth and fifth tasks: Zane's w0-data finding 03 (findings/w0-data-zane-03-forwarded-request-id-unvalidated.md: getRouter() forwards the incoming X-Request-Id only if it's a UUID or matches ^[A-Za-z0-9-]{1,64}$, else passes none so the wrapper makes one; contract section 3, 'On the server'), and UiError.stale.message (section 3's UiError table: the ErrorBody's message, or "" when the body isn't an ErrorBody; Revision 7, Leon's deviation 3). The locked w0-data tests match UiError with toMatchObject, so an added field doesn't break them. If one does, stop and report it. Tasks 4 and 5 don't wait for S1-6: if S1-6 isn't merged when you start, do them first and say so. packages/contract-mock and apps/web/test aren't in the browser's bundle, so section 3's rule doesn't cover them: leave them as they are unless they stop typechecking.
 
 ## 5. Territory
 
@@ -177,6 +189,8 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | GHOST-01 | DONE / PARKED / BLOCKED | |
 | GHOST-02 | DONE / PARKED / BLOCKED | |
 | GHOST-03 | DONE / PARKED / BLOCKED | |
+| GHOST-04 | DONE / PARKED / BLOCKED | |
+| GHOST-05 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -226,6 +240,8 @@ Your tasks:
 - GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (BAD_REQUEST details { field, issues }, S1-3), both response headers, the idempotency rules, route 54's checks in CR-W2's order (check 1 the schema check only; the path's proposalId wins, S1-5), every request recorded (failed ones too), the dev-only bump and reset paths, and fixtures empty, step1 and many
 - GHOST-02: apps/web/src/data and lib: createApiClient with its fetch wrapper (X-Request-Id, Idempotency-Key, NetworkError, the browser-only X-Contract-Version check) and decodeErrorBody as OpenAPILink's customErrorResponseBodyDecoder, createApi, bindApi, apiFor and useApi, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, ApiError, NetworkError and toUiError's four branches (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas, parsePendingPage (one page) and selectPendingPages (route 52's infinite select), formatAgo and formatClock; apps/web/src/router.tsx with getRouter (per request on the server, forwarding the incoming X-Request-Id)
 - GHOST-03: Attempt a2: no classic zod in apps/web/src (UI contract section 3, 'Which zod the web may import'). data/pending-decisions.ts written in zod/mini with the same fields, parse results and issue paths; client.ts's type import from zod/mini; decodeErrorBody keeps ErrorBody from @avel/contract/errors
+- GHOST-04: Attempt a2 (Zane's w0-data 03): router.tsx's getRouter() forwards the incoming X-Request-Id only if it's a UUID or matches ^[A-Za-z0-9-]{1,64}$; otherwise no requestId, so the fetch wrapper makes a new one (section 3, 'On the server')
+- GHOST-05: Attempt a2: UiError's stale member carries message: string, the ErrorBody's message, or "" when the body isn't an ErrorBody (section 3's UiError table)
 
 You may change only: apps/web/src/data/**, apps/web/src/lib/**, apps/web/src/router.tsx, packages/contract-mock/**, docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

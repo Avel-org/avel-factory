@@ -343,7 +343,7 @@ notes = [
   "The web calls the mock's route 54 with the body { version, choice, reason }: OpenAPILink drops path parameters from the body (contract section 1). The path's proposalId wins and a body copy is ignored, as oRPC's handler merges path over body (Axis S1-5, D48): don't read the raw body, and check 1 is the schema check only.",
   "Attempt a2 (2026-11-07, revision 9; INT's decision 4, S1-6's web side): the first two tasks are merged (a1). Do only the third. Start after Axis's S1-6 (@avel/contract on zod/mini, backend sprint-01) is merged on main: check that git grep -nE \"from ['\\\"]zod['\\\"]\" packages/contract/src lists nothing before you start, and if it does, stop and report. The two halves land together because either one on classic zod brings all of it back (backend sprint-01 decisions.md, S1-6).",
   "Axis's S1-6 spike notes for you (backend sprint-01 decisions.md, S1-6, 'The spike's notes for Ghost'): data/client.ts's type-level SchemaInput/SchemaOutput use z.ZodType, whose mini name is z.ZodMiniType (or take $ZodType from zod/v4/core, which accepts both); in pending-decisions.ts, .regex() becomes .check(z.regex(...)), .optional()/.nullable() become z.optional(x)/z.nullable(x), and .min(1) on an int becomes .check(z.minimum(1)). The spike measured both halves together at 156.28 kB gzip (from 173.53).",
-  "a2's scope is zod only: Zane's w0-data finding 03 and UiError.stale.message wait for INT's call (decisions.md, 'Revision 9'). packages/contract-mock and apps/web/test aren't in the browser's bundle, so section 3's rule doesn't cover them: leave them as they are unless they stop typechecking.",
+  "a2 also takes two earmarked follow-ups (INT, 2026-11-07; decisions.md, 'Ghost's w0-data a2 scope'), as the fourth and fifth tasks: Zane's w0-data finding 03 (findings/w0-data-zane-03-forwarded-request-id-unvalidated.md: getRouter() forwards the incoming X-Request-Id only if it's a UUID or matches ^[A-Za-z0-9-]{1,64}$, else passes none so the wrapper makes one; contract section 3, 'On the server'), and UiError.stale.message (section 3's UiError table: the ErrorBody's message, or \"\" when the body isn't an ErrorBody; Revision 7, Leon's deviation 3). The locked w0-data tests match UiError with toMatchObject, so an added field doesn't break them. If one does, stop and report it. Tasks 4 and 5 don't wait for S1-6: if S1-6 isn't merged when you start, do them first and say so. packages/contract-mock and apps/web/test aren't in the browser's bundle, so section 3's rule doesn't cover them: leave them as they are unless they stop typechecking.",
 ]
 
 [[dispatch.task]]
@@ -366,6 +366,20 @@ priority = "P0"
 required = "No runtime or type import of \"zod\" or \"zod/v4\" under apps/web/src; the locked w0-data tests pass unchanged; the first load of / (every JS file it loads, gzipped and summed, section 8) is lower than before, by the amount you report"
 verify = "! grep -rnE \"from ['\\\"]zod(/v4)?['\\\"]\" apps/web/src && pnpm --filter \"@avel/web...\" typecheck && pnpm --filter @avel/web exec vitest run test/data && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js'"
 expected = "no line listed; typechecks; the locked tests pass; the client chunks, with /'s first load before and after (measure main's build first), which you report"
+
+[[dispatch.task]]
+title = "Attempt a2 (Zane's w0-data 03): router.tsx's getRouter() forwards the incoming X-Request-Id only if it's a UUID or matches ^[A-Za-z0-9-]{1,64}$; otherwise no requestId, so the fetch wrapper makes a new one (section 3, 'On the server')"
+priority = "P2"
+required = "A valid incoming ID is still forwarded as before; an empty, 65-character, or control-character value isn't; the locked w0-data tests pass unchanged"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/data && grep -n 'A-Za-z0-9-' apps/web/src/router.tsx"
+expected = "typechecks; the locked tests pass; the check listed, with how you exercised a forged value, which you report"
+
+[[dispatch.task]]
+title = "Attempt a2: UiError's stale member carries message: string, the ErrorBody's message, or \"\" when the body isn't an ErrorBody (section 3's UiError table)"
+priority = "P2"
+required = "toUiError sets it on every stale; nothing else in UiError changes; the locked w0-data tests pass unchanged"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/data && pnpm --filter @avel/web exec vitest run test/modules/decisions"
+expected = "typechecks; the locked w0-data tests pass; the decisions tests are as they were before your change (report any that changed)"
 
 [[dispatch]]
 agent = "zero"
@@ -415,6 +429,11 @@ context = [
 title = "Review the w0-data diff: one key per intent and reused only on a retry, no key or request ID logged with a body, the mock and /__mock paths absent from a production build"
 verify = "pnpm --filter @avel/web build && ! grep -rlE '__mock|0193a000-0000-7000-8000-000000000001' apps/web/.output apps/web/dist 2>/dev/null && ! grep -rl '@avel/contract-mock' apps/web/src"
 expected = "builds; no file listed"
+
+[[dispatch.task]]
+title = "Attempt a2: review Ghost's fix for your finding 03: the forwarded X-Request-Id is checked against a UUID or ^[A-Za-z0-9-]{1,64}$ before it's used, and an invalid one is replaced, never echoed"
+verify = "grep -n 'A-Za-z0-9-' apps/web/src/router.tsx && pnpm --filter @avel/web exec vitest run test/data"
+expected = "the check listed; the locked tests pass"
 
 # ------------------------------------------------------------------ w0-kit: Fenn's tests, then Fantem
 [[dispatch]]
@@ -592,6 +611,7 @@ notes = [
   "Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third and fourth tasks: the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'), and the hydration marker (revision 9). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.",
   "Leah's review of a1 (revision 9; report and findings on main at 3d3ccfc, in Context). Yours: link kit.css and decisions.css from /'s head so the server's HTML carries them (findings 02 and 04: with kit.css linked, HashChip draws in Mono 500 on first paint), the lazy ReasonDialog, and the hydration marker (finding 03). Not yours, and don't work around them in decisions.css: the 44px tap targets, the 16px input and the dialog's aria-describedby are the kit's (Fantem's w0-kit a3, section 4, K1 and R5); Fenn's end-to-end a2 waits for your marker; Nemi's w0-split makes the route split real; zod/mini is Ghost's, after Axis's S1-6.",
   "Your end-to-end run needs Fenn's e2e a2 and Fantem's w0-kit a3 on main, and your chunk sizes need Nemi's w0-split. INT dispatches you once they're merged. If one isn't when you reach the verify, run what you can, say which wasn't merged, and report the failures it explains under Limitations.",
+  "UiError.stale.message (revision 9): Ghost's w0-data a2 adds it. If it's on main when you start, the null-version stale row's body reads it (5.3), and your raw read goes. If it isn't, keep your a1 read as built and say so in your report: the switch then comes in a later fix.",
   "The budget: report /'s first load as section 8 counts it (every JS file / loads, gzipped and summed, without the lazy dialog's chunk). Over 160 kB isn't yours to fix in a2: zod/mini is the cut that clears it.",
 ]
 

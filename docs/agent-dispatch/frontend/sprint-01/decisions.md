@@ -516,3 +516,13 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
   - **The output:** a recommended set, with its projected first load (overlaps not double-counted), and a budget figure.
 - **The budget until then:** 160 kB stands for sprint-01. With Leah's numbers I write the budget proposal here and in contract section 8, and INT decides.
 - **Also folded into Ghost's w0-data a2 notes:** Axis's spike notes for the web side (`z.ZodMiniType` or `$ZodType` in `client.ts`, and the `pending-decisions.ts` rewrites).
+
+## 2026-11-07: INT's answers on revision 9, and Ghost's w0-data a2 scope
+
+- **Routing (a) and (b): confirmed as routed.** The kit's K1 and R5 go to Fantem as w0-kit a3. The route split goes to Nemi as w0-split.
+- **The order is mine** (INT). INT opened, at 9b25f09: Leah's size-study a1, Fenn's decisions-test-e2e **a3** (the next free attempt; the task doc's notes call it "a2", and the work is the same), Fantem's w0-kit a3 and Nemi's w0-split a1. My and Brennan's decisions reviews of Leon's a1 aren't started: Leon's a2 replaces what they would review.
+- **Ghost's w0-data a2 takes both earmarked follow-ups too:**
+  - **Zane's w0-data 03:** `getRouter()` forwards the incoming `X-Request-Id` only if it's a UUID or matches `^[A-Za-z0-9-]{1,64}$`. Otherwise it passes none, and the wrapper makes a new ID (section 3, "On the server"). The check sits where the header is read, so the locked UC-05 tests, which pass `requestId` straight to `createApiClient`, don't change. Zane's w0-data review gets an a2 task for it.
+  - **`UiError.stale.message`:** the `ErrorBody`'s message, or `""` when the body isn't an `ErrorBody`, so the field is always a string (section 3's table, and 5.3's null-version row). UC-04 matches `UiError` with `toMatchObject`, so the locked tests hold.
+  - **Neither waits for S1-6.** If Axis's module isn't merged when Ghost starts, he does these two first.
+  - **Leon:** if Ghost's a2 is on main when Leon starts, 5.3's null-version row reads `UiError.stale.message`. If it isn't, Leon keeps a1's read, and the switch is a later fix.

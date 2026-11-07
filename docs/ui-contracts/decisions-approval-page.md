@@ -216,7 +216,7 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 | `formatClock(iso: string): string` | `lib/time.ts` | Local `HH:MM`, zero-padded, as DL's approved stamp shows it (`14:06`) |
 | `getRouter()` | `router.tsx` | Called per request on the server and once in the browser. It makes a new `QueryClient` (`createQueryClient()`) and a new `Api` bound to it (`bindApi`), passes `{ queryClient }` as the router context, and wires Router and Query with `setupRouterSsrQueryIntegration`, which provides the `QueryClient` to the app (FM, Rendering and SSR) |
 | | | **In the browser:** `createApi()`: same origin, a new `X-Request-Id` per request |
-| | | **On the server:** `createApi({ baseUrl: <the incoming request's origin>, requestId: <its X-Request-Id, when it has one> })`. The loader's client forwards the incoming request ID (FM line 141). The incoming request is read with TanStack Start's server request accessor, inside `createIsomorphicFn().server(…)`, so it stays out of the client bundle. If `getRouter()` can't reach the incoming request, Ghost stops and reports under Deviations |
+| | | **On the server:** `createApi({ baseUrl: <the incoming request's origin>, requestId: <its X-Request-Id, when it has one> })`. The loader's client forwards the incoming request ID (FM line 141). The incoming request is read with TanStack Start's server request accessor, inside `createIsomorphicFn().server(…)`, so it stays out of the client bundle. If `getRouter()` can't reach the incoming request, Ghost stops and reports under Deviations. **The forwarded ID is checked first** (revision 9; Zane's w0-data 03): `getRouter()` passes it only if it's a UUID or matches `^[A-Za-z0-9-]{1,64}$`. Otherwise it passes no `requestId`, and the wrapper makes a new one, so a forged or oversized value never reaches a log or a response |
 | | | **Cookies aren't forwarded** in sprint-01: there are no sessions until W5 (Decisions, "Revision 4"). W5 adds the cookie beside the request ID |
 
 **One data path for each environment** (finding 24):
@@ -242,7 +242,7 @@ export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
 
 | `kind` | When | Extra fields |
 | --- | --- | --- |
-| `stale` | 409 `STALE_VERSION` | `field: string \| null`, `currentVersion: number \| string \| null` (null when `details` isn't D21's shape) |
+| `stale` | 409 `STALE_VERSION` | `field: string \| null`, `currentVersion: number \| string \| null` (null when `details` isn't D21's shape), `message: string` (the `ErrorBody`'s `message`, or `""` when the body isn't an `ErrorBody`; revision 9, Ghost's w0-data a2) |
 | `notAllowedNow` | 422 `INVALID_TRANSITION` | `state?: 'resolved' \| 'expired'` (when `details.state` is sent) |
 | `notFound` | 404 (any code) | |
 | `badRequest` | 400, and any 4xx not named in this table (405, 410, 413, …), so it's never retried | `field?: string` (from `details.field`, when it's a string) |
@@ -468,7 +468,7 @@ The one exception is section 3's fourth branch (a response body the link can't r
 
 | `kind` | What the row does | Action |
 | --- | --- | --- |
-| `stale` with `currentVersion` null | As `conflict` below, with `body` = the server's `ErrorBody.message`: without the version there's nothing to review. m1's `STALE_VERSION` always sends it (D21), so only a malformed answer gets here | as `conflict` |
+| `stale` with `currentVersion` null | As `conflict` below, with `body` = the server's message, read from `UiError.stale.message` once Ghost's w0-data a2 adds it (revision 9; until then, from the error as Leon's a1 built it): without the version there's nothing to review. m1's `STALE_VERSION` always sends it (D21), so only a malformed answer gets here | as `conflict` |
 | `stale` | `state: "stale"`; binding struck; `staleNote: "Version {currentVersion} arrived while you were reading."`; `staleAction: "Review version {currentVersion}"` (DL's B-2 specimen copy) | **Review** refetches route 52, and the row comes back with the new version in `seen`. **Nothing is re-sent, ever** (FM, In short, item 5). If the row is gone after the refetch, the list shows `That decision was settled elsewhere.`† (`role="status"`), which stays until the page reloads |
 | `notAllowedNow` | `state: "notAllowed"`, with `notAllowedReason` set by `state`: | `onRefresh`: `Refresh list`† refetches route 52. A row the refetch still lists comes back from the server in `seen`, as `stale`'s does: the page keeps no state the server doesn't send |
 | | `state` resolved: `This decision was already made.`† | |

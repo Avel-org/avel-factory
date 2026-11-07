@@ -230,6 +230,8 @@ Your tasks:
 - GHOST-01: packages/contract-mock: createMock with the exact surface in section 2 (failNext written raw with times, remove, MOCK_OPERATOR_ID), routes 52 to 54 through the contract (route 54 answers 201), every error as m1's ErrorBody (BAD_REQUEST details { field, issues }, S1-3), both response headers, the idempotency rules, route 54's checks in CR-W2's order (check 1 the schema check only; the path's proposalId wins, S1-5), every request recorded (failed ones too), the dev-only bump and reset paths, and fixtures empty, step1 and many
 - GHOST-02: apps/web/src/data and lib: createApiClient with its fetch wrapper (X-Request-Id, Idempotency-Key, NetworkError, the browser-only X-Contract-Version check) and decodeErrorBody as OpenAPILink's customErrorResponseBodyDecoder, createApi, bindApi, apiFor and useApi, BUILT_CONTRACT_VERSION and useContractMismatch, newIdempotencyKey, ApiError, NetworkError and toUiError's four branches (section 3, 'Reading an error') with section 3's UiError, createQueryClient with retryDelay, the CR-W2 row schemas, parsePendingPage (one page) and selectPendingPages (route 52's infinite select), formatAgo and formatClock; apps/web/src/router.tsx with getRouter (per request on the server, forwarding the incoming X-Request-Id)
 - GHOST-03: Attempt a2: no classic zod in apps/web/src (UI contract section 3, 'Which zod the web may import'). data/pending-decisions.ts written in zod/mini with the same fields, parse results and issue paths; client.ts's type import from zod/mini; decodeErrorBody keeps ErrorBody from @avel/contract/errors
+- GHOST-04: Attempt a2 (Zane's w0-data 03): router.tsx's getRouter() forwards the incoming X-Request-Id only if it's a UUID or matches ^[A-Za-z0-9-]{1,64}$; otherwise no requestId, so the fetch wrapper makes a new one (section 3, 'On the server')
+- GHOST-05: Attempt a2: UiError's stale member carries message: string, the ErrorBody's message, or "" when the body isn't an ErrorBody (section 3's UiError table)
 
 You may change only: apps/web/src/data/**, apps/web/src/lib/**, apps/web/src/router.tsx, packages/contract-mock/**, docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -294,6 +296,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZANE-01: Review the w0-data diff: one key per intent and reused only on a retry, no key or request ID logged with a body, the mock and /__mock paths absent from a production build
+- ZANE-02: Attempt a2: review Ghost's fix for your finding 03: the forwarded X-Request-Id is checked against a UUID or ^[A-Za-z0-9-]{1,64}$ before it's used, and an invalid one is replaced, never echoed
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zane-w0-data-review-security-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-data-zane-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
