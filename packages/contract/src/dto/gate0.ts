@@ -77,6 +77,10 @@ export type CheckpointDto = z.infer<typeof CheckpointDto>;
 export const CheckpointIdInput = z.object({ checkpointId: Uuid });
 export type CheckpointIdInput = z.infer<typeof CheckpointIdInput>;
 
+/** Route 39: generate a draft. Sends the checkpoint's `rowVersion` (D25, finding 01). */
+export const DraftCheckpointInput = CheckpointIdInput.extend({ rowVersion: RowVersion });
+export type DraftCheckpointInput = z.infer<typeof DraftCheckpointInput>;
+
 /** Route 38: edit one section of `checkpoints.sections`. */
 export const UpdateCheckpointSectionInput = z.object({
   checkpointId: Uuid,
@@ -157,9 +161,10 @@ export const QuestionDto = z.object({
 });
 export type QuestionDto = z.infer<typeof QuestionDto>;
 
-/** Route 44: answer. */
+/** Route 44: answer. Sends the question's `rowVersion` (D25, finding 01). */
 export const AnswerQuestionInput = z.object({
   questionId: Uuid,
+  rowVersion: RowVersion,
   answer: z.string().trim().min(1),
 });
 export type AnswerQuestionInput = z.infer<typeof AnswerQuestionInput>;

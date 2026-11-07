@@ -53,6 +53,7 @@ The verdict is PARTIAL for two reasons, both outside my territory:
   - `receiptHash` for pass approvals and releases;
   - `headSha` for factory merges.
   The device-login approval (route 2) sends only the user code, since nothing is shown before it.
+  Changed before the merge (D25, finding 01): routes 39 (drafts) and 44 (answers) also send `rowVersion`. Route 5 stays without one (exempt).
 - **A4. Route metadata** (left open by: no doc says how the contract marks writes or step-up). `RouteMeta = { write, stepUp, caller, routeNo }`, set on every route through `route()`. A POST answers 201 (Frontend Map v0.6: "`successStatus: 201` on creates").
 - **A5. Error details** (left open by: D5 says `details` "names the constraint" and "lists the allowed moves", but not as which fields). `ALREADY_EXISTS`, `DELETE_REFUSED` and `CONSTRAINT_VIOLATION` carry `{ constraint }`, and `INVALID_TRANSITION` carries `{ allowed: string[] }`. CR-16's four codes go only on its three routes, so other routes can't return them.
 - **A6. The module names** (left open by: section 5 names owners, not the full list). `Module` is the build plan's 19 modules (section 4), with `contract`'s server side named `platform` (CR-15 item 3, as section 6 does).
@@ -64,10 +65,10 @@ The verdict is PARTIAL for two reasons, both outside my territory:
   - route 7 (`DoctorDto`, one key per item the row names);
   - route 21 (`gateStrip`, `onboarding.progress`, `why`);
   - routes 47 and 48 (`RosterDto.roster`; `version` is the pinned `roster_version`);
-  - route 52 (`PendingDecisionDto`, a union on `source: 'proposal' | 'factory_change'`, my discriminator);
+  - route 52 (`PendingDecisionDto`, a plain `Placeholder`; changed before the merge from my `source` union, D30, finding 02);
   - routes 72 and 73 (`FactoryChangeDto.change`; `changeId` and `headSha` are known);
   - route 56 (`log`), route 69 (`MetricsDto`) and route 92 (`results`).
-- **A9. Template `itemId` is a string** (left open by: Q5 gives the four routes per kind, but `templates` is keyed by `(slug, version)` and has no `id`). The server resolves the string. The other three kinds use the UUID `id`.
+- **A9. Template `itemId` is a string** (left open by: Q5 gives the four routes per kind, but `templates` is keyed by `(slug, version)` and has no `id`). Its format is `<slug>@<version>` (e.g. `landing-page@3`, D31); the server parses it, so a template slug can't contain `@`. The other three kinds use the UUID `id`.
 - **A10. Fields named after their route row, not a column** (rule 1's second branch):
   - `deviceCode` (route 1), `token` (route 3), `readToken` and `writeToken` (routes 13 and 17);
   - `RepoTokenCheckDto`'s `ok`, `scopes` and `expiresAt` (route 16), and `value` (route 45);
@@ -106,7 +107,7 @@ none
   - Paths carry no query string (route 63 is `GET /api/events/stream`). The package resolves to `dist/`, so tests that import `@avel/contract` need `pnpm build` first, or a relative import of `src/`.
 - **Soap** (m2): build each value-list CHECK from `checkedColumns` and `valueLists`, which cover the 99 plus 5 new columns. Step 1's error mapper must turn oRPC errors into `ErrorBody` (Limitations).
 - **Brennan** (m1 review): A1 to A13, and D16.
-- **Zero, through INT:** `CONFLICT` is only the fallback 409. A stale version is `STALE_VERSION`, and an existing row is `ALREADY_EXISTS` (already in contract.md section 5). `PendingDecisionDto` is a placeholder union until CR-W2 is decided.
+- **Zero, through INT:** `CONFLICT` is only the fallback 409. A stale version is `STALE_VERSION`, and an existing row is `ALREADY_EXISTS` (already in contract.md section 5). `PendingDecisionDto` is a plain placeholder until CR-W2 is decided (D30).
 - **INT:** copy A1 to A13 into `decisions.md` if accepted. The lockfile needs Atlas before merge.
 
 ## Files changed
@@ -223,3 +224,12 @@ unused lists: []
 error codes: 20 event kinds: 12 modules: 19
 openapi: 3.1.1 paths: 83 operations: 102
 ```
+
+## After review (Brennan m1 PASS at de8b053; INT's answers D25, D30, D31)
+
+One commit on this branch, before the merge (the commit that adds this section; its sha is in the message to INT):
+- **D25, finding 01:** route 39 takes the new `DraftCheckpointInput` (`CheckpointIdInput` plus `rowVersion`). Route 44's `AnswerQuestionInput` gains `rowVersion`. Route 5 is unchanged (exempt).
+- **D30, finding 02:** `PendingDecisionDto = Placeholder`. The unused `FactoryChangeDto` import is dropped.
+- **D31:** the template `itemId` format `<slug>@<version>` is written into A9 above and the `TemplateIdInput` comment. The schema is still `z.string().min(1)`, and the server parses it.
+
+Outcome: `pnpm build`, `pnpm typecheck` and `pnpm lint` exit 0 (`Checked 58 files ... No fixes applied.`). A built-contract check gives these inputs: route 5 `[sessionId]`; route 39 `[checkpointId, rowVersion]`; route 44 `[questionId, rowVersion, answer]`; route 52's item accepts any JSON record. `pnpm-lock.yaml` is untouched.

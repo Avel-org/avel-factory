@@ -177,7 +177,8 @@ export type CreateTemplateInput = z.infer<typeof CreateTemplateInput>;
 
 /**
  * Routes 88 and 89: `templates` is keyed by `(slug, version)`, with no `id`, so its
- * `itemId` is a string the server resolves (open: the m1 completion report, A9).
+ * `itemId` is the string `<slug>@<version>` (e.g. `landing-page@3`), which the server
+ * parses, so a template slug can't contain `@` (D31).
  */
 export const TemplateIdInput = z.object({ itemId: z.string().min(1) });
 export type TemplateIdInput = z.infer<typeof TemplateIdInput>;

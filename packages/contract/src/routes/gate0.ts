@@ -3,9 +3,9 @@ import {
   AnswerQuestionInput,
   ApproveCheckpointInput,
   CheckpointDto,
-  CheckpointIdInput,
   CreateUploadInput,
   DeleteUploadInput,
+  DraftCheckpointInput,
   FactDto,
   ListUploadsInput,
   PutSecretInput,
@@ -47,7 +47,7 @@ export const gate0 = {
     .input(UpdateCheckpointSectionInput)
     .output(CheckpointDto),
   draftCheckpoint: route(39, "POST", "/api/checkpoints/{checkpointId}/drafts", tag, "Generate")
-    .input(CheckpointIdInput)
+    .input(DraftCheckpointInput)
     .output(CheckpointDto),
   approveCheckpoint: route(40, "POST", "/api/checkpoints/{checkpointId}/approvals", tag, "Approve")
     .input(ApproveCheckpointInput)

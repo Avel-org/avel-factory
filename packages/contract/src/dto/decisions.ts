@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { ProposalKind, ProposalState } from "../value-lists.js";
-import { IsoTime, Json, mutableFields, Reason, Uuid } from "./common.js";
-import { FactoryChangeDto } from "./factory.js";
+import { IsoTime, Json, mutableFields, Placeholder, Reason, Uuid } from "./common.js";
 
 /** Decisions (routes 52 to 54). */
 
@@ -29,13 +28,10 @@ export type ProposalDto = z.infer<typeof ProposalDto>;
 
 /**
  * Route 52: "Everything waiting on you: proposals of every kind, plus open factory
- * PRs". A typed placeholder (contract.md section 4, item 6): CR-W2's union isn't
- * accepted, and Step 1's routes 52 to 54 decide it.
+ * PRs". A plain `Placeholder` (D30, finding 02): no accepted doc gives its shape,
+ * CR-W2 isn't decided, and Step 1's routes 52 to 54 decide it.
  */
-export const PendingDecisionDto = z.discriminatedUnion("source", [
-  z.object({ source: z.literal("proposal"), proposal: ProposalDto }),
-  z.object({ source: z.literal("factory_change"), change: FactoryChangeDto }),
-]);
+export const PendingDecisionDto = Placeholder;
 export type PendingDecisionDto = z.infer<typeof PendingDecisionDto>;
 
 export const ProposalIdInput = z.object({ proposalId: Uuid });
