@@ -81,11 +81,8 @@ export function ReasonDialog({
         </>
       }
     >
-      <form onSubmit={confirm} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <label
-          htmlFor={fieldId}
-          style={{ fontSize: "var(--av-fs-label)", color: "var(--av-muted)" }}
-        >
+      <form onSubmit={confirm} className="av-reason-form">
+        <label htmlFor={fieldId} className="av-reason-label">
           Why?
         </label>
         <textarea
@@ -100,26 +97,9 @@ export function ReasonDialog({
           onKeyDown={(event) => {
             if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) confirm(event);
           }}
-          style={{
-            resize: "vertical",
-            minHeight: 76,
-            padding: "8px 10px",
-            lineHeight: 1.45,
-            borderColor: error ? "var(--av-stopped)" : undefined,
-          }}
         />
         {error ? (
-          <span
-            id={errorId}
-            role="alert"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              color: "var(--av-stopped)",
-              fontSize: "var(--av-fs-label)",
-            }}
-          >
+          <span id={errorId} role="alert" className="av-reason-error">
             <StatusGlyph status="stopped" size={10} />
             {error}
           </span>

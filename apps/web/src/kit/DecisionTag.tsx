@@ -1,9 +1,8 @@
-import { type CSSProperties, type ReactNode, useMemo, useState } from "react";
-import { Button, LINK_BUTTON_STYLE } from "./Button";
+import { type ReactNode, useMemo, useState } from "react";
+import { Button } from "./Button";
 import { HashChip } from "./HashChip";
 import { Icon, type IconName } from "./Icon";
 import { canHover } from "./interaction";
-import { KitStyles } from "./KitStyles";
 import { StatusGlyph } from "./StatusGlyph";
 import { Tag } from "./Tag";
 
@@ -73,32 +72,11 @@ function variantLook(variant: string): readonly [string, IconName] {
     : GENERIC;
 }
 
-/** DL's punch hole (`BH`). The fill's animation is in KitStyles, held still under reduced motion (D12). */
+/** DL's punch hole (`BH`). The fill's animation is in kit.css, held still under reduced motion (D12). */
 function PunchHole({ punched }: { punched: boolean }) {
   return (
-    <span
-      aria-hidden="true"
-      style={{
-        position: "relative",
-        width: 14,
-        height: 14,
-        flex: "none",
-        borderRadius: "50%",
-        background: "var(--av-floor)",
-        boxShadow: "inset 0 0 0 1px var(--av-hairline-strong), var(--av-shadow-pressed)",
-      }}
-    >
-      {punched ? (
-        <span
-          data-hole-fill=""
-          style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "50%",
-            background: "var(--av-ink)",
-          }}
-        />
-      ) : null}
+    <span aria-hidden="true" className="av-dt-hole">
+      {punched ? <span data-hole-fill="" /> : null}
     </span>
   );
 }
@@ -111,8 +89,6 @@ function RequestIdChip({ requestId }: { requestId: string }) {
     </div>
   );
 }
-
-const LABEL_MUTED: CSSProperties = { color: "var(--av-muted)", fontSize: "var(--av-fs-label)" };
 
 export function DecisionTag({
   layout,
@@ -147,7 +123,6 @@ export function DecisionTag({
   const rejected = state === "rejected";
   const done = approved || rejected;
   const phone = layout === "phone";
-  const inset = phone ? 18 : 16;
 
   const stateTag = approved ? (
     <Tag tone="neutral">Approved</Tag>
@@ -200,7 +175,6 @@ export function DecisionTag({
       href={link.href}
       target="_blank"
       rel="noopener noreferrer"
-      style={LINK_BUTTON_STYLE}
     >
       {link.label}
       <Icon name="arrow-up-right" size={16} />
@@ -216,7 +190,7 @@ export function DecisionTag({
   let actions: ReactNode = null;
   if (approveButton || rejectButton || linkButton || refreshButton) {
     actions = phone ? (
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="av-dt-actions-phone">
         {approveButton && rejectButton ? (
           // D11: DL's Decisions card on a phone (.pd[data-phone] .pd-actions): Reject left, Approve right.
           <div
@@ -236,13 +210,13 @@ export function DecisionTag({
         {linkButton}
       </div>
     ) : (
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <div className="av-dt-row">
         {approveButton}
         {rejectButton}
         {refreshButton}
         {linkButton ? (
           <>
-            <span style={{ flex: "1 1 auto" }} />
+            <span className="av-dt-spacer" />
             {linkButton}
           </>
         ) : null}
@@ -255,13 +229,13 @@ export function DecisionTag({
   const countdownChip = !!requestId && actionsDisabledReason != null && state === "seen";
 
   const footer = approved ? (
-    <span style={LABEL_MUTED}>
+    <span className="av-dt-muted">
       {`Approved by you${approvedAt ? ` at ${approvedAt}` : ""}. Logged with ${binds ? binds.label : "this version"}.`}
     </span>
   ) : rejected ? (
-    <span style={LABEL_MUTED}>Rejected. Reason sent to the agents and logged.</span>
+    <span className="av-dt-muted">Rejected. Reason sent to the agents and logged.</span>
   ) : actions || countdownChip ? (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div className="av-dt-footer">
       {actions}
       {/* D14: the request ID under the countdown. */}
       {countdownChip ? <RequestIdChip requestId={requestId as string} /> : null}
@@ -273,120 +247,37 @@ export function DecisionTag({
       data-ui="DecisionTag"
       data-variant={variant}
       data-state={state}
+      data-layout={layout}
+      data-hovered={hovered ? "" : undefined}
       aria-label={idLabel ? `${kind} ${idLabel}: ${title}` : `${kind}: ${title}`}
       onPointerEnter={() => {
         if (hoverable) setHovered(true);
       }}
       onPointerLeave={() => setHovered(false)}
-      style={{
-        position: "relative",
-        boxSizing: "border-box",
-        background: "var(--av-faceplate)",
-        backdropFilter: "var(--av-glass-blur)",
-        WebkitBackdropFilter: "var(--av-glass-blur)",
-        borderRadius: "var(--av-radius-tag)",
-        boxShadow: "var(--av-shadow-faceplate)",
-        transform: hovered && !done ? "translateY(-1px)" : "none",
-        transition: "transform var(--av-d-lift) var(--av-ease)",
-      }}
     >
-      <KitStyles />
-      <div
-        style={{
-          padding: `14px ${inset}px ${inset}px ${inset}px`,
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: phone ? 8 : 10,
-            rowGap: 6,
-            minWidth: 0,
-            flexWrap: phone ? "wrap" : "nowrap",
-          }}
-        >
+      <div className="av-dt-body">
+        <div className="av-dt-head">
           <PunchHole punched={approved} />
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              color: "var(--av-muted)",
-              fontSize: "var(--av-fs-label)",
-              fontWeight: 500,
-              minWidth: 0,
-            }}
-          >
+          <span className="av-dt-kind">
             <Icon name={kindIcon} size={14} />
-            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {kind}
-            </span>
+            <span className="av-dt-kind-label">{kind}</span>
           </span>
           {/* D3: the client after the kind label, as DL's Decisions card draws the project. */}
-          {clientName ? (
-            <span
-              style={{
-                color: "var(--av-muted)",
-                fontSize: "var(--av-fs-label)",
-                minWidth: 0,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {clientName}
-            </span>
-          ) : null}
+          {clientName ? <span className="av-dt-client">{clientName}</span> : null}
           {/* D2: no id, no chip. */}
           {idLabel ? <HashChip kind="id" value={idLabel} /> : null}
-          <span style={{ flex: "1 1 auto" }} />
-          {age ? (
-            <span
-              style={{
-                color: "var(--av-muted)",
-                fontSize: "var(--av-fs-small)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {age}
-            </span>
-          ) : null}
+          <span className="av-dt-spacer" />
+          {age ? <span className="av-dt-age">{age}</span> : null}
           {stateTag}
         </div>
 
-        <h3
-          style={{
-            margin: 0,
-            fontSize: "var(--av-fs-title)",
-            lineHeight: "var(--av-lh-title)",
-            fontWeight: 600,
-            textWrap: "pretty",
-            paddingRight: approved ? 96 : 0,
-          }}
-        >
-          {title}
-        </h3>
+        <h3 className="av-dt-title">{title}</h3>
 
         {state === "stale" ? (
           <>
-            <div
-              role="alert"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap",
-                padding: "8px 10px",
-                borderRadius: "var(--av-radius-control)",
-                background: "var(--av-inset)",
-              }}
-            >
+            <div role="alert" className="av-dt-stale">
               <StatusGlyph status="headsup" size={14} />
-              <span style={{ flex: "1 1 180px", fontWeight: 500 }}>
+              <span className="av-dt-stale-note">
                 {staleNote || "This changed since you opened it."}
               </span>
               <Button size="sm" onClick={() => onReview?.()}>
@@ -400,18 +291,17 @@ export function DecisionTag({
 
         {binds ? (
           binds.kind === "version" ? (
-            // D6: a version binding is text, struck through when stale.
+            // D6: a version binding is text, struck through when stale. The strike stays inline:
+            // the locked UC-08 reads it from the element.
             <span
-              style={{
-                ...LABEL_MUTED,
-                textDecoration: state === "stale" ? "line-through" : undefined,
-              }}
+              className="av-dt-muted"
+              style={state === "stale" ? { textDecoration: "line-through" } : undefined}
             >
               {`Binds to ${binds.label}`}
             </span>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={LABEL_MUTED}>Binds to</span>
+            <div className="av-dt-row">
+              <span className="av-dt-muted">Binds to</span>
               <HashChip
                 kind="sha"
                 value={binds.value}
@@ -422,46 +312,28 @@ export function DecisionTag({
           )
         ) : null}
 
-        <dl
-          style={{
-            margin: 0,
-            display: "grid",
-            gridTemplateColumns: phone ? "1fr" : "minmax(84px, max-content) minmax(0, 1fr)",
-            columnGap: 14,
-            rowGap: phone ? 2 : 6,
-            paddingTop: 10,
-            borderTop: "1px solid var(--av-hairline)",
-            fontSize: "var(--av-fs-body)",
-          }}
-        >
+        <dl className="av-dt-facts">
           {evidence ? (
             <>
-              <dt style={{ ...LABEL_MUTED, marginTop: phone ? 4 : 0 }}>Evidence</dt>
-              <dd style={{ margin: 0, textWrap: "pretty" }}>{evidence}</dd>
+              <dt className="av-dt-muted av-dt-evidence">Evidence</dt>
+              <dd>{evidence}</dd>
             </>
           ) : null}
           {consequence ? (
             <>
-              <dt style={{ ...LABEL_MUTED, marginTop: phone ? 8 : 0 }}>Consequence</dt>
-              <dd style={{ margin: 0, textWrap: "pretty" }}>{consequence}</dd>
+              <dt className="av-dt-muted av-dt-consequence">Consequence</dt>
+              <dd>{consequence}</dd>
             </>
           ) : null}
         </dl>
 
         {state === "notAllowed" ? (
           <>
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                alignItems: "flex-start",
-                color: "var(--av-muted)",
-              }}
-            >
-              <span style={{ display: "inline-flex", marginTop: 3 }}>
+            <div className="av-dt-locked">
+              <span className="av-dt-locked-icon">
                 <Icon name="lock" size={14} />
               </span>
-              <span style={{ textWrap: "pretty" }}>
+              <span className="av-dt-locked-text">
                 {notAllowedReason || "You cannot approve this yet."}
               </span>
             </div>
@@ -473,30 +345,16 @@ export function DecisionTag({
         {/* D10: the inline error sits above the actions. */}
         {inlineError ?? null}
 
-        {footer ? (
-          <div style={{ borderTop: "1px solid var(--av-hairline)", paddingTop: 12 }}>{footer}</div>
-        ) : null}
+        {footer ? <div className="av-dt-foot">{footer}</div> : null}
       </div>
 
       {approved ? (
-        // D12: the stamp lands over --av-d-punch, which DL's reduced-motion block sets to 0.
+        // D12: the stamp lands over --av-d-punch, which DL's reduced-motion block sets to 0. The
+        // animation stays inline: the locked UC-08 reads --av-d-punch from the card's HTML.
         <span
           aria-hidden="true"
-          style={{
-            position: "absolute",
-            right: 18,
-            top: 44,
-            padding: "3px 10px",
-            border: "2px solid var(--av-ink)",
-            borderRadius: "var(--av-radius-stamp)",
-            color: "var(--av-ink)",
-            background: "var(--av-faceplate)",
-            fontWeight: 600,
-            fontSize: "var(--av-fs-title)",
-            lineHeight: "var(--av-lh-title)",
-            animation: "av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both",
-            transform: "rotate(-7deg)",
-          }}
+          className="av-dt-stamp"
+          style={{ animation: "av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both" }}
         >
           Approved
         </span>

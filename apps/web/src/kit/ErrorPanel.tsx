@@ -84,39 +84,17 @@ export function ErrorPanel({
   const copy = AV_ERROR_COPY[code] ?? FALLBACK;
   const hasAction = onAction !== undefined;
   return (
-    <div
-      data-ui="ErrorPanel"
-      data-code={code}
-      role="alert"
-      style={{ display: "flex", flexDirection: "column", gap: compact ? 6 : 8, minWidth: 0 }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <div data-ui="ErrorPanel" data-code={code} data-compact={compact ? "" : undefined} role="alert">
+      <div className="av-err-head">
         <StatusGlyph status={copy.glyph} size={12} />
-        <span
-          style={{
-            fontFamily: "var(--av-font-mono)",
-            fontSize: "var(--av-fs-mono)",
-            color: "var(--av-muted)",
-          }}
-        >
-          {code}
-        </span>
-        <span
-          style={{
-            fontWeight: 600,
-            fontSize: "var(--av-fs-title)",
-            lineHeight: "var(--av-lh-title)",
-            color: copy.glyph === "stopped" ? "var(--av-stopped)" : "var(--av-ink)",
-          }}
-        >
+        <span className="av-err-code">{code}</span>
+        <span className="av-err-title" data-stopped={copy.glyph === "stopped" ? "" : undefined}>
           {title || copy.title}
         </span>
       </div>
-      <p style={{ margin: 0, color: "var(--av-muted)", textWrap: "pretty", maxWidth: "60ch" }}>
-        {body || copy.body}
-      </p>
+      <p className="av-err-body">{body || copy.body}</p>
       {hasAction || requestId ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div className="av-err-actions">
           {hasAction ? (
             <Button
               size="sm"

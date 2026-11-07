@@ -3,95 +3,103 @@
 verdict: DONE
 
 ## Summary
-The kit is built in `apps/web/src/kit/**` and exported by name from `index.ts`: Button, Tag, Icon, StatusGlyph, HashChip, ReasonDialog (R1 to R4), ErrorPanel (E1), WidgetState (W1) and DecisionTag (D1 to D14). Each is ported from DL's bundled source, found by its minified name. All three locked kit test files pass: UC-08, UC-09 and UC-10, 68 of 68 tests. Kit lint is clean, and `tsc` reports no errors in `src/kit` or `test/kit`.
+Attempt a2 did only FANTEM-03. FANTEM-01 and 02 merged in a1. The kit's styles now live in one static stylesheet, `apps/web/src/kit/kit.css`, and `kit/index.ts` exports its URL as `kitStylesheetHref` (a `?url` import). `KitStyles.tsx` and every CSS string and style object are gone. The kit renders no style element, and there's no `dangerouslySetInnerHTML`.
 
-`@avel/web`'s build and typecheck are still red, and so are its data and decisions tests. The cause is outside this territory: Ghost's `src/router.tsx` and `packages/contract-mock` haven't landed. decisions.md (2026-11-07, "INT's answers on Nemi's w0-app report") expects this until Ghost merges.
+Inline `style` is left in three places only, all values the locked kit tests read from the element:
+- D11's phone grid;
+- D6's stale strike;
+- D12's stamp animation. This one isn't in the contract's list: see Deviation 1.
 
-**After review:** Zero's kit review passed with two P3s, both fixed in `56a079b`:
-- **01:** DecisionTag draws at most one request ID chip per card. It goes under the stale note in `stale`, under the Locked reason in `notAllowed`, and under the countdown only in `seen`.
-- **02:** WidgetState's stale band draws the chip on its own line under the status row, before the dashed rows, in the band's gap 10. DL's row (glyph, message, Retry) is unchanged.
-
-The locked kit tests still pass (68 of 68), lint is clean, and `tsc` reports no kit errors. A scratch render counted one chip each for stale, stale + offline, seen + 429 and notAllowed + offline, and none for approving.
+All 68 locked kit tests pass unchanged, and lint is clean. A browser comparison against main's kit found no computed-style difference (Limitations says how it was checked). The kit's JS drops from 11,096 B to 7,527 B gzip.
 
 ## Pre-flight
-- **Part 2 files, all read:**
+- **Branch:** `frontend/sprint-01/agent-fantem-w0-kit-build-a2`, starting at `3bf5e3b` (main).
+- **Part 2 files.** All exist. In this attempt I read:
   1. `.claude/agents/fantem.md`
   2. `codebase-analysis.md`
-  3. `docs/ui-contracts/decisions-approval-page.md` (revision 5), read in full
-  4. `CR-W2 Pending decisions.md`, sections 1 to 2.3 in full, the rest skimmed
-  5. `decisions.md`, read in full
-  6. Frontend Map v0.6: the Layers, Writes and Errors-by-code sections, the kit lines and Territories
-  7. DL v1.1, from its bundled script and stylesheet:
-     - the components: `ee`, `d8`, `ou`, `ry`, `te`, `Ze`, `h8`, `dt`, `ne`, `Go`, `Uo`, `Dy`, `y8`, `v8`, `ly`, `x8`, `jr`, `n$`, `LH` (`AV_DECISION_VARIANTS`), `BH` and `zo`;
-     - the Decisions card `eD` and its `.pd` CSS;
-     - the Overlays and field-anatomy CSS, the token section and the reduced-motion block.
-  8. `Step 0 and Step 1 plan.md`: item 13 and test 14
-  9. Contract sections 0 and 4: see 3
-  10. DL again: see 7
-  11. This task doc
-- **Starts conditions:**
-  - `agent-fenn-w0-kit-test-unit` is locked: `locks.md`, w0-kit · 965071b · `apps/web/test/kit/**`.
-  - Nemi's w0-app is merged: `apps/web` and `src/styles` are on main.
-- **Branch:** `frontend/sprint-01/agent-fantem-w0-kit-build-a1`, starting at `61d37ca`. main has since moved to `20d2915`, with contract subpath exports only. Nothing in my territory or in `apps/web/test/kit` changed.
-- **Part 7 commands:** all available. `pnpm install --frozen-lockfile` ran clean, and the lockfile is unchanged.
+  3. The UI contract (revision 7):
+     - sections 0 and 4 in full, including "The kit's styles";
+     - section 5's route, module and "Styles and loading" paragraphs;
+     - sections 6 and 8.
+  4. `decisions.md`: "Revision 7" in full.
+  5. This task doc, in full.
+- **Part 2 files not re-read in a2:** CR-W2, the Frontend Map, the Step plan and the design library.
+  - a2 changes where values live, not what they are. Every value was copied from a1's merged components, which Zero and Brennan reviewed against DL.
+  - From DL I only checked its Dialog class names, with a grep.
+  - I'm saying this plainly rather than counting those files as read.
+- **Starts conditions:** the w0-kit tests are locked (`locks.md`: w0-kit · 965071b), and Nemi's w0-app is on main.
+- **Part 7 commands:** all available.
+  - `pnpm install --frozen-lockfile` ran clean in this fresh worktree, and the lockfile is unchanged.
+  - `typecheck` needs `packages/contract/dist`, which the Part 7 `build` creates. Run in Part 7's order, it passes.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| FANTEM-01 | DONE | e47b8a5 |
-| FANTEM-02 | DONE | 14befc1 |
+| FANTEM-01 | DONE (a1, merged) | e47b8a5 |
+| FANTEM-02 | DONE (a1, merged) | 14befc1 |
+| FANTEM-03 | DONE | 4f0cf1c |
 
 ## Contract to files
-| Item | Files |
-| --- | --- |
-| `Button` and `ButtonWithReason`: section 4's props; the seven others left out | `kit/Button.tsx`, `kit/interaction.ts` (DL's `ou`/`ry`) |
-| `Tag`: `tone`, `size`, `icon`, `title`, `children` | `kit/Tag.tsx` |
-| `Icon`: `data-ui="Icon"`, `data-icon`; per-icon `lucide-react` imports | `kit/Icon.tsx` |
-| `StatusGlyph`: `status`, `size` | `kit/StatusGlyph.tsx` |
-| `HashChip`: `value`, `kind`, `length`, `prefix`, `strike`, `copy`; `Copy {value}` button | `kit/HashChip.tsx` |
-| `ReasonDialog`, R1 to R4 (UC-09: 17 tests) | `kit/ReasonDialog.tsx`, `kit/Dialog.tsx` (DL's `Uo`/`Dy`, internal) |
-| `ErrorPanel`, E1, `AV_ERROR_COPY` (UC-10: 17 panel tests) | `kit/ErrorPanel.tsx` |
-| `WidgetState`, W1 (UC-10: 5 tests) | `kit/WidgetState.tsx`, `kit/ago.ts` (DL's `avAgo`) |
-| `DecisionTag`, `DecisionTagProps` exactly, D1 to D14 (UC-08: 29 tests) | `kit/DecisionTag.tsx` |
-| D12: stamp on `--av-d-punch`; hole fill not animated under reduced motion | `kit/DecisionTag.tsx` (stamp), `kit/KitStyles.tsx` (the hole-fill rule and its `prefers-reduced-motion` override) |
-| The request ID chip everywhere (`kind: "hash"`, 12, `req`) | `ErrorPanel.tsx`, `ReasonDialog.tsx`, `WidgetState.tsx`, `DecisionTag.tsx` |
-| Named exports | `kit/index.ts` |
-| The value rule (section 0) | Every value is a `--av-*` token or the literal DL uses for that element. `KitStyles.tsx` holds DL's own CSS rules word for word |
+- **Section 4, "Where they live":** `kit.css` holds every rule as class and `[data-ui]` rules. That covers:
+  - DL's Overlays (Dialog) and field-anatomy rules, word for word from `KitStyles.tsx`;
+  - D12's hole fill and its reduced-motion rule;
+  - every style object that was in `Button`, `Tag`, `Icon`, `StatusGlyph`, `HashChip`, `Dialog`, `ReasonDialog`, `ErrorPanel`, `WidgetState` and `DecisionTag`.
+- **Section 4, "How it's loaded":** `index.ts` exports `kitStylesheetHref` from `./kit.css?url`.
+- **Section 4, "No CSS in JavaScript":** `KitStyles.tsx` is deleted, and its imports are gone from `Dialog.tsx` and `DecisionTag.tsx`.
+- **State the kit tracks in JS** reaches the CSS as data attributes. JS still decides each state, so behaviour is unchanged:
+  - `data-hovered` and `data-pressed` come from DL's `ry`/`ou` in `interaction.ts`;
+  - the variants are `data-variant`, `data-size`, `data-tone`, `data-layout`, `data-block`, `data-icon-only`, `data-copy`, `data-copied`, `data-strike`, `data-compact` and `data-stopped`.
+- **Section 4, "What stays inline":**
+  - D11's grid: `DecisionTag.tsx`, the phone actions `div`;
+  - D6's strike: `DecisionTag.tsx`, `Binds to {label}`;
+  - D12's stamp animation: Deviation 1.
+- **Locked UC-08 to UC-10:** `apps/web/test/kit/**`, unchanged, 68 of 68 passing.
+- **Task 3's Expected (chunk sizes against INT's split):** see "JS gzip, before and after" below.
+
+### JS gzip, before and after
+- **The app build can't show the kit.** On main no route imports the kit (Leon's `routes/index.tsx` isn't merged), so `pnpm --filter @avel/web build` prints no kit chunk.
+- **So I measured the kit on its own.** Each entry was bundled with Vite library mode, minified, with `react`, `react-dom` and `lucide-react` external, and gzipped with `-9`.
+- **"Before" is main's kit (`3bf5e3b`), measured the same way:**
+
+| Entry | JS raw before | JS gzip before | JS raw after | JS gzip after | Gzip change |
+| --- | --- | --- | --- | --- | --- |
+| `kit/index.ts` (the whole kit) | 43,254 | 11,096 | 26,059 | 7,527 | −3,569 (−32%) |
+| `Button.tsx` | 7,502 | 2,522 | 2,928 | 1,306 | −1,216 (−48%) |
+| `DecisionTag.tsx` (with Button, HashChip, Tag, Icon and StatusGlyph) | 29,177 | 7,755 | 15,179 | 4,600 | −3,155 (−41%) |
+
+- **CSS:** `kit.css` is a separate asset, 16,920 B raw and 3,644 B gzip. Under section 8 it doesn't count toward the JS budget.
+- **INT's split** (Button 5.2 kB, DecisionTag 5.3 kB gzip) was measured on Leon's branch with that app's chunking, so the absolute numbers don't line up with mine. The ratios are what carry over: Button's JS is about half what it was, and DecisionTag's about 40% smaller. Re-measuring `/` is for Leon's a2 and Leah.
 
 ## Deviations
-1. **The verify command doesn't filter.** `pnpm --filter @avel/web test -- test/kit` passes `--` through, so vitest runs the whole web suite. The kit files pass in that run. I also ran `vitest run test/kit` in `apps/web` to see the kit on its own: 3 files, 68 tests passed.
-2. **FANTEM-01's "Expected: UC-08 passes"** looks like a slip in the plan: UC-08 is DecisionTag, which is FANTEM-02. I verified FANTEM-01 against its Required line (UC-09 and UC-10), and both pass.
-3. **Build and typecheck are red, for a reason outside my territory:** `Could not resolve entry for router entry: router in apps/web/src`. That's Ghost's `src/router.tsx` (decisions.md 2026-11-07). They were red at my start commit too.
-4. **The kit brings its own stylesheet** (`KitStyles.tsx`), as a React 19 hoisted `<style href="avel-kit" precedence="default">`. Inline styles can't hold hover, focus, keyframes or reduced motion, and `src/styles` (Nemi's) has only DL's tokens and base defaults. It holds three things, all DL's own CSS:
-   - DL's "Overlays: Dialog" rules, word for word, including `av-fade` and `av-dialog-in`, which aren't in `tokens.css`. The Sheet rules are left out.
-   - DL's "AVEL field anatomy" rules, scoped to `[data-ui="ReasonDialog"] textarea`.
-   - The hole fill's `av-hole-fill 160ms var(--av-ease) both`, with `animation: none` under `prefers-reduced-motion` (D12).
-   - **Checked on the server:** `renderToString` and the streaming `renderToReadableStream` both put the style in `<head>`, once.
-5. **Where the contract left placement open, my choices:**
-   - `Refresh list` (D10) is a `Button size="sm"` in the actions area, matching the stale action and ErrorPanel's buttons.
-   - The D14 chip is its own line straight after the stale alert, after the Locked reason, or under the actions row (the countdown).
-   - `clientName` (D3) sits straight after the kind label, before the id chip.
-   - On a phone with only one decision button, that button is full width with no grid. D11's grid needs both buttons.
-6. **Small structural differences that follow from the changes:**
-   - DecisionTag's footer isn't drawn when it would be empty (`notAllowed` with no `onRefresh`, or no labels and no link). DL always draws it, because DL always has buttons.
-   - ErrorPanel's action row is drawn only when it holds the button (E1) or the chip.
-7. **Accessibility additions and DL props the kit can't take:**
-   - ReasonDialog's textarea gets `aria-invalid` and `aria-describedby` pointing at the R1 error, and its id comes from `useId` instead of DL's fixed `av-reason`.
-   - The R1 error uses DL's own field-error form from its step-up dialog: a stopped glyph, `--av-stopped` text and a `--av-stopped` field edge.
-   - DL offsets the Locked reason's lock icon with Icon's `style` prop, which isn't ported. A wrapper span carries the same `marginTop: 3` instead.
-8. **Types and internal pieces:**
-   - `StatusGlyph`'s `onColor` isn't a public prop. Tag still draws its glyph on colour, as DL does, through the internal `drawStatusGlyph`.
-   - `WidgetState.state` is required, because `populated` (DL's default) isn't ported.
-   - `DecisionVariant` is DL's keys `| (string & {})`, so an unknown variant compiles and draws as `Decision` (D1).
-   - `Dialog` (DL's `Uo`) isn't in section 4, so it's internal and not exported.
-9. **HashChip copy:**
-   - It clears its "Copied" timer on unmount.
-   - It catches a refused clipboard write, so the rejection isn't left unhandled. As in DL, the chip shows "Copied" either way, and the full value stays in its title.
-10. **`kit/ago.ts`** is a copy of DL's `avAgo` for WidgetState's stale band. The kit imports nothing outside itself, and Ghost's `lib/time.ts` isn't on main.
+1. **D12's stamp animation stays inline. The contract's "what stays inline" names only D11 and D6.**
+   - The locked UC-08 test `approved (D12): the stamp's animation reads --av-d-punch` checks `card.outerHTML` for `--av-d-punch`. A stylesheet value can't appear in the HTML.
+   - So the stamp keeps one inline declaration: `animation: av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both`. Its other values (position, border, type, `rotate(-7deg)`) are in `kit.css`.
+   - This is the contract's own rule: "the values the locked kit tests read from the element". The list after it just missed this one.
+   - **Needs:** Zero, to add D12's stamp animation to section 4's "What stays inline" list.
+2. **HashChip's `strike` moved to CSS (`[data-strike]`).** No locked test reads it: `isStruck` is only used on D6's version text. So it follows the general rule, not the D6 exception.
+3. **`Dialog.tsx` still sets `document.documentElement.style.overflow`.** That's DL's scroll lock (`Dy`), a runtime behaviour on `<html>`, not a style rule the kit draws. It's unchanged.
+4. **One `biome-ignore` in `kit.css`** for `noImportantStyles`, on DL's overlay reduced-motion rule (`animation: none !important`). That rule is word for word from DL.
+5. **Biome formatted `kit.css`** to its CSS style: one declaration per line, and `.985` printed as `0.985`. The values are the same.
+6. **Two rules raise specificity on purpose.** Inline styles used to beat every stylesheet, so these keep the cascade's outcome the same:
+   - `a[data-ui="Button"][data-variant]` keeps the D9 link anchor's colour and 3px underline offset over base.css's `a:hover`. Its underline on hover is unchanged: the inline style never set `text-decoration`.
+   - The ReasonDialog field's error edge, `textarea[aria-invalid="true"]`, comes after `:hover` and `:focus-visible`.
 
 ## Limitations
-- Build, typecheck and the full web suite can't go green until Ghost's w0-data, and then Leon's decisions module, merge.
-- I haven't run the kit in a real browser. Hover, focus trap and the reduced-motion hold are checked by reading against DL, not by running them.
+- **The browser comparison** was a temporary harness in `apps/web/src/kit/__cmp__/`, deleted before commit and never committed.
+  - **Setup:** headless Chromium on a Vite dev server, with the app's `app.css` (tokens and base) loaded. The same specimens were rendered from main's kit and from this branch:
+    - every Button variant × size × {label, icons, icon-only, block, disabled, disabledReason, disabledReason + block};
+    - every Tag tone × {default, sm + icon, empty};
+    - HashChip kinds × {prefix + strike, copy on and off, null};
+    - every StatusGlyph, an Icon, and ErrorPanel codes × compact;
+    - all WidgetState states and the stale band;
+    - DecisionTag {desk, phone} × all seven states × {version, sha} × {plain, link + disabledReason + inlineError, approve only};
+    - the open ReasonDialog with an error and a request ID.
+  - **Result:** all computed properties of 5,139 elements at rest, plus 246 hover and press snapshots, matched: **0 differences**.
+    - The hover and press snapshots cover every md Button variant with its modifiers, every DecisionTag state and layout, and the HashChip copy buttons.
+    - Animations were settled before the at-rest pass, and transitions were turned off for the interaction pass. The `transition` values themselves were compared at rest.
+  - **The harness can catch a change.** I changed one token in `kit.css` (`.av-dt-age` font size) and it reported 756 differences. Then I restored the file, byte for byte.
+  - **Not covered:** hover and press at sizes other than md. Those rules key on `data-size` exactly as at rest, and at rest every size matched.
+- **The kit's CSS reaches the page only once the page links `kitStylesheetHref`.** That's Leon's decisions a2 (section 5, "Styles and loading"). Until then the kit draws unstyled, but no page on main draws it yet.
 
 ## Parked chains
 none
@@ -100,18 +108,11 @@ none
 none
 
 ## Issues for other agents
-- **Zero and Leah:**
-  - DL's `WidgetState` loading state puts `aria-label="Loading"` on a `div` with no role, so assistive tech may ignore it. Biome flags it. I ported it as it is, with a suppression explaining why. If the label should be announced, the UI contract needs a change (for example `role="status"`).
-- **Zero and Nemi:**
-  - DL's "AVEL field anatomy" block is global in DL, but section 6 ends `base.css` before it. So the kit scopes it to ReasonDialog's textarea.
-  - If more inputs arrive, that block probably belongs in `src/styles/base.css`, and then the kit's copy goes.
-- **INT, on the plan:**
-  - FANTEM-01's verify uses `-- test/kit`, which doesn't narrow the run.
-  - Its Expected line names UC-08 instead of UC-09 and UC-10.
-- **Leon:**
-  - `DecisionTag`, `ReasonDialog`, `ErrorPanel` and `WidgetState` are exported with section 4's props.
-  - `AV_DECISION_VARIANTS` and the `DecisionVariant` type are exported too.
-  - An unknown variant string draws the generic "Decision".
+- **Leon (decisions a2):** link `kitStylesheetHref` in route `/`'s `head` through `decisionsScreenStylesheets` (section 5). Without it, the kit draws unstyled.
+- **Zero:** please add D12's stamp animation to section 4's "What stays inline" (Deviation 1).
+- **INT, two notes on the app build:**
+  - **The client JS figure changed between my builds, but not because of the kit.** My first `pnpm --filter @avel/web build`, run before `packages/contract/dist` existed, reported `index-*.js` 397.57 kB / 127.47 kB gzip. Every build after `pnpm --filter "@avel/web..." build` reports 496.83 kB / 155.40 kB gzip. The kit isn't in that bundle: a grep of `dist/client/assets/*.js` for `DecisionTag`, `av-dt-` and `kitStylesheet` finds nothing. It may be worth checking which `@avel/contract` build Leah's budget run resolves.
+  - **`app.css` shrank** from 35.26 kB to 31.88 kB (7.51 to 6.94 kB gzip). Tailwind scans the kit's source, and the old inline style strings produced utility class candidates. They're gone now.
 
 ## Files changed
 ```
@@ -121,71 +122,67 @@ apps/web/src/kit/Dialog.tsx
 apps/web/src/kit/ErrorPanel.tsx
 apps/web/src/kit/HashChip.tsx
 apps/web/src/kit/Icon.tsx
-apps/web/src/kit/KitStyles.tsx
+apps/web/src/kit/KitStyles.tsx   (deleted)
 apps/web/src/kit/ReasonDialog.tsx
 apps/web/src/kit/StatusGlyph.tsx
 apps/web/src/kit/Tag.tsx
 apps/web/src/kit/WidgetState.tsx
-apps/web/src/kit/ago.ts
 apps/web/src/kit/index.ts
-apps/web/src/kit/interaction.ts
+apps/web/src/kit/kit.css         (new)
 docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md
 ```
+Everything is inside Part 5's territory.
 
 ## Verification
 
+**FANTEM-03's verify**, one chain. It exits 0:
+```
+$ pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && test -f apps/web/src/kit/kit.css && ! grep -rlE '<style|KitStyles|dangerouslySetInnerHTML' apps/web/src/kit && pnpm --filter @avel/web build 2>&1 | grep -E 'gzip' | tail -12
+apps/web typecheck: Done
+ Test Files  3 passed (3)
+      Tests  68 passed (68)
+(grep: no file listed)
+dist/client/assets/app-CCOL2GSK.css                   31.88 kB │ gzip:   6.94 kB
+dist/client/assets/index-SlPnXw7v.js                 496.83 kB │ gzip: 155.40 kB
+dist/server/assets/empty-plugin-adapters-BsRz-CQL.js         0.26 kB │ gzip:  0.17 kB
+dist/server/assets/start-CX3T2L7y.js                         0.27 kB │ gzip:  0.19 kB
+dist/server/assets/_tanstack-start-manifest_v-CFh7QUvh.js    0.39 kB │ gzip:  0.29 kB
+dist/server/assets/router-Dvq-asiP.js                       27.35 kB │ gzip:  9.27 kB
+dist/server/server.js                                      261.19 kB │ gzip: 63.19 kB
+exit 0
+```
+
+**Part 7:**
 ```
 $ pnpm --filter "@avel/web..." build
-apps/web build: error during build:
-apps/web build: Error: Could not resolve entry for router entry: router in .../apps/web/src
-apps/web build: Failed
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @avel/web@0.0.0 build: `vite build`
-exit 1        # Ghost's src/router.tsx isn't on main yet (Deviation 3)
+packages/contract build: Done
+apps/web build: dist/client/assets/app-CCOL2GSK.css                   31.88 kB │ gzip:   6.94 kB
+apps/web build: dist/client/assets/index-SlPnXw7v.js                 496.83 kB │ gzip: 155.40 kB
+apps/web build: ✓ built in 273ms
+apps/web build: dist/server/server.js                                      261.19 kB │ gzip: 63.19 kB
+apps/web build: Done
+exit 0
 
 $ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
-apps/web typecheck: Error: Could not resolve entry for router entry: router in .../apps/web/src
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @avel/web@0.0.0 typecheck: `node -e "import('vite')..." && tsc -p tsconfig.json`
-exit 1        # same cause; @avel/contract-mock doesn't exist yet
-
-$ (cd apps/web && npx tsc -p tsconfig.json) | grep -E "src/kit|test/kit"
-(no output)   # 0 errors in the kit; 31 errors elsewhere (data, decisions, router), the same 31 as at the start commit
+packages/contract typecheck: Done
+packages/contract-mock typecheck: Done
+apps/web typecheck: Done
+exit 0
 
 $ pnpm lint
 > biome check .
-Checked 182 files in 93ms. No fixes applied.
+Checked 197 files in 136ms. No fixes applied.
 exit 0
 
 $ pnpm --filter @avel/web test
- ✓ |web| test/kit/decision-tag.test.tsx   (UC-08, 29 passed)
- ✓ |web| test/kit/reason-dialog.test.tsx  (UC-09, 17 passed)
- ✓ |web| test/kit/error-panel.test.tsx    (UC-10, 22 passed)
- ❯ |web| test/data/*.test.ts                 (85 failed: Ghost's subjects, not built)
- ❯ |web| test/modules/decisions/*.test.tsx   (37 failed: Leon's module, not built)
- Test Files  10 failed | 3 passed (13)
-      Tests  122 failed | 68 passed (190)
+ Test Files  3 failed | 10 passed (13)
+      Tests  37 failed | 153 passed (190)
 exit 1
+```
 
-$ pnpm --filter @avel/web test -- test/kit
-(the same run as above: the "--" doesn't filter; see Deviation 1)
+**The `test` exit 1 isn't from the kit.** All 37 failures are in `test/modules/decisions/{list,deciding,errors}.test.tsx`: the locked UC-11 to UC-28 tests for Leon's decisions module, which isn't on main (`apps/web/src/modules` doesn't exist). Everything else passes, including the kit's 68 tests and the data tests.
 
-$ (cd apps/web && npx vitest run test/kit)
- Test Files  3 passed (3)
-      Tests  68 passed (68)
-
+```
 $ git diff --name-only main...HEAD
-apps/web/src/kit/Button.tsx
-apps/web/src/kit/DecisionTag.tsx
-apps/web/src/kit/Dialog.tsx
-apps/web/src/kit/ErrorPanel.tsx
-apps/web/src/kit/HashChip.tsx
-apps/web/src/kit/Icon.tsx
-apps/web/src/kit/KitStyles.tsx
-apps/web/src/kit/ReasonDialog.tsx
-apps/web/src/kit/StatusGlyph.tsx
-apps/web/src/kit/Tag.tsx
-apps/web/src/kit/WidgetState.tsx
-apps/web/src/kit/ago.ts
-apps/web/src/kit/index.ts
-apps/web/src/kit/interaction.ts
-exit 0        # all in apps/web/src/kit/** (Part 5); the report is added by the last commit
+(the list under Files changed)
 ```

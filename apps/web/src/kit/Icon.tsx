@@ -66,7 +66,6 @@ export function Icon({ name, size = 16, strokeWidth = 1.75, title }: IconProps) 
       strokeWidth={strokeWidth}
       aria-hidden={title ? undefined : true}
       role={title ? "img" : undefined}
-      style={{ flex: "none", display: "block" }}
     >
       {title ? <title>{title}</title> : null}
     </Glyph>
