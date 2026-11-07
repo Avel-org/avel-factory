@@ -1,4 +1,4 @@
-status: open
+status: fixed (8cb66a7)
 severity: P3
 owner: Zero (UI contract, section 4)
 
