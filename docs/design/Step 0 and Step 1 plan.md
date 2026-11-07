@@ -86,7 +86,7 @@ The longer scope from the design doc and the Port inventory, minus secrets (CR-1
 **Ported from avel-server** (per the Port inventory): as-is: the clock, ids, canonical JSON, tokens, the logger, the envelope, pagination and the idempotency header schema. With changes: the error union and status mapping, the middleware, the DB core, Better Auth (email and password, no GitHub sign-in), the activity log, and the test helpers. Everything else in this step is new.
 
 ### Tables touched
-`users`, `auth_sessions`, `auth_accounts`, `auth_verifications`, `auth_passkeys`, `step_up_grants`, `device_logins`, `cli_sessions`, `idempotency_keys`, `activity_log`, `jobs`, `events`, `consumer_cursors`, `factory_versions`, `webhook_deliveries`, `clients`, `proposals` (read and decide only).
+`users`, `auth_sessions`, `auth_accounts`, `auth_verifications`, `auth_passkeys`, `step_up_grants`, `device_logins`, `cli_sessions`, `idempotency_keys`, `activity_log`, `jobs`, `events`, `consumer_cursors`, `factory_versions`, `webhook_deliveries`, `clients`, `proposals` (read and decide only), `missions` (read for route 52; one new trigger, test 15).
 
 ### Docs touched
 The design doc (Main: build order, API routes, Factory as code), DATABASE.md (Plumbing, People and clients), the Port inventory (Step 1 list), `docs/design/Jobs and workers.md`.
@@ -112,6 +112,7 @@ The design doc (Main: build order, API routes, Factory as code), DATABASE.md (Pl
 12. **Factory repo:** the loader reads `factory.yaml` at a given SHA; an unmerged change has no effect; a merge by anyone but the factory's GitHub App isn't selectable and raises an alert; a replayed webhook delivery is ignored. (The full "no effect until a new mission is finalized" test needs finalize, which arrives in Step 7; Step 1 tests the loader and the pin.)
 13. **Activity log:** every write in this step leaves exactly one row.
 14. **Approval page:** a seeded proposal shows as waiting, and approving it records the decision with a reason and refuses a stale version.
+15. **Kind freeze:** once `onboarding_started_at` is set it can't be cleared, so a mission's `kind` can't change after onboarding starts, not even by clearing the column first; a refusal returns 422 `CONSTRAINT_VIOLATION` naming `missions_started_frozen` (D47, S1-4).
 
 ### Not in Step 1
 Secrets and KMS, repo connections, the delivery worker (Step 4); rooms and proxies (Step 2); the event stream over SSE and the CLI's `watch` (Step 5); Canon's per-kind briefing (Step 7).
