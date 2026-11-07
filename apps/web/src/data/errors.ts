@@ -1,4 +1,4 @@
-import { ErrorBody } from "@avel/contract";
+import { ErrorBody } from "@avel/contract/errors";
 import { ORPCError } from "@orpc/client";
 
 /**

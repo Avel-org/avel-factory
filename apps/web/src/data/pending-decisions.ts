@@ -1,4 +1,6 @@
-import { IsoTime, type PendingDecisionDto, ProposalKind, Uuid } from "@avel/contract";
+import { IsoTime, Uuid } from "@avel/contract/dto/common";
+import type { PendingDecisionDto } from "@avel/contract/dto/decisions";
+import { ProposalKind } from "@avel/contract/value-lists";
 import type { InfiniteData } from "@tanstack/react-query";
 import { z } from "zod";
 

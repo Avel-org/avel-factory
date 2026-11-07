@@ -1,4 +1,4 @@
-import { REQUEST_ID_HEADER } from "@avel/contract";
+import { REQUEST_ID_HEADER } from "@avel/contract/errors";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { createIsomorphicFn } from "@tanstack/react-start";

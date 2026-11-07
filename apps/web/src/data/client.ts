@@ -1,9 +1,9 @@
 import {
   CONTRACT_VERSION_HEADER,
-  contract,
   IDEMPOTENCY_KEY_HEADER,
   REQUEST_ID_HEADER,
-} from "@avel/contract";
+} from "@avel/contract/errors";
+import { decisions } from "@avel/contract/routes/decisions";
 import { type Client, type ClientOptions, createORPCClient } from "@orpc/client";
 import { OpenAPILink } from "@orpc/openapi-client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
@@ -15,7 +15,12 @@ import { decodeErrorBody, NetworkError } from "./errors";
 /**
  * The oRPC client over `@avel/contract` (UI contract section 3; FM, Data layer): typed from the
  * contract only, through `OpenAPILink`, with one fetch wrapper that sets every header.
+ *
+ * The client is built over the route groups the web calls, imported from their own subpaths
+ * (D58), so the browser bundle carries only those groups' schemas, never the whole contract.
+ * Sprint-01's page calls routes 52 to 54, all in `decisions`.
  */
+const webContract = { decisions };
 
 export interface ApiOptions {
   /**
@@ -60,7 +65,7 @@ type ContractClient<T> = {
     : ContractClient<T[K]>;
 };
 
-export type ApiClient = ContractClient<typeof contract>;
+export type ApiClient = ContractClient<typeof webContract>;
 
 type LinkFetch = (
   request: Request,
@@ -113,9 +118,9 @@ function linkUrl(opts: ApiOptions): string {
   throw new Error("createApiClient needs a baseUrl on the server");
 }
 
-/** `createORPCClient` with `OpenAPILink` over `@avel/contract`. */
+/** `createORPCClient` with `OpenAPILink` over the web's route groups of `@avel/contract`. */
 export function createApiClient(opts: ApiOptions = {}): ApiClient {
-  const link = new OpenAPILink<ApiContext>(contract, {
+  const link = new OpenAPILink<ApiContext>(webContract, {
     url: linkUrl(opts),
     fetch: wrapFetch(opts),
     customErrorResponseBodyDecoder: decodeErrorBody,

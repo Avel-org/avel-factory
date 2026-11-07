@@ -273,3 +273,56 @@ Every path is in Part 5, and this report is added by the last commit.
 - **The built server, in process:** `dist/server/server.js`'s `fetch` on `http://avel.test/`, with `X-Request-Id: probe-req-1` and without one, rendered `<!DOCTYPE html><html lang="en" data-theme="light">…` both times, with status 404 (no `/` route yet) and no error.
 - **The production build's output:** `grep -rlE '__mock|0193a000-0000-7000-8000-000000000001|contract-mock' apps/web/dist` finds nothing, and `grep -rl "getRequest\|start-server-core" apps/web/dist/client` finds nothing.
 - **The client chunk:** `index-CvPT97vD.js` is 530,073 bytes raw and 163,704 bytes gzipped.
+
+## After review
+
+**INT, 2026-11-07:** narrow the client to the route groups the page uses, using the new subpath exports (D58), and measure again.
+
+**What changed** (one commit on top of `git merge main`, 087c9ca):
+- **`data/client.ts`:** the link and `ApiClient` are built over `webContract = { decisions }`, from `@avel/contract/routes/decisions`. The header names come from `@avel/contract/errors`. Client calls stay `client.decisions.listPending` and `client.decisions.decide`, and Leon's and Fenn's code is unchanged.
+- **`data/errors.ts`:** `ErrorBody` comes from `@avel/contract/errors`.
+- **`data/pending-decisions.ts`:** `IsoTime` and `Uuid` come from `@avel/contract/dto/common`, `PendingDecisionDto` (types only) from `@avel/contract/dto/decisions`, and `ProposalKind` from `@avel/contract/value-lists`.
+- **`router.tsx`:** `REQUEST_ID_HEADER` comes from `@avel/contract/errors`.
+- **Not changed:** `packages/contract-mock` stays on the root `@avel/contract`. Only the dev server and the tests load it, never the client bundle.
+
+**Nothing in `apps/web/src` imports the root `@avel/contract`.** `grep -rn 'from "@avel/contract' apps/web/src` lists only the subpaths:
+```
+router.tsx:            @avel/contract/errors
+data/pending-decisions.ts:  @avel/contract/dto/common, @avel/contract/dto/decisions (type), @avel/contract/value-lists
+data/client.ts:        @avel/contract/errors, @avel/contract/routes/decisions
+data/errors.ts:        @avel/contract/errors
+```
+- The built client chunk holds 0 `/api/missions`, 0 `/api/skills`, 0 `/api/clients` and 0 `pass-approvals`. It holds 1 `/api/pending-decisions` and 2 `/api/proposals`.
+- The production `dist` still has no `__mock`, no `contract-mock` and no `MOCK_OPERATOR_ID` value, and the client has no `getRequest`.
+
+**The new size:** `index-BDSlPvoT.js` is **153,654 bytes gzipped** (496,833 raw), down from 163,704 (530,073 raw). That's about 10 kB saved. **It's still over the 150 kB budget**, and narrowing can't take it well under 150 kB. Where the rest comes from, read from a source-map build by decoding the mappings and gzipping each package's generated code (the parts sum to more than the whole, because gzip works better across packages):
+
+| Package | gzip | Whose |
+| --- | --- | --- |
+| react-dom | 62.1 kB | framework (Nemi's app) |
+| zod | 25.6 kB | the data core needs it at runtime: `ErrorBody.safeParse`, and CR-W2's row schema in `parsePendingPage` (UI contract sections 1 and 3); the contract's own schemas use it too |
+| @tanstack/router-core, react-router, history | 27.9 kB | framework |
+| seroval and its plugins | 8.3 kB | TanStack Start's SSR serialization |
+| @tanstack/query-core | 7.4 kB | framework |
+| react and scheduler | 4.5 kB | framework |
+| @tanstack/start-client-core, store | 3.9 kB | framework |
+| oRPC (client, openapi-client, shared, standard-server, standard-server-fetch, contract, tanstack-query) | 11.6 kB | the data core's client (FM, Data layer) |
+| @avel/contract (`errors`, `routes/decisions`, its DTOs and value lists) | under 2 kB | was about 10 kB |
+| apps/web/src/data and router | about 2 kB | mine |
+
+- **The data layer is now about 41 kB** (Zod plus oRPC plus the contract plus my code). It was about 51 kB.
+- Of that, oRPC and Zod are dependencies section 3 requires.
+- The roughly 110 kB of framework and SSR runtime is outside this territory.
+- Further cuts need a decision above me:
+  - Zod Mini, or no runtime schemas in the browser, would be a change to the contract and to UI contract section 1;
+  - or Leah's budget could count route chunks rather than the shell's one chunk. With no routes yet, everything is in one `index` chunk.
+
+**Verification after the change:**
+- `pnpm --filter "@avel/web..." build`: exit 0.
+- `pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck`: Done for all three, exit 0.
+- `pnpm lint`: `Checked 183 files … No fixes applied.`, exit 0.
+- `pnpm --filter @avel/web test -- test/data`: 85 of 85 pass.
+- The whole `pnpm --filter @avel/web test` now runs 13 files, because main brought Fenn's locked w0-kit (965071b) and decisions (dcd0468) tests. It gives `Tests 105 failed | 85 passed (190)`. All 105 are `AssertionError`s on subjects that aren't built yet, like the decisions screen, `[data-ui="DecisionTag"]`, `ErrorPanel`, `WidgetState` and the reason dialog. They are Fantem's and Leon's, and none fails on the data core.
+- `git diff --name-only main...HEAD`: only Part 5 paths.
+
+**One more note for Fenn and INT:** the locked `vitest.config.ts` aliases only the exact `@avel/contract` to its source. So the subpaths resolve through the package's `exports` to `dist`, and the web's tests now need `packages/contract` built first (`pnpm --filter @avel/contract build`, which `pnpm --filter "@avel/web..." build` does). A fresh checkout that runs the tests without building fails on the import. Extending the alias to `^@avel/contract/(.*)$` → `packages/contract/src/$1.ts` would remove the need, but that's a change to a locked file.
