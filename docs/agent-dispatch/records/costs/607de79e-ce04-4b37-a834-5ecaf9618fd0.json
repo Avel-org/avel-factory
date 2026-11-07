@@ -1,0 +1,24 @@
+{
+ "session_id": "607de79e-ce04-4b37-a834-5ecaf9618fd0",
+ "name": "BRENNAN w0-kit-review-spec a2",
+ "branch": "frontend/sprint-01/agent-brennan-w0-kit-review-spec-a2",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-brennan-w0-kit-review-spec-a2",
+ "first_at": "2026-11-07T10:00:58.474Z",
+ "last_at": "2026-11-07T10:04:08.964Z",
+ "updated_at": "2026-11-07T10:04:23Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 44,
+   "output": 16198,
+   "cache_write_5m": 0,
+   "cache_write_1h": 95594,
+   "cache_read": 1043846,
+   "messages": 21
+  }
+ },
+ "cost_usd": 1.2977,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 1.2977
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

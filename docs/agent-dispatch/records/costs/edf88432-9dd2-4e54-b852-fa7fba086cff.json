@@ -1,0 +1,33 @@
+{
+ "session_id": "edf88432-9dd2-4e54-b852-fa7fba086cff",
+ "name": "FANTEM w0-kit-build a2",
+ "branch": "frontend/sprint-01/agent-fantem-w0-kit-build-a2",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-fantem-w0-kit-build-a2",
+ "first_at": "2026-11-07T08:59:55.858Z",
+ "last_at": "2026-11-07T10:00:15.492Z",
+ "updated_at": "2026-11-07T10:00:26Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 136,
+   "output": 71398,
+   "cache_write_5m": 0,
+   "cache_write_1h": 153373,
+   "cache_read": 6443107,
+   "messages": 67
+  },
+  "<synthetic>": {
+   "input": 0,
+   "output": 0,
+   "cache_write_5m": 0,
+   "cache_write_1h": 0,
+   "cache_read": 0,
+   "messages": 1
+  }
+ },
+ "cost_usd": 3.9441,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 3.9441,
+  "<synthetic>": null
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
