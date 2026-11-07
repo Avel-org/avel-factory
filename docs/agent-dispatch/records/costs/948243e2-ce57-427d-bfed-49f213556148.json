@@ -4,21 +4,21 @@
  "branch": "frontend/sprint-01/agent-zane-w0-data-review-security-a1",
  "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-zane-w0-data-review-security-a1",
  "first_at": "2026-11-07T07:44:18.089Z",
- "last_at": "2026-11-07T07:44:28.330Z",
- "updated_at": "2026-11-07T07:44:33Z",
+ "last_at": "2026-11-07T08:01:30.860Z",
+ "updated_at": "2026-11-07T08:01:38Z",
  "tokens": {
   "claude-sonnet-5-5": {
-   "input": 8,
-   "output": 1125,
+   "input": 32,
+   "output": 8436,
    "cache_write_5m": 0,
-   "cache_write_1h": 45106,
-   "cache_read": 31040,
-   "messages": 4
+   "cache_write_1h": 63760,
+   "cache_read": 568572,
+   "messages": 14
   }
  },
- "cost_usd": 0.1979,
+ "cost_usd": 0.4532,
  "cost_usd_by_model": {
-  "claude-sonnet-5-5": 0.1979
+  "claude-sonnet-5-5": 0.4532
  },
  "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
 }

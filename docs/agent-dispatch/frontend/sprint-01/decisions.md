@@ -358,6 +358,20 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 - **INT confirmed the name `DecisionsScreen`.** Section 5's module line now says that `screens.ts` exports `DecisionsScreen` as a named export, from `screens/DecisionsScreen.tsx`. That matches the locked tests, and Leon builds to it.
 - **No other change.** `plan.toml` and the rendered docs are untouched: Leon's task points at section 5.
 
+## 2026-11-07: after S1-6, the web imports no classic zod (INT; Axis's planned S1-6)
+
+- **Input:** INT. Axis plans S1-6 for Step 1: `@avel/contract` moves to `zod/mini`. The ~20 kB first-load saving (the "160 kB" entry above) holds only if the web bundles no classic `zod` as well.
+- **Today:** Ghost's `apps/web/src/data/pending-decisions.ts` (w0-data, 3183bc1; not yet merged) imports `{ z } from "zod"` at runtime for the interim CR-W2 row schema (UI contract section 1). That's allowed in sprint-01. It's inside the 160 kB budget.
+- **The rule, from when S1-6 lands:**
+  - `apps/web` imports schemas only from `@avel/contract`'s exports, or from `zod/mini`.
+  - It never imports from `"zod"` or `"zod/v4"` (classic), at runtime or for types that pull in classic code.
+  - Type-only imports (`import type`) don't count, because they don't reach the bundle.
+- **Where it goes:** I add the rule to the UI contract (section 3, and section 6's dependency line) when S1-6 lands, together with S1-6's switch work. **Not before:** today the contract's own schemas are classic zod, so the rule would buy nothing yet.
+- **The switch itself:** this is the same Step 1 dispatch as `CONTRACT_VERSION`.
+  - The interim row schema goes. The web imports CR-W2's `PendingDecisionDto` from the Step 1 contract (section 1), so `pending-decisions.ts` stops needing zod at all.
+  - Any web-side schema left over is rewritten in `zod/mini`.
+- **The check to add then, to Zane's or my review:** `grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src` finds no runtime import. Leah confirms the first load is back under 150 kB.
+
 ## Open: for INT before sprint-01 is planned
 
 1. ~~Is there a W0 first?~~ Decided above: option (a).
