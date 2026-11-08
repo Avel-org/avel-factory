@@ -3,70 +3,67 @@
 verdict: PASS
 
 ## Summary
-I reviewed Ghost's w0-data at 3183bc1, as INT asked: the data core (`apps/web/src/data/**`, `apps/web/src/lib/time.ts`, `apps/web/src/router.tsx`) and `@avel/contract-mock`, against UI contract sections 1 to 3. Every export and `UiError` member is there as section 3 names it, and the mock's surface is section 2's word for word. The client derives no field, and nothing in the diff is outside Ghost's territory. The locked data tests pass (7 files, 85 tests), and the build, typecheck, lint and lock check are green. There are no findings. Ghost's 12 declared deviations each fill a gap in my contract, and none breaks it. I'll fold three of them into the contract (Issues for other agents).
+Attempt a2. INT scoped this attempt to Ghost's a2 diff (`git diff main...feafd95`): GHOST-04 (1f6c6a8, the forwarded `X-Request-Id` is checked first) and GHOST-05 (f245139, `UiError.stale.message`). Both match UI contract section 3, revision 10, and decisions.md ("INT's answers on revision 9, and Ghost's w0-data a2 scope"). I have no findings. The locked tests pass (85 of 85 in `test/data`, 190 of 190 in the whole suite), and the build, typecheck and lint pass too. **ZERO-02 (the move to zod/mini) is BLOCKED.** Ghost's GHOST-03 is blocked on Axis's S1-6 and isn't in this attempt, so `apps/web/src` still imports classic `zod`, as section 3 allows until S1-6 lands.
 
 ## Pre-flight
 - **Part 2 files:** all read, none missing:
-  - `.claude/agents/zero.md`
-  - `codebase-analysis.md`
-  - `docs/ui-contracts/decisions-approval-page.md` (revision 5: sections 1 to 3 in full, sections 6 to 8 and Appendix A read too)
-  - `CR-W2 Pending decisions.md` (the row, and route 54 in section 5)
-  - sprint `decisions.md`, plus main's b268381 entry (the 160 kB budget)
-  - Frontend Map v0.6
-  - the design library v1.1, read only where this diff touches it: `avAgo` (`jr`) and the approved stamp `14:06`
-  - `Step 0 and Step 1 plan.md`
-- **Branch:** `frontend/sprint-01/agent-zero-w0-data-review-frontend-a1`.
-  - It started at 71e0c61, Ghost's a1 report. INT then told me to hold.
-  - On INT's "go", it was fast-forwarded with `git merge --ff-only 3183bc1`, Ghost's new head, which sits on merge 087c9ca of main with the contract subpaths (D58).
-  - The reviewed base is `git merge-base main HEAD` = 20d2915. Ghost's commits: dc051eb, b769c5a, 14506b4, 71e0c61, 3183bc1.
-- **Part 7 commands:** all available.
-  - `pnpm install --frozen-lockfile` refuses, because `pnpm-lock.yaml` doesn't list `packages/contract-mock`'s dependencies yet. That's expected: INT regenerates the lockfile at merge (decisions, "INT's answers before dispatch").
-  - So I installed with `--no-frozen-lockfile`, then ran `git checkout -- pnpm-lock.yaml`, so I changed no tracked file.
-  - `packages/contract` was built first, as INT and decisions (b268381) say.
+  1. `.claude/agents/zero.md`: read (Learned: none yet).
+  2. `codebase-analysis.md`: read.
+  3. `docs/ui-contracts/decisions-approval-page.md`, revision 10: sections 0 to 3 read in full.
+  4. `CR-W2 Pending decisions.md`: sections 1 and 2 (the row) read. Route 54's rules come through UI contract section 2, which quotes them. Nothing in this diff touches them.
+  5. sprint `decisions.md`: read the stale and request-ID entries, Revision 7 deviation 3, Revision 9, "INT's answers on revision 9, and Ghost's w0-data a2 scope", and Revision 10.
+  6. Frontend Map v0.6: present. I checked line 141 (the SSR client forwards the request ID), which is the line this diff touches.
+  7. Design library v1.1: present. This diff draws no UI, so nothing in it applies.
+  8. `Step 0 and Step 1 plan.md`: present, item 13. Nothing in this diff touches it.
+  9. and 10. As in 3 and 4.
+  11. This task doc: read in full.
+- **Branch:** `frontend/sprint-01/agent-zero-w0-data-review-frontend-a2`. Its start commit is 41af1d8, `review-base/w0-data-a2`: main (a00fa14) with Ghost's a2 (feafd95) merged, as INT set it up. `git diff main..HEAD` is the same as `git diff main...feafd95`: errors.ts, router.tsx and Ghost's report.
+- **Part 7 commands:** all available, after `pnpm install --frozen-lockfile` and `pnpm --filter @avel/contract build`. Neither left anything in the tree: `git status --short` was empty afterwards.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| ZERO-01 | DONE | this report's commit |
+| ZERO-01 | DONE. I reviewed the a2 diff (GHOST-04 and GHOST-05) as INT scoped it. a1's surface passed in my a1 review (23db88d), and a2 changes nothing else | this report's commit |
+| ZERO-02 | BLOCKED: GHOST-03 (zod/mini) is blocked on S1-6 and isn't in this attempt (INT). There's no move to review | none |
+
+**ZERO-01, what I checked:**
+- **GHOST-04, `apps/web/src/router.tsx:17,33`.** `FORWARDABLE_REQUEST_ID = /^[A-Za-z0-9-]{1,64}$/`. The `.server(…)` branch passes `requestId` only when the header is non-null and matches. Otherwise it passes only `baseUrl`, and the fetch wrapper makes a new ID. That is section 3's "On the server": "passes it only if it's a UUID or matches `^[A-Za-z0-9-]{1,64}$`".
+  - A UUID always matches the pattern, so checking the pattern alone is enough. My probe checked a lowercase and an uppercase UUID: both `true`.
+  - Rejected, as expected: 65 characters, `""`, `"a, b"` (how `Headers` joins two values), `a_b`, a tab, and a full-width character. 64 characters is accepted.
+  - The check sits where the header is read, so the locked UC-05 tests are unchanged (decisions.md, INT's a2 scope).
+  - The pattern isn't in the client bundle: `grep -l 'A-Za-z0-9-' apps/web/dist/client/assets/*.js` found nothing (exit 1).
+  - The comment on `apiOptions` now says the ID must pass the check. The accessor (`getRequest()` inside `.server(…)`) is unchanged.
+- **GHOST-05, `apps/web/src/data/errors.ts:57-63,109,152,157`.** `UiError`'s `stale` member gains `message: string`.
+  - The `ApiError` branch passes the `ErrorBody`'s message, and the other-`ORPCError` branch passes `""`. That is section 3's table: "the `ErrorBody`'s `message`, or `""` when the body isn't an `ErrorBody`".
+  - The other-`ORPCError` branch can't reach `stale` (it has `code: null`, and `stale` is keyed on `STALE_VERSION` alone). Passing `""` there is still right.
+  - No other `UiError` member changes.
+  - Probe results (scratch Vitest over the real `errors.ts`, not committed):
+    ```
+    U1 {"code":"STALE_VERSION",…,"kind":"stale","field":"version","currentVersion":3,"message":"changed"}
+    U2 {"code":"STALE_VERSION",…,"kind":"stale","field":null,"currentVersion":null,"message":""} apiMessage= STALE_VERSION
+    U3 {"code":null,…,"kind":"conflict","message":"Conflict"}
+    ```
+- **Ghost's deviation 1, `ApiError.bodyMessage` (`errors.ts:15-19,28`).** Accepted.
+  - U2 confirms why it's needed: `ORPCError` replaces an empty message with a fallback, so `ApiError.message` is `"STALE_VERSION"` when the body's is `""`. Without `bodyMessage`, `stale.message` couldn't be "the `ErrorBody`'s message" exactly.
+  - It adds to section 3's `ApiError` line and changes no field the line names. That's a contract gap of mine, not a break (Issues for other agents).
+- **Nothing derived on the client, nothing outside the territory.** The diff changes only `apps/web/src/data/errors.ts`, `apps/web/src/router.tsx` (both Ghost's) and Ghost's report.
 
 ## Findings
 none
 
 ## Contract to files
-| Contract item | Files | What I checked |
-| --- | --- | --- |
-| §1 the CR-W2 row: `PendingDecisionRow`, `DecisionChoice`, `CostImpact` | `apps/web/src/data/pending-decisions.ts` | Field for field against CR-W2 §2.1 to 2.3, on both members:<br>- **Optional:** `approve` and `reject`, and `costImpact` `{ micros: int, estimated }`.<br>- **Proposal:** `missionId` is a UUID, never null; `version` is an int ≥ 1.<br>- **Factory PR:** `missionId` and `clientName` are null; `changeId` is digits; `headSha` is 40 hex; `url` is a URL.<br>- It's the only web copy of the schema. |
-| §1 `parsePendingPage` and `selectPendingPages` | same | One page: rows that parse are kept, the rest are counted. Over all loaded pages: rows concatenated in page order, `unreadable` summed, the last page's `nextCursor`. Nothing derived. |
-| §1 route 54's wire body `{ version, choice, reason }` | `client.ts` (OpenAPILink over m1's `decide`) | UC-05 passes. |
-| §2 surface: `createMock`, `Mock`, `RecordedRequest`, `MOCK_OPERATOR_ID`, `SeedRow`, `fixtures` | `packages/contract-mock/src/{mock,rows,fixtures,index}.ts` | Every name, signature and comment matches §2. `MOCK_OPERATOR_ID` is `0193a000-0000-7000-8000-000000000001`. |
-| §2 through the contract: statuses, `NOT_FOUND` for other paths, both headers on every response, every error an `ErrorBody` | `mock.ts:283-314`, `mock.ts:121-142` | OpenAPI handler over `implement(contract)`. `customErrorResponseBodyEncoder` writes `ErrorBody`, with S1-3's `{ field, issues }` for `ValidationError`. |
-| §2 fixtures | `fixtures.ts` | `step1`: two decidable proposals with different `clientName`s, one of them `budget_increase`; one with unparseable `options`; one factory PR. `many`: 150 proposals. |
-| §2 route 52: open and unexpired proposals plus PRs, sorted by (`createdAt`, `ref`), `PageQuery` limits, opaque cursor, default 50, `costImpact` never sent | `mock.ts:213-241`, `rows.ts:135-169` | UC-02 passes. |
-| §2 route 54: missing key 400 `"required"`; replay and `IDEMPOTENCY_KEY_REUSED`; the path wins; checks 1 to 5 in order; 201 resolved | `mock.ts:250-279`, `mock.ts:355-390` | UC-03 passes. |
-| §2 controls: `failNext` (before any check, `times`, a new call replaces a pending one, written raw, network → `TypeError`, still recorded), `injectRawItem`, `bumpVersion`, `resolve`, `expire`, `remove`, `reset` | `mock.ts:329-343`, `mock.ts:393-454` | |
-| §2 dev-only `/__mock/*` paths | Nemi's `apps/web/vite.config.ts` (on main) calls the mock's methods | Served only by the `apply: "serve"` plugin (§6), so not in `mock.fetch`. That's Ghost's deviation 8, and I accept it. |
-| §3 `createApiClient`, `createApi`, `bindApi`, `apiFor`, `useApi`, the fetch wrapper | `apps/web/src/data/client.ts` | The wrapper is the only place headers are set:<br>- `X-Request-Id` is the given ID, or a new one per request.<br>- The key comes from the context, on writes only.<br>- A rejected fetch becomes `NetworkError(requestId)`.<br>- A response with no `X-Request-Id` gets the sent ID.<br>- The version check runs in the browser only.<br><br>`customErrorResponseBodyDecoder: decodeErrorBody`. A `WeakMap` binds each `Api` to its `QueryClient`, so there's no module-level client. |
-| §3 `BUILT_CONTRACT_VERSION`, `useContractMismatch` | `contract-version.ts` | Comes from `__AVEL_CONTRACT_VERSION__`. The first mismatch is kept until reload; an absent or equal header is ignored. The server snapshot is null. |
-| §3 `newIdempotencyKey` | `idempotency.ts` | `crypto.randomUUID()` |
-| §3 `toUiError`, `decodeErrorBody`, `ApiError`, `NetworkError`, the 13 `UiError` kinds | `errors.ts` | The four branches run in §3's order. `stale` is keyed on `STALE_VERSION` alone (`errors.ts:81`). A non-`ErrorBody` 409 gives `conflict` with `code` null. All 13 kinds are present, each with its extra fields. UC-04 passes. |
-| §3 `createQueryClient` | `query.ts` | `staleTime` 30s, refetch on focus and reconnect, at most 3 retries and only for `network` or `server`, `retryDelay` only when it's passed, mutations `retry: false` |
-| §3 `formatAgo`, `formatClock` | `lib/time.ts` | `formatAgo` is DL's `jr`, token for token (`Math.max(0, Math.round(ms/1000))`, then `s`, `m`, `h m`). `formatClock` gives local zero-padded `HH:MM`. UC-06 passes. |
-| §3 `getRouter()` | `router.tsx` | A new `QueryClient` and a bound `Api`. Context is `{ queryClient }`. `setupRouterSsrQueryIntegration`. On the server, `createIsomorphicFn().server` with `getRequest()` gives the origin and the incoming `X-Request-Id`, and cookies aren't forwarded. In the browser, `{}`. |
-| §3 "A production build has no mock" | — | `grep -rn contract-mock apps/web/src` finds nothing. The client bundle holds none of `__mock`, `MOCK_OPERATOR_ID`'s value, `contract-mock` or `getRequest` (Verification). |
-| UC-01 to UC-07 | `apps/web/test/data/*` (Fenn, locked at 033a4ae) | 7 files, 85 tests, all passing |
+- Section 3, `getRouter()`, "On the server", "The forwarded ID is checked first": `apps/web/src/router.tsx`.
+- Section 3, `UiError` table, `stale`'s `message`: `apps/web/src/data/errors.ts`.
+- Section 3, "Which zod the web may import": not covered in this attempt (ZERO-02 BLOCKED).
+- ZERO-01 Verify (`vitest run test/data`): 85 of 85 pass.
 
 ## Deviations
-- **I reviewed a different head than the task doc expected.** The task doc starts me at Ghost's result commit. INT moved that to 3183bc1 (the client narrowed to the `decisions` route group for the bundle budget, on D58's subpaths), and I fast-forwarded to it on INT's instruction.
-  - The narrowing (`client.ts:23`, `const webContract = { decisions }`) is still an `OpenAPILink` over `@avel/contract`'s own route definitions, so section 3's rule holds. It was INT's call.
-- **ZERO-01's verify command doesn't filter.** `pnpm --filter @avel/web test -- test/data` runs the whole suite: 13 files, 105 failures, all in the not-yet-built kit and decisions tests (output below). So I also ran `npx vitest run test/data` in `apps/web`, which runs the locked data tests only: 7 files, 85 passed.
-  - The plan's verify line is mine to fix (Issues for other agents).
-- **The full test suite isn't green:** 105 failures in `test/kit/**` and `test/modules/decisions/**`. INT expected them: those builds haven't landed. None is in `test/data`.
+1. **The scope is INT's, not the task doc's alone.** INT's message: review GHOST-04 and GHOST-05 on `review-base/w0-data-a2`. GHOST-03 isn't in this attempt. So ZERO-01 covers the a2 diff, and ZERO-02 is BLOCKED rather than reviewed.
+2. **ZERO-02's Verify fails, as expected while GHOST-03 is blocked.** The grep lists `apps/web/src/data/client.ts:11` (`import type { z } from "zod"`) and `apps/web/src/data/pending-decisions.ts:5` (`import { z } from "zod"`). Section 3 allows both "until then" (until S1-6 lands), so this isn't a finding. The diff's `--stat` also lists `router.tsx` and Ghost's report, not only `apps/web/src/data`, because the task doc's expectation was written for GHOST-03.
 
 ## Limitations
-- **The client's first load is 155.40 kB gzip** in my build (`dist/client/assets/index-BDSlPvoT.js`). INT's message gave 153.7 kB, perhaps measured another way.
-  - Both are under sprint-01's 160 kB (decisions, b268381). The page isn't built yet, so this is the shell plus the data core.
-  - Leah enforces the budget, and I didn't judge it here.
-- **I didn't run the dev server or the end-to-end flow.** The mock's dev-server path (UC-29 to UC-31) is Fenn's e2e and Leah's to exercise.
+- ZERO-02 needs a new attempt once Axis's S1-6 is merged and Ghost's a3 (GHOST-03) has a completion report.
+- My checks of GHOST-04 drove the regex directly, plus the client-bundle grep. They didn't run `getRouter()`'s `.server` branch end to end. Ghost's report describes a probe that did, and no locked test covers it.
 
 ## Parked chains
 none
@@ -75,81 +72,51 @@ none
 none
 
 ## Issues for other agents
-- **Zero (me), the next UI contract revision.** These are gaps Ghost found and declared, which I'm taking into the contract:
-  1. **Section 3's `ApiOptions.fetch`:** `typeof fetch` contradicts section 2's promise that `mock.fetch(request: Request)` can be passed as `fetch`. Ghost's `(request: Request, init?: RequestInit) => Promise<Response>` is the right type (deviation 1).
-  2. **The `UiError` table needs a fallback row** for a 4xx it doesn't name. Ghost's `badRequest` (never retried, FM "never on 4xx") is what I'll write (deviation 4).
-  3. **The nullable extras:** `stale`'s `field` and `currentVersion`, and `rateLimited`'s `retryAfterMs`, are null when `details` don't carry them (deviation 3).
-  4. **Two small mentions:** `apps/web/src/data/index.ts` as the data core's entry (deviation 2), and route 52's `invalid cursor` 400 (deviation 5).
-- **Zero, `plan.toml`:** ZERO-01's verify `pnpm --filter @avel/web test -- test/data` runs every test file. It needs a form that filters, for example `pnpm --filter @avel/web exec vitest run test/data`. Then re-render.
-- **INT:**
-  - Regenerate `pnpm-lock.yaml` when merging w0-data (the frozen install refuses as it stands), and switch `@avel/contract-mock` from `link:` to `workspace:*` (decisions, "INT's answers on Nemi's w0-app report").
-  - Ghost's deviation 12 notes that its decisions aren't in `decisions.md`, which is outside its territory. I'll record them there with the contract revision.
-- **Zane (w0-data review-security):** I checked these, but they're yours to judge:
-  - the build's client bundle has no `__mock`, no `MOCK_OPERATOR_ID` value and no `getRequest`;
-  - `router.tsx` imports `getRequest` from `@tanstack/react-start/server` at the top level, and only `.server(…)` uses it.
-- **Leah:** a 155.40 kB gzip first load before the page and the kit land, against 160 kB.
+- **Zero (me), contract follow-ups for the next revision:**
+  - Section 3's `ApiError` line should name `bodyMessage` (Ghost's deviation 1).
+  - Section 3 should say which message `conflict`, `forbidden` and `unprocessable` carry. Today they read `ApiError.message`, so an `ErrorBody` with `message: ""` shows oRPC's fallback (`"Conflict"`, …), as Ghost's Limitations note. The table doesn't decide this either way, so it isn't a finding against Ghost.
+- **Leon (decisions a3):** `UiError.stale.message` is ready for 5.3's null-version row (decisions.md, Revision 10: "The switch is Leon's a3").
+- **INT:** this branch can merge, and so can Ghost's a2. GHOST-03 and my ZERO-02 wait for S1-6.
 
 ## Files changed
-`git diff --name-only main...HEAD`: this branch is Ghost's 3183bc1 fast-forwarded (INT), so the list holds Ghost's files and my report. My commit adds only `docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-data-review-frontend-completion.md`.
-
 ```
-apps/web/src/data/client.ts
-apps/web/src/data/contract-version.ts
-apps/web/src/data/errors.ts
-apps/web/src/data/idempotency.ts
-apps/web/src/data/index.ts
-apps/web/src/data/pending-decisions.ts
-apps/web/src/data/query.ts
-apps/web/src/lib/time.ts
-apps/web/src/router.tsx
-docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md
 docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-data-review-frontend-completion.md
-packages/contract-mock/package.json
-packages/contract-mock/src/fixtures.ts
-packages/contract-mock/src/index.ts
-packages/contract-mock/src/mock.ts
-packages/contract-mock/src/rows.ts
-packages/contract-mock/tsconfig.json
 ```
+(The diff from main also lists the review base's merged `apps/web/src/data/errors.ts`, `apps/web/src/router.tsx` and Ghost's report. Those are Ghost's a2, merged into the base by INT, not mine.)
 
 ## Verification
 ```
-$ pnpm --filter @avel/contract build
-> tsc -p tsconfig.json                                  (exit 0)
+$ pnpm --filter @avel/web exec vitest run test/data
+ Tests  85 passed (85)
 
-$ pnpm --filter "@avel/web..." build                   (exit 0)
-apps/web build: dist/client/assets/app-Dz30enHM.css      31.47 kB │ gzip:   6.77 kB
-apps/web build: dist/client/assets/index-BDSlPvoT.js    496.83 kB │ gzip: 155.40 kB
-apps/web build: dist/server/server.js                   261.19 kB │ gzip: 63.18 kB
-apps/web build: Done
-(only warnings: "use client" module-level directives in @tanstack/react-query)
+$ grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src
+apps/web/src/data/client.ts:11:import type { z } from "zod";
+apps/web/src/data/pending-decisions.ts:5:import { z } from "zod";
+exit=0      (expected while GHOST-03 is blocked; Deviations 2)
 
-$ grep -rl "getRequest\|__mock\|0193a000-0000-7000-8000-000000000001\|contract-mock" apps/web/dist/client
-(no match)
-$ grep -rn "contract-mock" apps/web/src
-(no match)
+$ pnpm --filter "@avel/web..." build
+exit=0
+apps/web build: dist/server/server.js   261.21 kB │ gzip: 63.20 kB
+apps/web build: ✓ built in 351ms
 
-$ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck   (exit 0)
+$ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
+exit=0
 packages/contract typecheck: Done
 packages/contract-mock typecheck: Done
 apps/web typecheck: Done
 
-$ pnpm lint                                             (exit 0)
-Checked 183 files in 108ms. No fixes applied.
+$ pnpm lint
+exit=0
+Checked 205 files in 466ms. No fixes applied.
 
-$ pnpm --filter @avel/web test -- test/data            (exit 1: runs the whole suite, see Deviations)
-$ pnpm --filter @avel/web test                         (exit 1)
- Test Files  6 failed | 7 passed (13)
-      Tests  105 failed | 85 passed (190)
-  failures by file: test/kit/decision-tag 29, test/kit/error-panel 22, test/kit/reason-dialog 17,
-  test/modules/decisions/deciding 7, errors 16, list 14  (kit and decisions not built yet: expected, INT)
-
-$ (apps/web) npx vitest run test/data                  (exit 0)
- Test Files  7 passed (7)
-      Tests  85 passed (85)
-
-$ python3 scripts/check_locks.py                       (exit 0)
+$ pnpm --filter @avel/web test
+exit=0
+ Test Files  14 passed (14)
+      Tests  190 passed (190)
 
 $ git diff --name-only main...HEAD
-(the list under Files changed)
+apps/web/src/data/errors.ts                      (Ghost's a2, in the review base)
+apps/web/src/router.tsx                          (Ghost's a2, in the review base)
+docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md   (Ghost's a2, in the review base)
+docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-data-review-frontend-completion.md   (mine)
 ```
