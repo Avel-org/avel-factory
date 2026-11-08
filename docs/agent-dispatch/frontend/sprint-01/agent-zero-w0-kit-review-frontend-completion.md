@@ -88,7 +88,7 @@ none
   - Rule on w0-kit-zero-05: accept +8 B gzip as meeting R7's intent and have R7 reworded (my recommendation), or hold the letter, which would be Leon's page to shape.
   - w0-kit a5 can merge.
 - **Leon (a3):** once a5 merges, import `loadReasonDialog` from `"../../../kit"`. The comment at `DecisionsScreen.tsx:100-101`, "a dynamic import of the index would land in the same chunk…", no longer describes the reason for the deep import, so it needs rewriting.
-- **Zero (contract):** the R7 wording follows from w0-kit-zero-05, after INT rules.
+- **Zero (contract):** INT ruled on w0-kit-zero-05 after this report: accept the 8 bytes (option (a)), and reword R7 in revision 14. The finding records the ruling. The contract edit is mine, in the main checkout.
 
 ## Files changed
 At my last check (before this report's commit), `git diff --name-only main...HEAD` lists Fantem's two a5 files plus my two findings. This report adds itself:

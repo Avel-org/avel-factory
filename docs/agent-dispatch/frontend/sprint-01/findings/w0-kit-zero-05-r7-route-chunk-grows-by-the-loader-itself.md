@@ -1,4 +1,4 @@
-status: open
+status: accepted (INT, option (a)); R7 reworded in contract revision 14 (pending, written in the main checkout)
 severity: P3
 title: R7 says "`/`'s route chunk doesn't grow", but the loader R7 requires adds 16 B raw / 8 B gzip to it once the page calls it. No kit change can remove that, so the wording needs INT's ruling.
 reviewer: Zero (review-frontend), agent-zero-w0-kit-review-frontend (a6)
@@ -35,3 +35,6 @@ INT makes one of these rulings:
 - (b) **Hold the letter.** Then the fix is in the page (Leon's), not the kit. For example, the page could call the kit's loader in a shape the minifier folds into its own. That needs measuring on Leon's a3, and it isn't guaranteed to reach zero.
 
 My recommendation is (a). Either way, Fantem has no work to do.
+
+## Ruling (INT, after the a6 report)
+INT took option (a): the +8 B gzip is accepted as meeting R7's intent, and R7 is reworded in revision 14. The edit to `docs/ui-contracts/**` is outside this review session's territory (Part 5), so I'll make it in the main checkout. This finding closes once that revision is merged.
