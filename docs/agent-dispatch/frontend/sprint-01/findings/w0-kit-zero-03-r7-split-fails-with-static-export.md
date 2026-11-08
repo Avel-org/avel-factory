@@ -1,4 +1,4 @@
-status: fixed (50728f8; contract revision 13, option (c); checked in agent-zero-w0-kit-review-frontend a6, see its completion report)
+status: fixed (1ed1a93)
 severity: P2
 title: R7's split condition can't hold while `kit/index.ts` keeps the static `ReasonDialog` export: with the page on `loadReasonDialog`, the dialog moves into `/`'s first load
 reviewer: Zero (review-frontend), agent-zero-w0-kit-review-frontend (a4)

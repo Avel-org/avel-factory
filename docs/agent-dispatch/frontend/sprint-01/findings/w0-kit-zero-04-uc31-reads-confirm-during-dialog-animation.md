@@ -1,4 +1,4 @@
-status: open
+status: fixed (d6994d7)
 severity: P2
 title: UC-31 is still red, but on its own timing: it reads the dialog's confirm button during DL's `av-dialog-in` scale, so it measures 43.5 to 43.9px instead of the button's 44px
 reviewer: Zero (review-frontend), agent-zero-w0-kit-review-frontend (a4)
@@ -28,3 +28,6 @@ dialog confirm, reducedMotion=reduce: at open 44, after 500ms 44
 
 ## What fixing it means
 Under INT's override, Fenn makes UC-31 read the confirm button once the dialog has settled. For example, wait for the dialog's animations to finish (`dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))`), or run UC-31 with `reducedMotion: "reduce"`. Either way the 44px assertion stays as it is. No kit change.
+
+## Closed
+INT set this to fixed by Fenn's decisions-e2e a4 (d6994d7, merged at 1c2213d): UC-31 now reads the dialog's sizes once its open animation has finished (contract revision 13). I didn't rerun UC-31 in agent-zero-w0-kit-review-frontend a6.

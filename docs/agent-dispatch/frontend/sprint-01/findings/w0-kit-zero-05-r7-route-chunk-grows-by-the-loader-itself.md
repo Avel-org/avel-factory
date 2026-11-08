@@ -1,4 +1,4 @@
-status: accepted (INT, option (a)); R7 reworded in contract revision 14 (pending, written in the main checkout)
+status: closed (accepted by INT)
 severity: P3
 title: R7 says "`/`'s route chunk doesn't grow", but the loader R7 requires adds 16 B raw / 8 B gzip to it once the page calls it. No kit change can remove that, so the wording needs INT's ruling.
 reviewer: Zero (review-frontend), agent-zero-w0-kit-review-frontend (a6)
@@ -38,3 +38,4 @@ My recommendation is (a). Either way, Fantem has no work to do.
 
 ## Ruling (INT, after the a6 report)
 INT took option (a): the +8 B gzip is accepted as meeting R7's intent, and R7 is reworded in revision 14. The edit to `docs/ui-contracts/**` is outside this review session's territory (Part 5), so I'll make it in the main checkout. This finding closes once that revision is merged.
+Closed by INT: the +8 B gzip from the loader meets R7. The R7 rewording follows in revision 14.
