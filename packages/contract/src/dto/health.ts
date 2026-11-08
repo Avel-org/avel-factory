@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { Placeholder } from "./common.js";
 
 /** Health (routes 6 and 7). */

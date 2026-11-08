@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { IndexStatus } from "../value-lists.js";
 import { IsoTime, Json, Micros, mutableFields } from "./common.js";
 
@@ -10,7 +10,7 @@ export const PackageDto = z.object({
   version: z.string(),
   deadlineHours: z.int(),
   priceMicros: Micros,
-  monthlyPriceMicros: Micros.nullable(),
+  monthlyPriceMicros: z.nullable(Micros),
   checkSet: Json,
   rubricProfile: Json,
   factoryCommit: z.string(),

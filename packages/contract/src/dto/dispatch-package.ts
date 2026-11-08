@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { DispatchPackageFileKind } from "../value-lists.js";
 import { FileWithEtag, Uuid } from "./common.js";
 
@@ -37,18 +37,18 @@ export const DispatchPackageDto = z.object({
   /** ISO time */
   renderedAt: z.string(),
   /** the line "every section passed the pre-dispatch check" */
-  gate1PassedAt: z.string().nullable(),
+  gate1PassedAt: z.nullable(z.string()),
   /** where it's written in the repo; null if it isn't written there */
-  location: z
-    .object({
+  location: z.nullable(
+    z.object({
       /** e.g. "avel-org/gts-landing" */
       repo: z.string(),
       /** e.g. "mission/landing" */
       branch: z.string(),
       /** e.g. "docs/agent-dispatch/landing" */
       path: z.string(),
-    })
-    .nullable(),
+    }),
+  ),
   /** hash of the sorted (path, sha256) list; changes whenever any file changes */
   packageSha256: z.string(),
   files: z.array(
@@ -56,9 +56,9 @@ export const DispatchPackageDto = z.object({
       path: z.string(),
       kind: z.enum(DispatchPackageFileKind),
       /** set for task_doc and completion_report */
-      dispatchId: z.string().nullable(),
+      dispatchId: z.nullable(z.string()),
       /** the task doc version */
-      version: z.number().nullable(),
+      version: z.nullable(z.number()),
       sha256: z.string(),
       bytes: z.number(),
     }),
@@ -69,13 +69,13 @@ export type DispatchPackageDto = z.infer<typeof DispatchPackageDto>;
 /** "All three take `?planVersion=`, which defaults to the mission's current plan." */
 export const DispatchPackageInput = z.object({
   missionId: Uuid,
-  planVersion: z.coerce.number().int().min(1).optional(),
+  planVersion: z.optional(z.coerce.number().check(z.int(), z.minimum(1))),
 });
 export type DispatchPackageInput = z.infer<typeof DispatchPackageInput>;
 
 /** The files route: `?path=` and `?planVersion=`. */
-export const DispatchPackageFileInput = DispatchPackageInput.extend({
-  path: z.string().min(1),
+export const DispatchPackageFileInput = z.extend(DispatchPackageInput, {
+  path: z.string().check(z.minLength(1)),
 });
 export type DispatchPackageFileInput = z.infer<typeof DispatchPackageFileInput>;
 

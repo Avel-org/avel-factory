@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { ProposalKind, ProposalState } from "../value-lists.js";
 import { IsoTime, Json, mutableFields, Placeholder, Reason, Uuid } from "./common.js";
 
@@ -8,8 +8,8 @@ import { IsoTime, Json, mutableFields, Placeholder, Reason, Uuid } from "./commo
 export const ProposalDto = z.object({
   id: Uuid,
   missionId: Uuid,
-  moduleRunId: Uuid.nullable(),
-  dispatchId: Uuid.nullable(),
+  moduleRunId: z.nullable(Uuid),
+  dispatchId: z.nullable(Uuid),
   kind: z.enum(ProposalKind),
   subjectKey: z.string(),
   version: z.int(),
@@ -17,10 +17,10 @@ export const ProposalDto = z.object({
   options: Json,
   state: z.enum(ProposalState),
   expiresAt: IsoTime,
-  choice: z.string().nullable(),
-  choiceReason: z.string().nullable(),
-  resolvedBy: Uuid.nullable(),
-  resolvedAt: IsoTime.nullable(),
+  choice: z.nullable(z.string()),
+  choiceReason: z.nullable(z.string()),
+  resolvedBy: z.nullable(Uuid),
+  resolvedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -43,8 +43,8 @@ export type ProposalIdInput = z.infer<typeof ProposalIdInput>;
  */
 export const DecideProposalInput = z.object({
   proposalId: Uuid,
-  version: z.int().min(1),
-  choice: z.string().min(1),
+  version: z.int().check(z.minimum(1)),
+  choice: z.string().check(z.minLength(1)),
   reason: Reason,
 });
 export type DecideProposalInput = z.infer<typeof DecideProposalInput>;

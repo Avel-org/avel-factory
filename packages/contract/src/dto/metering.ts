@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { IsoTime, Micros, Placeholder, Sha, Uuid } from "./common.js";
 
 /** Metering (routes 69 and 70). */
@@ -8,9 +8,9 @@ import { IsoTime, Micros, Placeholder, Sha, Uuid } from "./common.js";
  * kind comes in Step 10, not here.
  */
 export const GetMetricsInput = z.object({
-  missionId: Uuid.optional(),
-  packageKey: z.string().min(1).optional(),
-  factoryCommit: Sha.optional(),
+  missionId: z.optional(Uuid),
+  packageKey: z.optional(z.string().check(z.minLength(1))),
+  factoryCommit: z.optional(Sha),
 });
 export type GetMetricsInput = z.infer<typeof GetMetricsInput>;
 
@@ -32,7 +32,7 @@ export type PaymentDto = z.infer<typeof PaymentDto>;
 /** Route 70: "Record a payment". */
 export const CreatePaymentInput = z.object({
   missionId: Uuid,
-  amountMicros: Micros.min(1),
+  amountMicros: Micros.check(z.minimum(1)),
   receivedAt: IsoTime,
 });
 export type CreatePaymentInput = z.infer<typeof CreatePaymentInput>;

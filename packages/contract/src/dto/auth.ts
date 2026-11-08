@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { DeviceLoginState } from "../value-lists.js";
 import { IsoTime, mutableFields, Uuid } from "./common.js";
 
@@ -10,10 +10,10 @@ export const DeviceLoginDto = z.object({
   userCode: z.string(),
   label: z.string(),
   state: z.enum(DeviceLoginState),
-  approvedBy: Uuid.nullable(),
-  cliSessionId: Uuid.nullable(),
+  approvedBy: z.nullable(Uuid),
+  cliSessionId: z.nullable(Uuid),
   expiresAt: IsoTime,
-  approvedAt: IsoTime.nullable(),
+  approvedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -25,32 +25,32 @@ export const CliSessionDto = z.object({
   userId: Uuid,
   label: z.string(),
   expiresAt: IsoTime,
-  revokedAt: IsoTime.nullable(),
-  lastUsedAt: IsoTime.nullable(),
+  revokedAt: z.nullable(IsoTime),
+  lastUsedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
 export type CliSessionDto = z.infer<typeof CliSessionDto>;
 
 /** Route 1's input: the CLI names itself (`device_logins.label`). */
-export const StartDeviceLoginInput = DeviceLoginDto.pick({ label: true });
+export const StartDeviceLoginInput = z.pick(DeviceLoginDto, { label: true });
 export type StartDeviceLoginInput = z.infer<typeof StartDeviceLoginInput>;
 
 /**
  * Route 1's output: "a device code and a short user code". `deviceCode` is returned
  * once and stored only hashed; this response is never stored by idempotency (rule 3).
  */
-export const DeviceLoginStartedDto = DeviceLoginDto.extend({
-  deviceCode: z.string().min(1),
+export const DeviceLoginStartedDto = z.extend(DeviceLoginDto, {
+  deviceCode: z.string().check(z.minLength(1)),
 });
 export type DeviceLoginStartedDto = z.infer<typeof DeviceLoginStartedDto>;
 
 /** Route 2's input: the user code from the path. Step-up. */
-export const ApproveDeviceLoginInput = DeviceLoginDto.pick({ userCode: true });
+export const ApproveDeviceLoginInput = z.pick(DeviceLoginDto, { userCode: true });
 export type ApproveDeviceLoginInput = z.infer<typeof ApproveDeviceLoginInput>;
 
 /** Route 3's input: the CLI polls with its device code. */
-export const CreateCliSessionInput = z.object({ deviceCode: z.string().min(1) });
+export const CreateCliSessionInput = z.object({ deviceCode: z.string().check(z.minLength(1)) });
 export type CreateCliSessionInput = z.infer<typeof CreateCliSessionInput>;
 
 /**
@@ -59,7 +59,7 @@ export type CreateCliSessionInput = z.infer<typeof CreateCliSessionInput>;
  */
 export const CliSessionCreatedDto = z.object({
   session: CliSessionDto,
-  token: z.string().min(1),
+  token: z.string().check(z.minLength(1)),
 });
 export type CliSessionCreatedDto = z.infer<typeof CliSessionCreatedDto>;
 

@@ -1,4 +1,5 @@
-import { z } from "zod";
+import * as z from "zod/mini";
+import type * as core from "zod/v4/core";
 
 /**
  * The value rules every DTO follows (contract.md section 4, rule 5; API and data
@@ -10,14 +11,14 @@ export const IsoTime = z.iso.datetime({ offset: true });
 /** Whole micro-dollars: 1,000,000 = $1. */
 export const Micros = z.int();
 /** A `row_version`: writes send it back, and a stale one gets 409 `STALE_VERSION` (Q4). */
-export const RowVersion = z.int().min(1);
+export const RowVersion = z.int().check(z.minimum(1));
 /** A `jsonb` column with no shape in the map. */
 export const Json = z.json();
 /** A git commit SHA (`text` in the map). */
-export const Sha = z.string().min(1);
+export const Sha = z.string().check(z.minLength(1));
 
 /** A non-empty written reason, for overrides, decisions, acceptances and pass approvals. */
-export const Reason = z.string().trim().min(1);
+export const Reason = z.string().check(z.trim(), z.minLength(1));
 
 /**
  * A placeholder for a shape that a route names but no accepted doc defines yet
@@ -36,16 +37,16 @@ export const mutableFields = {
 
 /** The cursor query every list route takes. `limit` is at most 100 (Frontend Map v0.6, Data layer). */
 export const PageQuery = z.object({
-  cursor: z.string().min(1).optional(),
-  limit: z.coerce.number().int().min(1).max(100).optional(),
+  cursor: z.optional(z.string().check(z.minLength(1))),
+  limit: z.optional(z.coerce.number().check(z.int(), z.minimum(1), z.maximum(100))),
 });
 export type PageQuery = z.infer<typeof PageQuery>;
 
 /** The one list wrapper: `nextCursor` is null on the last page. */
-export const Page = <T extends z.ZodType>(item: T) =>
+export const Page = <T extends core.$ZodType>(item: T) =>
   z.object({
     items: z.array(item),
-    nextCursor: z.string().nullable(),
+    nextCursor: z.nullable(z.string()),
   });
 
 // ---------------------------------------------------------------- files

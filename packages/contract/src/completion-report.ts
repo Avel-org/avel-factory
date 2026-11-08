@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { CompletionTaskStatus } from "./value-lists.js";
 
 /**
@@ -17,7 +17,7 @@ import { CompletionTaskStatus } from "./value-lists.js";
  * column, not part of the body.
  */
 
-const Text = z.string().trim().min(1);
+const Text = z.string().check(z.trim(), z.minLength(1));
 
 /** One pre-flight check: a verification command or a checklist item, and its result (CR-10 item 6). */
 export const PreflightResult = z.object({
@@ -31,7 +31,7 @@ export type PreflightResult = z.infer<typeof PreflightResult>;
 export const CompletionTask = z.object({
   id: Text,
   status: z.enum(CompletionTaskStatus),
-  commit: z.string().min(1).nullable(),
+  commit: z.nullable(z.string().check(z.minLength(1))),
 });
 export type CompletionTask = z.infer<typeof CompletionTask>;
 
@@ -65,7 +65,7 @@ export const CompletionReportBody = z.object({
   issuesForOthers: z.array(Text),
   dependencyRequests: z.array(Text),
   escalations: z.array(Text),
-  preflight: z.array(PreflightResult).min(1),
+  preflight: z.array(PreflightResult).check(z.minLength(1)),
   contractToFiles: z.array(ContractItemFiles),
   deviations: z.array(Deviation),
   limitations: z.array(Text),

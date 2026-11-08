@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { MissionState } from "./value-lists.js";
 
 /**
@@ -33,7 +33,7 @@ export const errorMap = {
   TOO_MANY_REQUESTS: {
     status: 429,
     message: "Rate limited",
-    data: z.object({ retryAfterMs: z.int().min(0) }),
+    data: z.object({ retryAfterMs: z.int().check(z.minimum(0)) }),
   },
   STEP_UP_REQUIRED: { status: 403, message: "A credential action with no valid grant" },
   STALE_VERSION: {
@@ -95,7 +95,7 @@ export const errorStatus = Object.fromEntries(
 export const ErrorBody = z.object({
   code: z.string(),
   message: z.string(),
-  details: z.json().optional(),
+  details: z.optional(z.json()),
   requestId: z.string(),
 });
 export type ErrorBody = z.infer<typeof ErrorBody>;
