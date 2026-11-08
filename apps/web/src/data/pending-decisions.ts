@@ -2,7 +2,7 @@ import { IsoTime, Uuid } from "@avel/contract/dto/common";
 import type { PendingDecisionDto } from "@avel/contract/dto/decisions";
 import { ProposalKind } from "@avel/contract/value-lists";
 import type { InfiniteData } from "@tanstack/react-query";
-import { z } from "zod";
+import * as z from "zod/mini";
 
 /**
  * CR-W2's route 52 row, transcribed from CR-W2 sections 2.1 to 2.3, field for field (UI
@@ -29,34 +29,34 @@ export type CostImpact = z.infer<typeof CostImpact>;
 /** `kind: 'proposal'` (CR-W2 2.1 and 2.2): can be decided. */
 const ProposalRow = z.object({
   kind: z.literal("proposal"),
-  ref: z.string().regex(/^proposal:[^:]+$/),
+  ref: z.string().check(z.regex(/^proposal:[^:]+$/)),
   title: z.string(),
   createdAt: IsoTime,
   missionId: Uuid,
-  clientName: z.string().nullable(),
+  clientName: z.nullable(z.string()),
   proposalId: Uuid,
   proposalKind: z.enum(ProposalKind),
   subjectKey: z.string(),
-  moduleRunId: Uuid.nullable(),
-  version: z.int().min(1),
+  moduleRunId: z.nullable(Uuid),
+  version: z.int().check(z.minimum(1)),
   evidence: z.string(),
-  approve: DecisionChoice.optional(),
-  reject: DecisionChoice.optional(),
+  approve: z.optional(DecisionChoice),
+  reject: z.optional(DecisionChoice),
   expiresAt: IsoTime,
-  costImpact: CostImpact.optional(),
+  costImpact: z.optional(CostImpact),
 });
 
 /** `kind: 'factory_change'` (CR-W2 2.1 and 2.3): read-only. */
 const FactoryChangeRow = z.object({
   kind: z.literal("factory_change"),
-  ref: z.string().regex(/^factory_change:[1-9][0-9]*$/),
+  ref: z.string().check(z.regex(/^factory_change:[1-9][0-9]*$/)),
   title: z.string(),
   createdAt: IsoTime,
   missionId: z.null(),
   clientName: z.null(),
-  changeId: z.string().regex(/^[1-9][0-9]*$/),
+  changeId: z.string().check(z.regex(/^[1-9][0-9]*$/)),
   prNumber: z.int(),
-  headSha: z.string().regex(/^[0-9a-fA-F]{40}$/),
+  headSha: z.string().check(z.regex(/^[0-9a-fA-F]{40}$/)),
   url: z.url(),
 });
 

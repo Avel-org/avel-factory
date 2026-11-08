@@ -8,7 +8,7 @@ import { type Client, type ClientOptions, createORPCClient } from "@orpc/client"
 import { OpenAPILink } from "@orpc/openapi-client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
-import type { z } from "zod";
+import type * as z from "zod/mini";
 import { BUILT_CONTRACT_VERSION, noteContractVersion } from "./contract-version";
 import { decodeErrorBody, NetworkError } from "./errors";
 
@@ -44,12 +44,12 @@ export interface ApiContext {
 /** A procedure's optional schema: its input or output type, or `unknown` when it has none. */
 type SchemaInput<S> = [NonNullable<S>] extends [never]
   ? unknown
-  : NonNullable<S> extends z.ZodType
+  : NonNullable<S> extends z.ZodMiniType
     ? z.input<NonNullable<S>>
     : unknown;
 type SchemaOutput<S> = [NonNullable<S>] extends [never]
   ? unknown
-  : NonNullable<S> extends z.ZodType
+  : NonNullable<S> extends z.ZodMiniType
     ? z.output<NonNullable<S>>
     : unknown;
 
