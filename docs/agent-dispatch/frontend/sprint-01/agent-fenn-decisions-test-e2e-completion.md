@@ -48,6 +48,6 @@ apps/web/e2e/decisions.spec.ts, docs/agent-dispatch/frontend/sprint-01/agent-fen
 - `pnpm --filter "@avel/web..." build`: built, Done.
 - `pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck`: Done.
 - `pnpm lint`: Checked 213 files, no fixes applied.
-- `pnpm --filter @avel/web test`: see the run in the session; passes.
+- `pnpm --filter @avel/web test`: 14 files, 196 tests passed.
 - `for i in 1 2 3; do playwright test; done`: 5 passed, 1 skipped, three times.
 - `git diff --name-only main...HEAD`: apps/web/e2e/decisions.spec.ts and this report.
