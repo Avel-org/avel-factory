@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import {
   FindingDecidedByKind,
   FindingKind,
@@ -28,10 +28,10 @@ export const GateEvaluationDto = z.object({
   missionId: Uuid,
   gate: z.int(),
   commitSha: z.string(),
-  moduleRunId: Uuid.nullable(),
-  integrationCommitId: Uuid.nullable(),
-  attemptId: Uuid.nullable(),
-  gateRunId: Uuid.nullable(),
+  moduleRunId: z.nullable(Uuid),
+  integrationCommitId: z.nullable(Uuid),
+  attemptId: z.nullable(Uuid),
+  gateRunId: z.nullable(Uuid),
   result: z.enum(GateEvaluationResult),
   reasons: Json,
   createdAt: IsoTime,
@@ -44,16 +44,16 @@ export const IntegrationCommitDto = z.object({
   id: Uuid,
   missionId: Uuid,
   kind: z.enum(IntegrationCommitKind),
-  moduleRunId: Uuid.nullable(),
-  attemptId: Uuid.nullable(),
-  dependencyRequestId: Uuid.nullable(),
-  baseSha: z.string().nullable(),
-  commitSha: z.string().nullable(),
+  moduleRunId: z.nullable(Uuid),
+  attemptId: z.nullable(Uuid),
+  dependencyRequestId: z.nullable(Uuid),
+  baseSha: z.nullable(z.string()),
+  commitSha: z.nullable(z.string()),
   state: z.enum(IntegrationCommitState),
-  results: Json.nullable(),
+  results: z.nullable(Json),
   queuedAt: IsoTime,
-  startedAt: IsoTime.nullable(),
-  finishedAt: IsoTime.nullable(),
+  startedAt: z.nullable(IsoTime),
+  finishedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -73,7 +73,7 @@ export type IntegrationCommitIdInput = z.infer<typeof IntegrationCommitIdInput>;
  * Route 56: "Results and log". `results` is the column; the log has no column, so
  * it's a placeholder.
  */
-export const IntegrationCommitDetailDto = IntegrationCommitDto.extend({
+export const IntegrationCommitDetailDto = z.extend(IntegrationCommitDto, {
   log: Placeholder,
 });
 export type IntegrationCommitDetailDto = z.infer<typeof IntegrationCommitDetailDto>;
@@ -88,7 +88,7 @@ export const CreateGateOverrideInput = z.object({
   gate: z.union([z.literal(3), z.literal(4)]),
   gateEvaluationId: Uuid,
   rowVersion: RowVersion,
-  checkId: z.string().min(1).optional(),
+  checkId: z.optional(z.string().check(z.minLength(1))),
   reason: Reason,
 });
 export type CreateGateOverrideInput = z.infer<typeof CreateGateOverrideInput>;
@@ -97,37 +97,37 @@ export type CreateGateOverrideInput = z.infer<typeof CreateGateOverrideInput>;
 export const FindingDto = z.object({
   id: Uuid,
   missionId: Uuid,
-  checkpointId: Uuid.nullable(),
-  moduleRunId: Uuid.nullable(),
+  checkpointId: z.nullable(Uuid),
+  moduleRunId: z.nullable(Uuid),
   source: z.enum(FindingSource),
   sourceRole: z.string(),
-  checkId: z.string().nullable(),
-  targetRef: z.string().nullable(),
-  evidence: Json.nullable(),
+  checkId: z.nullable(z.string()),
+  targetRef: z.nullable(z.string()),
+  evidence: z.nullable(Json),
   kind: z.enum(FindingKind),
   route: z.enum(FindingRoute),
   state: z.enum(FindingState),
   tries: z.int(),
-  reviewedCommit: z.string().nullable(),
-  reason: z.string().nullable(),
-  decidedByKind: z.enum(FindingDecidedByKind).nullable(),
-  decidedByUserId: Uuid.nullable(),
-  decidedByAttemptId: Uuid.nullable(),
-  fixedByCheck: z.string().nullable(),
-  decidedAt: IsoTime.nullable(),
+  reviewedCommit: z.nullable(z.string()),
+  reason: z.nullable(z.string()),
+  decidedByKind: z.nullable(z.enum(FindingDecidedByKind)),
+  decidedByUserId: z.nullable(Uuid),
+  decidedByAttemptId: z.nullable(Uuid),
+  fixedByCheck: z.nullable(z.string()),
+  decidedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
 export type FindingDto = z.infer<typeof FindingDto>;
 
-export const ListFindingsInput = PageQuery.extend({ missionId: Uuid });
+export const ListFindingsInput = z.extend(PageQuery, { missionId: Uuid });
 export type ListFindingsInput = z.infer<typeof ListFindingsInput>;
 
 /** Route 59: "Confirm or dismiss, with a reason". */
 export const UpdateFindingInput = z.object({
   findingId: Uuid,
   rowVersion: RowVersion,
-  state: z.enum(FindingState).extract(["confirmed", "dismissed"]),
+  state: z.enum(["confirmed", "dismissed"] as const satisfies readonly FindingState[]),
   reason: Reason,
 });
 export type UpdateFindingInput = z.infer<typeof UpdateFindingInput>;

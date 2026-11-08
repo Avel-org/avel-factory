@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import {
   ClientKind,
   MessageRole,
@@ -37,33 +37,33 @@ export const MissionDto = z.object({
   id: Uuid,
   clientId: Uuid,
   state: z.enum(MissionState),
-  packageKey: z.string().nullable(),
-  packageVersion: z.string().nullable(),
-  priceMicros: Micros.nullable(),
-  deadlineAt: IsoTime.nullable(),
+  packageKey: z.nullable(z.string()),
+  packageVersion: z.nullable(z.string()),
+  priceMicros: z.nullable(Micros),
+  deadlineAt: z.nullable(IsoTime),
   budgetMicros: Micros,
   reservedMicros: Micros,
   spentMicros: Micros,
-  planId: Uuid.nullable(),
-  planState: z.string().nullable(),
-  repoConnectionId: Uuid.nullable(),
-  pinnedCommit: z.string().nullable(),
-  branchHead: z.string().nullable(),
-  factoryCommit: z.string().nullable(),
-  rosterVersion: z.string().nullable(),
-  kbRelease: z.string().nullable(),
-  rulesVersion: z.string().nullable(),
+  planId: z.nullable(Uuid),
+  planState: z.nullable(z.string()),
+  repoConnectionId: z.nullable(Uuid),
+  pinnedCommit: z.nullable(z.string()),
+  branchHead: z.nullable(z.string()),
+  factoryCommit: z.nullable(z.string()),
+  rosterVersion: z.nullable(z.string()),
+  kbRelease: z.nullable(z.string()),
+  rulesVersion: z.nullable(z.string()),
   gate5Failures: z.int(),
-  onboardingStartedAt: IsoTime.nullable(),
-  approvedAt: IsoTime.nullable(),
-  renderedAt: IsoTime.nullable(),
-  deliveredAt: IsoTime.nullable(),
-  closedAt: IsoTime.nullable(),
-  cancelledAt: IsoTime.nullable(),
+  onboardingStartedAt: z.nullable(IsoTime),
+  approvedAt: z.nullable(IsoTime),
+  renderedAt: z.nullable(IsoTime),
+  deliveredAt: z.nullable(IsoTime),
+  closedAt: z.nullable(IsoTime),
+  cancelledAt: z.nullable(IsoTime),
   kind: z.enum(ProjectKind),
   clientKind: z.enum(ClientKind),
-  designSystemSlug: z.string().nullable(),
-  designSystemVersion: z.string().nullable(),
+  designSystemSlug: z.nullable(z.string()),
+  designSystemVersion: z.nullable(z.string()),
   createdAt: IsoTime,
   ...mutableFields,
   displayState: z.enum(MissionDisplayState),
@@ -71,8 +71,8 @@ export const MissionDto = z.object({
 export type MissionDto = z.infer<typeof MissionDto>;
 
 /** Route 19: the list, with CR-13's optional `?kind=`. */
-export const ListMissionsInput = PageQuery.extend({
-  kind: z.enum(ProjectKind).optional(),
+export const ListMissionsInput = z.extend(PageQuery, {
+  kind: z.optional(z.enum(ProjectKind)),
 });
 export type ListMissionsInput = z.infer<typeof ListMissionsInput>;
 
@@ -96,12 +96,12 @@ export const OnboardingSessionDto = z.object({
   missionId: Uuid,
   stage: z.enum(Stage),
   status: z.enum(OnboardingSessionStatus),
-  pauseReason: z.string().nullable(),
-  packageProvisional: z.enum(Package).nullable(),
-  packageFinal: z.enum(Package).nullable(),
+  pauseReason: z.nullable(z.string()),
+  packageProvisional: z.nullable(z.enum(Package)),
+  packageFinal: z.nullable(z.enum(Package)),
   promptVersion: z.string(),
   lastActivityAt: IsoTime,
-  finalizedAt: IsoTime.nullable(),
+  finalizedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -116,7 +116,7 @@ export const MissionDetailDto = z.object({
   mission: MissionDto,
   gateStrip: Placeholder,
   onboarding: z.object({
-    session: OnboardingSessionDto.nullable(),
+    session: z.nullable(OnboardingSessionDto),
     progress: Placeholder,
     checkpoints: z.array(CheckpointDto),
   }),
@@ -129,7 +129,7 @@ export type MissionDetailDto = z.infer<typeof MissionDetailDto>;
 export const UpdateMissionInput = z.object({
   missionId: Uuid,
   rowVersion: RowVersion,
-  repoConnectionId: Uuid.nullable(),
+  repoConnectionId: z.nullable(Uuid),
 });
 export type UpdateMissionInput = z.infer<typeof UpdateMissionInput>;
 
@@ -139,12 +139,12 @@ export const MissionPauseDto = z.object({
   missionId: Uuid,
   kind: z.enum(MissionPauseKind),
   interruptedState: z.enum(MissionState),
-  proposalId: Uuid.nullable(),
-  pausedBy: Uuid.nullable(),
-  reason: z.string().nullable(),
+  proposalId: z.nullable(Uuid),
+  pausedBy: z.nullable(Uuid),
+  reason: z.nullable(z.string()),
   startedAt: IsoTime,
-  endedAt: IsoTime.nullable(),
-  endedBy: Uuid.nullable(),
+  endedAt: z.nullable(IsoTime),
+  endedBy: z.nullable(Uuid),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -153,7 +153,7 @@ export type MissionPauseDto = z.infer<typeof MissionPauseDto>;
 /** Route 23: an `operator` pause. */
 export const PauseMissionInput = z.object({
   missionId: Uuid,
-  reason: z.string().trim().min(1).optional(),
+  reason: z.optional(z.string().check(z.trim(), z.minLength(1))),
 });
 export type PauseMissionInput = z.infer<typeof PauseMissionInput>;
 
@@ -169,7 +169,7 @@ export type ResumeMissionInput = z.infer<typeof ResumeMissionInput>;
 export const CancelMissionInput = z.object({
   missionId: Uuid,
   rowVersion: RowVersion,
-  reason: z.string().trim().min(1).optional(),
+  reason: z.optional(z.string().check(z.trim(), z.minLength(1))),
 });
 export type CancelMissionInput = z.infer<typeof CancelMissionInput>;
 
@@ -188,7 +188,7 @@ export type ReadinessWaiverDto = z.infer<typeof ReadinessWaiverDto>;
 /** Route 27: "Proceed on a partial readiness result, with a reason". */
 export const CreateReadinessWaiverInput = z.object({
   missionId: Uuid,
-  checkId: z.string().min(1),
+  checkId: z.string().check(z.minLength(1)),
   reason: Reason,
 });
 export type CreateReadinessWaiverInput = z.infer<typeof CreateReadinessWaiverInput>;
@@ -196,7 +196,7 @@ export type CreateReadinessWaiverInput = z.infer<typeof CreateReadinessWaiverInp
 /** Route 28: "Approval #1, with the plan version" (`version`, Q4). */
 export const FinalizeMissionInput = z.object({
   missionId: Uuid,
-  version: z.int().min(1),
+  version: z.int().check(z.minimum(1)),
 });
 export type FinalizeMissionInput = z.infer<typeof FinalizeMissionInput>;
 
@@ -216,7 +216,7 @@ export type PassApprovalDto = z.infer<typeof PassApprovalDto>;
 /** Route 29: "The receipt hash and a reason". */
 export const CreatePassApprovalInput = z.object({
   missionId: Uuid,
-  receiptHash: z.string().min(1),
+  receiptHash: z.string().check(z.minLength(1)),
   reason: Reason,
 });
 export type CreatePassApprovalInput = z.infer<typeof CreatePassApprovalInput>;
@@ -228,7 +228,7 @@ export const ReleaseApprovalDto = z.object({
   receiptId: Uuid,
   receiptHash: z.string(),
   receiptVerdict: z.string(),
-  passApprovalId: Uuid.nullable(),
+  passApprovalId: z.nullable(Uuid),
   userId: Uuid,
   approvedAt: IsoTime,
   createdAt: IsoTime,
@@ -238,8 +238,8 @@ export type ReleaseApprovalDto = z.infer<typeof ReleaseApprovalDto>;
 /** Route 30: "Approval #2, with the receipt hash and, for a pass, the pass approval ID". */
 export const CreateReleaseInput = z.object({
   missionId: Uuid,
-  receiptHash: z.string().min(1),
-  passApprovalId: Uuid.optional(),
+  receiptHash: z.string().check(z.minLength(1)),
+  passApprovalId: z.optional(Uuid),
 });
 export type CreateReleaseInput = z.infer<typeof CreateReleaseInput>;
 
@@ -250,11 +250,11 @@ export const MissionRefreshDto = z.object({
   fromCommit: z.string(),
   toCommit: z.string(),
   fromReceiptId: Uuid,
-  newReceiptId: Uuid.nullable(),
-  proposalId: Uuid.nullable(),
+  newReceiptId: z.nullable(Uuid),
+  proposalId: z.nullable(Uuid),
   state: z.enum(MissionRefreshState),
   startedAt: IsoTime,
-  finishedAt: IsoTime.nullable(),
+  finishedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -266,8 +266,8 @@ export type MissionRefreshDto = z.infer<typeof MissionRefreshDto>;
  */
 export const CreateBudgetIncreaseInput = z.object({
   missionId: Uuid,
-  moduleRunId: Uuid.optional(),
-  amountMicros: Micros.min(1),
+  moduleRunId: z.optional(Uuid),
+  amountMicros: Micros.check(z.minimum(1)),
 });
 export type CreateBudgetIncreaseInput = z.infer<typeof CreateBudgetIncreaseInput>;
 
@@ -284,17 +284,17 @@ export const MessageDto = z.object({
   cacheWrite5m: z.int(),
   cacheWrite1h: z.int(),
   cacheRead: z.int(),
-  redactedAt: IsoTime.nullable(),
+  redactedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
 });
 export type MessageDto = z.infer<typeof MessageDto>;
 
-export const ListMessagesInput = PageQuery.extend({ missionId: Uuid });
+export const ListMessagesInput = z.extend(PageQuery, { missionId: Uuid });
 export type ListMessagesInput = z.infer<typeof ListMessagesInput>;
 
 /** Route 34: your turn with Canon; replies stream on the trace stream. */
 export const PostMessageInput = z.object({
   missionId: Uuid,
-  text: z.string().trim().min(1),
+  text: z.string().check(z.trim(), z.minLength(1)),
 });
 export type PostMessageInput = z.infer<typeof PostMessageInput>;

@@ -4,7 +4,7 @@
 import * as api from "@avel/contract";
 import { OpenAPIGenerator } from "@orpc/openapi";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
-import { z } from "zod";
+import * as core from "zod/v4/core";
 import { cmp } from "./schema.ts";
 
 export const openapiInfo = {
@@ -22,9 +22,9 @@ type JsonSchema = Record<string, unknown>;
  * into path, query and body parameters.
  */
 function dtoComponents() {
-  const common: Record<string, { schema: z.ZodType; strategy: "output" }> = {};
+  const common: Record<string, { schema: core.$ZodType; strategy: "output" }> = {};
   for (const [name, value] of Object.entries(api)) {
-    if (name.endsWith("Dto") && value instanceof z.ZodType) {
+    if (name.endsWith("Dto") && value instanceof core.$ZodType) {
       common[name] = { schema: value, strategy: "output" };
     }
   }

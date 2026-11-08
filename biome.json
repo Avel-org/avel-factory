@@ -32,5 +32,25 @@
     "parser": {
       "tailwindDirectives": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/contract/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "zod": "Classic zod is banned in packages/contract (decisions.md S1-6): import * as z from \"zod/mini\" (or zod/v4/core for types and classes shared with classic).",
+                  "zod/v4": "Classic zod is banned in packages/contract (decisions.md S1-6): import * as z from \"zod/mini\" (or zod/v4/core for types and classes shared with classic)."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

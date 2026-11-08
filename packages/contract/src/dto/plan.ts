@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import {
   CheckKind,
   CodebaseAnalysisStandingContext,
@@ -22,19 +22,19 @@ export const PlanDto = z.object({
   missionId: Uuid,
   version: z.int(),
   source: z.enum(PlanSource),
-  sessionId: Uuid.nullable(),
-  proposalId: Uuid.nullable(),
+  sessionId: z.nullable(Uuid),
+  proposalId: z.nullable(Uuid),
   packageKey: z.string(),
   packageVersion: z.string(),
   rosterVersion: z.string(),
   briefSnapshot: Json,
   state: z.enum(PlanState),
-  supersedesPlanId: Uuid.nullable(),
-  templateSlug: z.string().nullable(),
-  templateVersion: z.string().nullable(),
+  supersedesPlanId: z.nullable(Uuid),
+  templateSlug: z.nullable(z.string()),
+  templateVersion: z.nullable(z.string()),
   priceMicros: Micros,
-  approvedAt: IsoTime.nullable(),
-  approvedBy: Uuid.nullable(),
+  approvedAt: z.nullable(IsoTime),
+  approvedBy: z.nullable(Uuid),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -43,7 +43,7 @@ export type PlanDto = z.infer<typeof PlanDto>;
 /** `codebase_analysis`. */
 export const CodebaseAnalysisDto = z.object({
   planId: Uuid,
-  repoCommit: z.string().nullable(),
+  repoCommit: z.nullable(z.string()),
   stack: Json,
   conventions: z.string(),
   buildCmd: z.string(),
@@ -68,9 +68,9 @@ export const PlanModuleDto = z.object({
   escalateWhen: z.array(z.string()),
   referencePaths: z.array(z.string()),
   securityTriggers: z.array(z.string()),
-  asvsLevel: z.enum(PlanModuleAsvsLevel).nullable(),
-  dataClassification: z.enum(PlanModuleDataClassification).nullable(),
-  trace: Json.nullable(),
+  asvsLevel: z.nullable(z.enum(PlanModuleAsvsLevel)),
+  dataClassification: z.nullable(z.enum(PlanModuleDataClassification)),
+  trace: z.nullable(Json),
   estMinutes: z.int(),
   estMicros: Micros,
   estSource: z.enum(PlanModuleEstSource),
@@ -154,7 +154,7 @@ export type ModuleCheckDto = z.infer<typeof ModuleCheckDto>;
 export const QualityTargetDto = z.object({
   id: Uuid,
   planId: Uuid,
-  planModuleId: Uuid.nullable(),
+  planModuleId: z.nullable(Uuid),
   metric: z.string(),
   threshold: z.number(),
   checkId: Uuid,
@@ -165,14 +165,14 @@ export type QualityTargetDto = z.infer<typeof QualityTargetDto>;
 /** Route 46's input: `?version=`, defaulting to the mission's current plan. */
 export const GetPlanInput = z.object({
   missionId: Uuid,
-  version: z.coerce.number().int().min(1).optional(),
+  version: z.optional(z.coerce.number().check(z.int(), z.minimum(1))),
 });
 export type GetPlanInput = z.infer<typeof GetPlanInput>;
 
 /** Route 46's output: one plan version and the tables frozen with it. */
 export const PlanViewDto = z.object({
   plan: PlanDto,
-  codebaseAnalysis: CodebaseAnalysisDto.nullable(),
+  codebaseAnalysis: z.nullable(CodebaseAnalysisDto),
   modules: z.array(PlanModuleDto),
   moduleDeps: z.array(PlanModuleDepDto),
   requirements: z.array(RequirementDto),
@@ -189,7 +189,7 @@ export type PlanViewDto = z.infer<typeof PlanViewDto>;
  * is the `roster_version` that missions and plans pin; the rest is a placeholder.
  */
 export const RosterDto = z.object({
-  version: z.string().min(1),
+  version: z.string().check(z.minLength(1)),
   roster: Placeholder,
 });
 export type RosterDto = z.infer<typeof RosterDto>;

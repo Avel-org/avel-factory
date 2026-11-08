@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import {
   AttemptCompute,
   AttemptKind,
@@ -32,7 +32,7 @@ export const MissionDocDto = z.object({
   planId: Uuid,
   dispatchMd: z.string(),
   hash: z.string(),
-  gate1PassedAt: IsoTime.nullable(),
+  gate1PassedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
 });
 export type MissionDocDto = z.infer<typeof MissionDocDto>;
@@ -41,16 +41,16 @@ export type MissionDocDto = z.infer<typeof MissionDocDto>;
 export const DispatchDto = z.object({
   id: Uuid,
   missionId: Uuid,
-  moduleRunId: Uuid.nullable(),
+  moduleRunId: z.nullable(Uuid),
   planId: Uuid,
   agent: z.string(),
   role: z.enum(DispatchRole),
   pass: z.int(),
   state: z.enum(DispatchState),
-  parkedFrom: z.enum(DispatchState).nullable(),
+  parkedFrom: z.nullable(z.enum(DispatchState)),
   origin: z.enum(DispatchOrigin),
   taskDocVersion: z.int(),
-  resultCommit: z.string().nullable(),
+  resultCommit: z.nullable(z.string()),
   frozenIdentity: Json,
   wave: z.int(),
   createdAt: IsoTime,
@@ -58,12 +58,12 @@ export const DispatchDto = z.object({
 });
 export type DispatchDto = z.infer<typeof DispatchDto>;
 
-export const ListMissionDispatchesInput = PageQuery.extend({ missionId: Uuid });
+export const ListMissionDispatchesInput = z.extend(PageQuery, { missionId: Uuid });
 export type ListMissionDispatchesInput = z.infer<typeof ListMissionDispatchesInput>;
 
 /** Route 49: the mission's dispatches "with DISPATCH.md". */
-export const MissionDispatchesDto = Page(DispatchDto).extend({
-  missionDoc: MissionDocDto.nullable(),
+export const MissionDispatchesDto = z.extend(Page(DispatchDto), {
+  missionDoc: z.nullable(MissionDocDto),
 });
 export type MissionDispatchesDto = z.infer<typeof MissionDispatchesDto>;
 
@@ -94,9 +94,9 @@ export const AttemptDto = z.object({
   vendor: z.string(),
   model: z.string(),
   compute: z.enum(AttemptCompute),
-  checkpointCommit: z.string().nullable(),
+  checkpointCommit: z.nullable(z.string()),
   startedAt: IsoTime,
-  endedAt: IsoTime.nullable(),
+  endedAt: z.nullable(IsoTime),
   tokensIn: z.int(),
   tokensOut: z.int(),
   cacheRead: z.int(),
@@ -105,8 +105,8 @@ export const AttemptDto = z.object({
   costMicros: Micros,
   reservedMicros: Micros,
   capMicros: Micros,
-  outcome: z.enum(AttemptOutcome).nullable(),
-  failureNote: z.string().nullable(),
+  outcome: z.nullable(z.enum(AttemptOutcome)),
+  failureNote: z.nullable(z.string()),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -117,12 +117,12 @@ export const RoomDto = z.object({
   id: Uuid,
   kind: z.enum(RoomKind),
   missionId: Uuid,
-  dispatchId: Uuid.nullable(),
-  attemptId: Uuid.nullable(),
-  integrationCommitId: Uuid.nullable(),
+  dispatchId: z.nullable(Uuid),
+  attemptId: z.nullable(Uuid),
+  integrationCommitId: z.nullable(Uuid),
   state: z.enum(RoomState),
-  imageDigest: z.string().nullable(),
-  destroyedAt: IsoTime.nullable(),
+  imageDigest: z.nullable(z.string()),
+  destroyedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -136,7 +136,7 @@ export const DispatchDetailDto = z.object({
   dispatch: DispatchDto,
   taskDocs: z.array(TaskDocDto),
   attempts: z.array(AttemptDto),
-  room: RoomDto.nullable(),
+  room: z.nullable(RoomDto),
 });
 export type DispatchDetailDto = z.infer<typeof DispatchDetailDto>;
 
@@ -146,12 +146,12 @@ export const OverrideDto = z.object({
   missionId: Uuid,
   userId: Uuid,
   kind: z.enum(OverrideKind),
-  gate: z.int().nullable(),
-  gateEvaluationId: Uuid.nullable(),
-  dispatchId: Uuid.nullable(),
-  action: z.enum(OverrideAction).nullable(),
-  checkId: z.string().nullable(),
-  commitSha: z.string().nullable(),
+  gate: z.nullable(z.int()),
+  gateEvaluationId: z.nullable(Uuid),
+  dispatchId: z.nullable(Uuid),
+  action: z.nullable(z.enum(OverrideAction)),
+  checkId: z.nullable(z.string()),
+  commitSha: z.nullable(z.string()),
   reason: z.string(),
   createdAt: IsoTime,
 });
