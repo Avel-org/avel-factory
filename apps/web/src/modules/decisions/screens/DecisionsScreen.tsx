@@ -12,6 +12,7 @@ import {
   Suspense,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -158,16 +159,15 @@ function useOnline(): boolean {
   );
 }
 
-// ---- the hydration marker (section 5, revision 9) ----
+// ---- the hydration marker (section 5, revision 9; decisions-fenn-01) ----
 
 function subscribeNever(): () => void {
   return () => {};
 }
 
 /**
- * False on the server and in the hydration render, true in every client render after it, so
- * `data-hydrated` is absent from the server's HTML and hydration doesn't mismatch. For tests only:
- * nothing is styled on it.
+ * False on the server and in the hydration render, true in every client render after it. For
+ * tests only: nothing is styled on it.
  */
 function useHydrated(): boolean {
   return useSyncExternalStore(
@@ -177,6 +177,30 @@ function useHydrated(): boolean {
   );
 }
 
+/** Sets the page's marker. It's only ever set, so it's passed down as a plain setter. */
+type OnSettled = (settled: true) => void;
+
+/**
+ * The page's content reports that it has its final layout. `data-hydrated` goes on the page root
+ * only then, in the commit after this one (decisions-fenn-01: the marker means a tap lands where
+ * it's aimed). The list sits in its own Suspense boundary, which React hydrates in a later pass
+ * than the page root, and its tags switch from the server's desk layout to the phone layout only
+ * in the render after that hydration. So the root's own hydration is too early: the signal comes
+ * from the content, from the first commit where it rendered with the browser's values.
+ */
+function useSettledOnClient(onSettled: OnSettled): void {
+  const client = useHydrated();
+  useLayoutEffect(() => {
+    if (client) onSettled(true);
+  }, [client, onSettled]);
+}
+
+/** For content with no `DecisionTag` (the loading and first-load error states). */
+function Settled({ onSettled }: { onSettled: OnSettled }) {
+  useSettledOnClient(onSettled);
+  return null;
+}
+
 // ---- the page ----
 
 type SignedOut = { requestId: string | null };
@@ -184,7 +208,8 @@ type SignedOut = { requestId: string | null };
 export function DecisionsScreen() {
   const mismatch = useContractMismatch();
   const [signedOut, setSignedOut] = useState<SignedOut | null>(null);
-  const hydrated = useHydrated();
+  // Absent from the server's HTML and the hydration render, so hydration doesn't mismatch.
+  const [hydrated, setHydrated] = useState(false);
 
   return (
     <div
@@ -215,6 +240,7 @@ export function DecisionsScreen() {
                 <>
                   <PageHeader lead={null} />
                   <FirstLoadError error={error} onRetry={retry} />
+                  <Settled onSettled={setHydrated} />
                 </>
               )}
             >
@@ -223,10 +249,11 @@ export function DecisionsScreen() {
                   <>
                     <PageHeader lead={null} />
                     <WidgetState state="loading" />
+                    <Settled onSettled={setHydrated} />
                   </>
                 }
               >
-                <DecisionsList onSignedOut={setSignedOut} />
+                <DecisionsList onSignedOut={setSignedOut} onSettled={setHydrated} />
               </Suspense>
             </FirstLoadBoundary>
           )}
@@ -334,11 +361,19 @@ function FirstLoadError({ error, onRetry }: { error: unknown; onRetry: () => voi
 
 // ---- the list ----
 
-function DecisionsList({ onSignedOut }: { onSignedOut: (value: SignedOut) => void }) {
+interface DecisionsListProps {
+  onSignedOut: (value: SignedOut) => void;
+  onSettled: OnSettled;
+}
+
+function DecisionsList({ onSignedOut, onSettled }: DecisionsListProps) {
   const api = useApi();
   const query = useSuspenseInfiniteQuery(pendingDecisionsOptions(api));
   const { rows, unreadable, nextCursor } = query.data;
+  // One component reads both, so the render where `phone` first has the browser's value is the
+  // render whose commit reports the final layout: every tag takes `layout` from here.
   const phone = useIsPhone();
+  useSettledOnClient(onSettled);
   const online = useOnline();
   const [settledElsewhere, setSettledElsewhere] = useState(false);
   const headingId = useId();
