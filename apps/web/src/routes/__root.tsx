@@ -4,7 +4,7 @@ import { createIsomorphicFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
 import type { ReactNode } from "react";
 import appCss from "../styles/app.css?url";
-import ibmPlexMono500 from "../styles/fonts/ibm-plex-mono-500.woff2?url";
+import ibmPlexMono400 from "../styles/fonts/ibm-plex-mono-400.woff2?url";
 import interVariable from "../styles/fonts/inter-variable.woff2?url";
 
 // The root shell (UI contract section 6). getRouter() fills the context and provides the
@@ -50,7 +50,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       {
         rel: "preload",
-        href: ibmPlexMono500,
+        href: ibmPlexMono400,
         as: "font",
         type: "font/woff2",
         crossOrigin: "anonymous",
