@@ -1,0 +1,24 @@
+{
+ "session_id": "1a1a9960-028a-4646-924e-8bdefcd9ed48",
+ "name": "NEMI w0-split-build a2",
+ "branch": "frontend/sprint-01/agent-nemi-w0-split-build-a2",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-nemi-w0-split-build-a2",
+ "first_at": "2026-11-08T01:05:08.196Z",
+ "last_at": "2026-11-08T01:19:39.007Z",
+ "updated_at": "2026-11-08T01:19:52Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 156,
+   "output": 53631,
+   "cache_write_5m": 0,
+   "cache_write_1h": 141960,
+   "cache_read": 6990997,
+   "messages": 78
+  }
+ },
+ "cost_usd": 3.6071,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 3.6071
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

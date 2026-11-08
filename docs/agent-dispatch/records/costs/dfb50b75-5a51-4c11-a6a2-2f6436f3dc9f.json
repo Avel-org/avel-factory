@@ -1,0 +1,24 @@
+{
+ "session_id": "dfb50b75-5a51-4c11-a6a2-2f6436f3dc9f",
+ "name": "ZANE w0-split-review-security a1",
+ "branch": "frontend/sprint-01/agent-zane-w0-split-review-security-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-zane-w0-split-review-security-a1",
+ "first_at": "2026-11-08T01:20:50.182Z",
+ "last_at": "2026-11-08T01:24:00.799Z",
+ "updated_at": "2026-11-08T01:24:09Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 22,
+   "output": 5081,
+   "cache_write_5m": 0,
+   "cache_write_1h": 29584,
+   "cache_read": 219109,
+   "messages": 11
+  }
+ },
+ "cost_usd": 0.213,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.213
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
