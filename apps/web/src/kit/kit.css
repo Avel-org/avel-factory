@@ -908,6 +908,18 @@ button[data-ui="Button"][data-variant="link"][data-hovered] {
   flex-direction: column;
   gap: 10px;
 }
+/* D11: Approve and Reject share .av-dt-pair. With layout="phone" it's DL's Decisions card on a
+   phone (.pd[data-phone] .pd-actions): two columns, Reject left, Approve right, 10px apart. With
+   layout="desk" it adds no box at 900px and over, so the row is DL's desk row; under 900px it's
+   the same grid (in the K1 media block below). */
+[data-layout="phone"] .av-dt-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 10px;
+}
+[data-layout="desk"] .av-dt-pair {
+  display: contents;
+}
 .av-dt-footer {
   display: flex;
   flex-direction: column;
@@ -961,6 +973,24 @@ button[data-ui="Button"][data-variant="link"][data-hovered] {
     min-width: 100%;
     min-height: 100%;
     transform: translate(-50%, -50%);
+  }
+
+  /* D11 on the desk layout's HTML: the server renders layout="desk" (it can't know the viewport),
+     so under 900px the desk row's .av-dt-pair is D11's grid, across the row's full width. Its DOM
+     stays DL's desk order (Approve, Reject); the grid places Reject in the left column. */
+  [data-layout="desk"] .av-dt-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 10px;
+    flex: 1 1 100%;
+  }
+  [data-layout="desk"] .av-dt-pair > :first-child {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  [data-layout="desk"] .av-dt-pair > :last-child {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   /* R6: the reason field is 16px, so iOS doesn't zoom on focus. */

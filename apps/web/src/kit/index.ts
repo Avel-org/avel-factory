@@ -17,6 +17,16 @@ export { AV_ERROR_COPY, ErrorPanel, type ErrorPanelProps } from "./ErrorPanel";
 export { HashChip, type HashChipProps } from "./HashChip";
 export { Icon, type IconName, type IconProps } from "./Icon";
 export { ReasonDialog, type ReasonDialogProps } from "./ReasonDialog";
+
+/**
+ * R7: the reason dialog loaded lazily through the kit's index, never by a deep import. With the
+ * page loading it this way, ReasonDialog and Dialog build into a chunk of their own.
+ */
+export function loadReasonDialog(): Promise<{
+  ReasonDialog: typeof import("./ReasonDialog").ReasonDialog;
+}> {
+  return import("./ReasonDialog");
+}
 export { type GlyphStatus, StatusGlyph, type StatusGlyphProps } from "./StatusGlyph";
 export { Tag, type TagProps, type TagToneName } from "./Tag";
 export { WidgetState, type WidgetStateProps } from "./WidgetState";
