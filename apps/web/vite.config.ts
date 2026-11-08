@@ -1,5 +1,7 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
@@ -99,12 +101,118 @@ function contractMock(): Plugin {
   };
 }
 
+// The server-function stub (UI contract section 6, revision 10; size study, finding 04). Start's
+// client always carries the client half of createServerFn, and through it all of seroval. The web
+// has no server function: every call goes through the oRPC client (FM line 30). So in the client
+// environment only, these modules, when start-client-core imports them, resolve to stubs that
+// throw if called. The server build is untouched.
+const serverFnStubs: Record<string, string> = {
+  "serverFnFetcher.js": [
+    "export function serverFnFetcher() { throw new Error(STUBBED); }",
+    // The real one is a no-op outside a server function's response, which the web never reads.
+    "export function trackPostProcessPromise() {}",
+  ].join("\n"),
+  "createClientRpc.js": "export function createClientRpc() { throw new Error(STUBBED); }",
+  "frame-decoder.js": "export function createFrameDecoder() { throw new Error(STUBBED); }",
+};
+const serverFnStubPrefix = "\0avel:server-fn-stub:";
+const clientRpcDir = ["", "@tanstack", "start-client-core", "dist", "esm", "client-rpc", ""].join(
+  sep,
+);
+// What the stub keeps out of the client: the real client-rpc modules, and seroval through them.
+const serverFnOnlyModules = [
+  ...Object.keys(serverFnStubs).map((file) => clientRpcDir + file),
+  ["", "node_modules", "seroval", ""].join(sep),
+  ["", "node_modules", "seroval-plugins", ""].join(sep),
+];
+const srcDir = fileURLToPath(new URL("./src", import.meta.url));
+
+function filesUnder(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    return entry.isDirectory() ? filesUnder(path) : [path];
+  });
+}
+
+// The guard: the build fails if createServerFn appears anywhere under apps/web/src. A server
+// function needs the stub off, and that's a decision for the contract.
+function serverFnGuard(): Plugin {
+  return {
+    name: "avel:server-fn-guard",
+    buildStart() {
+      const found = filesUnder(srcDir).filter((file) =>
+        readFileSync(file, "utf8").includes("createServerFn"),
+      );
+      if (found.length > 0) {
+        this.error(
+          `createServerFn appears in ${found.map((file) => relative(srcDir, file)).join(", ")} ` +
+            "under apps/web/src, but vite.config.ts stubs Start's server-function client " +
+            "(UI contract section 6). Taking the stub off is a contract decision.",
+        );
+      }
+    },
+  };
+}
+
+function serverFnStub(): Plugin {
+  const used = new Set<string>();
+  return {
+    name: "avel:server-fn-stub",
+    enforce: "pre",
+    applyToEnvironment: (environment) => environment.name === "client",
+    buildStart() {
+      used.clear();
+    },
+    resolveId(source, importer) {
+      if (importer === undefined || !source.startsWith(".")) return null;
+      const target = resolve(dirname(importer.split("?")[0] ?? importer), source);
+      const at = target.lastIndexOf(clientRpcDir);
+      if (at === -1 || !importer.includes(`${sep}start-client-core${sep}`)) return null;
+      const file = target.slice(at + clientRpcDir.length);
+      if (!(file in serverFnStubs)) return null;
+      used.add(file);
+      return serverFnStubPrefix + file;
+    },
+    load(id) {
+      if (!id.startsWith(serverFnStubPrefix)) return null;
+      const file = id.slice(serverFnStubPrefix.length);
+      const message = `${file} is stubbed in apps/web/vite.config.ts: the web has no server functions (UI contract section 6)`;
+      return `const STUBBED = ${JSON.stringify(message)};\n${serverFnStubs[file]}\n`;
+    },
+    // The alarm: a Start upgrade that renames or rewires these modules would otherwise bring the
+    // 11 kB back without a sign. In start-client-core 1.170.39 the client reaches the three only
+    // through createClientRpc.js, so its stub is the one used, and the other two never load. So
+    // the alarm reads the client's output: no stub used, or any real client-rpc module or seroval
+    // in a client chunk, fails the build.
+    generateBundle(_options, bundle) {
+      const leaked = new Set<string>();
+      for (const chunk of Object.values(bundle)) {
+        if (chunk.type !== "chunk") continue;
+        for (const id of chunk.moduleIds) {
+          if ((chunk.modules[id]?.renderedLength ?? 0) === 0) continue;
+          if (serverFnOnlyModules.some((path) => id.includes(path))) leaked.add(id);
+        }
+      }
+      if (used.size === 0 || leaked.size > 0) {
+        this.error(
+          "The server-function stub no longer holds in the client build " +
+            `(stubs used: ${[...used].join(", ") || "none"}; ` +
+            `server-function code in the client: ${[...leaked].join(", ") || "none"}). ` +
+            "@tanstack/start-client-core has changed: update the stub (UI contract section 6).",
+        );
+      }
+    },
+  };
+}
+
 export default defineConfig({
   define: {
     __AVEL_CONTRACT_VERSION__: JSON.stringify(contractVersion),
   },
   plugins: [
     ...(process.env.AVEL_API === "mock" ? [contractMock()] : []),
+    serverFnGuard(),
+    serverFnStub(),
     tailwindcss(),
     tanstackStart(),
     // After tanstackStart(), as TanStack Start documents: the React Refresh runtime dev needs to hydrate.
