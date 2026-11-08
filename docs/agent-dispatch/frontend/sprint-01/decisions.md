@@ -637,3 +637,11 @@ INT merged Fantem's w0-kit a5 with my review a6 at ed3fd2b (197/197 unit tests; 
   - **Why:** with the page on `loadReasonDialog`, `/`'s route chunk is 54162 / 18929 B (raw / gzip -9) against main's 54146 / 18921: +16 B raw, +8 B gzip. Those bytes are the exported `() => import("./ReasonDialog")` wrapper and its call, which Rolldown doesn't inline across modules. Any exported loader costs them, so no kit change can remove them.
   - **The rule:** the route chunk holds none of the dialog's code, and grows by at most the loader's call (under 0.05 kB gzip). The dialog's own chunk (2573 B gzip) is unchanged, and nothing in `/`'s first load preloads it. Section 8's budget still covers the first load as a whole (+6 B in the measure).
   - **No work for anyone:** Fantem's a5 already meets the new rule. Leon's a3 is reviewed against it.
+
+## 2026-11-07: The phone end-to-end flake goes to Fenn (decisions-e2e-zero-01; INT's decision)
+
+- **What:** the locked suite failed 4 of 14 runs on main's current code (9bc22af and 5e1faa8, the same app code). Each failure was a phone test among the first three after Playwright starts the dev server. UC-29 timed out waiting for `data-hydrated` (:34), and UC-30 (:73) and UC-31 (:162) couldn't find the dialog's confirm button. Desk never failed.
+- **Who:** Fenn's decisions-test-e2e a5, the fourth task, under an override of the decisions-e2e lock (d6994d7), as for the UC-31 attempt.
+- **The bar:** 10 runs in a row green on main, each with its own dev server. Retries stay 0, no assertion or bar changes, and there's no fixed sleep and no `reducedMotion`. Fenn names the cause, with evidence, before fixing it.
+- **If it's the app:** Fenn stops and reports it under Deviations, and it becomes a finding for the module that owns it. The tests don't work around it.
+- **No contract change:** section 7's UC-29 to UC-31 stand as written.

@@ -27,7 +27,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 9. `docs/ui-contracts/decisions-approval-page.md`: sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump and reset paths, section 3's one data path for development, and D11 (the phone actions)
 10. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md`: a2: why the first click is lost (on main at 3d3ccfc)
 11. `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-04-uc31-reads-confirm-during-dialog-animation.md`: the UC-31 attempt: the confirm button read during av-dialog-in's scale (revision 13)
-12. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
+12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-e2e-zero-01-phone-tests-flake-after-dev-server-start.md`: the flake attempt (a5): 4 of 14 runs on main fail, all on the phone project, with the failing lines and outputs
+13. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -84,12 +85,21 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec playwright test 2>&1 | tail -6; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** every test passes three times (UC-31 desk skipped as before); only apps/web/e2e changed
 
+### FENN-04: The flake attempt: UC-29 to UC-31 pass on the phone project right after Playwright starts the dev server (decisions-e2e-zero-01); find the cause first and fix it in the tests or the Playwright config (P1)
+
+- **Required:** One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); the cause named, with evidence; retries 0, every assertion and bar unchanged, no fixed sleep and no reducedMotion; on main, 10 runs in a row green, each starting its own dev server (reuseExistingServer stays false)
+- **Verify:** `for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test 2>&1 | grep -E 'passed|failed|flaky'; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** 10 lines of "5 passed" with UC-31 desk skipped as before, and no failed or flaky line; only apps/web/e2e/** or apps/web/playwright.config.ts changed
+
 **Notes:**
 
 - Attempt a2 (2026-11-07, revision 9; INT's decision 2): a1 is merged and locked (locks.md, decisions-e2e). Do only the second task. It changes a locked test, which INT decided: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a2: wait for the hydration marker before the first click (INT, revision 9)" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's decisions-e2e line to your commit.
 - The marker is section 5's data-hydrated="true" on the DecisionsPage root, added by Leon's decisions a2. It isn't on main yet, so the specs wait and time out first. Use Playwright's own wait (for example expect(locator).toBeVisible() or toHaveAttribute), with no fixed sleep.
 - The UC-31 attempt (revision 13; INT, w0-kit-zero-04): the attempt after your hydration-marker one, which INT ran as a3, so a4 unless INT says otherwise. INT dispatches it in the same round as your w0-kit tests R7 attempt. Do only the third task. It changes a locked test: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a4: UC-31 measures the dialog once its open animation has finished (INT, revision 13)". After the merge, INT moves locks.md's decisions-e2e line.
 - Wait with dialog.evaluate(el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))) on the role=dialog element, after it's visible and before the first box read. No fixed sleep, and don't set reducedMotion: UC-31 checks the page as a phone user gets it. The >= 44 bars and every other assertion stay as they are.
+- The flake attempt (2026-11-07; INT, decisions-e2e-zero-01): a5. Do only the fourth task. The UC-31 attempt (a4) is merged, and the e2e tests are locked at d6994d7. It changes locked files: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a5: the phone tests pass after a fresh dev server start (INT, decisions-e2e-zero-01)". After the merge, INT moves locks.md's decisions-e2e line.
+- Find the cause before you change anything, and report it with evidence: a trace, the dev server's output, or a log of what the page did. The finding has the failures so far, at decisions.spec.ts:34, :73 and :162. In each one, the hydration marker or the open dialog wasn't there when the test expected it. How to fix it is your call, within apps/web/e2e/** and apps/web/playwright.config.ts. Keep retries at 0, change no assertion or bar (the hydration wait, 44px, 16px), and add no fixed sleep and no reducedMotion. A longer timeout is acceptable only if your evidence shows the wait really is the dev server's first compile, and you say so in the report.
+- If the cause is in the app (for example, the page drops the dialog or the click after data-hydrated is set), don't work around it in the tests. Stop, and report it under Deviations with the evidence. It becomes a finding for the module that owns it.
 
 ## 5. Territory
 
@@ -173,6 +183,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | FENN-01 | DONE / PARKED / BLOCKED | |
 | FENN-02 | DONE / PARKED / BLOCKED | |
 | FENN-03 | DONE / PARKED / BLOCKED | |
+| FENN-04 | DONE / PARKED / BLOCKED | |
 
 ## Tests
 Each test: its scenario ID, its file and name, and its failure line (or "pins existing behaviour: passes").
@@ -228,6 +239,7 @@ Your tasks:
 - FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
 - FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
 - FENN-03: The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes
+- FENN-04: The flake attempt: UC-29 to UC-31 pass on the phone project right after Playwright starts the dev server (decisions-e2e-zero-01); find the cause first and fix it in the tests or the Playwright config
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "fa4d53cf3b6ce8d069515e4889873de7f83c83a45e7777fe3e8983d211bce0c2",
-  "packageSha256": "41e30620de2d8d1699fd527faf09dfcffb7ad97dcd3e9db14ca1fadd48a2c362",
+  "planSha256": "3d6d5c7ac7f243a488c0e480bbd571bd044d81928f7e01feadd9bbb52b321912",
+  "packageSha256": "97ba780f9030d6eb15d57660ba5e6810ee9b26373ec46034c9f088f7bbac5ff3",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "dee6234d6e9de359526eeec71e78e3a559948ecc4c8282c9136895719819bf0e",
-      "bytes": 46620
+      "sha256": "9bc1510a84c2c39ab02184a75ec5df084373420fed1621bdbce7e0753b63b49b",
+      "bytes": 46831
     },
     {
       "path": "DISPATCH.md",
@@ -56,8 +56,8 @@
     {
       "path": "agent-fenn-decisions-test-e2e.md",
       "kind": "task_doc",
-      "sha256": "12a4cee5cbc43decc079c6c58ea2dd4494f35646010c16110e5595868fcb44b9",
-      "bytes": 16592
+      "sha256": "4edad4da4703717975423ccdc0b7ed56c46dc9872e45876792ac795d4714541f",
+      "bytes": 19239
     },
     {
       "path": "agent-fenn-decisions-test-unit.md",

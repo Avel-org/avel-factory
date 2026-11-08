@@ -464,6 +464,7 @@ Your tasks:
 - FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
 - FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
 - FENN-03: The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes
+- FENN-04: The flake attempt: UC-29 to UC-31 pass on the phone project right after Playwright starts the dev server (decisions-e2e-zero-01); find the cause first and fix it in the tests or the Playwright config
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
