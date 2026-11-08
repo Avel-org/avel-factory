@@ -119,9 +119,9 @@ const serverFnStubPrefix = "\0avel:server-fn-stub:";
 const clientRpcDir = ["", "@tanstack", "start-client-core", "dist", "esm", "client-rpc", ""].join(
   sep,
 );
-// What the stub keeps out of the client: the real client-rpc modules, and seroval through them.
+// What the stub keeps out of the client: every real client-rpc module, and seroval through them.
 const serverFnOnlyModules = [
-  ...Object.keys(serverFnStubs).map((file) => clientRpcDir + file),
+  clientRpcDir,
   ["", "node_modules", "seroval", ""].join(sep),
   ["", "node_modules", "seroval-plugins", ""].join(sep),
 ];
