@@ -149,5 +149,14 @@ $ pnpm --filter @avel/web test                   # exit 0
       Tests  190 passed (190)
 
 $ git diff --name-only main...HEAD
-GITDIFF_PLACEHOLDER
+apps/web/src/modules/decisions/api.ts
+apps/web/src/modules/decisions/decisions.css
+apps/web/src/modules/decisions/decisions.ts
+apps/web/src/modules/decisions/index.ts
+apps/web/src/modules/decisions/screens.ts
+apps/web/src/modules/decisions/screens/DecisionsScreen.tsx
+apps/web/src/routes/index.tsx
+docs/agent-dispatch/frontend/sprint-01/agent-brennan-decisions-review-spec-completion.md
+docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md
+docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md
 ```
