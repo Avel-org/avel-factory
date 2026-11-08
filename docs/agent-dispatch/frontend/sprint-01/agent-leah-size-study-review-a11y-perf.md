@@ -63,6 +63,7 @@ A size study of /'s first-load JavaScript: measure each way of cutting it on a s
 - `agent-zero-decisions-review-frontend`: Review the decisions module against UI contract section 5.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
+- `agent-leah-cls-study-review-a11y-perf`: A layout-shift study of / on a phone: measure CLS on main, find what shifts and why, and measure Nemi's held font fallbacks against it, so Zero can decide section 6's fallbacks and INT can decide NEMI-03.
 
 ## 4. Tasks
 

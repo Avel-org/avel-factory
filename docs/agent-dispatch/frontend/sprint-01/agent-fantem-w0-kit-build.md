@@ -28,7 +28,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: each component's source, states and copy (search its data-ui name), and the tokens
 11. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md`: a4, D15: the Factory PR card's empty facts list (Brennan)
 12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-02-factory-pr-card-empty-facts-rule.md`: a4, D15: the same, measured at 390x844 (Zero)
-13. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
+13. `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-03-r7-split-fails-with-static-export.md`: a5: why the static ReasonDialog export goes, and the measured chunks
+14. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -61,6 +62,7 @@ The kit components the page needs, ported from the design library with UI contra
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
 - `agent-leah-size-study-review-a11y-perf`: A size study of /'s first-load JavaScript: measure each way of cutting it on a scratch copy of the page, and report each one's saving, cost and risk, so INT can set sprint-01's budget and choose what to build.
+- `agent-leah-cls-study-review-a11y-perf`: A layout-shift study of / on a phone: measure CLS on main, find what shifts and why, and measure Nemi's held font fallbacks against it, so Zero can decide section 6's fallbacks and INT can decide NEMI-03.
 
 ## 4. Tasks
 
@@ -102,6 +104,12 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && grep -n -B2 'av-dt-facts' apps/web/src/kit/DecisionTag.tsx`
 - **Expected:** the locked kit tests pass; the dl listed inside its evidence-or-consequence condition; and from the scratch merge, the Factory PR card's top-border elements, which you report
 
+### FANTEM-07: Attempt a5 (revision 13): kit/index.ts exports no ReasonDialog value; loadReasonDialog is the only way to the dialog (section 4, R7) (P1)
+
+- **Required:** Fenn's locked R7 tests pass unchanged; nothing in apps/web/src imports ReasonDialog from the kit index; on the scratch copy with the page on loadReasonDialog, ReasonDialog's chunk holds the dialog (not a re-export stub) and /'s route chunk is no bigger than main's
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && ! grep -nE '^export \{[^}]*\bReasonDialog\b' apps/web/src/kit/index.ts && grep -n 'loadReasonDialog' apps/web/src/kit/index.ts`
+- **Expected:** typechecks; the locked kit tests pass; no value export listed; the loader listed; and from the scratch copy, the ReasonDialog and route chunk sizes against main's, which you report
+
 **Notes:**
 
 - The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.
@@ -110,6 +118,7 @@ Do them in order. Finish each one, verified, before the next.
 - Attempt a4 (2026-11-07, revision 10; INT's decisions on Leon's decisions a2): a1 to a3 are merged. Do only the fifth task. It builds to Fenn's w0-kit tests a2, which are locked first (locks.md's w0-kit line moves to them). D11 leaves 'What stays inline': the phone grid becomes kit.css's .av-dt-pair rule (section 4, D11), and the desk layout gets the same container under @media (max-width: 899px), so the server's desk HTML is D11 on a phone before hydration. Keep each layout's DOM order. At 900px and over, the desk row looks exactly as it does now.
 - R7, loadReasonDialog: index.ts exports it beside ReasonDialog. Show the split on a scratch merge of frontend/sprint-01/agent-leon-decisions-build-a2, with Leon's deep import switched to loadReasonDialog, then thrown away: ReasonDialog is in a chunk of its own, outside /'s first load. If the static re-export keeps it in a shared chunk, stop and report. Don't drop the export: the locked tests use it.
 - a4 also takes D15 (revision 11; INT, on decisions-brennan-01 and decisions-zero-02), the sixth task: DecisionTag draws .av-dt-facts only when evidence or consequence is given. It's one condition around the dl at DecisionTag.tsx:315; kit.css doesn't change for it. Fenn's D15 tests (his w0-kit tests a4) lock it: start a4 after they're merged. If INT dispatches you before that, build it and show it on the scratch merge with Leon's a2 instead: at 390x844 the Factory PR card has no .av-dt-facts and one top rule above Open on GitHub, and a proposal card still has its list.
+- Attempt a5 (revision 13; INT, option (c) of w0-kit-zero-03): a1 to a4 are merged. Do only the seventh task. Start after Fenn's w0-kit tests R7 attempt is merged and locks.md's w0-kit line has moved to it. index.ts drops its ReasonDialog value export: loadReasonDialog is the only way to the dialog (a type-only ReasonDialogProps export may stay). This replaces a4's note that the export stays. Show the split on a scratch copy with DecisionsScreen.tsx calling the kit's loadReasonDialog instead of its deep import (thrown away; Leon's a3 makes that change): ReasonDialog and Dialog in their own chunk, and /'s route chunk no bigger than main's.
 - For the copy and Close buttons, the tap area grows and the drawn size doesn't: a row or chip that gets taller is a defect. Say in your report how you made the area and how you measured it (for example document.elementFromPoint at 21px from the button's centre, at 390x844).
 
 ## 5. Territory
@@ -199,6 +208,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | FANTEM-04 | DONE / PARKED / BLOCKED | |
 | FANTEM-05 | DONE / PARKED / BLOCKED | |
 | FANTEM-06 | DONE / PARKED / BLOCKED | |
+| FANTEM-07 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -251,6 +261,7 @@ Your tasks:
 - FANTEM-04: Attempt a3: K1 in kit.css under @media (max-width: 899px), Button at least var(--av-touch-min) tall, HashChip's copy and the dialog's Close button with a tap area of at least var(--av-touch-min) square and their drawn size unchanged, ReasonDialog's textarea at var(--av-phone-body); R5, the Dialog frame's aria-describedby naming its description when there is one
 - FANTEM-05: Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts
 - FANTEM-06: Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given
+- FANTEM-07: Attempt a5 (revision 13): kit/index.ts exports no ReasonDialog value; loadReasonDialog is the only way to the dialog (section 4, R7)
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

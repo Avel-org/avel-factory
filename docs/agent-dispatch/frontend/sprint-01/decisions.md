@@ -602,3 +602,29 @@ INT accepted all of revision 10, kept the centred dialog (no phone bottom sheet)
   - **The budget:** `/`'s first load is 166.50 kB with the stub and the compiler, over the interim 160. The compiler costs +3.61 kB on Leon's a2, not the study's +2.44. S1-6's −17.25 would bring it to about 149.3 kB, under 150 by about 0.7 kB, not 2. That's Leah's to measure once S1-6's two halves are merged. Until then, 160 holds (section 8).
   - **The compiler's four bailouts** (`DecisionTag`, `usePress`, `useDialogFocus` in the kit; `ProposalDecision` in Leon's module). They run as plain React, so they aren't defects. Fixing them would add memo-cache code to the first load, which the 0.7 kB margin can't absorb blind. I'm not planning them: they wait for Leah's number after S1-6.
   - **The shared chunk is now `compiler-runtime-*.js`** (jsx-runtime with the compiler's runtime). Anyone grepping for `jsx-runtime` by name needs to know.
+
+## 2026-11-07: Revision 13 of the UI contract (Zero's w0-kit a4 review, Nemi's w0-fonts a2; INT's decisions)
+
+INT merged Nemi's w0-split a2 and Fantem's w0-kit a4 at ab520cd (196/196 unit tests). w0-split-zero-01 is fixed by revision 12 (b5684fb).
+
+- **R7 is option (c)** (w0-kit-zero-03).
+  - **The rule:** `kit/index.ts` exports no `ReasonDialog` value, only `loadReasonDialog`, plus a type-only `ReasonDialogProps` if wanted. With the static export kept, the page's switch to `loadReasonDialog` put the dialog back in `/`'s route chunk (+0.90 kB) and left a 0.07 kB stub as the lazy chunk.
+  - **The test:** the locked UC-09 gets the component from `await loadReasonDialog()`, and checks that the index has no `ReasonDialog` key. That's Fenn's w0-kit tests R7 attempt (a5), under the override.
+  - **The kit:** Fantem's w0-kit a5 drops the export, after Fenn's tests are merged and the lock line has moved.
+  - **The page:** Leon's a3 now waits for Fantem's a5 rather than a4.
+- **UC-31 measures the dialog once it has settled** (w0-kit-zero-04).
+  - **Why:** `av-dialog-in`'s scale is DL's own animation, and `boundingBox()` includes the transform, so the confirm button reads 43.5 to 43.9px while it runs.
+  - **The test:** Fenn's decisions-e2e UC-31 attempt (a4), under the override, waits on the dialog's `getAnimations()` promises. It doesn't use `reducedMotion`, so the test still sees the page as a phone user does, and the 44px bar is unchanged.
+  - **Timing:** INT asked for one Fenn round. The two changes are in different modules and territories, so they're two dispatches, and INT can run them side by side. Each has its own override and lock move.
+- **The fallbacks are held, pending a CLS study** (Nemi's w0-fonts a2, report 708acc6). NEMI-02 (the Mono 400 preload) is under my review. NEMI-03 (ac820a7) isn't merged. Nemi found three things:
+  - the 0.13 shift on `/` happens even with every `woff2` aborted, so the fonts can't be its whole cause;
+  - the formula's fallbacks make it 0.172;
+  - the formula mixes Inter's OS/2 v4 `xAvgCharWidth` with Arial's v3 one, which is why `size-adjust` came out at 138.27%. With one method for both it's 107.50%.
+
+  INT's guess is that the old inline D11 grid shifted the page at hydration. So Leah's new **cls-study** measures, on the dev server and on a production build:
+  - CLS on main, and on d8bc228 (the commit before the a4 merge), with each shift's sources;
+  - Nemi's fallbacks;
+  - the same fallbacks with one `xAvgCharWidth` method for both files.
+
+  Section 6's fallbacks are then kept, changed or dropped on her numbers, in a later revision. NEMI-03 is decided with them. I'm not changing section 6's formula before then, because Nemi's 107.50% is one run's figure and hasn't been measured on the page.
+- **S1-6, the web half.** INT opened Ghost's w0-data a3 on review-base/s1-6 (main plus Axis's a1). It's the a2 task doc's third task (zod/mini), run as a3 because a2 is merged. My w0-data review and Zane's apply as written ("Attempt a2" tasks), against the a3 diff. INT has asked Axis whether the English locale can stay out of the web. That's a contract-side question with no web contract change until he answers. If the answer means `apps/web` has to call `z.config(...)` or import a locale, it comes back to me as a section 3 change.

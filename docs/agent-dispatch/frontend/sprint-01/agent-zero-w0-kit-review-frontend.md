@@ -59,6 +59,7 @@ Review the kit against UI contract section 4 and the design library.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
 - `agent-leah-size-study-review-a11y-perf`: A size study of /'s first-load JavaScript: measure each way of cutting it on a scratch copy of the page, and report each one's saving, cost and risk, so INT can set sprint-01's budget and choose what to build.
+- `agent-leah-cls-study-review-a11y-perf`: A layout-shift study of / on a phone: measure CLS on main, find what shifts and why, and measure Nemi's held font fallbacks against it, so Zero can decide section 6's fallbacks and INT can decide NEMI-03.
 
 ## 4. Tasks
 
@@ -78,6 +79,11 @@ Do them in order. Finish each one, verified, before the next.
 
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** the locked tests pass; no inline grid; only apps/web/src/kit files changed
+
+### ZERO-04: Attempt a5: review R7 against revision 13: no ReasonDialog value exported from kit/index.ts, loadReasonDialog unchanged, and the split shown on a scratch copy with the page on loadReasonDialog (the dialog in its own chunk, the route chunk no bigger) (P1)
+
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && grep -n 'ReasonDialog' apps/web/src/kit/index.ts && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** the locked tests pass; only loadReasonDialog and type lines name ReasonDialog; only apps/web/src/kit/index.ts changed (or kit files only); your own scratch build's chunk sizes
 
 ## 5. Territory
 
@@ -164,6 +170,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | ZERO-01 | DONE / PARKED / BLOCKED | |
 | ZERO-02 | DONE / PARKED / BLOCKED | |
 | ZERO-03 | DONE / PARKED / BLOCKED | |
+| ZERO-04 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md`): its path, severity and title. "none" if none.
@@ -216,6 +223,7 @@ Your tasks:
 - ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
 - ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
 - ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4
+- ZERO-04: Attempt a5: review R7 against revision 13: no ReasonDialog value exported from kit/index.ts, loadReasonDialog unchanged, and the split shown on a scratch copy with the page on loadReasonDialog (the dialog in its own chunk, the route chunk no bigger)
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

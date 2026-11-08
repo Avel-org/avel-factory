@@ -58,6 +58,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | [`agent-brennan-decisions-review-spec`](agent-brennan-decisions-review-spec.md) | BRENNAN | review-spec | decisions | once `agent-leon-decisions-build` has its completion report, checked out at its result commit |
 | [`agent-leah-decisions-review-a11y-perf`](agent-leah-decisions-review-a11y-perf.md) | LEAH | review-a11y-perf | decisions | once `agent-leon-decisions-build` has its completion report, checked out at its result commit; after `agent-nemi-w0-fonts-build` is merged into main |
 | [`agent-leah-size-study-review-a11y-perf`](agent-leah-size-study-review-a11y-perf.md) | LEAH | review-a11y-perf | size-study | at once |
+| [`agent-leah-cls-study-review-a11y-perf`](agent-leah-cls-study-review-a11y-perf.md) | LEAH | review-a11y-perf | cls-study | at once |
 
 ## Territory map
 
@@ -99,6 +100,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | `docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-*.md` | BRENNAN (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md` | LEAH (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/size-study-leah-*.md` | LEAH (findings) |
+| `docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-*.md` | LEAH (findings) |
 
 ## Order
 

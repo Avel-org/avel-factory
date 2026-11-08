@@ -28,7 +28,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: DecisionTag's and ReasonDialog's copy and states
 11. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, 'Revision 10': why D11 moves to kit.css and the kit gets loadReasonDialog; 'Revision 11': D15
 12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md`: D15's attempt: the empty facts list, and the done-when
-13. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit.md`: this task doc: follow it exactly
+13. `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-03-r7-split-fails-with-static-export.md`: the R7 attempt: why the static ReasonDialog export goes (revision 13)
+14. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -61,6 +62,7 @@ The kit's component tests: UC-08 to UC-10.
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
 - `agent-leah-size-study-review-a11y-perf`: A size study of /'s first-load JavaScript: measure each way of cutting it on a scratch copy of the page, and report each one's saving, cost and risk, so INT can set sprint-01's budget and choose what to build.
+- `agent-leah-cls-study-review-a11y-perf`: A layout-shift study of / on a phone: measure CLS on main, find what shifts and why, and measure Nemi's held font fallbacks against it, so Zero can decide section 6's fallbacks and INT can decide NEMI-03.
 
 ## 4. Tasks
 
@@ -84,12 +86,20 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** the same single assertion failure three times, in the D15 no-fact test; only apps/web/test/kit changed
 
+### FENN-04: The R7 attempt: UC-09 gets ReasonDialog through await loadReasonDialog(), and asserts the kit index has no ReasonDialog value (section 4, R7; section 7, UC-09; revision 13) (P1)
+
+- **Required:** One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); every UC-09 behaviour test unchanged apart from where the component comes from; every UC-08 and UC-10 test unchanged; the no-static-export test fails first on main with an assertion and the rest pass, three runs in a row
+- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** the same single assertion failure three times, in the no-static-export test; only apps/web/test/kit changed
+
 **Notes:**
 
 - Attempt a2 (2026-11-07, revision 10; INT's decision on Leon's decisions a2, deviation 2): a1 is merged and locked (locks.md, w0-kit · 965071b). Do only the second task. It changes locked tests, which INT decided: make the commit with AVEL_LOCK_OVERRIDE="w0-kit tests a2: D11 is a kit.css rule, and loadReasonDialog (INT, revision 10)" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's w0-kit line to your commit. Fantem's w0-kit a4 builds to these tests.
 - D11 (section 4, revision 10): Approve and Reject share a container with the class av-dt-pair in both layouts, with no inline grid style. kit.css draws it as D11's grid with layout="phone", and with layout="desk" under @media (max-width: 899px). jsdom doesn't apply media queries or linked sheets. So check the hook in the DOM, and check the rule's values by reading apps/web/src/kit/kit.css as text (node:fs): grid-template-columns minmax(0, 1fr) minmax(0, 1.4fr) and gap 10px for .av-dt-pair, inside a max-width: 899px media block for the desk layout. UC-31, end to end, checks the computed layout on a phone.
 - Keep everything else UC-08 asserts. The phone DOM is still Reject then Approve, and the desk DOM is still Approve then Reject. The desk test stops asserting 'not the phone's grid' through the inline style: at desk width the container must not be the grid, and that's the media rule's job, so assert that the desk layout's grid rule sits only inside the media block.
 - The D15 attempt (revision 11; INT): the attempt after the D11 tests. INT ran those as a3, so this is a4 unless INT says otherwise. Start after the D11 tests are merged and locks.md's w0-kit line has moved to them. Do only the third task. It adds to locked tests, so make the commit with AVEL_LOCK_OVERRIDE="w0-kit tests a4: D15, the facts list only with a fact (INT, revision 11)". After the merge, INT moves locks.md's w0-kit line again. Fantem's w0-kit a4 builds to these tests too.
+- The R7 attempt (revision 13; INT, option (c) of w0-kit-zero-03): the attempt after the D15 tests, so a5 unless INT says otherwise. INT dispatches it in the same round as your decisions-e2e UC-31 attempt. Do only the fourth task. It changes locked tests: make the commit with AVEL_LOCK_OVERRIDE="w0-kit tests a5: R7, the kit index exports only loadReasonDialog (INT, revision 13)". After the merge, INT moves locks.md's w0-kit line. Fantem's w0-kit a5 builds to these tests.
+- R7 now: kit/index.ts has no ReasonDialog value, only loadReasonDialog (a type-only ReasonDialogProps export may stay). So UC-09 gets the component with await loadReasonDialog() (test/kit/kit.ts's pick of ReasonDialog from the index goes), and the identity check against the index's ReasonDialog becomes a check that the index has no ReasonDialog key. Every UC-09 behaviour test stays as it is.
 
 ## 5. Territory
 
@@ -173,6 +183,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | FENN-01 | DONE / PARKED / BLOCKED | |
 | FENN-02 | DONE / PARKED / BLOCKED | |
 | FENN-03 | DONE / PARKED / BLOCKED | |
+| FENN-04 | DONE / PARKED / BLOCKED | |
 
 ## Tests
 Each test: its scenario ID, its file and name, and its failure line (or "pins existing behaviour: passes").
@@ -228,6 +239,7 @@ Your tasks:
 - FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/
 - FENN-02: Attempt a2: UC-08's D11 tests to revision 10's form (the av-dt-pair hook in both layouts, the grid values and the phone media rule read from kit.css), and UC-09 adds loadReasonDialog (R7): it resolves to a module whose ReasonDialog is the kit index's ReasonDialog
 - FENN-03: The D15 attempt: UC-08 adds D15 (section 4, revision 11): a tag with neither evidence nor consequence has no .av-dt-facts element; one with evidence only, and one with consequence only, each has one
+- FENN-04: The R7 attempt: UC-09 gets ReasonDialog through await loadReasonDialog(), and asserts the kit index has no ReasonDialog value (section 4, R7; section 7, UC-09; revision 13)
 
 You may change only: apps/web/test/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

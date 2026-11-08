@@ -347,6 +347,7 @@ Your tasks:
 - FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/
 - FENN-02: Attempt a2: UC-08's D11 tests to revision 10's form (the av-dt-pair hook in both layouts, the grid values and the phone media rule read from kit.css), and UC-09 adds loadReasonDialog (R7): it resolves to a module whose ReasonDialog is the kit index's ReasonDialog
 - FENN-03: The D15 attempt: UC-08 adds D15 (section 4, revision 11): a tag with neither evidence nor consequence has no .av-dt-facts element; one with evidence only, and one with consequence only, each has one
+- FENN-04: The R7 attempt: UC-09 gets ReasonDialog through await loadReasonDialog(), and asserts the kit index has no ReasonDialog value (section 4, R7; section 7, UC-09; revision 13)
 
 You may change only: apps/web/test/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -373,6 +374,7 @@ Your tasks:
 - FANTEM-04: Attempt a3: K1 in kit.css under @media (max-width: 899px), Button at least var(--av-touch-min) tall, HashChip's copy and the dialog's Close button with a tap area of at least var(--av-touch-min) square and their drawn size unchanged, ReasonDialog's textarea at var(--av-phone-body); R5, the Dialog frame's aria-describedby naming its description when there is one
 - FANTEM-05: Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts
 - FANTEM-06: Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given
+- FANTEM-07: Attempt a5 (revision 13): kit/index.ts exports no ReasonDialog value; loadReasonDialog is the only way to the dialog (section 4, R7)
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -396,6 +398,7 @@ Your tasks:
 - ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
 - ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
 - ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4
+- ZERO-04: Attempt a5: review R7 against revision 13: no ReasonDialog value exported from kit/index.ts, loadReasonDialog unchanged, and the split shown on a scratch copy with the page on loadReasonDialog (the dialog in its own chunk, the route chunk no bigger)
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -460,6 +463,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
 - FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
+- FENN-03: The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -577,6 +581,28 @@ Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
 write docs/agent-dispatch/frontend/sprint-01/agent-leah-size-study-review-a11y-perf-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```
+
+## agent-leah-cls-study-review-a11y-perf
+
+```text
+You are LEAH on avel-factory, frontend sprint-01 (step 1: The minimal approval page on the contract mock, with the thin W0 slice under it).
+Dispatch: agent-leah-cls-study-review-a11y-perf. Branch: frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- LEAH-01: CLS on / at 390x844: main, and d8bc228 (before D11 moved to kit.css), each with the fonts normal, all woff2 aborted, and each woff2 delayed 1.2 s, on the dev server and the production build; three runs per case, each shift with its time and sources; one findings file for each cause found
+- LEAH-02: The fallbacks: main plus Nemi's ac820a7 (the formula as section 6 gives it), and main plus the same rules with size-adjust from one average-width method for both files (Nemi's Limitations: the a-to-z-and-space weighted average, 107.50% for the sans, and the three overrides recomputed from it), each with the fonts delayed 1.2 s and normal, three runs; then your recommendation for section 6: keep, change the formula, or drop the fallbacks
+
+You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-*.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```

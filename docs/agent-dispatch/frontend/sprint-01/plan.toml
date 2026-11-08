@@ -520,12 +520,15 @@ context = [
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "DecisionTag's and ReasonDialog's copy and states" },
   { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Revision 10': why D11 moves to kit.css and the kit gets loadReasonDialog; 'Revision 11': D15" },
   { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md", why = "D15's attempt: the empty facts list, and the done-when" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-03-r7-split-fails-with-static-export.md", why = "the R7 attempt: why the static ReasonDialog export goes (revision 13)" },
 ]
 notes = [
   "Attempt a2 (2026-11-07, revision 10; INT's decision on Leon's decisions a2, deviation 2): a1 is merged and locked (locks.md, w0-kit · 965071b). Do only the second task. It changes locked tests, which INT decided: make the commit with AVEL_LOCK_OVERRIDE=\"w0-kit tests a2: D11 is a kit.css rule, and loadReasonDialog (INT, revision 10)\" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's w0-kit line to your commit. Fantem's w0-kit a4 builds to these tests.",
   "D11 (section 4, revision 10): Approve and Reject share a container with the class av-dt-pair in both layouts, with no inline grid style. kit.css draws it as D11's grid with layout=\"phone\", and with layout=\"desk\" under @media (max-width: 899px). jsdom doesn't apply media queries or linked sheets. So check the hook in the DOM, and check the rule's values by reading apps/web/src/kit/kit.css as text (node:fs): grid-template-columns minmax(0, 1fr) minmax(0, 1.4fr) and gap 10px for .av-dt-pair, inside a max-width: 899px media block for the desk layout. UC-31, end to end, checks the computed layout on a phone.",
   "Keep everything else UC-08 asserts. The phone DOM is still Reject then Approve, and the desk DOM is still Approve then Reject. The desk test stops asserting 'not the phone's grid' through the inline style: at desk width the container must not be the grid, and that's the media rule's job, so assert that the desk layout's grid rule sits only inside the media block.",
   "The D15 attempt (revision 11; INT): the attempt after the D11 tests. INT ran those as a3, so this is a4 unless INT says otherwise. Start after the D11 tests are merged and locks.md's w0-kit line has moved to them. Do only the third task. It adds to locked tests, so make the commit with AVEL_LOCK_OVERRIDE=\"w0-kit tests a4: D15, the facts list only with a fact (INT, revision 11)\". After the merge, INT moves locks.md's w0-kit line again. Fantem's w0-kit a4 builds to these tests too.",
+  "The R7 attempt (revision 13; INT, option (c) of w0-kit-zero-03): the attempt after the D15 tests, so a5 unless INT says otherwise. INT dispatches it in the same round as your decisions-e2e UC-31 attempt. Do only the fourth task. It changes locked tests: make the commit with AVEL_LOCK_OVERRIDE=\"w0-kit tests a5: R7, the kit index exports only loadReasonDialog (INT, revision 13)\". After the merge, INT moves locks.md's w0-kit line. Fantem's w0-kit a5 builds to these tests.",
+  "R7 now: kit/index.ts has no ReasonDialog value, only loadReasonDialog (a type-only ReasonDialogProps export may stay). So UC-09 gets the component with await loadReasonDialog() (test/kit/kit.ts's pick of ReasonDialog from the index goes), and the identity check against the index's ReasonDialog becomes a check that the index has no ReasonDialog key. Every UC-09 behaviour test stays as it is.",
 ]
 
 [[dispatch.task]]
@@ -549,6 +552,13 @@ required = "One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); every
 verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "the same single assertion failure three times, in the D15 no-fact test; only apps/web/test/kit changed"
 
+[[dispatch.task]]
+title = "The R7 attempt: UC-09 gets ReasonDialog through await loadReasonDialog(), and asserts the kit index has no ReasonDialog value (section 4, R7; section 7, UC-09; revision 13)"
+priority = "P1"
+required = "One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); every UC-09 behaviour test unchanged apart from where the component comes from; every UC-08 and UC-10 test unchanged; the no-static-export test fails first on main with an assertion and the rest pass, three runs in a row"
+verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the same single assertion failure three times, in the no-static-export test; only apps/web/test/kit changed"
+
 [[dispatch]]
 agent = "fantem"
 module = "w0-kit"
@@ -561,6 +571,7 @@ context = [
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "each component's source, states and copy (search its data-ui name), and the tokens" },
   { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md", why = "a4, D15: the Factory PR card's empty facts list (Brennan)" },
   { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-02-factory-pr-card-empty-facts-rule.md", why = "a4, D15: the same, measured at 390x844 (Zero)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-03-r7-split-fails-with-static-export.md", why = "a5: why the static ReasonDialog export goes, and the measured chunks" },
 ]
 notes = [
   "The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.",
@@ -569,6 +580,7 @@ notes = [
   "Attempt a4 (2026-11-07, revision 10; INT's decisions on Leon's decisions a2): a1 to a3 are merged. Do only the fifth task. It builds to Fenn's w0-kit tests a2, which are locked first (locks.md's w0-kit line moves to them). D11 leaves 'What stays inline': the phone grid becomes kit.css's .av-dt-pair rule (section 4, D11), and the desk layout gets the same container under @media (max-width: 899px), so the server's desk HTML is D11 on a phone before hydration. Keep each layout's DOM order. At 900px and over, the desk row looks exactly as it does now.",
   "R7, loadReasonDialog: index.ts exports it beside ReasonDialog. Show the split on a scratch merge of frontend/sprint-01/agent-leon-decisions-build-a2, with Leon's deep import switched to loadReasonDialog, then thrown away: ReasonDialog is in a chunk of its own, outside /'s first load. If the static re-export keeps it in a shared chunk, stop and report. Don't drop the export: the locked tests use it.",
   "a4 also takes D15 (revision 11; INT, on decisions-brennan-01 and decisions-zero-02), the sixth task: DecisionTag draws .av-dt-facts only when evidence or consequence is given. It's one condition around the dl at DecisionTag.tsx:315; kit.css doesn't change for it. Fenn's D15 tests (his w0-kit tests a4) lock it: start a4 after they're merged. If INT dispatches you before that, build it and show it on the scratch merge with Leon's a2 instead: at 390x844 the Factory PR card has no .av-dt-facts and one top rule above Open on GitHub, and a proposal card still has its list.",
+  "Attempt a5 (revision 13; INT, option (c) of w0-kit-zero-03): a1 to a4 are merged. Do only the seventh task. Start after Fenn's w0-kit tests R7 attempt is merged and locks.md's w0-kit line has moved to it. index.ts drops its ReasonDialog value export: loadReasonDialog is the only way to the dialog (a type-only ReasonDialogProps export may stay). This replaces a4's note that the export stays. Show the split on a scratch copy with DecisionsScreen.tsx calling the kit's loadReasonDialog instead of its deep import (thrown away; Leon's a3 makes that change): ReasonDialog and Dialog in their own chunk, and /'s route chunk no bigger than main's.",
   "For the copy and Close buttons, the tap area grows and the drawn size doesn't: a row or chip that gets taller is a defect. Say in your report how you made the area and how you measured it (for example document.elementFromPoint at 21px from the button's centre, at 390x844).",
 ]
 
@@ -614,6 +626,13 @@ required = "Fenn's locked D15 tests pass unchanged; a card with a fact draws exa
 verify = "pnpm --filter @avel/web exec vitest run test/kit && grep -n -B2 'av-dt-facts' apps/web/src/kit/DecisionTag.tsx"
 expected = "the locked kit tests pass; the dl listed inside its evidence-or-consequence condition; and from the scratch merge, the Factory PR card's top-border elements, which you report"
 
+[[dispatch.task]]
+title = "Attempt a5 (revision 13): kit/index.ts exports no ReasonDialog value; loadReasonDialog is the only way to the dialog (section 4, R7)"
+priority = "P1"
+required = "Fenn's locked R7 tests pass unchanged; nothing in apps/web/src imports ReasonDialog from the kit index; on the scratch copy with the page on loadReasonDialog, ReasonDialog's chunk holds the dialog (not a re-export stub) and /'s route chunk is no bigger than main's"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && ! grep -nE '^export \\{[^}]*\\bReasonDialog\\b' apps/web/src/kit/index.ts && grep -n 'loadReasonDialog' apps/web/src/kit/index.ts"
+expected = "typechecks; the locked kit tests pass; no value export listed; the loader listed; and from the scratch copy, the ReasonDialog and route chunk sizes against main's, which you report"
+
 [[dispatch]]
 agent = "zero"
 module = "w0-kit"
@@ -638,6 +657,11 @@ expected = "the locked tests pass; the only px literals added are the 899px brea
 title = "Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4"
 verify = "pnpm --filter @avel/web exec vitest run test/kit && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "the locked tests pass; no inline grid; only apps/web/src/kit files changed"
+
+[[dispatch.task]]
+title = "Attempt a5: review R7 against revision 13: no ReasonDialog value exported from kit/index.ts, loadReasonDialog unchanged, and the split shown on a scratch copy with the page on loadReasonDialog (the dialog in its own chunk, the route chunk no bigger)"
+verify = "pnpm --filter @avel/web exec vitest run test/kit && grep -n 'ReasonDialog' apps/web/src/kit/index.ts && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the locked tests pass; only loadReasonDialog and type lines name ReasonDialog; only apps/web/src/kit/index.ts changed (or kit files only); your own scratch build's chunk sizes"
 
 [[dispatch]]
 agent = "brennan"
@@ -686,10 +710,13 @@ after = ["agent-fenn-w0-data-test-unit"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump and reset paths, section 3's one data path for development, and D11 (the phone actions)" },
   { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md", why = "a2: why the first click is lost (on main at 3d3ccfc)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-04-uc31-reads-confirm-during-dialog-animation.md", why = "the UC-31 attempt: the confirm button read during av-dialog-in's scale (revision 13)" },
 ]
 notes = [
   "Attempt a2 (2026-11-07, revision 9; INT's decision 2): a1 is merged and locked (locks.md, decisions-e2e). Do only the second task. It changes a locked test, which INT decided: make the commit with AVEL_LOCK_OVERRIDE=\"decisions-e2e a2: wait for the hydration marker before the first click (INT, revision 9)\" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's decisions-e2e line to your commit.",
   "The marker is section 5's data-hydrated=\"true\" on the DecisionsPage root, added by Leon's decisions a2. It isn't on main yet, so the specs wait and time out first. Use Playwright's own wait (for example expect(locator).toBeVisible() or toHaveAttribute), with no fixed sleep.",
+  "The UC-31 attempt (revision 13; INT, w0-kit-zero-04): the attempt after your hydration-marker one, which INT ran as a3, so a4 unless INT says otherwise. INT dispatches it in the same round as your w0-kit tests R7 attempt. Do only the third task. It changes a locked test: make the commit with AVEL_LOCK_OVERRIDE=\"decisions-e2e a4: UC-31 measures the dialog once its open animation has finished (INT, revision 13)\". After the merge, INT moves locks.md's decisions-e2e line.",
+  "Wait with dialog.evaluate(el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))) on the role=dialog element, after it's visible and before the first box read. No fixed sleep, and don't set reducedMotion: UC-31 checks the page as a phone user gets it. The >= 44 bars and every other assertion stay as they are.",
 ]
 
 [[dispatch.task]]
@@ -705,6 +732,13 @@ priority = "P0"
 required = "The SSR assertions still run on the server's HTML before the wait; one commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); each test fails first on the wait, since the marker isn't built yet"
 verify = "grep -c 'data-hydrated' apps/web/e2e/*.spec.ts && pnpm --filter @avel/web exec playwright test 2>&1 | tail -15 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "one wait per test; the tests fail waiting for the marker (or later, on an assertion); only apps/web/e2e changed"
+
+[[dispatch.task]]
+title = "The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes"
+priority = "P1"
+required = "One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); the 44px and 16px bars unchanged; no fixed sleep and no reducedMotion; on main (Fantem's w0-kit a4 merged), UC-29 to UC-31 pass on both projects, three runs in a row"
+verify = "for i in 1 2 3; do pnpm --filter @avel/web exec playwright test 2>&1 | tail -6; done; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "every test passes three times (UC-31 desk skipped as before); only apps/web/e2e changed"
 
 [[dispatch]]
 agent = "leon"
@@ -729,7 +763,7 @@ notes = [
   "Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third and fourth tasks: the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'), and the hydration marker (revision 9). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.",
   "Leah's review of a1 (revision 9; report and findings on main at 3d3ccfc, in Context). Yours: link kit.css and decisions.css from /'s head so the server's HTML carries them (findings 02 and 04: with kit.css linked, HashChip draws in Mono 500 on first paint), the lazy ReasonDialog, and the hydration marker (finding 03). Not yours, and don't work around them in decisions.css: the 44px tap targets, the 16px input and the dialog's aria-describedby are the kit's (Fantem's w0-kit a3, section 4, K1 and R5); Fenn's end-to-end a2 waits for your marker; Nemi's w0-split makes the route split real; zod/mini is Ghost's, after Axis's S1-6.",
   "Your end-to-end run needs Fenn's e2e a2 and Fantem's w0-kit a3 on main, and your chunk sizes need Nemi's w0-split. INT dispatches you once they're merged. If one isn't when you reach the verify, run what you can, say which wasn't merged, and report the failures it explains under Limitations.",
-  "Attempt a3 (revision 10), after a2 is merged: do only the fifth task. It waits for Fantem's w0-kit a4 (loadReasonDialog) and Ghost's w0-data a2 (UiError.stale.message). The lazy dialog loads through the kit's loadReasonDialog (section 4, R7; section 5), and your deep import of kit/ReasonDialog goes. The null-version stale row reads UiError.stale.message (5.3). If one of the two isn't merged when you start, do the other and say which.",
+  "Attempt a3 (revision 10), after a2 is merged: do only the fifth task. It waits for Fantem's w0-kit a5 (revision 13: the index exports only loadReasonDialog; a4 is merged) and Ghost's w0-data a2 (UiError.stale.message, merged). The lazy dialog loads through the kit's loadReasonDialog (section 4, R7; section 5), and your deep import of kit/ReasonDialog goes. The null-version stale row reads UiError.stale.message (5.3). If one of the two isn't merged when you start, do the other and say which.",
   "UiError.stale.message (revision 9): Ghost's w0-data a2 adds it. If it's on main when you start, the null-version stale row's body reads it (5.3), and your raw read goes. If it isn't, keep your a1 read as built and say so in your report: the switch then comes in a later fix.",
   "The budget: report /'s first load as section 8 counts it (every JS file / loads, gzipped and summed, without the lazy dialog's chunk). Over 160 kB isn't yours to fix in a2: zod/mini is the cut that clears it.",
 ]
@@ -865,3 +899,40 @@ title = "Candidates 5 to 7 (React Compiler, build options, anything the attribut
 priority = "P1"
 verify = "pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js' && ls docs/agent-dispatch/frontend/sprint-01/findings/size-study-leah-*.md"
 expected = "the client chunks for each option, run in your scratch worktree; on your branch, one findings file per option"
+
+# ------------------------------------------------------------------ cls-study: Leah (revision 13)
+# Added 2026-11-07 (INT): Nemi's w0-fonts a2 (report 708acc6) found the 0.13 shift on / with every woff2
+# aborted, and his formula fallbacks measured 0.172. NEMI-03 is held. Leah re-measures on main, where
+# D11 is now kit.css (Fantem's a4), and Zero decides section 6's fallbacks from her numbers
+# (decisions.md, "Revision 13"). Like size-study: no build, no diff; it starts from main, and every
+# experiment is on a scratch copy that's thrown away.
+[[dispatch]]
+agent = "leah"
+module = "cls-study"
+role = "review-a11y-perf"
+domain = "A layout-shift study of / on a phone: measure CLS on main, find what shifts and why, and measure Nemi's held font fallbacks against it, so Zero can decide section 6's fallbacks and INT can decide NEMI-03."
+context = [
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-07-cls-font-swap.md", why = "your 0.13 and your method, which this study repeats" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Revision 11' (the fallbacks and the formula) and 'Revision 13' (why they're held, INT's guess, and what this study decides)" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4, D11 (now a kit.css rule) and K1; section 5, the hydration marker; section 6, the size-matched fallbacks and 'The measure'; section 8" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets (lines 280 to 305): CLS under 0.02, fonts with a size-matched fallback, skeletons at the final size" },
+]
+notes = [
+  "There's no diff to review. Run every experiment on a scratch worktree outside the repo (git worktree add --detach under your session's scratchpad), and remove it when you're done. Never commit code and never push. On your branch, write only your report and findings/cls-study-leah-*.md.",
+  "Nemi's w0-fonts a2 report, held and not on main: git show 708acc6:docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md. Read its measure, tables, Deviations and Limitations in full. His fallbacks are commit ac820a7 on frontend/sprint-01/agent-nemi-w0-fonts-build-a2: cherry-pick it onto a scratch copy of main to measure it.",
+  "This machine (WSL) has no Liberation, Arial or Courier New for Chromium. Nemi exposed /mnt/c/Windows/Fonts' Arial and Courier New to Chromium through a scratch FONTCONFIG_FILE, changing nothing on the system. Do the same, and say which local() face each run drew in (CDP CSS.getPlatformFontsForNode). A run where neither local() source resolves measures a system font, not the fallback.",
+  "The method is section 6's 'The measure': Chromium at 390x844 with touch, the layout-shift observer registered before navigation (addInitScript), summed over 3 s after [data-ui=\"DecisionsPage\"][data-hydrated=\"true\"], three runs per case. Record each shift's time and its sources (node, previous and current rects), so the cause is seen, not guessed. Measure on the dev server with AVEL_API=mock, and on the production build served as in your size study, since the dev server can differ.",
+  "INT's guess, which nobody has measured: the old inline D11 grid caused a shift at hydration, and Fantem's a4 (D11 in kit.css, merged at 193a66f) removed it. Test it directly: main as it is, and d8bc228 (main just before the a4 merge) as the before case.",
+]
+
+[[dispatch.task]]
+title = "CLS on / at 390x844: main, and d8bc228 (before D11 moved to kit.css), each with the fonts normal, all woff2 aborted, and each woff2 delayed 1.2 s, on the dev server and the production build; three runs per case, each shift with its time and sources; one findings file for each cause found"
+priority = "P1"
+verify = "pnpm install --frozen-lockfile --prefer-offline && pnpm --filter \"@avel/web...\" build 2>&1 | tail -3"
+expected = "run in your scratch worktree, per commit: builds; then the CLS table (commit, server, fonts, three runs) and each shift's sources, which you report; INT's guess confirmed or not, with the numbers"
+
+[[dispatch.task]]
+title = "The fallbacks: main plus Nemi's ac820a7 (the formula as section 6 gives it), and main plus the same rules with size-adjust from one average-width method for both files (Nemi's Limitations: the a-to-z-and-space weighted average, 107.50% for the sans, and the three overrides recomputed from it), each with the fonts delayed 1.2 s and normal, three runs; then your recommendation for section 6: keep, change the formula, or drop the fallbacks"
+priority = "P1"
+verify = "ls docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-*.md"
+expected = "the CLS table for both fallback versions against main's, with the faces drawn; on your branch, the findings files; and the recommendation, with the numbers behind it"

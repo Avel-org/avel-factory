@@ -26,7 +26,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
 9. `docs/ui-contracts/decisions-approval-page.md`: sections 5 and 7 (UC-29 to UC-31), section 2's dev-only bump and reset paths, section 3's one data path for development, and D11 (the phone actions)
 10. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md`: a2: why the first click is lost (on main at 3d3ccfc)
-11. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
+11. `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-04-uc31-reads-confirm-during-dialog-animation.md`: the UC-31 attempt: the confirm button read during av-dialog-in's scale (revision 13)
+12. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -59,6 +60,7 @@ The approval page end to end with Playwright on AVEL_API=mock, phone and desk: U
 - `agent-brennan-decisions-review-spec`: Review the approval page against CR-W2 and UI contract section 5.
 - `agent-leah-decisions-review-a11y-perf`: Review the approval page on a phone: labels, focus, 44px targets, the reason dialog at 390px, and that the route's JavaScript stays light.
 - `agent-leah-size-study-review-a11y-perf`: A size study of /'s first-load JavaScript: measure each way of cutting it on a scratch copy of the page, and report each one's saving, cost and risk, so INT can set sprint-01's budget and choose what to build.
+- `agent-leah-cls-study-review-a11y-perf`: A layout-shift study of / on a phone: measure CLS on main, find what shifts and why, and measure Nemi's held font fallbacks against it, so Zero can decide section 6's fallbacks and INT can decide NEMI-03.
 
 ## 4. Tasks
 
@@ -76,10 +78,18 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `grep -c 'data-hydrated' apps/web/e2e/*.spec.ts && pnpm --filter @avel/web exec playwright test 2>&1 | tail -15 && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** one wait per test; the tests fail waiting for the marker (or later, on an assertion); only apps/web/e2e changed
 
+### FENN-03: The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes (P1)
+
+- **Required:** One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); the 44px and 16px bars unchanged; no fixed sleep and no reducedMotion; on main (Fantem's w0-kit a4 merged), UC-29 to UC-31 pass on both projects, three runs in a row
+- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec playwright test 2>&1 | tail -6; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** every test passes three times (UC-31 desk skipped as before); only apps/web/e2e changed
+
 **Notes:**
 
 - Attempt a2 (2026-11-07, revision 9; INT's decision 2): a1 is merged and locked (locks.md, decisions-e2e). Do only the second task. It changes a locked test, which INT decided: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a2: wait for the hydration marker before the first click (INT, revision 9)" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's decisions-e2e line to your commit.
 - The marker is section 5's data-hydrated="true" on the DecisionsPage root, added by Leon's decisions a2. It isn't on main yet, so the specs wait and time out first. Use Playwright's own wait (for example expect(locator).toBeVisible() or toHaveAttribute), with no fixed sleep.
+- The UC-31 attempt (revision 13; INT, w0-kit-zero-04): the attempt after your hydration-marker one, which INT ran as a3, so a4 unless INT says otherwise. INT dispatches it in the same round as your w0-kit tests R7 attempt. Do only the third task. It changes a locked test: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a4: UC-31 measures the dialog once its open animation has finished (INT, revision 13)". After the merge, INT moves locks.md's decisions-e2e line.
+- Wait with dialog.evaluate(el => Promise.all(el.getAnimations({ subtree: true }).map(a => a.finished))) on the role=dialog element, after it's visible and before the first box read. No fixed sleep, and don't set reducedMotion: UC-31 checks the page as a phone user gets it. The >= 44 bars and every other assertion stay as they are.
 
 ## 5. Territory
 
@@ -162,6 +172,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | --- | --- | --- |
 | FENN-01 | DONE / PARKED / BLOCKED | |
 | FENN-02 | DONE / PARKED / BLOCKED | |
+| FENN-03 | DONE / PARKED / BLOCKED | |
 
 ## Tests
 Each test: its scenario ID, its file and name, and its failure line (or "pins existing behaviour: passes").
@@ -216,6 +227,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - FENN-01: apps/web/playwright.config.ts (the dev server with AVEL_API=mock; 390x844 and 1280x800 projects; workers 1, each test starting with POST /__mock/reset) and UC-29 to UC-31
 - FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
+- FENN-03: The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

@@ -1,4 +1,4 @@
-status: open
+status: fixed (b5684fb)
 severity: P3
 
 # w0-split-zero-01: section 6's alarm says "any of the three stubs wasn't used", which start-client-core 1.170.39 makes impossible
