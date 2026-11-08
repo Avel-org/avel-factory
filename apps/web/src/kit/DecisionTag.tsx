@@ -6,7 +6,7 @@ import { canHover } from "./interaction";
 import { StatusGlyph } from "./StatusGlyph";
 import { Tag } from "./Tag";
 
-// DL's DecisionTag (`n$`) and its specimen states, with UI contract section 4's changes D1 to D14.
+// DL's DecisionTag (`n$`) and its specimen states, with UI contract section 4's changes D1 to D15.
 // Not ported: `compact`, `hideActions`, `onOpen` and the "Open" link button.
 
 /** DL's `AV_DECISION_VARIANTS`: each variant's kind label and icon. */
@@ -316,20 +316,23 @@ export function DecisionTag({
           )
         ) : null}
 
-        <dl className="av-dt-facts">
-          {evidence ? (
-            <>
-              <dt className="av-dt-muted av-dt-evidence">Evidence</dt>
-              <dd>{evidence}</dd>
-            </>
-          ) : null}
-          {consequence ? (
-            <>
-              <dt className="av-dt-muted av-dt-consequence">Consequence</dt>
-              <dd>{consequence}</dd>
-            </>
-          ) : null}
-        </dl>
+        {/* D15: the facts list, with its top rule, only when there's a fact to list. */}
+        {evidence || consequence ? (
+          <dl className="av-dt-facts">
+            {evidence ? (
+              <>
+                <dt className="av-dt-muted av-dt-evidence">Evidence</dt>
+                <dd>{evidence}</dd>
+              </>
+            ) : null}
+            {consequence ? (
+              <>
+                <dt className="av-dt-muted av-dt-consequence">Consequence</dt>
+                <dd>{consequence}</dd>
+              </>
+            ) : null}
+          </dl>
+        ) : null}
 
         {state === "notAllowed" ? (
           <>
