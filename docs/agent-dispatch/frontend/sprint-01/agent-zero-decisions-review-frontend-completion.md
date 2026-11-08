@@ -1,72 +1,84 @@
 # ZERO: decisions review-frontend, completion report
 
-verdict: FAIL
+verdict: PASS
+
+Attempt a2 (2026-11-07). ZERO-02 only, as INT's message scoped it: Leon's decisions build a3 (LEON-06, report ec24538), on review base `review-base/leon-decisions-a3` = `db4cc8b` (main `3b4a7c0` plus `ec24538`). ZERO-01 was a1's. ZERO-03 is the next attempt's.
 
 ## Summary
-I reviewed Leon's decisions a2 (base b97076e to d480f0e: 016a230, f63a06e, d480f0e) against UI contract section 5 (revision 9), reading every line of the module. Leon's own code has no open finding. The route, the module's files, each row's props, the reason step, route 54's input, every 5.3 and 5.4 state and every copy string match section 5. There's no `fetch(`, no server list data in state, and `index.ts` is light. The verdict is FAIL because the task's expected result isn't met: the locked UC-31 fails on the phone (finding 01). INT's Factory PR screenshot is a real kit defect (finding 02). Both fixes sit in the kit and in my contract, not in `apps/web/src/modules/decisions/**`. INT's phone dialog screenshot matches DL and the contract, so it isn't a finding (see Limitations).
+Leon's a3 sets `data-hydrated` in a React commit after every tag has its final layout. There's no timer, and it's absent from the server's HTML. My own probe, at 390x844 with a fresh context for each load, saw no change to any rect, order, layout or DOM after the marker in 10 of 10 phone loads and 3 of 3 desk loads. The same probe run on main's old marker failed 10 of 10, so it does catch the bug. The locked e2e suite gave 10 of 10 runs of "5 passed", and only the module changed. On Deviation 1 (the layout effect), my ruling is to accept it for sprint-01. Revision 15's marker sentence already allows it, so the sentence needs no change (see Deviations, "Ruling").
 
 ## Pre-flight
-- Part 2 files, all read: `.claude/agents/zero.md`, `codebase-analysis.md`, `docs/ui-contracts/decisions-approval-page.md` (sections 0, 4, 5 and 8 in full; the rest skimmed), `CR-W2 Pending decisions.md`, `decisions.md` (Revisions 7 to 9, the size study, INT's answers), `Frontend Map v0.6.md`, the design library v1.1 (DL's `Go`, `Uo`, `n$` and the overlay CSS, extracted from source), `Step 0 and Step 1 plan.md`, and this task doc. The Read first files `API and data reference.md` and `CR-16 Dispatch package contract.md` are present. None is missing.
-- Branch `frontend/sprint-01/agent-zero-decisions-review-frontend-a1`, start commit d480f0e, `AVEL_BASE` b97076e.
-- Part 7 commands: all available. The worktree had no `node_modules`, so I ran `pnpm install --frozen-lockfile --offline` first, and the build before the tests: `@avel/contract`'s `dist` must exist before vitest can resolve it.
+- Part 2 files, all read: `.claude/agents/zero.md`, `codebase-analysis.md`, the UI contract (revision 15; section 5 in full, and section 7's e2e paragraph and UC-32), CR-W2, sprint `decisions.md` ("Revision 9" marker entry, and "2026-11-07: The hydration marker waits for the final layout" and its revision 15 entries), Frontend Map v0.6, the design library v1.1, the Step 0 and Step 1 plan, `decisions-fenn-01` (including INT's ruling), and this task doc. zero.md's Read first list: also `API and data reference.md` and `CR-16`. The design files and the plan I skimmed for what touches the marker, since a3 changes nothing they define. None is missing.
+- Branch `frontend/sprint-01/agent-zero-decisions-review-frontend-a2`, start commit `db4cc8b`. `AVEL_BASE=3b4a7c0`.
+- Setup: `pnpm install --frozen-lockfile` (no tracked change). Every Part 7 command is available.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| ZERO-01 | DONE (review complete; verdict FAIL on UC-31) | this report's commit |
+| ZERO-01 | Not in a2 (attempt a1's) | none |
+| ZERO-02 | DONE: PASS, no findings | this report |
+| ZERO-03 | Not in a2 (attempt a3's, on Leon's a4) | none |
 
 ## Findings
-- `docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-01-uc31-phone-grid-fails-before-hydration.md`: P1. UC-31 (locked) fails on the phone: the server draws the desk actions, and the test reads the grid before hydration. Owner: Fantem and Zero, as INT has chosen (D11 as a `kit.css` rule).
-- `docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-02-factory-pr-card-empty-facts-rule.md`: P2. The Factory PR card draws two rules with an empty gap before "Open on GitHub": the kit's empty `<dl class="av-dt-facts">`. Owner: Fantem and Zero (a new section 4 D-row).
+none
 
 ## Contract to files
-Each item is checked by reading the diff, plus the commands in Verification.
-- **Section 5, Route:** `ssr: true`, the loader catches, `ensureInfiniteQueryData` with `limit` 50 always sent, and `useSuspenseInfiniteQuery` on the same options. Files: `routes/index.tsx:13-27`, `api.ts:10-37`, `DecisionsScreen.tsx:339`.
-- **Module shape:** `api.ts`, `decisions.ts`, `screens/DecisionsScreen.tsx`, `index.ts` (named exports, no screen) and `screens.ts` (`DecisionsScreen`, `loadDecisionsScreen`, `decisionsScreenStylesheets`). The route imports only `screens.ts`.
-- **Layout:** `data-ui="DecisionsPage"`, `Home`, the `h1`, the lead line's three forms, the `h2` with the count and `+`, the `<ul aria-label="Waiting for you">`, and `Load more` as a secondary `Button`. File: `DecisionsScreen.tsx:184-253` and `369-439`.
-- **Styles and loading:** `decisions.css` is static; `head` links the kit's and the module's sheets; `ReasonDialog` is lazy and prefetched after the list renders. Build: `ReasonDialog-*.js` is its own 1.52 kB chunk.
-- **The hydration marker:** `useSyncExternalStore` with the server snapshot false, and no `useEffect`. File: `DecisionsScreen.tsx:163-194`.
-- **5.1, rows:** the variant map, the generic `decision`, no `idLabel`, `Waiting {formatAgo}`, `Version {n}`, evidence, consequence and labels. The unreadable-options row is Locked with the † reason. The factory row has `#{prNumber}`, the `Commit` sha binding, `Open on GitHub` and `seen`. `now` is `dataUpdatedAt`. File: `decisions.ts:34-88`, `DecisionsScreen.tsx:464-472`.
-- **5.2, deciding:**
-  - The dialog copy for both choices, word for word, with `destructive` false and `minLength` 3 (`decisions.ts:90-113`).
-  - Confirm closes the dialog, makes a new key, and sets `approving` or `rejecting` synchronously.
-  - The input is `{ proposalId, version, choice, reason }`, from the row captured at tap time. The reason is trimmed by the kit (`ReasonDialog.tsx:52`).
-  - On 2xx: `approvedAt = formatClock(resolvedAt)`, and route 52 is invalidated after `--av-d-punch`.
-  - Retry re-sends the same `vars`. Offline gives `You're offline.` (`DecisionsScreen.tsx:589-679`).
-- **5.3, every `UiError.kind`:**
-  - `stale`, with and without a version. A null version reads the thrown message: Ghost's w0-data a2, which adds `UiError.stale.message`, isn't on main, so this follows INT's answer.
-  - `notAllowedNow` with its three reasons, and `notFound`. `badRequest` on the reason (the dialog reopens with `defaultReason`, the error and the ID) and otherwise.
-  - `signedOut` as a page-level 401 with no action. `forbidden`.
-  - `rateLimited`, with a countdown and with none. `idempotencyConflict`.
-  - `inProgress` at 500ms, 1s and 2s, then `network`. `conflict` and `unprocessable` with their † titles.
-  - `network` and `server`: the band with Retry and the chip.
-  - Request IDs are drawn everywhere 5.3 lists. File: `DecisionsScreen.tsx:553-821`.
-- **5.4:** Loading; the empty card's copy; first-load signed-out, network/server, and other status with its title and `body = message`; the refetch-failed band with `lastGoodAge` and the ID; the unreadable band (`role="alert"`, plural); `Retry loading more` with the chip. File: `DecisionsScreen.tsx:267-333` and `392-452`.
-- **5.5:** the `staleVersion` banner above the header, with the † message and `Reload`. File: `DecisionsScreen.tsx:195-203`.
-- **No fetch:** there's no `fetch(` call in the module. The task's literal `! grep -rn 'fetch('` exits 1, because it matches the six `refetch(` and `afterRefetch(` lines. A word-boundary grep, `grep -rnP '(?<![A-Za-z])fetch\('`, lists nothing. The pattern is my plan's defect, not Leon's (Deviations).
-- **No server data in state** (Decisions, "Revision 9", judged by reading):
-  - `useState` holds `signedOut` (a request ID), `settledElsewhere` (a flag), `dialog` and `outcome`.
-  - `dialog.row` and `Attempt.row` are the row as drawn at tap time. FM 205 and 5.2 require that snapshot, because the body comes from the row as drawn and never from a refetch. They're never used to draw the list: the card always draws from the query's `row`.
-  - Verdict: compliant.
-- **`index.ts` light:** it re-exports `api.ts` and `decisions.ts` only (query options, mutation, renderers and copy). No screen, and no kit runtime import: `decisions.ts` imports kit types only.
-- **Section 8, Zero's zod check:** `grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src/modules apps/web/src/routes` lists nothing.
+The diff, `git diff main...ec24538`, touches only `apps/web/src/modules/decisions/screens/DecisionsScreen.tsx` (+42 −7) and Leon's report.
+
+| ZERO-02 item (section 5, the hydration marker, revision 15) | Where | Evidence |
+| --- | --- | --- |
+| Set once every tag has its final layout | `DecisionsScreen.tsx:191-196` (`useSettledOnClient`), `:375-376` (`useIsPhone` and the signal read in the same render of `DecisionsList`), `:212,218` (root state and attribute) | My probe: 10/10 phone loads with 0 snapshot changes and 0 DOM mutations after the marker. The marker's own snapshot already reads `phone`, with Reject then Approve at y=464 |
+| Set in a React commit, never on a timer | `:193-195`: a `useLayoutEffect` sets root state, so the marker lands in the next synchronous commit | `grep setTimeout\|requestAnimationFrame\|setInterval` in the screen: only `:567,580`, the pre-existing 5.3 countdown and 5.2 delays, outside the diff |
+| Absent from the server's HTML | `:212` `useState(false)` | Server HTML of `/` (dev, mock): `DecisionsPage 1, data-hydrated 0, tags desk 4, tags phone 0` |
+| No hydration mismatch | the hydration render keeps `false` (state starts false; `useHydrated`'s server snapshot is false) | 0 hydration, mismatch or page-error console messages over 13 probe loads |
+| Loading and first-load error states also get the marker | `:199-202` `Settled`, `:243,252` | read: neither fallback draws a `DecisionTag`, so its client commit is final; the marker is only ever set |
+| Desk unchanged | same | 3/3 desk loads with no change after the marker; desk e2e passes |
+| Only the module changed | `git diff --name-only main...HEAD` | the screen file, plus Leon's report |
+| No fetch in the module (verify carried from ZERO-01) | `apps/web/src/modules/decisions` | the grep lists nothing (exit 1) |
+
+**The probe** (my own, scratchpad `zprobe.mjs`, not in the repo):
+- Chromium at 390x844 with `isMobile` and `hasTouch`, a fresh context for each load, `POST /__mock/reset` before each load, against `AVEL_API=mock vite dev` on port 4231.
+- An init script snapshots every `DecisionTag`'s `data-layout` and rect, and every button's text and rect. It takes one on every MutationObserver callback (on the whole document: attributes, childList, characterData) and on every rAF.
+- The snapshot taken in the MutationObserver callback that first sees `data-hydrated` is the marker snapshot. Every later snapshot, for 3 s, is compared against it, and every DOM mutation after it is counted.
+
+Leon's a3, phone:
+```
+load 1: first t=29 marker t=1347; changes after marker=0; mutations after marker=0; OK; warnings=none   (cold transform)
+load 2: first t=27 marker t=397; changes after marker=0; mutations after marker=0; OK; warnings=none
+  first : 0:desk:[195,269]:Approve@48,443,70x21|Reject…@118,443,69x21 ; ...
+  marker: 0:phone:[178,348]:Reject…@34,464,130x44|Approve@174,464,182x44 ; 1:phone:[538,368]:Reject…@34,844,130x44|Approve@174,844,182x44 ; 2:phone:[918,279]: ; 3:phone:[1209,213]:@209,1314,24x24
+load 3: ... marker t=416; changes after marker=0; mutations after marker=0; OK
+load 4: ... marker t=425; 0; 0; OK
+load 5: ... marker t=442; 0; 0; OK
+load 6: ... marker t=404; 0; 0; OK
+load 7: ... marker t=451; 0; 0; OK
+load 8: ... marker t=383; 0; 0; OK
+load 9: ... marker t=374; 0; 0; OK
+load 10: ... marker t=382; 0; 0; OK
+10/10 phone loads with no rect, order or layout change after the marker
+```
+Desk: markers at 345, 391 and 365 ms, with 0 changes and 0 mutations after each: `3/3 desk loads with no rect, order or layout change after the marker`.
+
+**The negative control.** The same probe ran on main `3b4a7c0`'s old marker (the root's `useHydrated()` at `:187`, revision 9), in a detached scratch worktree on port 4232. I removed it afterwards.
+```
+load 2: marker t=384; changes after marker=209; mutations after marker=30; MOVED
+  marker: 0:desk:[178,308]:Approve@174,426,184x44|Reject…@32,426,132x44 ; ...
+  after t=412 (mo): 0:phone:[178,348]:Reject…@34,464,130x44|Approve@174,464,182x44 ; ...
+0/10 phone loads with no rect, order or layout change after the marker
+```
+Under the old marker, the switch from desk to phone came 25 to 38 ms after it in every load. That's decisions-fenn-01's window, and a3 closes it.
 
 ## Deviations
-- **Extra commands:** I ran `pnpm install --frozen-lockfile --offline`, and the build before the tests, so the commands could run in a fresh worktree.
-- **Extra measurement:** to check INT's two screenshots, I ran a scratch Playwright script in the session scratchpad, outside the repo, against a dev server on port 4199 with `AVEL_API=mock`, then stopped the server.
-- **The fetch check:** ZERO-01's `! grep -rn 'fetch('` also matches `refetch(`, so it fails on correct code. I judged the rule with a word-boundary grep instead. I'll fix the pattern in `plan.toml` (`(?<![A-Za-z])fetch\(`, or `-w`) and re-render.
-- **The file list:** `git diff --name-only main...HEAD` lists Leon's eight files as well as mine. My branch starts at his result commit, which isn't on main yet. My own changes are `d480f0e..HEAD`, listed under Files changed.
+- **Scope:** ZERO-02 only, on INT's message. ZERO-01 and ZERO-03 aren't this attempt's.
+- **Ruling on Leon's Deviation 1** (the marker reaches the root through a `useLayoutEffect` that sets root state, not through the root's own `useSyncExternalStore` read): **accepted for sprint-01.**
+  - Revision 9's "`useSyncExternalStore` and no `useEffect`" was dropped in revision 15. Section 5 now says the marker is "set in a React commit, never after a timer", and that "How the page meets this rule is the page's choice" (contract lines 417-418; decisions.md, revision 15's "The hydration marker waits for the final layout"). A layout effect runs inside the commit, and the state it sets lands in a synchronous commit before paint. So it's within the rule.
+  - It's also the right design. React hydrates the list's own Suspense boundary in a later pass than the root, so the root can't know when that boundary has taken the browser's values. Only the content can. React 19.3 doesn't warn about `useLayoutEffect` during SSR, and it doesn't run there. 0 console warnings, as above.
+  - **For revision 15's marker sentence:** no wording change is needed, since the sentence already leaves the mechanism to the page. I recommend one line in decisions.md: "a3's mechanism: the content reads the client signal in the same render as its layout inputs, and a layout effect in that commit sets the root's state. Accepted by Zero, decisions review-frontend a2." That records it without making it a rule.
+  - **For Leon's a4 (ZERO-03):** with `layout="desk"` everywhere and no `useIsPhone`, the mechanism still holds as it is. The comment at `DecisionsScreen.tsx:373-374` that names `phone` will need rewording then.
 
 ## Limitations
-- **INT's phone dialog screenshot (centred, where a1 was a bottom sheet): not a finding.**
-  - **a2 is DL's Dialog, as the contract specifies.** In Chromium at 390x844, the dialog is at x=16, y=256, 358x332. The scrim has `align-items: center`, `padding: 16px` and `position: fixed`.
-  - **That's DL's `.av-scrim` word for word** (DL line 645). DL's `Go` always draws in `Uo` with `size: "sm"`. Section 4 ports `ReasonDialog` with R1 to R6 only, and leaves out DL's Sheet rules (`kit.css:10-11`).
-  - **a1's "bottom sheet" was the unstyled page.** Leah's a1 finding 02 measured it at 390x166 at y=678 on a 390x844 viewport: full width, flush with the bottom, with no 16px scrim padding. So `.av-scrim` wasn't applied, and the portal's `div` sat at the end of `body`. That's the "stylesheets not linked" defect a2 fixed.
-  - **If INT wants a bottom sheet on a phone,** that's a new design decision: DL's `.av-sheet[data-side="bottom"]` exists (DL lines 661-664). It would be a contract change (section 4) and a kit change, not a fix to this module.
-- **Known and being planned by INT, not refiled:**
-  - `/`'s first load is 173.94 kB gzip (154.68 + 15.87 + 3.39), over the 160 kB budget. S1-6 and Nemi's stub plugin come next.
-  - The lazy `ReasonDialog` imports `kit/ReasonDialog` past `kit/index.ts` (`DecisionsScreen.tsx:101-106`). It breaks FM's index-only rule, as Leon reports. INT is planning the kit-side loader.
-- **A contract gap, mine:** if the `ReasonDialog` chunk fails to load, the lazy component throws to the page's first-load boundary, so the whole list is replaced by `Couldn't load`. Section 5 has no copy or state for this case. I'll propose one in the next contract revision. It's not a finding against Leon.
+- The probe ran on the dev server, as Leon's and Fenn's did, not on a production build. The marker's ordering is React's commit order, which is the same in both, but the timings (about 350 to 450 ms) are dev timings.
+- The desk-to-phone switch still happens before the marker, as INT's option (c) allows. The 0.13 CLS (cls-study-leah-01) stays open for option (a): revision 15, D16, UC-32, and Leon's a4.
 
 ## Parked chains
 none
@@ -75,86 +87,56 @@ none
 none
 
 ## Issues for other agents
-- **Fantem:**
-  - finding 02 (DecisionTag's empty facts list);
-  - finding 01's kit side (D11 as a `kit.css` media rule, per INT);
-  - Leon's report notes `HashChip` computes `IBM Plex Mono` 400, not 500, because `kit.css`'s `[data-ui="HashChip"]` sets no weight. I didn't measure this. It goes to Leah's re-review.
-- **Zero (me):** contract section 4 rows for findings 01 and 02, a 5.x line for a failed `ReasonDialog` chunk, and the `fetch(` pattern in this review's verify in `plan.toml`.
-- **Leon:** nothing to fix in a2's code.
+- **INT:** a3 can merge. That closes decisions-fenn-01 bar point 2. Fenn's decisions-test-e2e a6 (FENN-04) then closes the finding. The decisions.md line in Deviations is your call; my territory doesn't cover decisions.md.
+- **Leon (a4):** reword the comment at `DecisionsScreen.tsx:373-374` when `useIsPhone` goes. Keep `useSettledOnClient` in `DecisionsList`.
+- **Operator:** seven detached scratch worktrees from other sessions are still registered (`git worktree list`: Brennan's zod-mini a1 `wt-base` and `wt-joint`, and Leah's cls-study a1 `wt-avg`, `wt-main`, `wt-nemi`, `wt-old` and `wt-phone`). I left them alone.
 
 ## Files changed
-`git diff --name-only d480f0e..HEAD` (my changes):
 ```
-docs/agent-dispatch/frontend/sprint-01/agent-zero-decisions-review-frontend-completion.md
-docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-01-uc31-phone-grid-fails-before-hydration.md
-docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-02-factory-pr-card-empty-facts-rule.md
-```
-`git diff --name-only main...HEAD` also lists Leon's diff, which is under review and not mine:
-```
-apps/web/src/modules/decisions/api.ts
-apps/web/src/modules/decisions/decisions.css
-apps/web/src/modules/decisions/decisions.ts
-apps/web/src/modules/decisions/index.ts
-apps/web/src/modules/decisions/screens.ts
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx
-apps/web/src/routes/index.tsx
-docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md
+apps/web/src/modules/decisions/screens/DecisionsScreen.tsx                         (Leon's a3, in the review base)
+docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md    (Leon's a3, in the review base)
+docs/agent-dispatch/frontend/sprint-01/agent-zero-decisions-review-frontend-completion.md   (this report, the last commit)
 ```
 
 ## Verification
+ZERO-02's verify:
+```
+$ pnpm --filter @avel/web test
+ Test Files  14 passed (14)
+      Tests  197 passed (197)
+$ for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test 2>&1 | grep -E 'passed|failed|flaky'; done
+  5 passed (15.1s)
+  5 passed (14.0s)
+  5 passed (14.8s)
+  5 passed (13.9s)
+  5 passed (14.9s)
+  5 passed (13.7s)
+  5 passed (14.5s)
+  5 passed (14.1s)
+  5 passed (13.5s)
+  5 passed (14.1s)
+```
+Part 7:
 ```
 $ pnpm --filter "@avel/web..." build
-exit=0
-packages/contract build: Done
-apps/web build: dist/client/assets/decisions-BpPPU4Jm.css     1.54 kB │ gzip:   0.54 kB
-apps/web build: dist/client/assets/kit-DDPuOw4w.css          17.31 kB │ gzip:   3.75 kB
-apps/web build: dist/client/assets/app-CCOL2GSK.css          31.88 kB │ gzip:   6.94 kB
-apps/web build: dist/client/assets/ReasonDialog-I_m4HCea.js   3.50 kB │ gzip:   1.52 kB
-apps/web build: dist/client/assets/jsx-runtime-Wy9s6hX0.js    8.91 kB │ gzip:   3.39 kB
-apps/web build: dist/client/assets/routes-Cosr3y1m.js        46.49 kB │ gzip:  15.87 kB
-apps/web build: dist/client/assets/index-DimhTn_r.js        493.83 kB │ gzip: 154.68 kB
-apps/web build: ✓ built in 499ms
+apps/web build: dist/server/server.js                                      261.21 kB │ gzip: 63.20 kB
+apps/web build: ✓ built in 146ms
 apps/web build: Done
-
+exit 0
 $ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
-exit=0
-packages/contract typecheck: Done
 packages/contract-mock typecheck: Done
 apps/web typecheck: Done
-
+exit 0
 $ pnpm lint
-exit=0
-> biome check .
-Checked 205 files in 116ms. No fixes applied.
-
+Checked 213 files in 116ms. No fixes applied.
+exit 0
 $ pnpm --filter @avel/web test
-exit=0
  Test Files  14 passed (14)
-      Tests  190 passed (190)
-
-$ pnpm --filter @avel/web exec playwright test        # ZERO-01's verify
-exit=1
-  ✓  1 [phone] UC-29 (2.8s)
-  ✓  2 [phone] UC-30 (2.3s)
-  ✘  3 [phone] UC-31: on a phone the actions are D11's two-column grid, 44px tall, and the reason input is 16px
-  ✓  4 [desk] UC-29 (2.0s)
-  ✓  5 [desk] UC-30 (2.6s)
-  -  6 [desk] UC-31
-    Expected: "grid"  Received: "flex"   (e2e/decisions.spec.ts:125)
-  1 failed, 1 skipped, 4 passed (13.8s)
-
-$ ! grep -rn 'fetch(' apps/web/src/modules/decisions   # ZERO-01's verify, literal
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx:357:    const result = await query.refetch();
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx:363:    const result = await query.refetch();
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx:418:            onAction={() => void query.refetch()}
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx:647:    if (await refetch()) setOutcome(null);
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx:671:          review: () => void afterRefetch(() => reviewRow(row.ref)),
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx:672:          refresh: () => void afterRefetch(refreshList),
-exit=1   (every match is TanStack Query's refetch; the pattern is mine and too loose)
-
-$ grep -rnP '(?<![A-Za-z])fetch\(' apps/web/src/modules/decisions   # the intended check
-(no output; exit 1 = no fetch call)
-
-$ git diff --name-only main...HEAD
-(listed under Files changed: Leon's 8 paths under review, plus my 3 from Part 5)
+      Tests  197 passed (197)
+exit 0
+$ git diff --name-only main...HEAD      # before this report's commit; both are Leon's, in the review base
+apps/web/src/modules/decisions/screens/DecisionsScreen.tsx
+docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md
+$ grep -rnE '(^|[^[:alnum:]_])fetch[[:space:]]*\(' apps/web/src/modules/decisions
+(no output; exit 1)
 ```
