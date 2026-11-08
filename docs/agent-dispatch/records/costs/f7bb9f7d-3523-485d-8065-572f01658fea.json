@@ -1,0 +1,24 @@
+{
+ "session_id": "f7bb9f7d-3523-485d-8065-572f01658fea",
+ "name": "GHOST w0-data-build a3",
+ "branch": "frontend/sprint-01/agent-ghost-w0-data-build-a3",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-ghost-w0-data-build-a3",
+ "first_at": "2026-11-08T01:45:15.537Z",
+ "last_at": "2026-11-08T01:50:05.862Z",
+ "updated_at": "2026-11-08T01:50:17Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 70,
+   "output": 18258,
+   "cache_write_5m": 0,
+   "cache_write_1h": 63681,
+   "cache_read": 1418936,
+   "messages": 33
+  }
+ },
+ "cost_usd": 1.1587,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 1.1587
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
