@@ -192,14 +192,9 @@ export function DecisionTag({
     actions = phone ? (
       <div className="av-dt-actions-phone">
         {approveButton && rejectButton ? (
-          // D11: DL's Decisions card on a phone (.pd[data-phone] .pd-actions): Reject left, Approve right.
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.4fr)",
-              gap: "10px",
-            }}
-          >
+          // D11: DL's Decisions card on a phone (.pd[data-phone] .pd-actions): Reject left, Approve
+          // right. The grid is kit.css's .av-dt-pair rule.
+          <div className="av-dt-pair">
             {rejectButton}
             {approveButton}
           </div>
@@ -211,8 +206,17 @@ export function DecisionTag({
       </div>
     ) : (
       <div className="av-dt-row">
-        {approveButton}
-        {rejectButton}
+        {approveButton && rejectButton ? (
+          // D11: the same container in DL's desk order. kit.css lays it out as the row (display:
+          // contents) at 900px and over, and as D11's grid, Reject left, under 900px, so the
+          // server's desk HTML is D11 on a phone before hydration.
+          <div className="av-dt-pair">
+            {approveButton}
+            {rejectButton}
+          </div>
+        ) : (
+          (approveButton ?? rejectButton)
+        )}
         {refreshButton}
         {linkButton ? (
           <>
