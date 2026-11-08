@@ -1,63 +1,82 @@
 # ZERO: w0-split review-frontend, completion report
 
+Attempt a2. Reviewed at 0d5626e: main b1932d9 with Nemi's w0-split build a2 (6311fab) merged, plus INT's lockfile commit. `AVEL_BASE` = b1932d9.
+
 verdict: PASS
 
 ## Summary
-Nemi's w0-split a1 (merged on main as b97076e; commits 1a71be5 and 2b4284e, report 7a37113) adds one field to `apps/web/package.json`: `"sideEffects": ["**/*.css"]`, at lines 6 to 8. It names CSS files only. No dependency or script changed, and no code path outside that file changed. That is what UI contract sections 5 ("The route split") and 6 ask for. The build still emits the app CSS with the tokens. On a scratch copy carrying Leon's a1 page, the field turns the route chunk from a 0.07 kB re-export into a 17.06 kB gzip chunk. No findings.
+Nemi's w0-split a2 meets UI contract section 6. The server-function stub applies only in the client environment and sits before `tanstackStart()`. The guard and the alarm each fail a build on a scratch edit, the server build's chunks are byte-identical to main's, and no seroval reaches the client. The React Compiler runs after `react()` over `apps/web/src` only, with the three dev dependencies pinned exact. a1's `sideEffects` field (ZERO-01) is on main and unchanged. There's one P3 finding, on the contract's wording rather than the code: as section 6 words the alarm, it can't be built in this Start version (w0-split-zero-01). The six failing web tests are on main as well: they're the D11, D15 and R7 tests merged to fail first, waiting for Fantem's w0-kit a4.
 
 ## Pre-flight
-- Part 2 files, all read:
-  1. `.claude/agents/zero.md`: read (Learned: none yet)
-  2. `docs/agent-dispatch/frontend/sprint-01/codebase-analysis.md`: read
-  3. `docs/ui-contracts/decisions-approval-page.md`: read: sections 0, 5 (with "The route split"), 6 and 8 in full; I skimmed the rest
-  4. `docs/design/CR-W2 Pending decisions.md`: read (skimmed; it doesn't touch a package.json field)
-  5. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: read, with "Revision 9" and "INT's answers on revision 9" in full
-  6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: read: "What every module looks like" (lines 105 to 117) and the performance table and "How" (lines 280 to 292, with line 285)
-  7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: present. It's not relevant here: the diff carries no tokens, components or values
-  8. `docs/design/Step 0 and Step 1 plan.md`: read (skimmed; it doesn't touch this task)
-  9. Contract sections 5 and 6: read as above
-  10. This task doc: read in full
-- The zero.md Read-first files `API and data reference.md` and `CR-16 Dispatch package contract.md` are present.
-- Branch: `frontend/sprint-01/agent-zero-w0-split-review-frontend-a1`. Start commit: b97076e, which is main and is the w0-split merge itself.
-- **The diff under review:** `AVEL_BASE` is b97076e, the same as HEAD, so the default diff is empty. INT's message names the diff to review: `git diff b97076e^1 b97076e`. I reviewed that diff, which is commits a9c5cf9..7a37113.
-- Part 7 commands: all available.
+- Part 2 files:
+  1. `.claude/agents/zero.md`: read (Learned: none yet).
+  2. `codebase-analysis.md`: read.
+  3. `docs/ui-contracts/decisions-approval-page.md`: read, revision 11. Read in full: sections 0, 5 ("Styles and loading", "The route split"), 6 and 8.
+  4. `docs/design/CR-W2 Pending decisions.md`: present. I skimmed the headings: nothing in it touches the build config.
+  5. `decisions.md`: read. Read in full: "Revision 9", "The size study", "Revision 10", "Revision 11" and "Queued for revision 12".
+  6. FM v0.6: read lines 28 to 32 (line 30: every call through the oRPC client) and lines 280 to 302 (line 285: code splitting; line 289: fonts; line 299: React Compiler).
+  7. DL v1.1: present. The diff touches no token, component or motion.
+  8. `Step 0 and Step 1 plan.md`: present. I skimmed the headings: nothing in it touches this diff.
+  9. The contract's sections 5 and 6: as in 3.
+  10. This task doc: read in full.
+  - The Read first list's `API and data reference.md` and `CR-16 Dispatch package contract.md`: present. Neither touches a build-config diff.
+- Branch: `frontend/sprint-01/agent-zero-w0-split-review-frontend-a2`. Start commit: 0d5626e.
+- Part 7 commands: all available after `pnpm install --frozen-lockfile`.
+  - `pnpm --filter @avel/web build` on its own fails in a fresh worktree: `Rolldown failed to resolve import "@avel/contract/errors"`, because `packages/contract` isn't built yet. The `"@avel/web..."` build builds it first, and after that the task verifies' single-package build passes.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
 | ZERO-01 | DONE | this report's commit |
+| ZERO-02 | DONE (one P3 finding, on the contract) | this report's commit |
 
-ZERO-01, checked point by point (diff b97076e^1..b97076e):
-- **One sideEffects field:** `apps/web/package.json:6-8`, `"sideEffects": [ "**/*.css" ]`. 1a71be5 adds it on one line. 2b4284e only spreads it over three lines in Biome's format, with the same value. This is the only hunk in the file (+3, -0).
-- **CSS files only:** the array has one entry, `**/*.css`. I checked that nothing in `@avel/web` needs a non-CSS file kept for its side effects. `grep -rnE "^\s*import\s+['\"]" apps/web/src` lists nothing: there are no bare imports. Every stylesheet comes in as `?url` and is used by value: `routes/__root.tsx:6` `import appCss from "../styles/app.css?url"`, and `kit/index.ts:6` `kitStylesheetHref`.
-- **No dependency or script change:** `git diff b97076e^1 b97076e -- apps/web/package.json` has no hunk in `scripts`, `dependencies` or `devDependencies`. `pnpm-lock.yaml` isn't in the diff.
-- **Nothing outside apps/web/package.json:** `git diff b97076e^1 b97076e --stat` gives `apps/web/package.json | 3 +` and Nemi's own completion report. The report is in his territory.
-- **Builds, with the app CSS still emitted:** see Verification. `dist/client/assets/app-CCOL2GSK.css` (6.94 kB gzip) carries `--av-floor:var(--color-app-page)`, and `dist/server/assets/router-Dvq-asiP.js` still references `app-CCOL2GSK.css`. On main the field changes no client output. A full build of b97076e^1 (in a scratch worktree) and of b97076e give byte-identical client lines: `index-SlPnXw7v.js` 155.40 kB gzip, the figure INT gave.
-- **The split holds (contract section 5, "What keeps it split"):** main has no `routes/index.tsx` yet, so I measured on a scratch worktree at b97076e^1. It carried Leon's a1 `modules/decisions/**` and `routes/index.tsx` from c3effb3. I built it once without the field and once with b97076e's package.json (`pnpm --filter "@avel/web..." build`, exit 0 both times):
-  ```
-  without: routes-B1H5H0oz.js    0.07 kB │ gzip:   0.08 kB
-           index-CVN3Goxv.js   552.35 kB │ gzip: 173.55 kB
-  with:    routes-A3z4ypgw.js   50.30 kB │ gzip:  17.06 kB
-           index-HyNrNmjJ.js   502.30 kB │ gzip: 157.31 kB
-  ```
-  The entry figure matches revision 9's 157.3 kB. The route chunk is 17.06 kB, not revision 9's 20.0 kB, because main's kit and CSS have changed since Leon's a1 base. The scratch worktree was removed afterwards.
+**ZERO-01** checks a1, which is merged (1a71be5, 2b4284e; `git merge-base --is-ancestor 2b4284e main` is true).
+- `git diff 1a71be5^..2b4284e --stat` lists only `apps/web/package.json | 3 +++`. The change is the one `"sideEffects": ["**/*.css"]` field: CSS files only, with no dependency or script change.
+- In a2's diff it's unchanged (`apps/web/package.json:6-8`).
+- The build still emits the app CSS (`app-CCOL2GSK.css` 6.94 kB, `kit-DDPuOw4w.css` 3.75, `decisions-BpPPU4Jm.css` 0.54), and the route stays in its own chunk (`routes-CsGRMfOY.js` 19.24 kB gzip).
+- The verify's "only `apps/web/package.json` changed" applies to a1's diff. a2's diff adds `vite.config.ts` by design (ZERO-02).
+
+**ZERO-02**, against section 6:
+- **Stub, client environment only:** `applyToEnvironment: (environment) => environment.name === "client"` with `enforce: "pre"` (`vite.config.ts:165-166`).
+  - It answers only relative imports, made from inside `start-client-core`, of the three named `client-rpc` files.
+  - `serverFnGuard()` and `serverFnStub()` are at lines 218-219, before `tanstackStart()` at 221.
+- **The server build is untouched:** I built main's config (b1932d9) in a scratch worktree and ran `diff -rq` against this build's `dist/server`. Every chunk is identical. Only `_tanstack-start-manifest_v-*.js` and `server.js` differ: the manifest names the client's chunk hashes, and `server.js` imports the manifest.
+- **No seroval in the client:** `! grep -l 'seroval\|fromCrossJSON' apps/web/dist/client/assets/*.js` lists nothing, exit 0.
+  - `serverFnFetcher` does appear in `index-*.js`, but only in the stub's error message: "createClientRpc.js is stubbed in apps/web/vite.config.ts: the web has no server functions (UI contract section 6)".
+- **The guard:** I ran it on a scratch worktree at 0d5626e and didn't commit anything. A file `apps/web/src/scratch-zero.ts` holding only the comment `// mentions createServerFn` fails the build: `RolldownError: createServerFn appears in scratch-zero.ts under apps/web/src, but vite.config.ts stubs Start's server-function client (UI contract section 6). Taking the stub off is a contract decision.`
+- **The alarm:** with all three stub keys renamed to `*.renamed.js` (scratch, then reverted), the build fails: `RolldownError: The server-function stub no longer holds in the client build (stubs used: none; server-function code in the client: …/seroval@1.7.9/…/seroval/dist/index.js, …`.
+  - It differs from section 6's wording, because that wording can't be built: finding w0-split-zero-01.
+- **The React Compiler:**
+  - `babel({ presets: [reactCompilerPreset()], include: [webSourceFiles] })` is at line 227, after `react()` at 223.
+  - `webSourceFiles` (line 130) is anchored at `apps/web/src/`.
+  - `@rolldown/plugin-babel` 0.3.0 keeps its default exclude when only `include` is given (`dist/index.mjs:80-81`: `exclude: options.exclude ?? DEFAULT_EXCLUDE`).
+  - `apps/web/vitest.config.ts` is a standalone `vitest/config` with `plugins: [stubUnbuiltSubjects()]` and doesn't load `vite.config.ts`, so the tests don't run the compiler, as section 6 requires.
+  - The preset itself applies only to client consumers (`@vitejs/plugin-react` `dist/index.js:48`). Section 6 doesn't ask for that, and it doesn't conflict with anything.
+- **The three dev dependencies, pinned exact:** `@babel/core` 7.29.13, `@rolldown/plugin-babel` 0.3.0 and `babel-plugin-react-compiler` 1.0.0 (`package.json:32,34,42`). `pnpm install --frozen-lockfile` passes on 0d5626e's lockfile.
+- **Nothing outside `apps/web/{package.json,vite.config.ts}`** from Nemi's code. The other two paths in the diff are explained under Deviations.
 
 ## Findings
-none
+- `docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zero-01-alarm-wording-in-section-6.md`: P3. Section 6's alarm says "any of the three stubs wasn't used", which start-client-core 1.170.39 makes impossible. The fix is contract wording only.
 
 ## Contract to files
-- Section 6, "`package.json` declares `"sideEffects": ["**/*.css"]`": `apps/web/package.json:6-8`.
-- Section 5, "The route split" / "What keeps it split": `apps/web/package.json:6-8`. Checked by the scratch measurement above. `vite.config.ts` is unchanged, as section 5 says it should be.
-- ZERO-01's Verify and Expected: see Tasks and Verification.
+- Section 5, "The route split" / section 6, `sideEffects` → `apps/web/package.json:6-8` (ZERO-01).
+- Section 6, "The server-function stub" → `apps/web/vite.config.ts:105-207`: `serverFnStubs`, `serverFnGuard()`, `serverFnStub()`, and the plugin order at 218-221.
+- Section 6, "The guard" → `vite.config.ts` `serverFnGuard().buildStart`.
+- Section 6, "The alarm" → `vite.config.ts:191-207` (w0-split-zero-01).
+- Section 6, "The React Compiler is on" → `vite.config.ts:130-132,224-227`, and `package.json:32,34,42`.
+- Section 6, the dependencies list (the build's three) → `package.json`, devDependencies.
 
 ## Deviations
-- **The diff:** I reviewed `b97076e^1..b97076e`, at INT's instruction, instead of `$AVEL_BASE..HEAD`, which is empty because the work was merged before this review started.
-- **ZERO-01's verify command:** `pnpm --filter @avel/web build` alone, in a worktree with no `packages/contract/dist`, printed a misleading client line: `index-BXe4PpTh.js` 127.47 kB gzip. The client bundle had left `@avel/contract/errors` and `@avel/contract/routes/decisions` unresolved, and then the server build failed (`Rolldown failed to resolve import "@avel/contract/errors"`, exit 1). The pipe into `grep` hid the exit code. I took my figures from Part 7's `pnpm --filter "@avel/web..." build` instead, which builds the contract first. Issues for other agents has the plan fix.
-- **Extra checks:** the before-and-after build of main and the scratch split measurement. ZERO-01 doesn't ask for either, but section 5's "What keeps it split" can't be seen on main without them.
+- **The diff holds four paths, where ZERO-02's Expected says two:** `pnpm-lock.yaml` and Nemi's completion report are also in it.
+  - The lockfile is INT's commit 0d5626e. It's needed for the three new dependencies, and its changes are only those three plus their transitive `artichokie` 0.4.5 and `@vitejs/plugin-react`'s optional peers.
+  - The report is Nemi's, and in his territory.
+  - Neither is code outside the two paths, so I don't count it against the task.
+- ZERO-01's verify ran against a1's merged diff (1a71be5^..2b4284e), not against this a2 diff. Its "only package.json changed" can only hold for a1.
+- I ran the guard and alarm checks, and main's server build, in a throwaway `git worktree` in my scratchpad. I've removed it, and none of it was committed.
 
 ## Limitations
-- **The dev-server CSS check** (Nemi's limitation) isn't run here either. I made no request to localhost. Why it can't break: `sideEffects` only steers production tree-shaking, and the dev server doesn't tree-shake. Also, both stylesheets are `?url` imports used by value, not bare imports, so even a build can't drop them. That second point is shown above: the CSS is emitted and referenced.
-- **The split can't be seen on main** until Leon's decisions module is merged. My split figures come from Leon's a1 on a scratch copy, not from his a2.
+- I didn't run the end-to-end tests or the dev server. Section 6's stub and compiler are build-config items, and the dispatch's verifies are build-only. Nemi reports UC-29 and UC-30 pass, with UC-31 phone red until Fantem's w0-kit a4.
+- The stub and the compiler's `include` build their paths with `path.sep`. I've only checked them on Linux, where the factory runs. On Windows, the alarm would fail the build, which is the safe direction, and the compiler would silently not run. I couldn't test that, so it isn't a finding.
 
 ## Parked chains
 none
@@ -66,36 +85,44 @@ none
 none
 
 ## Issues for other agents
-- **INT / plan (ZERO-01's verify):** use `pnpm --filter "@avel/web..." build` rather than `--filter @avel/web`, and don't pipe it straight into `grep`. In a fresh worktree the narrow filter builds against a missing `packages/contract/dist`: it prints a client size about 28 kB too low, then fails, and the grep hides the failure.
-- **Zero (next contract revision; my own text, for Brennan's next spec review):** section 6's sideEffects bullet says CSS files "run for their effect on import (`__root.tsx`'s token and base sheets)". In fact `__root.tsx` links `app.css?url`, and no stylesheet is imported for its effect. The field is still right: it keeps any future bare CSS import safe. Only the parenthesis is wrong. It's a wording fix, with no change to the work.
-- **Leah (decisions a11y-perf a2):** measured on Leon's a1 with this field, the route chunk is 17.06 kB gzip and the entry 157.31 kB. Section 8 counts both, about 174.4 kB, so `/` is over 160 kB until S1-6's cut lands. Re-measure on Leon's a2.
-- **Nemi:** none. The locks.md path note in his report is INT's to answer.
+- **INT:**
+  - Finding w0-split-zero-01 is a contract rewording for revision 12, alongside the queued w0-data-brennan-02. It needs no code change, and w0-split a2 can merge as built.
+  - `/`'s first load at 0d5626e is 143.87 + 3.41 + 19.24 = **166.52 kB** gzip (entry, `compiler-runtime`, `routes`). That's still over sprint-01's 160 until S1-6's two halves land.
+  - The compiler cost +3.61 kB against Leah's +2.44, so the 150 kB margin after S1-6 is about 0.8 kB, not 2.
+- **Leah:** the first-load figure above, and the renamed shared chunk (`compiler-runtime-*.js` replaces `jsx-runtime-*.js`).
+- **Fantem and Leon:** Nemi's report lists four compiler bailouts in your territories: `DecisionTag` and `usePress` (`useMemo(canHover, [])`), `useDialogFocus` (ref written during render) and `ProposalDecision` (`for` with an empty test). They're not findings here. Each one runs uncompiled and correct.
+- **Fenn / Fantem:** the six failing web tests (UC-08 D11 ×4, UC-08 D15, UC-09 R7) fail identically on main b1932d9. They're the failing-first tests for w0-kit a4.
 
 ## Files changed
 ```
 docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-split-review-frontend-completion.md
+docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zero-01-alarm-wording-in-section-6.md
 ```
+`git diff --name-only main...HEAD` also lists the reviewed commits' paths, which are below this branch's start commit: `apps/web/package.json`, `apps/web/vite.config.ts`, `docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md`, `pnpm-lock.yaml`.
 
 ## Verification
 `pnpm --filter "@avel/web..." build`: exit 0
 ```
-packages/contract build: Done
-apps/web build: dist/client/assets/ibm-plex-mono-400-DMJ8VG8y.woff2   14.70 kB
-apps/web build: dist/client/assets/ibm-plex-mono-500-DSY6xOcd.woff2   14.88 kB
-apps/web build: dist/client/assets/inter-variable-Dx4kXJAl.woff2      48.25 kB
-apps/web build: dist/client/assets/app-CCOL2GSK.css                   31.88 kB │ gzip:   6.94 kB
-apps/web build: dist/client/assets/index-SlPnXw7v.js                 496.83 kB │ gzip: 155.40 kB
-apps/web build: dist/server/assets/empty-plugin-adapters-BsRz-CQL.js         0.26 kB │ gzip:  0.17 kB
-apps/web build: dist/server/assets/start-CX3T2L7y.js                         0.27 kB │ gzip:  0.19 kB
-apps/web build: dist/server/assets/_tanstack-start-manifest_v--3USIxGf.js    0.40 kB │ gzip:  0.29 kB
-apps/web build: dist/server/assets/router-Dvq-asiP.js                       27.35 kB │ gzip:  9.27 kB
-apps/web build: dist/server/server.js                                      261.19 kB │ gzip: 63.19 kB
-apps/web build: Done
+dist/client/assets/decisions-BpPPU4Jm.css              1.54 kB │ gzip:   0.54 kB
+dist/client/assets/kit-DDPuOw4w.css                   17.31 kB │ gzip:   3.75 kB
+dist/client/assets/app-CCOL2GSK.css                   31.88 kB │ gzip:   6.94 kB
+dist/client/assets/ReasonDialog-CzAYi2H3.js            5.49 kB │ gzip:   2.60 kB
+dist/client/assets/compiler-runtime-CUb8v2iE.js        9.07 kB │ gzip:   3.41 kB
+dist/client/assets/routes-CsGRMfOY.js                 54.13 kB │ gzip:  19.24 kB
+dist/client/assets/index-C_5BT1FF.js                 461.83 kB │ gzip: 143.87 kB
+✓ built in 10.82s
+dist/server/assets/empty-plugin-adapters-BsRz-CQL.js         0.26 kB │ gzip:  0.17 kB
+dist/server/assets/start-CX3T2L7y.js                         0.27 kB │ gzip:  0.19 kB
+dist/server/assets/rolldown-runtime-D8jQpDG7.js              0.34 kB │ gzip:  0.24 kB
+dist/server/assets/_tanstack-start-manifest_v-LHaRwOuL.js    0.66 kB │ gzip:  0.36 kB
+dist/server/assets/ReasonDialog-BsOg8Fj6.js                  5.85 kB │ gzip:  2.01 kB
+dist/server/assets/router-BZYHJa7P.js                       34.52 kB │ gzip: 11.60 kB
+dist/server/assets/routes-C213wK2f.js                       48.57 kB │ gzip: 13.80 kB
+✓ built in 1.22s
 ```
 
 `pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck`: exit 0
 ```
-packages/contract typecheck: Done
 packages/contract-mock typecheck: Done
 apps/web typecheck: Done
 ```
@@ -103,23 +130,29 @@ apps/web typecheck: Done
 `pnpm lint`: exit 0
 ```
 > biome check .
-Checked 198 files in 183ms. No fixes applied.
+Checked 213 files in 688ms. No fixes applied.
 ```
 
-`pnpm --filter @avel/web test`: exit 1, the same result as Nemi's run on main. These are the locked decisions tests, waiting on Leon's unmerged module. They're not caused by this diff: vitest doesn't read `sideEffects`.
+`pnpm --filter @avel/web test`: exit 1. These are the same six failures as on main b1932d9, which I checked in a scratch worktree with the same output.
 ```
- Test Files  4 failed | 10 passed (14)
-      Tests  37 failed | 153 passed (190)
-FAIL files: test/modules/decisions/{contract-version,deciding,errors,list}.test.tsx (UC-11 to UC-28)
-AssertionError: apps/web/src/modules/decisions/screens.ts should export the screen as DecisionsScreen: expected undefined to be defined
+     × UC-08 phone (D11): Reject then Approve in one av-dt-pair container, with no inline grid style
+     × UC-08 desk (D11): Approve then Reject in one av-dt-pair container, with no inline grid style
+     × UC-08 (D11) kit.css draws .av-dt-pair as the grid for the phone layout, outside any media block
+     × UC-08 (D11) kit.css draws the desk layout's .av-dt-pair as the grid only inside @media (max-width: 899px)
+     × UC-08 (D15) neither evidence nor consequence: no .av-dt-facts element is drawn
+     × UC-09 (R7) loadReasonDialog resolves to a module whose ReasonDialog is the kit index's ReasonDialog
+ Test Files  2 failed | 12 passed (14)
+      Tests  6 failed | 190 passed (196)
 ```
 
-`git diff --name-only main...HEAD`: exit 0. Before this report's commit it listed nothing. After the commit it lists only this report, a Part 5 path.
+`git diff --name-only main...HEAD` (before this commit):
+```
+apps/web/package.json
+apps/web/vite.config.ts
+docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md
+pnpm-lock.yaml
+```
 
-ZERO-01's verify, on the diff under review:
-```
-$ git diff b97076e^1 b97076e --stat
- apps/web/package.json                              |   3 +
- .../agent-nemi-w0-split-build-completion.md        | 105 +++++++++++++++++++++
- 2 files changed, 108 insertions(+)
-```
+Task verifies:
+- ZERO-01: `pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*(js|css)'` lists the seven client assets above. `git diff 1a71be5^..2b4284e --stat` gives `apps/web/package.json | 3 +++`.
+- ZERO-02: the build passes, and `! grep -l 'seroval\|fromCrossJSON' apps/web/dist/client/assets/*.js` lists nothing (exit 0). `git diff "$(git merge-base main HEAD)"..HEAD --stat` lists the four paths above, explained under Deviations.
