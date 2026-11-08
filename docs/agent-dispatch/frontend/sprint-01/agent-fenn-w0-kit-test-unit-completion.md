@@ -3,46 +3,40 @@
 verdict: DONE
 
 ## Summary
-Attempt a3 does only FENN-02: UC-08's D11 tests are now revision 10's form (the `av-dt-pair` hook in both layouts, the grid values and the media rule read from `kit.css`), and UC-09 adds `loadReasonDialog` (R7). The 5 new or changed tests fail on an assertion, the same way three runs in a row. The other 66 kit tests are unchanged and pass.
+Attempt a4 does only FENN-03: UC-08 gains the three D15 tests (revision 11). The no-fact test fails on an assertion, the same way three runs in a row. The evidence-only and consequence-only tests pass, as the task doc expects. No other kit test changed.
 
 ## Pre-flight
-- Part 2 files: read (the contract's D11 and R7 rows and sections, and the existing kit tests, in full; `decisions.md`, CR-W2, the Frontend Map and the design library were not re-read beyond what the task doc's notes quote). Nothing is missing.
-- Branch `frontend/sprint-01/agent-fenn-w0-kit-test-unit-a3` (the task doc says a2; this is the attempt branch I was given), start commit `a00fa14`.
-- Part 7 commands: all available. I ran `pnpm install --frozen-lockfile` first, as the worktree had no `node_modules`.
+- Part 2 files: read in the parts that touch this task (UI contract D15 row and UC-08 row, decisions.md 'Revision 11', decisions-brennan-01, the existing kit tests and `DecisionTag.tsx`). I did not re-read CR-W2, the Frontend Map or the design library beyond what those quote. Nothing is missing.
+- Branch `frontend/sprint-01/agent-fenn-w0-kit-test-unit-a4`, start commit `cbb0b19`. `locks.md` has w0-kit at 88f3d4a (the D11 tests), as the notes say.
+- Part 7 commands: all available. The worktree already had `node_modules`.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| FENN-01 | DONE in a1 (locked at 965071b); not redone | |
-| FENN-02 | DONE | 88f3d4a |
+| FENN-01 | DONE in a1 (965071b); not redone | |
+| FENN-02 | DONE in a3 (88f3d4a); not redone | |
+| FENN-03 | DONE | faed68f |
 
 ## Tests
-All in `apps/web/test/kit/`. `kit.ts` gains `loadReasonDialog` and `hasLoadReasonDialog` stand-ins.
-- UC-08 `decision-tag.test.tsx` "phone (D11): Reject then Approve in one av-dt-pair container, with no inline grid style": `AssertionError: expected false to be true` (no `av-dt-pair` class).
-- UC-08 "desk (D11): Approve then Reject in one av-dt-pair container, with no inline grid style": `AssertionError: expected false to be true`.
-- UC-08 "(D11) kit.css draws .av-dt-pair as the grid for the phone layout, outside any media block": `AssertionError: expected a phone ".av-dt-pair" rule outside the media block to be drawn: expected null not to be null`.
-- UC-08 "(D11) kit.css draws the desk layout's .av-dt-pair as the grid only inside @media (max-width: 899px)": `AssertionError: expected a desk ".av-dt-pair" rule inside the (max-width: 899px) block to be drawn: expected null not to be null`. It also asserts no desk `.av-dt-pair` rule outside the block sets a grid.
-- UC-09 `reason-dialog.test.tsx` "(R7) loadReasonDialog resolves to a module whose ReasonDialog is the kit index's ReasonDialog": `AssertionError: the kit index exports loadReasonDialog: expected false to be true`.
-- The two old D11 tests (phone grid inline; desk not the grid) are replaced by the four D11 tests above. Every other test is unchanged and passes (pins existing behaviour).
+All in `apps/web/test/kit/decision-tag.test.tsx`.
+- UC-08 "(D15) neither evidence nor consequence: no .av-dt-facts element is drawn": `AssertionError: expected <dl class="av-dt-facts"></dl> to be null`.
+- UC-08 "(D15) evidence only, pins existing behaviour": passes. One `.av-dt-facts`, holding the evidence.
+- UC-08 "(D15) consequence only, pins existing behaviour": passes. One `.av-dt-facts`, holding the consequence.
 
-Three runs, identical each time: `Tests  5 failed | 66 passed (71)`.
+Three runs of `vitest run test/kit`, identical each time: `Tests  6 failed | 68 passed (74)`. The 6 failures are the D15 no-fact test, plus the 5 a3 tests (D11 x4, `loadReasonDialog`). Those 5 are locked at 88f3d4a and wait for Fantem's w0-kit a4, which isn't merged on this branch. Their failure lines are unchanged from the a3 report.
 
 ## Lock
-Committed with `AVEL_LOCK_OVERRIDE="w0-kit tests a2: D11 is a kit.css rule, and loadReasonDialog (INT, revision 10)"`; check_locks logged it as overridden.
-`- w0-kit · 88f3d4a · apps/web/test/kit/**`
+Committed with `AVEL_LOCK_OVERRIDE="w0-kit tests a4: D15, the facts list only with a fact (INT, revision 11)"`; check_locks logged: `locked tests changed, allowed by AVEL_LOCK_OVERRIDE`.
+`- w0-kit · faed68f · apps/web/test/kit/**`
 
 ## Contract to files
-- D11 (section 4, revision 10): `apps/web/test/kit/decision-tag.test.tsx`.
-- R7 (`loadReasonDialog`): `apps/web/test/kit/reason-dialog.test.tsx`, `apps/web/test/kit/kit.ts`.
+- D15 (section 4, revision 11) and UC-08's D15 clause: `apps/web/test/kit/decision-tag.test.tsx`.
 
 ## Deviations
-- The branch is a3 and the task doc's notes say a2. I followed the notes (second task only).
-- The CSS tests accept any selector that contains `.av-dt-pair` and `phone` (outside the media block) or `desk` (inside it). The contract doesn't fix the selector's shape.
-- `loadReasonDialog` resolving to a module that has `ReasonDialog` identical to the index's is checked by identity (`toBe`).
+- The task doc's Expected line says "a single assertion failure". On this branch the 5 a3 tests still fail, because their builder (Fantem's a4) isn't merged here. The D15 attempt added exactly one failure, and I changed no existing test.
 
 ## Limitations
-- jsdom applies no media queries, so the computed layout is UC-31's job (end to end).
-- Fantem's w0-kit a4 must make `kit.css` the only place D11's grid lives; the tests also require no inline `display`, `gridTemplateColumns` or `gap` on the pair.
+- The tests check the DOM for `.av-dt-facts`. They don't check the rule's look; the Factory PR card's rules are for review and the end-to-end pass.
 
 ## Parked chains
 none
@@ -51,20 +45,18 @@ none
 none
 
 ## Issues for other agents
-- Fantem (w0-kit a4): `src/kit/DecisionTag.tsx` still draws D11 inline, with no `av-dt-pair`. `index.ts` has no `loadReasonDialog`. Build to these tests.
-- INT: after the merge, move `locks.md`'s w0-kit line to 88f3d4a.
+- Fantem (w0-kit a4): `DecisionTag.tsx` lines 315-328 draw `<dl className="av-dt-facts">` always. Wrap it in `evidence || consequence`.
+- INT: after the merge, move `locks.md`'s w0-kit line to faed68f.
 
 ## Files changed
 ```
 apps/web/test/kit/decision-tag.test.tsx
-apps/web/test/kit/kit.ts
-apps/web/test/kit/reason-dialog.test.tsx
 docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md
 ```
 
 ## Verification
-- `pnpm --filter "@avel/web..." build`: built (`✓ built in 167ms`, Done).
-- `pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck`: contract, contract-mock and apps/web typecheck all Done.
-- `pnpm lint`: `Checked 205 files in 166ms. No fixes applied.`
-- `pnpm --filter @avel/web test`: `Test Files  2 failed | 12 passed (14)`, `Tests  5 failed | 188 passed (193)`; the 5 failures are the new tests above, expected until Fantem's a4.
-- `git diff --name-only main...HEAD` (before this report): the three `apps/web/test/kit` files, all in Part 5.
+- `pnpm --filter "@avel/web..." build`: `✓ built in 271ms`, Done.
+- `pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck`: contract, contract-mock and apps/web, all Done.
+- `pnpm lint`: `Checked 213 files in 286ms. No fixes applied.`
+- `pnpm --filter @avel/web test`: `Test Files  2 failed | 12 passed (14)`, `Tests  6 failed | 190 passed (196)`; the 6 failures are listed under Tests, expected until Fantem's a4.
+- `git diff --name-only main...HEAD` (before this report): `apps/web/test/kit/decision-tag.test.tsx`, in Part 5.
