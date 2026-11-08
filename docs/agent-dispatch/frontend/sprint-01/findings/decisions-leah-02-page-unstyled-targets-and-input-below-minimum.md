@@ -1,4 +1,4 @@
-status: open
+status: closed (a2)
 severity: P1
 owner: Leon a2 (known work: decisions.css and linking kit.css)
 
@@ -18,3 +18,6 @@ Measured with Playwright (Chromium) on the dev server (`AVEL_API=mock`) at 390x8
 **Passing:** dialog has `role=dialog`, `aria-modal=true`, `aria-labelledby`; focus moves into the textarea on open; Escape closes it and focus returns to the Approve button; textarea is labelled "Why?"; every button/link has an accessible name; one h1, h2, h3 per row; `lang=en`; viewport meta present; no horizontal overflow at 390 or 1280. The dialog has no `aria-describedby` (the description isn't tied to it): P3, check after a2.
 
 **Fix means:** link both sheets from `/`'s `head`, then re-measure: buttons at least 44px tall in the D11 grid, reason input 16px, the copy buttons and "Open on GitHub" at 44px (DL v1.8 touch rule), `aria-describedby` on the dialog.
+
+## a2 re-check: closed, except UC-31's grid (finding 05)
+Both sheets are linked from `/`'s head (`routes/index.tsx:15-17`, `screens.ts:16-19`). Measured at 390x844 after hydration (dev server, mock): "Open on GitHub" 322x44; reason textarea `font-size` 16px; dialog `aria-describedby` set (`_r_7_`); focus lands in the textarea. The copy buttons' 44px hit area is the `::after` rule at `kit.css:951-963`. The D11 grid is what still fails: finding 05.

@@ -1,4 +1,4 @@
-status: open
+status: closed (a2)
 severity: P2
 owner: INT to route (Leon / Fenn)
 
@@ -16,3 +16,6 @@ Done by hand, the flow works: in a probe of the same dev server, the SSR rows ar
 This is a real performance point too: on a phone, the page is visible and not interactive for the hydration time of a 552 kB single chunk (finding 01); a lost first tap is what a user sees.
 
 **Fix means:** INT/Fenn decide whether the locked specs wait for hydration; smaller JS (finding 01) shortens the window. Re-run after Leon a2.
+
+## a2 re-check: closed
+`data-hydrated` marker in place; `playwright test`: UC-29, UC-30 pass on phone and desk, UC-31 fails only at its grid assertion (finding 05), not a lost click.

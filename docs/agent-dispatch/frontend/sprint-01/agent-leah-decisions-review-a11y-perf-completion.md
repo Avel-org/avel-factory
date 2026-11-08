@@ -1,71 +1,39 @@
-# LEAH: decisions review-a11y-perf, completion report
+# LEAH: decisions review-a11y-perf, completion report (a2)
 
 verdict: FAIL
 
 ## Summary
-Both tasks are done and report findings. `/` first-load JS is 173.5 kB gzip, 13.5 kB over the 160 kB budget (one 552 kB chunk; zod/mini alone should clear it). The page's stylesheets aren't linked on this base (Leon a2), so phone tap targets (20px) and the reason input (14px) fail UC-31 and Mono 500 goes unused. CLS on `/` at 390x844 with late fonts is 0.0017, well under 0.02. 5 of 6 e2e tests fail on the review base; one cause I inferred but didn't prove.
+Reviewed Leon's decisions a2 (d480f0e, on b97076e, which already has Fantem's w0-kit a3 and Nemi's w0-split). Findings 02 and 03 are closed; 01 (first load) and 04 (Mono 500) are still open; three new ones: UC-31's grid (05), the empty rule on the Factory PR card (06), CLS 0.13 from the font swap (07). The budget that held at my start commit is **160 kB** (Ghost's w0-data a2 and Axis's S1-6 not merged); the first load is 171.7 kB (`gzip -9`) / 173.94 kB (Vite's figures), over it.
 
 ## Pre-flight
-- Part 2: all read (leah.md, codebase-analysis.md not re-read in full, the UI contract in full, CR-W2/Frontend Map/design library/plan read for the sections named; decisions.md read for the budget and Fonts entries). Nothing missing. `DATABASE.md` and `API and data reference.md` are not relevant to this review and were not opened.
-- Branch `frontend/sprint-01/agent-leah-decisions-review-a11y-perf-a1`, start commit 080ca45 (main ceb6d47 + Leon a1 c3effb3). `AVEL_BASE` unset; I diffed against ceb6d47.
-- Part 7 commands: all available. I ran `pnpm install --frozen-lockfile --prefer-offline` first (no tracked change).
+All Part 2 files read (the UI contract's sections 4, 5, 8 and UC-31, decisions.md "Revision 9" included). Branch `frontend/sprint-01/agent-leah-decisions-review-a11y-perf-a2`, start commit d480f0e. All five Part 7 commands available.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| LEAH-01 | DONE (findings 01, 02, 03) | this report's commit |
-| LEAH-02 | DONE (finding 04; CLS in budget) | this report's commit |
+| LEAH-01 | DONE (over budget; findings 01, 05) | this report's commit |
+| LEAH-02 | DONE (findings 04, 07) | this report's commit |
 
 ## Findings
-- `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-01-first-load-over-budget.md`: P1, first load 173.5 kB gzip > 160 kB
-- `.../decisions-leah-02-page-unstyled-targets-and-input-below-minimum.md`: P1, 20px buttons, 14px input, stylesheets not linked
-- `.../decisions-leah-03-e2e-click-before-hydration.md`: P2, 5 of 6 e2e fail
-- `.../decisions-leah-04-mono-500-preload-unused-on-first-paint.md`: P2, Mono 500 preloaded but unused
-
-## LEAH-01 result: bundle
-`index-CzkiNsNe.js` 552.30 kB raw, **173.53 kB gzip** (the only initial JS besides a 0.07 kB `routes` chunk). Breakdown (sourcemap, my measurement; groups gzipped separately so they sum above the total):
-
-| Group | raw kB | gzip kB |
-| --- | --- | --- |
-| React (dom, react, scheduler) | 274 | 74 |
-| TanStack router/query/start/history/store | 159 | 47 |
-| seroval | 33 | 9 |
-| zod classic | 119 | 28 |
-| oRPC | 37 | 12.5 |
-| kit | about 21 | about 8 |
-| decisions module | about 15 | about 5 |
-| lucide-react | 9 | 3.4 |
-| `@avel/contract` dist | 4.5 | 1.9 |
-| data/lib/routes | about 6 | about 2.6 |
-
-INT's by-package figures (React 66, TanStack 50, zod 26, oRPC 10, kit 6, decisions 5, lucide 3, data 3) are the same shape; mine are slightly higher because each group is gzipped alone. Reductions, each with estimated saving and owner (estimates, none built):
-- zod/mini (S1-6): 15 to 20 kB. Axis for `@avel/contract`, Ghost for the web's two schemas. Alone it clears 160.
-- oRPC `minifyContractRouter` (client ships no schemas): about 2 kB alone, up to about 28 kB if the web's own two zod schemas also leave zod. Axis / Ghost.
-- Lazy `ReasonDialog` (Leon a2): about 1.7 kB. Leon.
-- Route splitting: nothing to gain in sprint-01 (one route). Revisit at W2.
-- React, TanStack, seroval: fixed.
-No reduction I can measure from the lazy dialog or the CSS move changes the verdict by itself; zod is the one that does.
-
-## LEAH-02 result: fonts
-- Preloads: two, Inter Variable and IBM Plex Mono 500 (`__root.tsx:45-56`).
-- Used at first paint: Inter yes. Mono 500 no, on this base (finding 04).
-- **CLS on `/` at 390x844: 0.0017** (one shift, at 1533 ms, when the delayed fonts landed). Method: Playwright Chromium on the dev server (`AVEL_API=mock`), a `PerformanceObserver` for `layout-shift` entries without recent input, every `.woff2` held back 1.5 s so the fonts arrive after first paint, 3.5 s observed. No delay: CLS 0. At 1280x800 with the delay: 0.0012. Under 0.02, so no finding for the font swap.
-- Caveats: dev server, not a production serve (sprint-01 has no API server to serve one against); kit.css not linked and Mono not used yet, so **re-measure after Leon a2**.
-
-## Accessibility summary (phone 390x844 and desk)
-Fails: finding 02. Passes: dialog role, `aria-modal`, `aria-labelledby`, focus into the textarea, Escape closes and returns focus, labelled input, named buttons, heading order h1/h2/h3, `lang`, viewport meta, no horizontal overflow. Not checked: colour contrast, screen reader output, the night theme, keyboard order beyond the dialog.
+- findings/decisions-leah-01-first-load-over-budget.md, P1, open: 171.7 to 173.9 kB against 160
+- findings/decisions-leah-02-page-unstyled-targets-and-input-below-minimum.md, P1, closed (a2)
+- findings/decisions-leah-03-e2e-click-before-hydration.md, P2, closed (a2)
+- findings/decisions-leah-04-mono-500-preload-unused-on-first-paint.md, P2, open: HashChip draws Mono 400, the preload is 500
+- findings/decisions-leah-05-uc31-grid-is-flex.md, P2, open (known)
+- findings/decisions-leah-06-factory-pr-card-empty-facts-rule.md, P3, open (Fantem)
+- findings/decisions-leah-07-cls-font-swap.md, P2, open: CLS 0.13, the font swap is the cause
 
 ## Contract to files
-- Section 8 Leah / budget: finding 01. UC-31: finding 02 and 03. Fonts (FM line 289, section 6): finding 04 and the CLS figure above.
-- Files read: `apps/web/src/modules/decisions/**`, `routes/index.tsx`, `routes/__root.tsx`, `kit/index.ts`, `data/client.ts`, `router.tsx`, `e2e/*`, `vite.config.ts`.
+- UC-31 / section 5 / K1 / R5: `routes/index.tsx:15-17`, `screens.ts:16-19`, `kit.css:943-970`; measured 44px link, 16px textarea, `aria-describedby`, focus into the textarea.
+- Section 8 budget: build output, finding 01.
+- Section 6 fonts, LEAH-02: `__root.tsx:45-56`; findings 04, 07.
 
 ## Deviations
-- I added no files outside Part 5. I built with `vite build --sourcemap` once to attribute bytes; output is git-ignored (`dist`).
-- The tasks' verify command `pnpm --filter @avel/web exec playwright test` fails (finding 03); I report it instead of changing tests.
-- A bad first probe of mine used port 4190, which the fetch spec blocks (undici "bad port"); that false failure is mine, not the app's, and I discarded it. A `curl` check I tried was denied, so I didn't check the SSR HTML by hand; the e2e spec's own SSR assertions got past it.
+- Measurements ran on the dev server (mock), not a production build; CLS especially (finding 07 says so). Probe scripts were temporary and deleted.
+- INT's two screenshot checks: (1) **Factory PR card's two rules**: reproduced; it is the kit's empty `<dl class="av-dt-facts">` (`DecisionTag.tsx:315`), finding 06, Fantem's, not Leon's. (2) **Phone dialog centred, a1 had a bottom sheet**: not a regression and not a defect. The dialog is 358x332 at y=256, from the kit's `.av-scrim` (`kit.css:12-24`, `align-items: center`, DL's Dialog; its Sheet rules are deliberately left out, `kit.css:10`). a1's "bottom sheet" was the unstyled dialog in document flow before the sheets were linked (a1 finding 02). The contract names no bottom sheet. If INT wants a sheet on phones it is a new kit change, not a fix.
 
 ## Limitations
-The e2e cause in finding 03 is inferred. Savings in finding 01 are estimates; my zod/mini micro-test used esbuild, not Rolldown. No production-serve measurement of CLS or time to interactive. Dev-mode "preloaded but not used" warning for Inter not checked in a production build.
+Hydration time on a real phone and brotli sizes not measured. Findings 05 and 06 concern kit CSS, outside my territory.
 
 ## Parked chains
 none
@@ -74,61 +42,27 @@ none
 none
 
 ## Issues for other agents
-- INT: accept or fix 173.5 kB (finding 01); route finding 03 (Fenn/Leon).
-- Leon (a2): link kit.css and decisions.css from `/`'s `head`, then fonts and 44px/16px re-measure (findings 02, 04).
-- Axis / Ghost: zod/mini, minified contract router (finding 01).
-- Fenn: whether the locked e2e should wait for hydration before the first click.
+- INT: S1-6 then Ghost's w0-data a2 (about 156.7 kB) clears 160, not 150. Finding 07 needs a decision (size-matched fallbacks) before the CLS budget can hold.
+- Fantem: findings 04, 05, 06 (all kit.css / DecisionTag / HashChip).
+- Leon: none open on his territory.
 
 ## Files changed
 ```
-apps/web/src/modules/decisions/api.ts
-apps/web/src/modules/decisions/decisions.ts
-apps/web/src/modules/decisions/index.ts
-apps/web/src/modules/decisions/screens.ts
-apps/web/src/modules/decisions/screens/DecisionsScreen.tsx
+$ git diff --name-only main...HEAD
+apps/web/src/modules/decisions/{api.ts,decisions.css,decisions.ts,index.ts,screens.ts,screens/DecisionsScreen.tsx}
 apps/web/src/routes/index.tsx
-docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md
+docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md   (Leon's, carried in)
 ```
+Mine, added by this commit: this report and findings/decisions-leah-01 to 07.
 
 ## Verification
 ```
-$ pnpm --filter "@avel/web..." build
-packages/contract build: Done
-apps/web build: dist/client/assets/index-CzkiNsNe.js                 552.30 kB │ gzip: 173.53 kB
-apps/web build: Done
-
-$ typecheck
-Scope: 3 of 6 workspace projects
-packages/contract typecheck$ tsc -p tsconfig.json --noEmit
-packages/contract typecheck: Done
-packages/contract-mock typecheck$ tsc -p tsconfig.json --noEmit
-packages/contract-mock typecheck: Done
-apps/web typecheck$ node -e "import('vite').then((vite) => vite.resolveConfig({}, 'build'))" && tsc -p tsconfig.json
-apps/web typecheck: Done
-
-$ pnpm lint
-
-> avel-factory@ lint /home/jt0629/projects/avel-wt/frontend-sprint-01-agent-leah-decisions-review-a11y-perf-a1
-> biome check .
-
-Checked 204 files in 136ms. No fixes applied.
-
-$ pnpm --filter @avel/web test
-> @avel/web@0.0.0 test /home/jt0629/projects/avel-wt/frontend-sprint-01-agent-leah-decisions-review-a11y-perf-a1/apps/web
-> vitest run
-
-
- RUN  v5.1.0 /home/jt0629/projects/avel-wt/frontend-sprint-01-agent-leah-decisions-review-a11y-perf-a1/apps/web
-
-
- Test Files  14 passed (14)
-      Tests  190 passed (190)
-   Start at  16:58:19
-   Duration  9.00s (tests 62%, environment 20%, import 9%, transform 5%, setup 4%)
-
-    Isolate  14 workers spawned · ~435ms startup each (spawn + environment, per file)
-             at least ~1.59s faster with isolate: false — reuses workers across files instead of one per file
-
+$ pnpm --filter "@avel/web..." build            # exit 0
+index-DimhTn_r.js 154.68 kB gzip, jsx-runtime 3.39, routes 15.87, ReasonDialog 1.52 (lazy)
+$ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck   # Done
+$ pnpm lint                                     # Checked 205 files, no fixes
+$ pnpm --filter @avel/web test                  # 14 files, 190 tests passed
 $ pnpm --filter @avel/web exec playwright test
-5 failed, 1 skipped (UC-29/30/31 phone, UC-29/30 desk); see finding 03
+  1 failed ([phone] UC-31: Expected "grid", Received "flex", decisions.spec.ts:125), 1 skipped, 4 passed
+$ grep -n -A4 'rel: "preload"' apps/web/src/routes/__root.tsx   # two blocks: lines 45 (Inter) and 52 (Plex Mono 500)
 ```

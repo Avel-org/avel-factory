@@ -1,4 +1,4 @@
-status: open
+status: open (a2: re-checked, still open)
 severity: P1
 owner: INT to sequence; reductions below
 
@@ -40,3 +40,12 @@ The page's own code (kit + module + data) is about 8% of the bytes. The budget i
 | React, TanStack Router/Query/Start, seroval | none available | fixed cost |
 
 **Fix means:** ship zod/mini (or minified contract router with the web's two schemas off zod), rebuild, report the new gzip size. Until then INT decides whether to accept 173.5 kB for sprint-01.
+
+## a2 re-check (d480f0e on b97076e)
+**Still open, smaller.** The hold at my start commit is **160 kB** (Ghost's w0-data a2 and Axis's S1-6 are not merged: `data/pending-decisions.ts` is still on classic zod).
+```
+$ pnpm --filter "@avel/web..." build
+index-DimhTn_r.js 493.83 kB │ gzip: 154.68 kB    jsx-runtime-Wy9s6hX0.js 3.39 kB    routes-Cosr3y1m.js 15.87 kB
+$ gzip -9c <each> | wc -c   -> 152569 + 3425 + 15671 = 171665 B (171.7 kB)
+```
+The first load per section 8 is the entry, `jsx-runtime` and the route chunk (the three the start manifest preloads for `/`): 173.94 kB by Vite's figure, 171.7 kB by `gzip -9`. Over 160 by 11.7 to 13.9 kB. The split worked as designed (entry 173.5 to 154.7) but `/`'s chunk loads on `/`, so the first load only fell 0.4 kB; the dialog is out (`ReasonDialog-*.js` 1.52 kB, lazy: `DecisionsScreen.tsx:120`). Fix is unchanged: S1-6 (about 17 kB) then Ghost's w0-data a2 gives about 156.7 kB, which clears 160 and still misses 150.
