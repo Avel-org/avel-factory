@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "sideEffects": ["./dist/index.js"],
+  "sideEffects": [
+    "./dist/index.js"
+  ],
   "description": "AVEL's API contract: value lists, DTOs and inputs, oRPC route definitions, the error map, the event-owner map and the completion report schema.",
   "exports": {
     ".": {
