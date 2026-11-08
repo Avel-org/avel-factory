@@ -1,4 +1,4 @@
-status: open
+status: fixed (1ed1a93)
 severity: P2
 title: R7's split condition can't hold while `kit/index.ts` keeps the static `ReasonDialog` export: with the page on `loadReasonDialog`, the dialog moves into `/`'s first load
 reviewer: Zero (review-frontend), agent-zero-w0-kit-review-frontend (a4)
@@ -33,3 +33,6 @@ INT picks one, and Zero writes it into section 4 R7 and section 5:
 - (c) the static `ReasonDialog` export leaves `kit/index.ts`, which means Fenn changes the locked UC-09 (R7) identity check under an override.
 
 Until then, Leon shouldn't switch `DecisionsScreen.tsx` to `loadReasonDialog`.
+
+## Closed (a6)
+Fantem's w0-kit a5 (50728f8) drops the static `ReasonDialog` value export. `apps/web/src/kit/index.ts:19` is now `export type { ReasonDialogProps } from "./ReasonDialog";`. I built a scratch copy of 1ed1a93 with the page on `loadReasonDialog`. `ReasonDialog-*.js` holds the whole dialog (5491 B raw, 2573 B gzip -9, the same as main's except for chunk hashes), `/`'s route chunk has no `av-dialog` code, and the start manifest preloads only `routes-*.js` for `/`. The route chunk's 16 B raw / 8 B gzip growth is the subject of w0-kit-zero-05.
