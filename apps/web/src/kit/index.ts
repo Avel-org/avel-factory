@@ -22,12 +22,11 @@ export type { ReasonDialogProps } from "./ReasonDialog";
  * R7: the reason dialog loaded lazily through the kit's index, never by a deep import. It's the
  * index's only way to the dialog (revision 13): the index exports no ReasonDialog value, only its
  * props type, so ReasonDialog and Dialog build into a chunk of their own, outside `/`'s first load.
+ * It's R7's `() => import("./ReasonDialog")` as written: the arrow minifies smaller than a function.
  */
-export function loadReasonDialog(): Promise<{
+export const loadReasonDialog = (): Promise<{
   ReasonDialog: typeof import("./ReasonDialog").ReasonDialog;
-}> {
-  return import("./ReasonDialog");
-}
+}> => import("./ReasonDialog");
 export { type GlyphStatus, StatusGlyph, type StatusGlyphProps } from "./StatusGlyph";
 export { Tag, type TagProps, type TagToneName } from "./Tag";
 export { WidgetState, type WidgetStateProps } from "./WidgetState";
