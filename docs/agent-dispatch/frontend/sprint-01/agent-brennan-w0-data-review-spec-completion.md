@@ -3,160 +3,68 @@
 verdict: PASS
 
 ## Summary
-I reviewed Ghost's w0-data work at 3183bc1, after the fast-forward INT asked for. That covers the contract mock (`packages/contract-mock`) and the data core (`apps/web/src/data`, `apps/web/src/lib`, `apps/web/src/router.tsx`). I checked it against CR-W2 and UI contract sections 1 to 3, and nothing drifts in behaviour:
-- **Route 52:** the mock's rows are CR-W2's, field for field.
-- **Route 54:** its checks run in CR-W2's order, with m1's error data.
-- **The interim schema:** `PendingDecisionRow` matches CR-W2 sections 2.1 to 2.3.
+This is attempt a2. I reviewed Ghost's w0-data a2 (feafd95, PARTIAL) on INT's review base `review-base/w0-data-a2` (41af1d8 = main a00fa14 + feafd95). It has two tasks:
+- **GHOST-04 (1f6c6a8):** `getRouter()` forwards the incoming `X-Request-Id` only when it matches `^[A-Za-z0-9-]{1,64}$`.
+- **GHOST-05 (f245139):** `UiError.stale.message` is the `ErrorBody`'s message, or `""`.
 
-There's one P3 finding, and it's about the docs. Narrowing the client to `{ decisions }` (D58) isn't recorded in the UI contract or the frontend `decisions.md` yet, and neither is the 160 kB budget.
+Both meet UI contract section 3 (revision 9) and INT's 2026-11-07 entry, "INT's answers on revision 9, and Ghost's w0-data a2 scope", word for word. GHOST-03 (`zod/mini`) is blocked on S1-6 and isn't in this attempt. One P3 is about the contract's wording, not the build: section 3's `ApiError.message = body.message` doesn't hold for an empty message, which is why Ghost added `bodyMessage`.
 
 ## Pre-flight
-- **Part 2 files:** each was read.
+- **Part 2 files:** all read, none missing.
   - `.claude/agents/brennan.md`
   - `codebase-analysis.md`
-  - `docs/ui-contracts/decisions-approval-page.md`: sections 0 to 3 in full, the rest skimmed
+  - `docs/ui-contracts/decisions-approval-page.md`: sections 0 to 3 in full (revision 10), and the 5.3 rows that read `stale`
   - `CR-W2 Pending decisions.md`: in full
-  - `decisions.md` (frontend sprint-01)
-  - the Frontend Map v0.6: skimmed for the Data layer
-  - the design library: read for `avAgo` (`jr`)
-  - `Step 0 and Step 1 plan.md`: skimmed
+  - frontend `decisions.md`: from "w0-data merged" to the end in full, with the earlier entries skimmed
+  - the Frontend Map v0.6, the design library v1.1 and the Step 0 and Step 1 plan: present, and skimmed for what touches the data core (nothing in this diff touches the library)
   - this task doc
-
-  None is missing.
-- **brennan.md's Read first list:** these weren't read in full. I skimmed them only where this review touches them, and the task doc's Part 2 list governs.
-  - `Backend modules and build plan.md`
-  - `Roster setup and sessions.md`
-  - `API and data reference.md`
-  - `DATABASE.md`
-- **Also read:** m1's contract at this commit:
-  - `packages/contract/src/routes/decisions.ts`
-  - `routes/route.ts`
-  - `errors.ts`
-  - `dto/decisions.ts`
-  - `dto/common.ts`
-  - `package.json`
-
-  I also read backend D58.
-- **Branch:** `frontend/sprint-01/agent-brennan-w0-data-review-spec-a1`.
-  - It started at 71e0c61, Ghost's first report.
-  - INT held the review, then told me to fast-forward to 3183bc1 (Ghost's head, on merge 087c9ca). `git merge --ff-only 3183bc1` succeeded.
-  - The review is of `main...3183bc1`.
-- **Part 7 commands:** all are available once `node_modules` is installed (Deviations).
+- **The role's Read first files:** present (`Backend modules and build plan.md`, `Roster setup and sessions.md`, `API and data reference.md`, `DATABASE.md`). This diff adds no route, DTO or column, so I only checked that they exist.
+- **Branch:** `frontend/sprint-01/agent-brennan-w0-data-review-spec-a2`, starting at 41af1d8. `AVEL_BASE` is a00fa14.
+- **Part 7 commands:** all available once `pnpm install --frozen-lockfile` had run. The worktree had no `node_modules`.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| BRENNAN-01 | DONE | c259abc (finding 01); this report |
+| BRENNAN-01 | DONE | this report's commit (finding 02 is in the same commit) |
+
+**The diff** (`git diff main...feafd95`): `apps/web/src/data/errors.ts`, `apps/web/src/router.tsx` and Ghost's report. Nothing else moved.
+
+**GHOST-04, `router.tsx:17, 33`.** The contract (section 3, "On the server") says: forward the ID "only if it's a UUID or matches `^[A-Za-z0-9-]{1,64}$`. Otherwise it passes no `requestId`, and the wrapper makes a new one."
+- The regex is the contract's, character for character. A UUID (36 hex digits and hyphens, in either case) always matches, so one test covers both arms.
+- `null`, `""`, more than 64 characters, and a comma-joined multi-value header all fail it, and then no `requestId` key is set. The wrapper then makes a new ID, as `client.ts` does unchanged.
+- The check sits where the header is read, inside `.server(…)`, as INT's entry asks. So the locked UC-05 tests, which pass `requestId` to `createApiClient` directly, are untouched.
+- The browser path (`.client`) is unchanged.
+
+**GHOST-05, `errors.ts:15-19, 28, 57-63, 88-110, 152, 157`.** The contract (section 3, `UiError` table) gives `stale` this field: "`message: string` (the `ErrorBody`'s `message`, or `""` when the body isn't an `ErrorBody`)".
+- **`ApiError` path:** `message` is `e.bodyMessage`, the body's message as sent.
+- **Plain `ORPCError` path:** `message` is `""`. There, 409 maps to `conflict`, never `stale`, as before. So `""` on that path is defensive and can't be reached through `byStatus`'s `STALE_VERSION` check, because `code` is null.
+- The field is required and typed `string`, so it's never undefined. That's INT's "the field is always a string".
+- **Why `bodyMessage` and not `e.message`:** oRPC's constructor turns an empty message into a fallback (finding 02 has the evidence). Reading `e.message` would put `"STALE_VERSION"` where the contract wants `""`.
+- `stale` is still keyed on `STALE_VERSION` alone. No other kind changed.
+
+**The rest of BRENNAN-01's title** (route 52's rows, route 54's check order, the interim schema). My a1 review passed these at 3183bc1. None of their files has changed since: `git diff --stat 3183bc1 HEAD -- packages/contract-mock apps/web/src/data/pending-decisions.ts apps/web/src/data/client.ts packages/contract` prints nothing. So a1's result stands. `pending-decisions.ts:5` and `client.ts:11` still import classic `zod`. Section 3 allows that "until then" (S1-6), and GHOST-03 is blocked on it.
+
+**Not Ghost's:** the decisions module doesn't read `UiError.stale.message` yet (`grep` finds no `message` read on `stale` in `modules/decisions`). Per Decisions, Revision 10, that switch is Leon's a3.
 
 ## Findings
-- `docs/agent-dispatch/frontend/sprint-01/findings/w0-data-brennan-01-client-over-decisions-group.md`: P3. The client is built over `{ decisions }`, and no doc says so yet.
+- `docs/agent-dispatch/frontend/sprint-01/findings/w0-data-brennan-02-apierror-message-fallback.md`: **P3** (Zero, contract wording). Section 3 says `ApiError.message` = `body.message`, but oRPC swaps an empty message for a fallback. The contract doesn't record `ApiError.bodyMessage`. It also doesn't say whether `forbidden`, `conflict` and `unprocessable` should carry the body's message as sent or oRPC's fallback.
 
 ## Contract to files
-Each check below has its evidence: a line in the diff, and my probe's output where there is one. The probe was a scratch script against `createMock` and `PendingDecisionRow`, and isn't committed. Its output is in Verification.
-
-**1. The route 52 row against CR-W2 2.1 to 2.3** (`packages/contract-mock/src/rows.ts:137-168`, `apps/web/src/data/pending-decisions.ts`)
-- **Both members (2.1):** `kind`, `ref`, `title`, `createdAt`, `missionId` and `clientName`.
-  - `missionId` is a `Uuid` on a proposal and `z.null()` on a factory PR.
-  - `clientName` is nullable on a proposal and `z.null()` on a factory PR.
-- **`proposal` (2.2):**
-
-  | Field | Schema |
-  | --- | --- |
-  | `proposalId` | `Uuid` |
-  | `proposalKind` | `z.enum(ProposalKind)` |
-  | `subjectKey` | string |
-  | `moduleRunId` | `Uuid.nullable()` |
-  | `version` | `int().min(1)` |
-  | `evidence` | string |
-  | `approve`, `reject` | optional `DecisionChoice {choice,label,consequence}` |
-  | `expiresAt` | `IsoTime` |
-  | `costImpact` | optional `{ micros: int, estimated: boolean }` |
-
-- **`factory_change` (2.3):**
-
-  | Field | Schema |
-  | --- | --- |
-  | `changeId` | `/^[1-9][0-9]*$/` |
-  | `prNumber` | int |
-  | `headSha` | 40 hex |
-  | `url` | URL |
-
-- **`ref`:** `proposal:<id>` and `factory_change:<digits>` (CR-W2 section 1).
-- **The rows the mock sends** carry exactly these keys. They never carry `costImpact`, `options`, `dispatchId`, `rowVersion` or the resolution columns. Probe:
-  ```
-  52 keys proposal: kind,ref,title,createdAt,missionId,clientName,proposalId,proposalKind,subjectKey,moduleRunId,version,evidence,approve,reject,expiresAt
-  52 keys factory: kind,ref,title,createdAt,missionId,clientName,changeId,prNumber,headSha,url
-  ```
-- **`ProposalOptions` (CR-W2 3.2):** `rows.ts:80-93`. That's at least 2 choices, each `choice` unique, and exactly one `approve` and one `reject`. A row whose options don't parse is listed with `approve` and `reject` absent (INT 8.3): see `proposal:…003 -choices` in the probe.
-
-**2. Route 52's listing** (`mock.ts` `listPending`)
-- **What it lists:** open proposals with `expiresAt > now`, plus every factory PR.
-- **Order:** oldest first, by `createdAt` and then `ref` (CR-W2 6.7).
-- **Paging:**
-  - `limit` must be 1 to 100, and the mock never clamps: `limit=0` gives 400.
-  - The cursor is opaque.
-  - `fixtures.many` pages as 100, then 50, then `nextCursor` null, in order.
-- **After a decision and an expiry,** both proposals leave the list.
-
-**3. The fixtures** (`fixtures.ts`)
-- `step1` matches section 2:
-  - two decidable proposals, with different `clientName`s, one of them `budget_increase`;
-  - one proposal whose options don't parse;
-  - one factory PR.
-- `many` has 150 decidable proposals.
-- Every row parses with `PendingDecisionRow`: the probe printed `[true, true, true, true]`.
-
-**4. Route 54's order** (`mock.ts:182-217` and `decide`, lines 76-106)
-- **Before CR-W2's checks:**
-  - a pending `failNext` comes first;
-  - then a missing `Idempotency-Key`, which gives `BAD_REQUEST`, `{field:"Idempotency-Key", issues:[…"required"]}` (S1-1, S1-3);
-  - then the idempotency replay, or `IDEMPOTENCY_KEY_REUSED`.
-- **Then checks 1 to 5:**
-  1. The schema, through the OpenAPI handler: `{field, issues}`.
-  2. `NOT_FOUND`.
-  3. `INVALID_TRANSITION` with `{allowed: []}`, through m1's schema and with no `state` (the UI contract allows this).
-  4. `STALE_VERSION` with `{field:"version", currentVersion}`, which is m1's `StaleVersionDetails`.
-  5. `BAD_REQUEST` with `{field:"choice"}`.
-- **On success:** 201 with `ProposalDto`, from m1's `route()` `successStatus` 201.
-- **The probe sets up each pair of checks that could both fire,** and the earlier check wins every time: 1 over 2, 2 over 4, 3 over 4, and 4 over 5.
-- **On success the row resolves** as CR-W2 section 5 writes it: `state`, `choice`, `choiceReason`, `resolvedBy = MOCK_OPERATOR_ID`, `resolvedAt` and `rowVersion + 1`.
-
-**5. The error body:** every error is m1's `ErrorBody`.
-- `toErrorBody` writes the validator's issues: `field` is the path joined with `.`, and the message is the first issue's.
-- Unmatched `/api/*` paths answer `NOT_FOUND`.
-- Every response carries `X-Request-Id` and `X-Contract-Version`.
-
-**6. The data core against section 3:**
-- **`client.ts`:**
-  - the fetch wrapper sets `X-Request-Id` on every request, and `Idempotency-Key` on a write from the call's context;
-  - a rejected fetch becomes `NetworkError(requestId)`;
-  - a response without an ID gets the ID it sent;
-  - the version check runs in the browser only;
-  - `bindApi`, `apiFor` and `useApi` keep each `Api` in a `WeakMap`.
-- **`errors.ts`:**
-  - `decodeErrorBody` does `ErrorBody.safeParse`, then `ApiError`;
-  - `toUiError` follows section 3's order;
-  - `stale` is keyed on `STALE_VERSION` alone.
-- **`query.ts`:** `staleTime` is 30s, queries refetch on focus and on reconnect, they retry fewer than 3 times and only on `network` or `server`, and mutations never retry.
-- **`pending-decisions.ts`:** `parsePendingPage` and `selectPendingPages` work as section 3 describes.
-- **`lib/time.ts`:** `formatAgo` is the design library's `jr` word for word, and `formatClock` gives `HH:MM`.
-- **`router.tsx`:** `getRouter` uses `createIsomorphicFn().server(getRequest)`, takes the origin and `X-Request-Id`, and forwards no cookie.
-- **Ghost's deviations 1 to 12** are in places where section 3 is silent. None of them changes a name, a check order, an error code or a field from CR-W2 or the UI contract.
-
-**7. The new commit, 3183bc1:**
-- Nothing under `apps/web/src` imports the root `@avel/contract` (`grep` exits 1).
-- The link is built over `{ decisions }`. This is finding 01, about the docs only.
+- Section 3, `getRouter()` "On the server", the forwarded-ID check (revision 9; Zane's w0-data 03): `apps/web/src/router.tsx:10-17, 27-36`
+- Section 3, `UiError.stale.message` (revision 9): `apps/web/src/data/errors.ts:15-19, 28, 57-63, 88-110, 149-157`
+- Section 3, the `ApiError` line: `errors.ts:11-30` (see finding 02)
+- Sections 1 and 2, and BRENNAN-01's route 52, route 54 and schema checks: unchanged since a1 (3183bc1), at `packages/contract-mock/**` and `apps/web/src/data/pending-decisions.ts`
+- UC-04 and UC-05 (locked): pass inside `test/data`, 85 of 85
 
 ## Deviations
-- **I installed `node_modules`.** The fresh worktree had none, and `pnpm install --frozen-lockfile` fails with `ERR_PNPM_OUTDATED_LOCKFILE` on contract-mock's new dependencies (escalation 01: INT regenerates the lockfile at merge). I ran `pnpm install --no-frozen-lockfile`, then `git checkout -- pnpm-lock.yaml`, so this branch doesn't change the lockfile.
-- **I ran BRENNAN-01's Verify as `pnpm --filter @avel/web exec vitest run test/data`.**
-  - The task doc's form, `pnpm --filter @avel/web test -- test/data`, passes `--` through to Vitest. Vitest then drops the filter and runs all 13 files: 105 failed and 85 passed.
-  - The direct form runs only the 7 data files: 85 of 85 pass.
-- **I cleared Vitest's cache once** (`vitest --clearCache`) before the tests, as Ghost's report advises.
+- **Scope:** I reviewed GHOST-04 and GHOST-05 only, the diff `main...feafd95`, as INT's message directed. GHOST-03 isn't in this attempt.
+- **Base:** my start commit, 41af1d8, already contains Ghost's commits. So `git diff --name-only main...HEAD` lists Ghost's three files as well as mine. Part 7's "only paths from Part 5" holds for my own commit, which adds only the report and finding 02.
+- **Finding number:** finding 02 continues a1's numbering (01 is a1's).
+- **This report:** it replaces a1's report at the same path, which is this dispatch's only report path.
 
 ## Limitations
-- **The SSR forwarding of `X-Request-Id` isn't observed end to end.** No loader exists until Leon's route lands, so I judged it from the code at `router.tsx` against section 3. It's Zane's and UC-29's to see run.
-- **The bundle budget isn't judged here.** That's Leah's. Vite reports `index-BDSlPvoT.js` at 155.40 kB gzip, and Ghost measured 153,654 bytes. Either way it's under the 160 kB INT gave.
+- **One unexplained test failure.** The first `pnpm --filter @avel/web exec vitest run test/data` in this session exited 1. I'd kept only the tail of its output, which shows `ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL` and no failing test name. Four reruns in a row passed 85 of 85, and the full `@avel/web` suite passed 190 of 190.
+- **Likely cause, unconfirmed:** a cold first run right after `pnpm install`. I have no evidence, so this isn't a finding. If Fenn or INT see it again, keep the full output.
 
 ## Parked chains
 none
@@ -165,96 +73,50 @@ none
 none
 
 ## Issues for other agents
-- **Zero or INT:** finding 01 needs two entries in `decisions.md` and one change in the next UI contract revision:
-  - the `{ decisions }` client over D58's subpaths;
-  - the 160 kB sprint-01 budget, which isn't in `decisions.md` at this commit;
-  - section 3's line 196 wording.
-- **INT:** the task docs' Verify `pnpm --filter @avel/web test -- test/data` doesn't filter (Deviations). `pnpm --filter @avel/web exec vitest run test/data` does.
-- **Fenn and INT:** the locked `vitest.config.ts` aliases only the root `@avel/contract`. So the web's tests now need `packages/contract` built first, as Ghost reported. Extending the alias needs a lock exception.
+- **Zero:** finding 02, wording for section 3's `ApiError`, and the `message` source for `forbidden`, `conflict` and `unprocessable`. It's for the next revision and doesn't block this merge.
+- **Leon (a3):** `UiError.stale.message` is ready to use for 5.3's null-version row. On an empty server message it's `""`, not oRPC's fallback, so 5.3's `conflict` body would draw empty in that case. Zero's answer to finding 02 should settle it.
+- **INT:** a flaky first `test/data` run (see Limitations), for awareness only.
 
 ## Files changed
-`git diff --name-only main...HEAD` lists Ghost's reviewed work, which is on this branch because INT told me to fast-forward to it:
+`git diff --name-only main...HEAD`, after my commit:
 ```
-apps/web/src/data/client.ts
-apps/web/src/data/contract-version.ts
-apps/web/src/data/errors.ts
-apps/web/src/data/idempotency.ts
-apps/web/src/data/index.ts
-apps/web/src/data/pending-decisions.ts
-apps/web/src/data/query.ts
-apps/web/src/lib/time.ts
-apps/web/src/router.tsx
-docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md
-packages/contract-mock/package.json
-packages/contract-mock/src/fixtures.ts
-packages/contract-mock/src/index.ts
-packages/contract-mock/src/mock.ts
-packages/contract-mock/src/rows.ts
-packages/contract-mock/tsconfig.json
-```
-Mine, all Part 5 paths (`git diff --name-only 3183bc1..HEAD`):
-```
-docs/agent-dispatch/frontend/sprint-01/agent-brennan-w0-data-review-spec-completion.md
-docs/agent-dispatch/frontend/sprint-01/findings/w0-data-brennan-01-client-over-decisions-group.md
+apps/web/src/data/errors.ts                                                   (Ghost's, from the review base)
+apps/web/src/router.tsx                                                       (Ghost's, from the review base)
+docs/agent-dispatch/frontend/sprint-01/agent-ghost-w0-data-build-completion.md (Ghost's, from the review base)
+docs/agent-dispatch/frontend/sprint-01/agent-brennan-w0-data-review-spec-completion.md (mine)
+docs/agent-dispatch/frontend/sprint-01/findings/w0-data-brennan-02-apierror-message-fallback.md (mine)
 ```
 
 ## Verification
 ```
+$ pnpm --filter @avel/web exec vitest run test/data      # task verify; run 1 exited 1 (Limitations), runs 2 to 5:
+ Test Files  7 passed (7)
+      Tests  85 passed (85)
+
 $ pnpm --filter "@avel/web..." build
-packages/contract build: Done
-apps/web build: dist/client/assets/index-BDSlPvoT.js                 496.83 kB │ gzip: 155.40 kB
-apps/web build: ✓ built in 310ms
-apps/web build: dist/server/server.js                                      261.19 kB │ gzip: 63.18 kB
+apps/web build: dist/server/assets/router-BZYHJa7P.js                       34.52 kB │ gzip: 11.60 kB
+apps/web build: dist/server/assets/routes-C213wK2f.js                       48.57 kB │ gzip: 13.80 kB
+apps/web build: dist/server/server.js                                      261.21 kB │ gzip: 63.20 kB
+apps/web build: ✓ built in 259ms
 apps/web build: Done
-EXIT=0
 
 $ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
 packages/contract typecheck: Done
 packages/contract-mock typecheck: Done
 apps/web typecheck: Done
-EXIT=0
 
 $ pnpm lint
-Checked 183 files in 116ms. No fixes applied.
-EXIT=0
+> biome check .
+Checked 205 files in 184ms. No fixes applied.
 
 $ pnpm --filter @avel/web test
- Test Files  6 failed | 7 passed (13)
-      Tests  105 failed | 85 passed (190)
-EXIT=1
-# The failures by file. All of them are the locked kit and decisions tests, whose builds
-# haven't landed, as INT expects. None is in test/data.
-     29 test/kit/decision-tag.test.tsx
-     22 test/kit/error-panel.test.tsx
-     17 test/kit/reason-dialog.test.tsx
-      7 test/modules/decisions/deciding.test.tsx
-     16 test/modules/decisions/errors.test.tsx
-     14 test/modules/decisions/list.test.tsx
+ Test Files  14 passed (14)
+      Tests  190 passed (190)
 
-$ pnpm --filter @avel/web exec vitest run test/data      # BRENNAN-01's Verify
- Test Files  7 passed (7)
-      Tests  85 passed (85)
-EXIT=0
+$ git diff --name-only main...HEAD
+(see Files changed: Ghost's three from the review base, and my two)
 
-$ git diff --name-only main...HEAD   # see Files changed: Ghost's reviewed paths plus my two Part 5 paths
-
-$ grep -rn 'from "@avel/contract"' apps/web/src; echo $?
-1
-
-# Probe (scratch script against createMock and PendingDecisionRow, not committed)
-52 kinds/refs: proposal:…001 +choices, proposal:…002 +choices, proposal:…003 -choices, factory_change:142 -choices
-52 parse: [ true, true, true, true ] next null
-no key         400 BAD_REQUEST {"field":"Idempotency-Key","issues":[{"field":"Idempotency-Key","message":"required"}]}
-1 vs 2         400 BAD_REQUEST {"field":"version","issues":[{"field":"version","message":"Too small: expected number to be >=1"}]}
-2 vs 4         404 NOT_FOUND ""
-4 vs 5         409 STALE_VERSION {"field":"version","currentVersion":2}
-5              400 BAD_REQUEST {"field":"choice"}
-ok             201 ok state=resolved ""
-replay         201 ok state=resolved ""
-reused         409 IDEMPOTENCY_KEY_REUSED ""
-3 vs 4 (resolved, stale) 422 INVALID_TRANSITION {"allowed":[]}
-3 expired      422 INVALID_TRANSITION {"allowed":[]}
-52 after: proposal:…003, factory_change:142
-limit 0: 400
-many: 100 50 null ordered true
+$ cd apps/web && node --input-type=module -e '<new ORPCError(code,{message:""}).message>'   # finding 02
+"STALE_VERSION"
+"Conflict"
 ```
