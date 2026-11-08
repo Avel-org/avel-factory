@@ -32,9 +32,9 @@ Review Leon's shell route and system module against app-shell.md section 3.
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
+- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
+- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
 - `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
 - `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
 - `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).

@@ -34,9 +34,9 @@ The shell route and the system module: _shell, ShellLayout, the nav, the badge, 
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
+- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
+- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
 - `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
 - `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
 - `agent-ghost-decisions-build`: The approval page on the shell: revision 15 (layout=desk, no viewport read), loadReasonDialog instead of the deep import, ScreenHeader, and the page's padding and stylesheets (app-shell.md section 4).
@@ -57,7 +57,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### LEON-02: The stub routes from section 3's table and the focus-mode stub, each rendering PlannedScreen with its staticData, title and copy (P0)
 
-- **Required:** SH-11 passes; SH-20 to SH-24 pass end to end; each route file renders only its module screen
+- **Required:** SH-11 passes; SH-20 to SH-24 pass end to end; the route files are section 3's table, each rendering only its module screen
 - **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js'`
 - **Expected:** the unit tests pass; every end-to-end test passes on every project it runs on; the client chunks, and /'s first load, which you report
 
@@ -67,7 +67,7 @@ Do them in order. Finish each one, verified, before the next.
 - routes/index.tsx moves to routes/_shell/index.tsx, with its loader, ssr and head unchanged. Don't change __root.tsx (Nemi's). Don't touch apps/web/src/modules/decisions/**: Ghost's follow-up does, and it merges after yours.
 - The badge reads decisions's index.ts only (pendingDecisionsOptions, ensurePendingDecisions). _shell's loader swallows a failed load, as / does.
 - The AppShell element's data-hydrated (app-shell.md section 2) is the kit's. Check that the end-to-end tests can see it on a stub route.
-- Report /'s first load as section 8 of the approval page counts it, from your build. Over 150 kB isn't a reason to cut the shell's contract: report it, and Leah's measure decides (app-shell.md section 6).
+- Report /'s first load as section 8 of the approval page counts it, from your build (app-shell.md section 6's one rule). Over 150 kB isn't a reason to cut the shell's contract: report it, and Leah's measure on main reads the 150 kB target and 160 kB ceiling.
 
 ## 5. Territory
 

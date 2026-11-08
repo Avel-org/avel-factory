@@ -53,3 +53,37 @@ INT's brief: the shell with the sidebar, so every later module drops a screen in
 - **The budget stays 150 kB** for `/`'s first load. The thin oRPC link is built only if Leah's final measure fails (app-shell.md section 6, unchanged).
 - **Ghost builds the decisions follow-up** (app-shell.md section 4), beside Leon's shell, as planned.
 - Brennan's shell-uic review a1 is open at 04fac4b.
+
+## 2026-11-08: Revision 2 of the shell contract (Brennan's shell-uic a1, FAIL; INT's decisions on 01 and 04)
+
+Brennan's a1 (report fac0a54) failed revision 1 on one P1, five P2s and one P3. Revision 2 answers all seven (app-shell.md, Appendix A).
+
+- **01, the cascade (INT):** DL's final cascade is the value. That's the v1.6 layer, then Mobile chrome, then v1.7.1, then the v1.8 pass, and the last DL rule for the element wins. There's no S9 exception.
+  - **What changes:** `main`'s top padding is 24px (16px under 760px). `ScreenHeader` takes v1.7.1's values: the title `clamp(24px, 2.6vw, 28px)` (24px on a phone), the lead 16px/24px (15px/22px), row gap 4px, and the eyebrow at 12.5px on a phone.
+  - **Mobile chrome's** 44px icon buttons under 760px are DL's own, so S6 now covers only what DL leaves at desk size.
+  - **On `/`:** the header gets smaller than sprint-01's (28px from 32px, and 16px from 17px). That's accepted with the rule.
+- **04, the budget (INT):** 150 kB is the target, and 160 kB the hard ceiling, for `/`'s first load on Leah's final measure.
+  - **The rule:** over 150 kB is a P2 finding, and the sprint may close. Over 160 kB blocks the close.
+  - **The thin oRPC link** is the cut either way. It comes as a revision, with one dispatch per FM row: Ghost on `data/**`, the decisions builder on `modules/decisions/**`, Leon on `modules/system/**` only if the badge's call changes, and Fenn only if a locked test reads oRPC's keys. It departs from FM line 30 and line 192, which INT approves with the revision. The figure is −7.7 kB alone on the 174.35 kB baseline, and −8.6 kB on the stub, not measured on today's main.
+  - **One reporting rule:** every build whose diff changes JavaScript that `/` loads reports `/`'s first load from its own build. In sprint-02 that's Fantem, Leon and Ghost.
+- **02, as Brennan's report says:**
+  - S7 is reworded: DL's planned entries become real links with `circle`, as the contract's own choice.
+  - DL's `Phone`/`Preview` area is never drawn: it's the library viewer's.
+  - `.lib-route`'s enter animation waits for W2, on client navigations only.
+- **03, as Brennan's report says:**
+  - Section 3 names each route file (`missions/index.tsx`, so `/missions` isn't the parent of `/missions/new`; `library/$kind.tsx`; onboarding with no `$missionId` layout until W2).
+  - The stubs are recorded as a departure from FM's route ownership.
+  - The handover rule: the owning module's dispatch takes over its file in its wave and drops `PlannedScreen`.
+- **05, as Brennan's report says:** SH-25 tests D16, with a harness inside Fenn's end-to-end territory: `renderToStaticMarkup` of a desk and a phone tag from their source files. Fantem's scratch-page check is replaced by it, so Fantem now also waits for Fenn's end-to-end tests.
+- **06, as Brennan's report says:**
+  - SH-12 covers the page on the shell, SH-13 the fonts, and SH-14 the shell's marker.
+  - SH-01, SH-03, SH-04 and SH-06 are extended.
+  - The chrome reset's scope and section 6's numbers are named as review checks.
+- **07, as Brennan's report says:**
+  - `/`'s head gains `Decisions · AVEL`.
+  - Section 4 names Ghost.
+  - The onboarding stub draws `circle`.
+  - The 120px bottom padding applies only while the tab bar is drawn (`data-tabbar`, as DL keys it).
+  - SH-24 compares only drawn elements, listed per width.
+- **The plan:** Brennan's re-review is his shell-uic a2. Fenn's dispatches carry the new IDs, Fantem waits for both test dispatches, and Leah reads the 150/160 table. Nothing else in the order changes.
+- **INT stops here for now:** no dispatch until INT is back. Next is Brennan's re-review (shell-uic a2), then R1.

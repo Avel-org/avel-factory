@@ -32,6 +32,6 @@ A pnpm workspace in TypeScript (Biome, Vitest; tsconfig.base.json strict). apps/
 
 ## Notes
 
-- The contracts' scenario IDs (SH-01 to SH-24 here, UC-01 to UC-32 in the approval page contract) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.
+- The contracts' scenario IDs (SH-01 to SH-14 and SH-20 to SH-25 here, UC-01 to UC-32 in the approval page contract) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.
 - packages/contract is the backend's: an API change you need is an escalation in docs/agent-dispatch/frontend/sprint-02/escalations/, written by Zero, never an edit.
-- /'s first load is 149.30 kB gzip on main before the shell, against a 150 kB budget. Every build reports it from its own build, as app-shell.md section 6 asks.
+- /'s first load is 149.30 kB gzip on main before the shell: the target is 150 kB and the hard ceiling 160 kB (app-shell.md section 6). Every build whose diff changes JavaScript that / loads reports /'s first load from its own build, counted as the approval page contract's section 8 counts it.

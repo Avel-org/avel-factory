@@ -34,9 +34,9 @@ The shell and / on main once everything in sprint-02 is merged: the 150 kB budge
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
+- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
+- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
 - `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
 - `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
 - `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
@@ -51,7 +51,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### LEAH-01: Performance: /'s first load (section 8's count) and layout shift by section 6's cases (/ at 390; /missions at 390 and 1280), production build, three runs each, with each shift's sources, FCP and hydration time (P0)
 
-- **Required:** Under 150 kB and under 0.02 in every case, or a finding with the evidence
+- **Required:** At or under 150 kB, or a finding by section 6's table; under 0.02 in every case, or a finding with the evidence
 - **Verify:** `pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js'`
 - **Expected:** the client chunks, and the first-load and CLS tables, which you report
 
@@ -64,7 +64,7 @@ Do them in order. Finish each one, verified, before the next.
 **Notes:**
 
 - Start once Nemi's fonts, Fantem's kit, Leon's shell and Ghost's page follow-up are all merged.
-- If /'s first load is over 150 kB, that's a finding with the chunk breakdown, and INT then decides on the thin oRPC link (app-shell.md section 6). Don't build or prototype the cut.
+- Read /'s first load against app-shell.md section 6's table: over 150 kB is a P2 finding with the chunk breakdown; over 160 kB breaks the hard ceiling and blocks the sprint's close. Either way the thin oRPC link follows as a revision. Don't build or prototype the cut.
 - Measure main as it is, fonts included: the fallbacks now ship (app-shell.md section 5). Name the local() face each run drew before the swap.
 
 ## 5. Territory

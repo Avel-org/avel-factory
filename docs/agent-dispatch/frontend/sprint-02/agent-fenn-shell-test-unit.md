@@ -23,19 +23,19 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 5. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
-8. `docs/ui-contracts/app-shell.md`: sections 1 to 4 and 7 (SH-01 to SH-11)
+8. `docs/ui-contracts/app-shell.md`: sections 1 to 5 and 7 (SH-01 to SH-14)
 9. `docs/ui-contracts/decisions-approval-page.md`: section 4 (D16, R7), section 5 ('Phone', the marker, the count) and section 7, for the page's tests
 10. `docs/agent-dispatch/frontend/sprint-01/locks.md`: which test paths are locked, and so need the override
 11. `docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-test-unit.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11).
+The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
+- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
 - `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
 - `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
 - `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
@@ -49,7 +49,7 @@ The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLa
 
 Do them in order. Finish each one, verified, before the next.
 
-### FENN-01: SH-01 to SH-07: AppShell (brand, nav, current item, badge, sheet focus and inert, focus mode, skip link, tab bar) and ScreenHeader, and SH-06's kit.css rules read as text (P0)
+### FENN-01: SH-01 to SH-07 and SH-14: AppShell (brand, nav, crumb, current item, badge, sheet closed in the server's HTML, sheet focus and inert, focus mode and data-tabbar, skip link, tab bar, the shell's marker) and ScreenHeader, and SH-06's kit.css final values read as text (P0)
 
 - **Required:** Each test carries its SH ID, renders the kit component with plain props and a test renderLink, and fails first on an assertion or the missing export
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -15`
@@ -61,11 +61,11 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/modules/system 2>&1 | tail -15`
 - **Expected:** the SH-08 to SH-11 tests fail on a missing module or an assertion
 
-### FENN-03: The approval page's tests for app-shell.md section 4: the header is ScreenHeader (data-ui, eyebrow Home, h1 Decisions, the lead), and nothing else in the decisions tests changes (P1)
+### FENN-03: SH-12 (the approval page on the shell: no import past kit/index.ts, ScreenHeader, decisions.css and the stylesheet list) and SH-13 (font-fallbacks.css and app.css read as text); in the existing decisions tests, only what section 4 changes (P1)
 
-- **Required:** Only what section 4 changes; every other decisions assertion untouched; one commit, with the override
+- **Required:** SH-12 and SH-13 carry their IDs and fail first; in the existing decisions tests only what section 4 changes; every other decisions assertion untouched; the locked-path commits made with the override
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/modules/decisions 2>&1 | tail -8 && git diff "$(git merge-base main HEAD)"..HEAD --stat`
-- **Expected:** the header assertions fail; the rest pass; only apps/web/test changed
+- **Expected:** SH-12 and SH-13 and the header assertions fail; the rest pass; only apps/web/test changed
 
 **Notes:**
 
@@ -196,9 +196,9 @@ Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-tes
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: SH-01 to SH-07: AppShell (brand, nav, current item, badge, sheet focus and inert, focus mode, skip link, tab bar) and ScreenHeader, and SH-06's kit.css rules read as text
+- FENN-01: SH-01 to SH-07 and SH-14: AppShell (brand, nav, crumb, current item, badge, sheet closed in the server's HTML, sheet focus and inert, focus mode and data-tabbar, skip link, tab bar, the shell's marker) and ScreenHeader, and SH-06's kit.css final values read as text
 - FENN-02: SH-08 to SH-11: ShellLayout on the contract mock (section 3's table, tabs, badge rule with fixtures.step1, 50+ and failNext, current id, crumb and title by route) and PlannedScreen's copy
-- FENN-03: The approval page's tests for app-shell.md section 4: the header is ScreenHeader (data-ui, eyebrow Home, h1 Decisions, the lead), and nothing else in the decisions tests changes
+- FENN-03: SH-12 (the approval page on the shell: no import past kit/index.ts, ScreenHeader, decisions.css and the stylesheet list) and SH-13 (font-fallbacks.css and app.css read as text); in the existing decisions tests, only what section 4 changes
 
 You may change only: apps/web/test/**, docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

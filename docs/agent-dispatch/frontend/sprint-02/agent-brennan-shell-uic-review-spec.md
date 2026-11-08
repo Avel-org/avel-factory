@@ -33,12 +33,12 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 
 ## 3. Domain
 
-Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
+Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
 
 **The rest of this sprint:**
 
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
+- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
 - `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
 - `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
 - `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
@@ -62,16 +62,17 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `grep -n '^| `/' 'docs/design/AVEL Web App — Frontend Map v0.6.md' | head -40`
 - **Expected:** FM's routes, against which section 3's table is checked
 
-### BRENNAN-03: Testable as written: SH-01 to SH-24 cover sections 1 to 6; revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous (P1)
+### BRENNAN-03: Testable as written: SH-01 to SH-14 and SH-20 to SH-25 cover sections 1 to 5 (section 6 by review); revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous (P1)
 
 - **Verify:** `grep -c '^| SH-' docs/ui-contracts/app-shell.md`
-- **Expected:** 16 rows, each traced to the section it tests
+- **Expected:** 20 rows, each traced to the section it tests
 
 **Notes:**
 
 - The work under review is two files on main, not a diff. Read app-shell.md whole with git show "$AVEL_BASE":docs/ui-contracts/app-shell.md. Revision 15 of the approval page is git diff 8317120 3b4a7c0 -- docs/ui-contracts/decisions-approval-page.md.
 - Each finding cites the contract's line (app-shell.md:N at your start commit), the source it breaks, and the command that shows it. Every value and string claimed as the design library's is checked against the library's bundled source: grep the HTML for the class or the string (for example .lib-rail, .lib-tabbar, mw=[, pm=[).
 - Everything else in this sprint waits for this review to be merged.
+- Attempt a2 (revision 2): a1 (report fac0a54) failed on findings 01 to 07, in docs/agent-dispatch/frontend/sprint-02/findings/. Revision 2 answers them (Appendix A; decisions.md, 'Revision 2'), with INT's decisions on 01 (DL's final cascade, no exception) and 04 (150 kB target, 160 kB hard ceiling). For each of 01 to 07, say whether it's closed, citing the line, and check that nothing else changed in a way that reopens one: git diff 04fac4b "$AVEL_BASE" -- docs/ui-contracts/app-shell.md. A still-open finding keeps its file name; a new finding is numbered from 08.
 
 ## 5. Territory
 
@@ -197,7 +198,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - BRENNAN-01: Design: every class, value, breakpoint, label, icon and copy string the shell contract gives as DL's is DL's, and every departure is in section 2's S1 to S8 or marked †, with a reason
 - BRENNAN-02: Routes and territory: section 3's routes, nav ids and stubs follow FM's route table and folder layout; each build's territory is one FM row (a module plus its route files, as in sprint-01); section 0's deferrals each name a wave that exists in FM's build order
-- BRENNAN-03: Testable as written: SH-01 to SH-24 cover sections 1 to 6; revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous
+- BRENNAN-03: Testable as written: SH-01 to SH-14 and SH-20 to SH-25 cover sections 1 to 5 (section 6 by review); revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous
 
 You may change only: docs/agent-dispatch/frontend/sprint-02/agent-brennan-shell-uic-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/shell-uic-brennan-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

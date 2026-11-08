@@ -34,9 +34,9 @@ The approval page on the shell: revision 15 (layout=desk, no viewport read), loa
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
+- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
+- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
 - `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
 - `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
 - `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
@@ -57,7 +57,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### GHOST-02: The header as ScreenHeader (eyebrow Home, h1 Decisions, the lead); .dec-head, .dec-eyebrow, .dec-title and .dec-lead out of decisions.css; .dec-page without its padding; decisionsScreenStylesheets without kitStylesheetHref (P0)
 
-- **Required:** The page's header tests pass; UC-29 to UC-32 pass on the shell (scratch merge with Leon's branch if needed); / has kit.css and decisions.css linked exactly once each
+- **Required:** SH-12 and the page's header tests pass; UC-29 to UC-32 pass on the shell (scratch merge with Leon's branch if needed); / has kit.css and decisions.css linked exactly once each
 - **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** the tests pass; the end-to-end result, on main or on the scratch merge (say which); only apps/web/src/modules/decisions changed
 
@@ -65,7 +65,7 @@ Do them in order. Finish each one, verified, before the next.
 
 - INT names you as the builder for decisions here (FM allows another builder for a module), so the page and Leon's shell are built side by side. The module's history is Leon's: read his a3 report before you change the marker.
 - Start once Fantem's shell kit and Fenn's shell tests are merged. Your branch merges after Leon's system build: with it merged first, / would lose kit.css and its padding. Check your work on a scratch merge with Leon's branch if his isn't on main yet, and say so.
-- Remove useIsPhone, PHONE_QUERY and every matchMedia read. Keep Leon's a3 marker rule (set in a commit after the final layout); with no switch it should hold by itself. Keep his mechanism or simplify it, and say which.
+- Report /'s first load from your build (app-shell.md section 6's one rule). Remove useIsPhone, PHONE_QUERY and every matchMedia read. Keep Leon's a3 marker rule (set in a commit after the final layout); with no switch it should hold by itself. Keep his mechanism or simplify it, and say which.
 
 ## 5. Territory
 

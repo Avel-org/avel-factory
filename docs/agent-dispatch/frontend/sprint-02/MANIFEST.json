@@ -2,92 +2,92 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-02",
-  "planSha256": "226540a4fb3e3d441b01c332cee3658eef3f0cc4febd787a67173bf58050c725",
-  "packageSha256": "6da9dfc33dd3a61d83bfc7e4ebe540a09a2383169d4b13be8d44253fcf38b9eb",
+  "planSha256": "cd64a0e438585c456d5abc3eb9fad6843899fa4d7bf41c48d7462abb15a759ae",
+  "packageSha256": "fd5e0bdc16a5297e8b86f3e0b05d480116c9055b317b26de0f0f2a059e652e53",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "90da39fca251c50fa772a944bc5927e865c38c47ae02340c3d687d0edb2c2600",
-      "bytes": 17245
+      "sha256": "4460c93419d8b9e159aef1a1ad4476ce395c9616ad2b726395437532bb4a7286",
+      "bytes": 17442
     },
     {
       "path": "DISPATCH.md",
       "kind": "dispatch_md",
-      "sha256": "8453eb149f3ae4700c644b81865b25f73ee5af23669970527ab1f4bffae41f1d",
-      "bytes": 6207
+      "sha256": "cab73999b276bc157ee227057676d862c56c26204617dffeac7447a9a177e5fd",
+      "bytes": 6236
     },
     {
       "path": "agent-brennan-shell-uic-review-spec.md",
       "kind": "task_doc",
-      "sha256": "e57f3af64532426a93d4030454277ce6081cc6f9afd91888337f788b8f4aa550",
-      "bytes": 12675
+      "sha256": "c719c2a6f0b17501266f99f53671e09714ff457a801c8bd63817bf0108a692c8",
+      "bytes": 13354
     },
     {
       "path": "agent-fantem-shell-kit-build.md",
       "kind": "task_doc",
-      "sha256": "56fb3c96102ca322e8a717929376246c734c839c4a1717f8659a9a6449d61a4d",
-      "bytes": 13005
+      "sha256": "664717a10d37e373f78b8e516ab889d4ec9a991520d18c83cfa3deaf72353ebd",
+      "bytes": 12978
     },
     {
       "path": "agent-fenn-shell-test-e2e.md",
       "kind": "task_doc",
-      "sha256": "720d89a0169bd224c22b96bdd617781355304c1d9946ccf545a648f8ae572d4a",
-      "bytes": 10738
+      "sha256": "d4ccd3dc587cf3f3e662ac8bc9c8ee142f63128b2f7711c6f56d80bb0ea4883d",
+      "bytes": 11132
     },
     {
       "path": "agent-fenn-shell-test-unit.md",
       "kind": "task_doc",
-      "sha256": "59e7d95400e96faca032a45eb66b757a3aa6a75f05babf5dd3de87331fab3c69",
-      "bytes": 12487
+      "sha256": "78cc64f2e1b4ab7c51893622b92a8978c1c8a74cce3d3ac71a59ab849748dacb",
+      "bytes": 12942
     },
     {
       "path": "agent-ghost-decisions-build.md",
       "kind": "task_doc",
-      "sha256": "e06bfbf65a829388d279594e9dc054b6d23c620959369bda817f3c26f082ca5a",
-      "bytes": 12031
+      "sha256": "28b96d4fc4d1c8ba7f0f64ececdbed6247e0cb2f4484a70a7da6f742f0b7c818",
+      "bytes": 12142
     },
     {
       "path": "agent-leah-shell-review-a11y-perf.md",
       "kind": "task_doc",
-      "sha256": "12781f29978c3cce91d2826e5b1e1f8833cc7edbb21b76c1add40168792bf594",
-      "bytes": 11617
+      "sha256": "2c542abee9c0dd0701efa3d2d1c44d0acdadaf32732a6c3a9fed0b9838d43463",
+      "bytes": 11769
     },
     {
       "path": "agent-leon-system-build.md",
       "kind": "task_doc",
-      "sha256": "07dc9c91c82b72c9b4c32ebce6fc67b4ee709350969f76ceccb7712c6fdfcdfe",
-      "bytes": 11815
+      "sha256": "56229bdcc5b081f259e62a70a7b0552c0786c76ced4c21a22924fd0a7b8a5588",
+      "bytes": 11925
     },
     {
       "path": "agent-nemi-shell-fonts-build.md",
       "kind": "task_doc",
-      "sha256": "f687616fd5ba1402b3eefd908b321f954b66ff3509a385b8b7d8ec763fba4f1a",
-      "bytes": 10943
+      "sha256": "cabb25fc26f3e26646be36c4e3fc57af6e7425223342ff1dd011c145301ab775",
+      "bytes": 10969
     },
     {
       "path": "agent-zero-decisions-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "95aad8ad6e6b1f154a960f4eb8258c2580dd763c2a02f5aaa551a63c7db1b4ba",
-      "bytes": 10083
+      "sha256": "dc1b003769f517d639d58fed44fe79aac638dac035123fa9a3d4404c463c298f",
+      "bytes": 10109
     },
     {
       "path": "agent-zero-shell-kit-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "7418bfe082508ea06afd3219abc8af8d496cf7240f2056aef957731542140131",
-      "bytes": 10047
+      "sha256": "8a21da7b950e7e4ada565ce27eda15705b034c55d69eadc94e94173029152298",
+      "bytes": 10073
     },
     {
       "path": "agent-zero-system-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "7b9ec48dc990873d02c589644a67521b338c18484c791cc5c7d4b43f44d88e2f",
-      "bytes": 9935
+      "sha256": "cd9c7733d2d14131956d3b61263f12dbd400d801a8f1043767a9bb811ca25a04",
+      "bytes": 9961
     },
     {
       "path": "codebase-analysis.md",
       "kind": "codebase_analysis",
-      "sha256": "67d19e1e70babffdae6e6f448eca9ff343245a623bb313bd4adaa081193082be",
-      "bytes": 3057
+      "sha256": "218d8ea2514d02ccfadcb3359736880c891fb2ff6130d86c92314fcb1600cecb",
+      "bytes": 3210
     }
   ]
 }

@@ -33,7 +33,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | [`agent-fenn-shell-test-unit`](agent-fenn-shell-test-unit.md) | FENN | test-unit | shell | first; after `agent-brennan-shell-uic-review-spec` is merged into main |
 | [`agent-fenn-shell-test-e2e`](agent-fenn-shell-test-e2e.md) | FENN | test-e2e | shell | first; after `agent-brennan-shell-uic-review-spec` is merged into main |
 | [`agent-nemi-shell-fonts-build`](agent-nemi-shell-fonts-build.md) | NEMI | build | shell-fonts | at once (no test dispatch in this module); after `agent-brennan-shell-uic-review-spec` is merged into main |
-| [`agent-fantem-shell-kit-build`](agent-fantem-shell-kit-build.md) | FANTEM | build | shell-kit | at once (no test dispatch in this module); after `agent-fenn-shell-test-unit` is merged into main |
+| [`agent-fantem-shell-kit-build`](agent-fantem-shell-kit-build.md) | FANTEM | build | shell-kit | at once (no test dispatch in this module); after `agent-fenn-shell-test-unit`, `agent-fenn-shell-test-e2e` is merged into main |
 | [`agent-leon-system-build`](agent-leon-system-build.md) | LEON | build | system | at once (no test dispatch in this module); after `agent-fantem-shell-kit-build`, `agent-fenn-shell-test-unit`, `agent-fenn-shell-test-e2e` is merged into main |
 | [`agent-ghost-decisions-build`](agent-ghost-decisions-build.md) | GHOST | build | decisions | at once (no test dispatch in this module); after `agent-fantem-shell-kit-build`, `agent-fenn-shell-test-unit`, `agent-fenn-shell-test-e2e` is merged into main |
 | [`agent-zero-shell-kit-review-frontend`](agent-zero-shell-kit-review-frontend.md) | ZERO | review-frontend | shell-kit | once `agent-fantem-shell-kit-build` has its completion report, checked out at its result commit |

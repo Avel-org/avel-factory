@@ -59,9 +59,9 @@ conventions = [
   "A file under a lock in locks.md changes only in a commit made with AVEL_LOCK_OVERRIDE set, and only when the task doc says so",
 ]
 notes = [
-  "The contracts' scenario IDs (SH-01 to SH-24 here, UC-01 to UC-32 in the approval page contract) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.",
+  "The contracts' scenario IDs (SH-01 to SH-14 and SH-20 to SH-25 here, UC-01 to UC-32 in the approval page contract) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.",
   "packages/contract is the backend's: an API change you need is an escalation in docs/agent-dispatch/frontend/sprint-02/escalations/, written by Zero, never an edit.",
-  "/'s first load is 149.30 kB gzip on main before the shell, against a 150 kB budget. Every build reports it from its own build, as app-shell.md section 6 asks.",
+  "/'s first load is 149.30 kB gzip on main before the shell: the target is 150 kB and the hard ceiling 160 kB (app-shell.md section 6). Every build whose diff changes JavaScript that / loads reports /'s first load from its own build, counted as the approval page contract's section 8 counts it.",
 ]
 
 # ------------------------------------------------------------------ R0: the contracts, Brennan
@@ -69,7 +69,7 @@ notes = [
 agent = "brennan"
 module = "shell-uic"
 role = "review-spec"
-domain = "Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them."
+domain = "Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them."
 context = [
   { path = "docs/ui-contracts/app-shell.md", why = "under review, whole" },
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "under review: revision 15's changes only (git diff 8317120 3b4a7c0 for them), and the header lines after it" },
@@ -82,6 +82,7 @@ notes = [
   "The work under review is two files on main, not a diff. Read app-shell.md whole with git show \"$AVEL_BASE\":docs/ui-contracts/app-shell.md. Revision 15 of the approval page is git diff 8317120 3b4a7c0 -- docs/ui-contracts/decisions-approval-page.md.",
   "Each finding cites the contract's line (app-shell.md:N at your start commit), the source it breaks, and the command that shows it. Every value and string claimed as the design library's is checked against the library's bundled source: grep the HTML for the class or the string (for example .lib-rail, .lib-tabbar, mw=[, pm=[).",
   "Everything else in this sprint waits for this review to be merged.",
+  "Attempt a2 (revision 2): a1 (report fac0a54) failed on findings 01 to 07, in docs/agent-dispatch/frontend/sprint-02/findings/. Revision 2 answers them (Appendix A; decisions.md, 'Revision 2'), with INT's decisions on 01 (DL's final cascade, no exception) and 04 (150 kB target, 160 kB hard ceiling). For each of 01 to 07, say whether it's closed, citing the line, and check that nothing else changed in a way that reopens one: git diff 04fac4b \"$AVEL_BASE\" -- docs/ui-contracts/app-shell.md. A still-open finding keeps its file name; a new finding is numbered from 08.",
 ]
 
 [[dispatch.task]]
@@ -97,21 +98,21 @@ verify = "grep -n '^| `/' 'docs/design/AVEL Web App — Frontend Map v0.6.md' | 
 expected = "FM's routes, against which section 3's table is checked"
 
 [[dispatch.task]]
-title = "Testable as written: SH-01 to SH-24 cover sections 1 to 6; revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous"
+title = "Testable as written: SH-01 to SH-14 and SH-20 to SH-25 cover sections 1 to 5 (section 6 by review); revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous"
 priority = "P1"
 verify = "grep -c '^| SH-' docs/ui-contracts/app-shell.md"
-expected = "16 rows, each traced to the section it tests"
+expected = "20 rows, each traced to the section it tests"
 
 # ------------------------------------------------------------------ R1: tests and fonts
 [[dispatch]]
 agent = "fenn"
 module = "shell"
 role = "test-unit"
-domain = "The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11)."
+domain = "The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14)."
 territory = ["apps/web/test/**"]
 after = ["agent-brennan-shell-uic-review-spec"]
 context = [
-  { path = "docs/ui-contracts/app-shell.md", why = "sections 1 to 4 and 7 (SH-01 to SH-11)" },
+  { path = "docs/ui-contracts/app-shell.md", why = "sections 1 to 5 and 7 (SH-01 to SH-14)" },
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (D16, R7), section 5 ('Phone', the marker, the count) and section 7, for the page's tests" },
   { path = "docs/agent-dispatch/frontend/sprint-01/locks.md", why = "which test paths are locked, and so need the override" },
 ]
@@ -123,7 +124,7 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "SH-01 to SH-07: AppShell (brand, nav, current item, badge, sheet focus and inert, focus mode, skip link, tab bar) and ScreenHeader, and SH-06's kit.css rules read as text"
+title = "SH-01 to SH-07 and SH-14: AppShell (brand, nav, crumb, current item, badge, sheet closed in the server's HTML, sheet focus and inert, focus mode and data-tabbar, skip link, tab bar, the shell's marker) and ScreenHeader, and SH-06's kit.css final values read as text"
 priority = "P0"
 required = "Each test carries its SH ID, renders the kit component with plain props and a test renderLink, and fails first on an assertion or the missing export"
 verify = "pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -15"
@@ -137,21 +138,21 @@ verify = "pnpm --filter @avel/web exec vitest run test/modules/system 2>&1 | tai
 expected = "the SH-08 to SH-11 tests fail on a missing module or an assertion"
 
 [[dispatch.task]]
-title = "The approval page's tests for app-shell.md section 4: the header is ScreenHeader (data-ui, eyebrow Home, h1 Decisions, the lead), and nothing else in the decisions tests changes"
+title = "SH-12 (the approval page on the shell: no import past kit/index.ts, ScreenHeader, decisions.css and the stylesheet list) and SH-13 (font-fallbacks.css and app.css read as text); in the existing decisions tests, only what section 4 changes"
 priority = "P1"
-required = "Only what section 4 changes; every other decisions assertion untouched; one commit, with the override"
+required = "SH-12 and SH-13 carry their IDs and fail first; in the existing decisions tests only what section 4 changes; every other decisions assertion untouched; the locked-path commits made with the override"
 verify = "pnpm --filter @avel/web exec vitest run test/modules/decisions 2>&1 | tail -8 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
-expected = "the header assertions fail; the rest pass; only apps/web/test changed"
+expected = "SH-12 and SH-13 and the header assertions fail; the rest pass; only apps/web/test changed"
 
 [[dispatch]]
 agent = "fenn"
 module = "shell"
 role = "test-e2e"
-domain = "The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing."
+domain = "The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing."
 territory = ["apps/web/e2e/**", "apps/web/playwright.config.ts"]
 after = ["agent-brennan-shell-uic-review-spec"]
 context = [
-  { path = "docs/ui-contracts/app-shell.md", why = "sections 1, 3 and 7 (SH-20 to SH-24)" },
+  { path = "docs/ui-contracts/app-shell.md", why = "sections 1, 3 and 7 (SH-20 to SH-25)" },
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 7 (UC-29 to UC-32) and section 6's measure" },
   { path = "docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md", why = "your a7 report on frontend/sprint-01/agent-fenn-decisions-test-e2e-a7 (git show that branch's copy): UC-32 and its failing line" },
 ]
@@ -160,10 +161,11 @@ notes = [
   "apps/web/e2e/** and playwright.config.ts are locked (decisions-e2e, locks.md). This dispatch changes them by INT's decision in this plan: make each commit with AVEL_LOCK_OVERRIDE=\"shell e2e a1: <what> (INT, app-shell.md revision 1)\". After the merge, INT moves the decisions-e2e line.",
   "Add a 900x1000 project (no touch) beside phone and desk, as section 7 says. SH-20 and SH-23 run on desk, SH-21 on the 900 project, SH-22 on phone; SH-24 runs on all three. Skip the rest per project, as UC-31 is skipped on desk.",
   "SH-24 waits for the AppShell element's data-hydrated (app-shell.md section 2) on the stub, and the page root's on /. The tests fail first on main: there's no shell. Keep retries at 0, no fixed sleep, no reducedMotion.",
+  "SH-25 (D16) uses the harness section 7 names: renderToStaticMarkup of a desk and a phone DecisionTag from their source files, set into a page that links the dev server's app.css and kit.css. It fails first on main at 390, where the desk tag still draws the desk layout. If the harness can't load the source files, stop and report it with another harness to propose.",
 ]
 
 [[dispatch.task]]
-title = "UC-32 in (5abf046), the 900 project, and SH-20 to SH-24"
+title = "UC-32 in (5abf046), the 900 project, and SH-20 to SH-25"
 priority = "P0"
 required = "Each test carries its SH or UC ID and fails first on main with an assertion or a wait; UC-29 to UC-31 unchanged; retries 0"
 verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -25 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
@@ -199,25 +201,25 @@ module = "shell-kit"
 role = "build"
 domain = "The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2)."
 territory = ["apps/web/src/kit/**"]
-after = ["agent-fenn-shell-test-unit"]
+after = ["agent-fenn-shell-test-unit", "agent-fenn-shell-test-e2e"]
 context = [
-  { path = "docs/ui-contracts/app-shell.md", why = "sections 1 and 2, S1 to S8, and SH-01 to SH-07" },
+  { path = "docs/ui-contracts/app-shell.md", why = "sections 0 (the cascade rule), 1 and 2, S1 to S8, SH-01 to SH-07, SH-14 and SH-25" },
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4: D16 (revision 15) and K1" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "the v1.6 layout layer: .lib-app, .lib-aside, .lib-rail, .lib-nav*, .lib-topbar, .lib-sheet*, .lib-tabbar, .lib-tab*, .lib-skip, .scr-head, focus mode; and the rail's markup (function BV) and the tab bar's ($me)" },
   { path = "docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md", why = "D16: what moves today, rect by rect" },
 ]
 notes = [
-  "Start once Fenn's shell unit tests are merged and locked. Build to them.",
-  "Every value is a --av-* token or DL's literal, with the DL class it comes from in a comment. Where the v1.6 layer overrides an earlier library.css rule for the same class, the v1.6 value wins, as it does in DL.",
+  "Start once both of Fenn's shell test dispatches are merged and locked. Build to them: SH-25 is D16's test.",
+  "Every value is a --av-* token or DL's literal, with the DL class and layer it comes from in a comment. DL's final cascade is the value (app-shell.md section 0): the last DL rule for the element at that width wins, across the v1.6 layer, Mobile chrome, v1.7.1 and the v1.8 pass.",
   "Nothing reads the viewport in JavaScript. The only client state is the sheet's open flag. No measured indicator (S3).",
-  "D16, as revision 15 gives it: under @media (max-width: 899px), [data-layout=\"desk\"] gets every rule [data-layout=\"phone\"] has, with the phone layout's own values, and DecisionTag's DOM doesn't change. Check it on a scratch page in your scratchpad, not in the repo: at 390x844 a desk and a phone tag with the same props match within 1px (article, head, title, facts list, footer, each button and link) for a decidable row with facts, a factory_change row, a stale row and a notAllowed row with Refresh list; at 1280x800 the desk tag's rects are main's.",
+  "D16, as revision 15 gives it: under @media (max-width: 899px), [data-layout=\"desk\"] gets every rule [data-layout=\"phone\"] has, with the phone layout's own values, and DecisionTag's DOM doesn't change. SH-25 checks it.",
   "Report /'s first load from your build (app-shell.md section 6). The kit's shell code isn't on / until Leon's shell lands, so give the kit chunk's size too.",
 ]
 
 [[dispatch.task]]
 title = "AppShell: the frame, rail, nav, badge, top bar, sheet (inert, focus trap, Escape, scrim, return focus), tab bar with More, skip link, focus mode on the element, the shell's K1, and the chrome reset; exported with its types from kit/index.ts"
 priority = "P0"
-required = "SH-01 to SH-06 pass unchanged; app-shell.md sections 1 and 2 exactly; no new literal without its DL source"
+required = "SH-01 to SH-06 and SH-14 pass unchanged; app-shell.md sections 1 and 2 exactly; no new literal without its DL source, and each the DL final value"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit"
 expected = "typechecks; every kit test passes"
 
@@ -231,9 +233,9 @@ expected = "every kit test passes"
 [[dispatch.task]]
 title = "D16 (approval page contract revision 15): the desk layout draws the phone layout under @media (max-width: 899px) from kit.css alone, with the phone layout's own values; the DOM unchanged"
 priority = "P1"
-required = "No new literal; DecisionTag's DOM unchanged; the two rect tables from the notes; the locked kit tests pass unchanged"
-verify = "pnpm --filter @avel/web test && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js' && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
-expected = "the tests pass; the client chunks; only apps/web/src/kit changed; and the two rect tables, which you report"
+required = "No new literal; DecisionTag's DOM unchanged; SH-25 passes; the locked kit tests pass unchanged"
+verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test -g SH-25 2>&1 | tail -6 && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js' && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the tests pass; SH-25 passes on phone and desk; the client chunks, and /'s first load, which you report; only apps/web/src/kit changed"
 
 # ------------------------------------------------------------------ R3: the shell and the page
 [[dispatch]]
@@ -253,7 +255,7 @@ notes = [
   "routes/index.tsx moves to routes/_shell/index.tsx, with its loader, ssr and head unchanged. Don't change __root.tsx (Nemi's). Don't touch apps/web/src/modules/decisions/**: Ghost's follow-up does, and it merges after yours.",
   "The badge reads decisions's index.ts only (pendingDecisionsOptions, ensurePendingDecisions). _shell's loader swallows a failed load, as / does.",
   "The AppShell element's data-hydrated (app-shell.md section 2) is the kit's. Check that the end-to-end tests can see it on a stub route.",
-  "Report /'s first load as section 8 of the approval page counts it, from your build. Over 150 kB isn't a reason to cut the shell's contract: report it, and Leah's measure decides (app-shell.md section 6).",
+  "Report /'s first load as section 8 of the approval page counts it, from your build (app-shell.md section 6's one rule). Over 150 kB isn't a reason to cut the shell's contract: report it, and Leah's measure on main reads the 150 kB target and 160 kB ceiling.",
 ]
 
 [[dispatch.task]]
@@ -266,7 +268,7 @@ expected = "typechecks; those tests pass"
 [[dispatch.task]]
 title = "The stub routes from section 3's table and the focus-mode stub, each rendering PlannedScreen with its staticData, title and copy"
 priority = "P0"
-required = "SH-11 passes; SH-20 to SH-24 pass end to end; each route file renders only its module screen"
+required = "SH-11 passes; SH-20 to SH-24 pass end to end; the route files are section 3's table, each rendering only its module screen"
 verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js'"
 expected = "the unit tests pass; every end-to-end test passes on every project it runs on; the client chunks, and /'s first load, which you report"
 
@@ -285,7 +287,7 @@ context = [
 notes = [
   "INT names you as the builder for decisions here (FM allows another builder for a module), so the page and Leon's shell are built side by side. The module's history is Leon's: read his a3 report before you change the marker.",
   "Start once Fantem's shell kit and Fenn's shell tests are merged. Your branch merges after Leon's system build: with it merged first, / would lose kit.css and its padding. Check your work on a scratch merge with Leon's branch if his isn't on main yet, and say so.",
-  "Remove useIsPhone, PHONE_QUERY and every matchMedia read. Keep Leon's a3 marker rule (set in a commit after the final layout); with no switch it should hold by itself. Keep his mechanism or simplify it, and say which.",
+  "Report /'s first load from your build (app-shell.md section 6's one rule). Remove useIsPhone, PHONE_QUERY and every matchMedia read. Keep Leon's a3 marker rule (set in a commit after the final layout); with no switch it should hold by itself. Keep his mechanism or simplify it, and say which.",
 ]
 
 [[dispatch.task]]
@@ -298,7 +300,7 @@ expected = "no line listed; the decisions tests pass"
 [[dispatch.task]]
 title = "The header as ScreenHeader (eyebrow Home, h1 Decisions, the lead); .dec-head, .dec-eyebrow, .dec-title and .dec-lead out of decisions.css; .dec-page without its padding; decisionsScreenStylesheets without kitStylesheetHref"
 priority = "P0"
-required = "The page's header tests pass; UC-29 to UC-32 pass on the shell (scratch merge with Leon's branch if needed); / has kit.css and decisions.css linked exactly once each"
+required = "SH-12 and the page's header tests pass; UC-29 to UC-32 pass on the shell (scratch merge with Leon's branch if needed); / has kit.css and decisions.css linked exactly once each"
 verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "the tests pass; the end-to-end result, on main or on the scratch merge (say which); only apps/web/src/modules/decisions changed"
 
@@ -363,14 +365,14 @@ context = [
 ]
 notes = [
   "Start once Nemi's fonts, Fantem's kit, Leon's shell and Ghost's page follow-up are all merged.",
-  "If /'s first load is over 150 kB, that's a finding with the chunk breakdown, and INT then decides on the thin oRPC link (app-shell.md section 6). Don't build or prototype the cut.",
+  "Read /'s first load against app-shell.md section 6's table: over 150 kB is a P2 finding with the chunk breakdown; over 160 kB breaks the hard ceiling and blocks the sprint's close. Either way the thin oRPC link follows as a revision. Don't build or prototype the cut.",
   "Measure main as it is, fonts included: the fallbacks now ship (app-shell.md section 5). Name the local() face each run drew before the swap.",
 ]
 
 [[dispatch.task]]
 title = "Performance: /'s first load (section 8's count) and layout shift by section 6's cases (/ at 390; /missions at 390 and 1280), production build, three runs each, with each shift's sources, FCP and hydration time"
 priority = "P0"
-required = "Under 150 kB and under 0.02 in every case, or a finding with the evidence"
+required = "At or under 150 kB, or a finding by section 6's table; under 0.02 in every case, or a finding with the evidence"
 verify = "pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js'"
 expected = "the client chunks, and the first-load and CLS tables, which you report"
 

@@ -14,7 +14,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - BRENNAN-01: Design: every class, value, breakpoint, label, icon and copy string the shell contract gives as DL's is DL's, and every departure is in section 2's S1 to S8 or marked †, with a reason
 - BRENNAN-02: Routes and territory: section 3's routes, nav ids and stubs follow FM's route table and folder layout; each build's territory is one FM row (a module plus its route files, as in sprint-01); section 0's deferrals each name a wave that exists in FM's build order
-- BRENNAN-03: Testable as written: SH-01 to SH-24 cover sections 1 to 6; revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous
+- BRENNAN-03: Testable as written: SH-01 to SH-14 and SH-20 to SH-25 cover sections 1 to 5 (section 6 by review); revision 15's D16, marker and UC-32 are consistent with the shell (section 4); the budget rule and the conditional cut in section 6 are unambiguous
 
 You may change only: docs/agent-dispatch/frontend/sprint-02/agent-brennan-shell-uic-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/shell-uic-brennan-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -35,9 +35,9 @@ Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-tes
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: SH-01 to SH-07: AppShell (brand, nav, current item, badge, sheet focus and inert, focus mode, skip link, tab bar) and ScreenHeader, and SH-06's kit.css rules read as text
+- FENN-01: SH-01 to SH-07 and SH-14: AppShell (brand, nav, crumb, current item, badge, sheet closed in the server's HTML, sheet focus and inert, focus mode and data-tabbar, skip link, tab bar, the shell's marker) and ScreenHeader, and SH-06's kit.css final values read as text
 - FENN-02: SH-08 to SH-11: ShellLayout on the contract mock (section 3's table, tabs, badge rule with fixtures.step1, 50+ and failNext, current id, crumb and title by route) and PlannedScreen's copy
-- FENN-03: The approval page's tests for app-shell.md section 4: the header is ScreenHeader (data-ui, eyebrow Home, h1 Decisions, the lead), and nothing else in the decisions tests changes
+- FENN-03: SH-12 (the approval page on the shell: no import past kit/index.ts, ScreenHeader, decisions.css and the stylesheet list) and SH-13 (font-fallbacks.css and app.css read as text); in the existing decisions tests, only what section 4 changes
 
 You may change only: apps/web/test/**, docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -58,7 +58,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-tes
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-24
+- FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-25
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

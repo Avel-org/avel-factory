@@ -10,7 +10,7 @@ Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the
 - **This dispatch:** `agent-fantem-shell-kit-build` (build), module `shell-kit`.
 - **Your branch:** `frontend/sprint-02/agent-fantem-shell-kit-build-a<attempt>`. Check with `git branch --show-current`. One session is one attempt: never switch branches, push, rebase or force anything.
 - **Your worktree:** `../avel-wt/frontend-sprint-02-agent-fantem-shell-kit-build-a<attempt>`, made by `scripts/agent.sh`.
-- **Starts:** at once (no test dispatch in this module); after `agent-fenn-shell-test-unit` is merged into main.
+- **Starts:** at once (no test dispatch in this module); after `agent-fenn-shell-test-unit`, `agent-fenn-shell-test-e2e` is merged into main.
 
 ## 2. Context: read before you act
 
@@ -23,7 +23,7 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 5. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
-8. `docs/ui-contracts/app-shell.md`: sections 1 and 2, S1 to S8, and SH-01 to SH-07
+8. `docs/ui-contracts/app-shell.md`: sections 0 (the cascade rule), 1 and 2, S1 to S8, SH-01 to SH-07, SH-14 and SH-25
 9. `docs/ui-contracts/decisions-approval-page.md`: section 4: D16 (revision 15) and K1
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: the v1.6 layout layer: .lib-app, .lib-aside, .lib-rail, .lib-nav*, .lib-topbar, .lib-sheet*, .lib-tabbar, .lib-tab*, .lib-skip, .scr-head, focus mode; and the rail's markup (function BV) and the tab bar's ($me)
 11. `docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md`: D16: what moves today, rect by rect
@@ -35,9 +35,9 @@ The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-11).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-24), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
+- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
+- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
 - `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
 - `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
 - `agent-ghost-decisions-build`: The approval page on the shell: revision 15 (layout=desk, no viewport read), loadReasonDialog instead of the deep import, ScreenHeader, and the page's padding and stylesheets (app-shell.md section 4).
@@ -52,7 +52,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### FANTEM-01: AppShell: the frame, rail, nav, badge, top bar, sheet (inert, focus trap, Escape, scrim, return focus), tab bar with More, skip link, focus mode on the element, the shell's K1, and the chrome reset; exported with its types from kit/index.ts (P0)
 
-- **Required:** SH-01 to SH-06 pass unchanged; app-shell.md sections 1 and 2 exactly; no new literal without its DL source
+- **Required:** SH-01 to SH-06 and SH-14 pass unchanged; app-shell.md sections 1 and 2 exactly; no new literal without its DL source, and each the DL final value
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit`
 - **Expected:** typechecks; every kit test passes
 
@@ -64,16 +64,16 @@ Do them in order. Finish each one, verified, before the next.
 
 ### FANTEM-03: D16 (approval page contract revision 15): the desk layout draws the phone layout under @media (max-width: 899px) from kit.css alone, with the phone layout's own values; the DOM unchanged (P1)
 
-- **Required:** No new literal; DecisionTag's DOM unchanged; the two rect tables from the notes; the locked kit tests pass unchanged
-- **Verify:** `pnpm --filter @avel/web test && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js' && git diff "$(git merge-base main HEAD)"..HEAD --stat`
-- **Expected:** the tests pass; the client chunks; only apps/web/src/kit changed; and the two rect tables, which you report
+- **Required:** No new literal; DecisionTag's DOM unchanged; SH-25 passes; the locked kit tests pass unchanged
+- **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test -g SH-25 2>&1 | tail -6 && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js' && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** the tests pass; SH-25 passes on phone and desk; the client chunks, and /'s first load, which you report; only apps/web/src/kit changed
 
 **Notes:**
 
-- Start once Fenn's shell unit tests are merged and locked. Build to them.
-- Every value is a --av-* token or DL's literal, with the DL class it comes from in a comment. Where the v1.6 layer overrides an earlier library.css rule for the same class, the v1.6 value wins, as it does in DL.
+- Start once both of Fenn's shell test dispatches are merged and locked. Build to them: SH-25 is D16's test.
+- Every value is a --av-* token or DL's literal, with the DL class and layer it comes from in a comment. DL's final cascade is the value (app-shell.md section 0): the last DL rule for the element at that width wins, across the v1.6 layer, Mobile chrome, v1.7.1 and the v1.8 pass.
 - Nothing reads the viewport in JavaScript. The only client state is the sheet's open flag. No measured indicator (S3).
-- D16, as revision 15 gives it: under @media (max-width: 899px), [data-layout="desk"] gets every rule [data-layout="phone"] has, with the phone layout's own values, and DecisionTag's DOM doesn't change. Check it on a scratch page in your scratchpad, not in the repo: at 390x844 a desk and a phone tag with the same props match within 1px (article, head, title, facts list, footer, each button and link) for a decidable row with facts, a factory_change row, a stale row and a notAllowed row with Refresh list; at 1280x800 the desk tag's rects are main's.
+- D16, as revision 15 gives it: under @media (max-width: 899px), [data-layout="desk"] gets every rule [data-layout="phone"] has, with the phone layout's own values, and DecisionTag's DOM doesn't change. SH-25 checks it.
 - Report /'s first load from your build (app-shell.md section 6). The kit's shell code isn't on / until Leon's shell lands, so give the kit chunk's size too.
 
 ## 5. Territory
