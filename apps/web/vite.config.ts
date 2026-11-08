@@ -2,9 +2,10 @@ import { readdirSync, readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
 // The @avel/contract version this web is built with (UI contract section 3, escalation 02).
@@ -126,6 +127,9 @@ const serverFnOnlyModules = [
   ["", "node_modules", "seroval-plugins", ""].join(sep),
 ];
 const srcDir = fileURLToPath(new URL("./src", import.meta.url));
+const webSourceFiles = new RegExp(
+  `^${(srcDir + sep).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}.*\\.[jt]sx?(?:$|\\?)`,
+);
 
 function filesUnder(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -217,5 +221,9 @@ export default defineConfig({
     tanstackStart(),
     // After tanstackStart(), as TanStack Start documents: the React Refresh runtime dev needs to hydrate.
     react(),
+    // The React Compiler (UI contract section 6, revision 10; FM line 299), after react(), as
+    // Leah's size study measured it (finding 05). It compiles apps/web/src only, never
+    // node_modules; the preset runs it in the client environment.
+    babel({ presets: [reactCompilerPreset()], include: [webSourceFiles] }),
   ],
 });
