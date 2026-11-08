@@ -1,0 +1,24 @@
+{
+ "session_id": "b453a014-f4e2-4649-b872-8a8773128252",
+ "name": "ZANE",
+ "branch": "crew/zane",
+ "cwd": "/home/jt0629/projects/avel-wt/crew-zane",
+ "first_at": "2026-11-08T02:59:34.557Z",
+ "last_at": "2026-11-08T02:59:51.576Z",
+ "updated_at": "2026-11-08T02:59:57Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 10,
+   "output": 1185,
+   "cache_write_5m": 0,
+   "cache_write_1h": 6403,
+   "cache_read": 30239,
+   "messages": 5
+  }
+ },
+ "cost_usd": 0.0435,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.0435
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
