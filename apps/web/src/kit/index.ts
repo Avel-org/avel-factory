@@ -16,11 +16,12 @@ export {
 export { AV_ERROR_COPY, ErrorPanel, type ErrorPanelProps } from "./ErrorPanel";
 export { HashChip, type HashChipProps } from "./HashChip";
 export { Icon, type IconName, type IconProps } from "./Icon";
-export { ReasonDialog, type ReasonDialogProps } from "./ReasonDialog";
+export type { ReasonDialogProps } from "./ReasonDialog";
 
 /**
- * R7: the reason dialog loaded lazily through the kit's index, never by a deep import. With the
- * page loading it this way, ReasonDialog and Dialog build into a chunk of their own.
+ * R7: the reason dialog loaded lazily through the kit's index, never by a deep import. It's the
+ * index's only way to the dialog (revision 13): the index exports no ReasonDialog value, only its
+ * props type, so ReasonDialog and Dialog build into a chunk of their own, outside `/`'s first load.
  */
 export function loadReasonDialog(): Promise<{
   ReasonDialog: typeof import("./ReasonDialog").ReasonDialog;
