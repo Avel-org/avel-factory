@@ -1,0 +1,24 @@
+{
+ "session_id": "e9d3f594-425a-4e44-a074-4d4aad31fe83",
+ "name": "FENN decisions-test-e2e a7",
+ "branch": "frontend/sprint-01/agent-fenn-decisions-test-e2e-a7",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-fenn-decisions-test-e2e-a7",
+ "first_at": "2026-11-08T04:54:20.271Z",
+ "last_at": "2026-11-08T04:58:04.347Z",
+ "updated_at": "2026-11-08T04:58:09Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 32,
+   "output": 9005,
+   "cache_write_5m": 0,
+   "cache_write_1h": 40318,
+   "cache_read": 492293,
+   "messages": 16
+  }
+ },
+ "cost_usd": 0.3498,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.3498
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

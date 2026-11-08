@@ -4,21 +4,21 @@
  "branch": "crew/leah",
  "cwd": "/home/jt0629/projects/avel-wt/crew-leah",
  "first_at": "2026-11-08T02:59:32.288Z",
- "last_at": "2026-11-08T02:59:58.357Z",
- "updated_at": "2026-11-08T03:00:06Z",
+ "last_at": "2026-11-08T04:54:25.621Z",
+ "updated_at": "2026-11-08T04:54:29Z",
  "tokens": {
   "claude-sonnet-5-5": {
-   "input": 12,
-   "output": 1887,
+   "input": 20,
+   "output": 3061,
    "cache_write_5m": 0,
-   "cache_write_1h": 11918,
-   "cache_read": 53027,
-   "messages": 6
+   "cache_write_1h": 30937,
+   "cache_read": 85308,
+   "messages": 9
   }
  },
- "cost_usd": 0.0772,
+ "cost_usd": 0.1715,
  "cost_usd_by_model": {
-  "claude-sonnet-5-5": 0.0772
+  "claude-sonnet-5-5": 0.1715
  },
  "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
 }
