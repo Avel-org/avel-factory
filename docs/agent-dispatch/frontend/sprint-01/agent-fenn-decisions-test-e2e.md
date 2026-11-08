@@ -28,7 +28,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 10. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md`: a2: why the first click is lost (on main at 3d3ccfc)
 11. `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-04-uc31-reads-confirm-during-dialog-animation.md`: the UC-31 attempt: the confirm button read during av-dialog-in's scale (revision 13)
 12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-e2e-zero-01-phone-tests-flake-after-dev-server-start.md`: the flake attempt (a5): 4 of 14 runs on main fail, all on the phone project, with the failing lines and outputs
-13. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
+13. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-fenn-01-hydrated-marker-precedes-phone-layout.md`: a6: your a5 cause, filed for Leon, and INT's ruling (Leon's a3 moves the marker; you run FENN-04 again)
+14. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -100,6 +101,8 @@ Do them in order. Finish each one, verified, before the next.
 - The flake attempt (2026-11-07; INT, decisions-e2e-zero-01): a5. Do only the fourth task. The UC-31 attempt (a4) is merged, and the e2e tests are locked at d6994d7. It changes locked files: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a5: the phone tests pass after a fresh dev server start (INT, decisions-e2e-zero-01)". After the merge, INT moves locks.md's decisions-e2e line.
 - Find the cause before you change anything, and report it with evidence: a trace, the dev server's output, or a log of what the page did. The finding has the failures so far, at decisions.spec.ts:34, :73 and :162. In each one, the hydration marker or the open dialog wasn't there when the test expected it. How to fix it is your call, within apps/web/e2e/** and apps/web/playwright.config.ts. Keep retries at 0, change no assertion or bar (the hydration wait, 44px, 16px), and add no fixed sleep and no reducedMotion. A longer timeout is acceptable only if your evidence shows the wait really is the dev server's first compile, and you say so in the report.
 - If the cause is in the app (for example, the page drops the dialog or the click after data-hydrated is set), don't work around it in the tests. Stop, and report it under Deviations with the evidence. It becomes a finding for the module that owns it.
+- Attempt a6 (2026-11-07; INT, decisions-fenn-01): FENN-04 again, after Leon's decisions build a3 is merged. a3 sets data-hydrated only once every tag has its final layout, which was your a5 cause. Do only the fourth task, with its bar as written: 10 runs in a row green on main, each with its own dev server. No test change is expected. If it passes unchanged, your commit is only the report, with no lock override and no lock move. If a test change still turns out to be needed, the a5 rules hold: find the cause first, and use AVEL_LOCK_OVERRIDE="decisions-e2e a6: <what> (INT, decisions-fenn-01)". If the cause is in the app again, stop and report it as in a5.
+- Not in a6: the 0.13 layout shift on / (cls-study-leah-01). The desk-to-phone switch still happens in Leon's a3, only before the marker. It's INT's option (a), planned after this.
 
 ## 5. Territory
 

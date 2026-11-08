@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "3d6d5c7ac7f243a488c0e480bbd571bd044d81928f7e01feadd9bbb52b321912",
-  "packageSha256": "97ba780f9030d6eb15d57660ba5e6810ee9b26373ec46034c9f088f7bbac5ff3",
+  "planSha256": "f69177ca39a01dfb6b9a153e05d4bba6a4d38830c018f88931bd1be8b94045e1",
+  "packageSha256": "4eae4ebb586de8a7585635d182ac7b16e05d840a793dcb11c771d666f324a353",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "9bc1510a84c2c39ab02184a75ec5df084373420fed1621bdbce7e0753b63b49b",
-      "bytes": 46831
+      "sha256": "49a0a32629285732987232ef8a0e6a126983a7478877b75b8d65cbb7baa29a85",
+      "bytes": 47115
     },
     {
       "path": "DISPATCH.md",
@@ -56,8 +56,8 @@
     {
       "path": "agent-fenn-decisions-test-e2e.md",
       "kind": "task_doc",
-      "sha256": "4edad4da4703717975423ccdc0b7ed56c46dc9872e45876792ac795d4714541f",
-      "bytes": 19239
+      "sha256": "884ecb65294fd78b5a4fb203d03e11276eabb9bcfdbeef791309561187985bc7",
+      "bytes": 20303
     },
     {
       "path": "agent-fenn-decisions-test-unit.md",
@@ -104,8 +104,8 @@
     {
       "path": "agent-leon-decisions-build.md",
       "kind": "task_doc",
-      "sha256": "67019f42765ef42427ba61696412fc0f3b104bbcd42ba97f017886310599ff68",
-      "bytes": 20735
+      "sha256": "c00676524d5bb245408e005d39b1e3f9725c60275528a8e5bf0954f25432d99b",
+      "bytes": 23808
     },
     {
       "path": "agent-nemi-w0-app-build.md",

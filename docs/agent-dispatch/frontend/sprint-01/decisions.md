@@ -645,3 +645,17 @@ INT merged Fantem's w0-kit a5 with my review a6 at ed3fd2b (197/197 unit tests; 
 - **The bar:** 10 runs in a row green on main, each with its own dev server. Retries stay 0, no assertion or bar changes, and there's no fixed sleep and no `reducedMotion`. Fenn names the cause, with evidence, before fixing it.
 - **If it's the app:** Fenn stops and reports it under Deviations, and it becomes a finding for the module that owns it. The tests don't work around it.
 - **No contract change:** section 7's UC-29 to UC-31 stand as written.
+
+## 2026-11-07: The hydration marker waits for the final layout (decisions-fenn-01; INT, option (c), then (a))
+
+- **The cause** (Fenn's decisions-test-e2e a5, BLOCKED, report 73e235e; Leah's cls-study a2, report 726b606). On a phone, `data-hydrated` is set 15 to 30 ms before the list switches from the server's desk layout to the phone layout. A tap in that window opens Reject instead of Approve: that's decisions-e2e-zero-01's flake. The same switch is the 0.13 layout shift on `/` (cls-study-leah-01). Fonts and D11 aren't the cause: d8bc228 and main read the same.
+- **Option (c), now:**
+  - Leon's decisions build a3 does only the marker. `data-hydrated` is set only once every tag has its final layout, tied to React's commit, not a timer. Proof is a probe over 10 phone loads (no rect or order change after the marker) and the locked e2e suite green 10 runs in a row.
+  - Fenn's decisions-test-e2e a6 then runs FENN-04 again, with the same bar. No test change is expected.
+  - Leon's loader task (revision 10's fifth task) moves to his attempt after a3.
+  - decisions-fenn-01 closes when both are merged.
+- **Section 5's marker sentence** gets the "once every tag has its final layout" wording in revision 15. a3's task doc carries the rule until then.
+- **The 0.13 layout shift stays open** (cls-study-leah-01). Leon's a3 doesn't remove the switch, only moves the marker past it. Option (a) is the fix, planned after (c):
+  - UI contract revision 15: section 4, the phone look from CSS under 900px on the server's desk HTML; section 5, no client layout switch.
+  - Then Fantem's w0-kit a6, Leon's next attempt, Fenn again, and Leah's re-measure at 4x CPU throttle (cls-study-leah-05 accepted).
+- **Not decided:** section 6's fallback formula (cls-study-leah-03 and 04). It stays held.

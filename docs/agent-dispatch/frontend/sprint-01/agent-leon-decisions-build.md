@@ -33,8 +33,9 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 15. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-02-page-unstyled-targets-and-input-below-minimum.md`: a2: the sheets aren't linked; the target and input sizes, which the kit's K1 and R5 fix
 16. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-03-e2e-click-before-hydration.md`: a2: the first click lost before hydration; your hydration marker
 17. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-04-mono-500-preload-unused-on-first-paint.md`: a2: Mono 500 unused until kit.css is linked
-18. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, 'Revision 7' and 'Revision 9': what a2 takes from Leah's review, and what goes to Fantem, Fenn, Nemi and Ghost
-19. `docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build.md`: this task doc: follow it exactly
+18. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, 'Revision 7' and 'Revision 9': what a2 takes from Leah's review, and what goes to Fantem, Fenn, Nemi and Ghost; 'The hydration marker waits for the final layout': your a3
+19. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-fenn-01-hydrated-marker-precedes-phone-layout.md`: a3: the marker is set before the list's phone layout, with Fenn's timings, and INT's ruling (only the marker now)
+20. `docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -103,14 +104,22 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `! grep -rn 'kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js'`
 - **Expected:** no line listed; each exits 0; the chunks, with ReasonDialog's own and /'s first load as section 8 counts it, which you report
 
+### LEON-06: Attempt a3: the hydration marker waits for the final layout: data-hydrated="true" is set only in a commit after every DecisionTag on the page has its client layout, so no early tap lands on the wrong button (decisions-fenn-01, bar point 2; section 5, the hydration marker) (P1)
+
+- **Required:** The server's HTML of / still has no data-hydrated, and there's no hydration mismatch warning. On a phone (390x844, isMobile, hasTouch), once data-hydrated is set no DecisionTag's layout, button order or button rect changes. Show that with a probe like Fenn's (a rAF poll of Approve's and Reject's rects plus a MutationObserver on data-hydrated, kept in your scratchpad, not the repo) over 10 fresh phone loads. Desk unchanged. No change outside your territory. Every locked test passes, and the locked e2e suite is green 10 runs in a row, each starting its own dev server
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test 2>&1 | grep -E 'passed|failed|flaky'; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** typechecks; the unit tests pass; 10 lines of "5 passed" (UC-31 desk skipped as before) and no failed or flaky line; only apps/web/src/modules/decisions/** changed; and the probe's log for 10 phone loads, with the marker's time and no rect or order change after it, which you report
+
 **Notes:**
 
 - Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third and fourth tasks: the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'), and the hydration marker (revision 9). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.
 - Leah's review of a1 (revision 9; report and findings on main at 3d3ccfc, in Context). Yours: link kit.css and decisions.css from /'s head so the server's HTML carries them (findings 02 and 04: with kit.css linked, HashChip draws in Mono 500 on first paint), the lazy ReasonDialog, and the hydration marker (finding 03). Not yours, and don't work around them in decisions.css: the 44px tap targets, the 16px input and the dialog's aria-describedby are the kit's (Fantem's w0-kit a3, section 4, K1 and R5); Fenn's end-to-end a2 waits for your marker; Nemi's w0-split makes the route split real; zod/mini is Ghost's, after Axis's S1-6.
 - Your end-to-end run needs Fenn's e2e a2 and Fantem's w0-kit a3 on main, and your chunk sizes need Nemi's w0-split. INT dispatches you once they're merged. If one isn't when you reach the verify, run what you can, say which wasn't merged, and report the failures it explains under Limitations.
-- Attempt a3 (revision 10), after a2 is merged: do only the fifth task. It waits for Fantem's w0-kit a5 (revision 13: the index exports only loadReasonDialog; a4 is merged) and Ghost's w0-data a2 (UiError.stale.message, merged). The lazy dialog loads through the kit's loadReasonDialog (section 4, R7; section 5), and your deep import of kit/ReasonDialog goes. The null-version stale row reads UiError.stale.message (5.3). If one of the two isn't merged when you start, do the other and say which.
+- The loader attempt (revision 10), after the marker attempt a3 is merged (so a4 unless INT says otherwise): do only the fifth task. It waits for Fantem's w0-kit a5 (revision 13: the index exports only loadReasonDialog; merged) and Ghost's w0-data a2 (UiError.stale.message, merged). The lazy dialog loads through the kit's loadReasonDialog (section 4, R7; section 5), and your deep import of kit/ReasonDialog goes. The null-version stale row reads UiError.stale.message (5.3). If one of the two isn't merged when you start, do the other and say which.
 - UiError.stale.message (revision 9): Ghost's w0-data a2 adds it. If it's on main when you start, the null-version stale row's body reads it (5.3), and your raw read goes. If it isn't, keep your a1 read as built and say so in your report: the switch then comes in a later fix.
 - The budget: report /'s first load as section 8 counts it (every JS file / loads, gzipped and summed, without the lazy dialog's chunk). Over 160 kB isn't yours to fix in a2: zod/mini is the cut that clears it.
+- Attempt a3 (2026-11-07; INT, option (c) of decisions-fenn-01): do only the sixth task. Today data-hydrated comes from useHydrated() on the page root (DecisionsScreen.tsx:172-178, 193), and the layout from useIsPhone() in DecisionsList (:135-141, :341). On a phone the list switches desk to phone 15 to 30 ms after the marker, and a tap in that window opens Reject instead of Approve. The marker's promise (section 5, revision 9) is that a click from then on lands where it's aimed, so set it only once every DecisionTag has its final layout. How is your call, within your territory. Tie it to React's commit, not to a timer or a fixed delay.
+- Not in a3: the desk-to-phone switch itself and its 0.13 layout shift (cls-study-leah-01). That is INT's option (a), a UI contract revision 15 and a kit change, and your attempt after it. Don't move the layout into decisions.css, and don't change the kit or apps/web/e2e/**. The switch still happens in a3, only before the marker.
 
 ## 5. Territory
 
@@ -198,6 +207,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | LEON-03 | DONE / PARKED / BLOCKED | |
 | LEON-04 | DONE / PARKED / BLOCKED | |
 | LEON-05 | DONE / PARKED / BLOCKED | |
+| LEON-06 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -249,6 +259,7 @@ Your tasks:
 - LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')
 - LEON-04: Attempt a2: the hydration marker, data-hydrated="true" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9)
 - LEON-05: Attempt a3: ReasonDialog through the kit's loadReasonDialog, with no import past kit/index.ts; the null-version stale row's body from UiError.stale.message (revision 10)
+- LEON-06: Attempt a3: the hydration marker waits for the final layout: data-hydrated="true" is set only in a commit after every DecisionTag on the page has its client layout, so no early tap lands on the wrong button (decisions-fenn-01, bar point 2; section 5, the hydration marker)
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

@@ -490,6 +490,7 @@ Your tasks:
 - LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')
 - LEON-04: Attempt a2: the hydration marker, data-hydrated="true" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9)
 - LEON-05: Attempt a3: ReasonDialog through the kit's loadReasonDialog, with no import past kit/index.ts; the null-version stale row's body from UiError.stale.message (revision 10)
+- LEON-06: Attempt a3: the hydration marker waits for the final layout: data-hydrated="true" is set only in a commit after every DecisionTag on the page has its client layout, so no early tap lands on the wrong button (decisions-fenn-01, bar point 2; section 5, the hydration marker)
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
