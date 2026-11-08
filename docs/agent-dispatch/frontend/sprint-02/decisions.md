@@ -47,3 +47,9 @@ INT's brief: the shell with the sidebar, so every later module drops a screen in
   - My reviews follow each build, and Leah's check comes last.
   - No Zane dispatch: there's no new dependency or credential path.
 - **Locks:** Fenn's two test dispatches change sprint-01-locked paths (`test/kit/**`, `test/modules/decisions/**`, `e2e/**`, `playwright.config.ts`) by INT's decision in this plan, each commit under `AVEL_LOCK_OVERRIDE`. INT moves the lines after the merges, and adds one for `test/modules/system/**`.
+
+## 2026-11-08: INT confirms the budget and the builder
+
+- **The budget stays 150 kB** for `/`'s first load. The thin oRPC link is built only if Leah's final measure fails (app-shell.md section 6, unchanged).
+- **Ghost builds the decisions follow-up** (app-shell.md section 4), beside Leon's shell, as planned.
+- Brennan's shell-uic review a1 is open at 04fac4b.
