@@ -92,7 +92,6 @@ function pick<P>(name: string): ComponentType<P> {
 }
 
 export const DecisionTag = pick<DecisionTagProps>("DecisionTag");
-export const ReasonDialog = pick<ReasonDialogProps>("ReasonDialog");
 export const ErrorPanel = pick<ErrorPanelProps>("ErrorPanel");
 export const WidgetState = pick<WidgetStateProps>("WidgetState");
 
@@ -104,6 +103,19 @@ export const loadReasonDialog: () => Promise<Record<string, unknown>> =
 
 /** Whether the kit index exports loadReasonDialog as a function. */
 export const hasLoadReasonDialog = typeof built.loadReasonDialog === "function";
+
+/** Whether the kit index has a ReasonDialog key of its own (R7, revision 13: it must not). */
+export const indexHasReasonDialog = "ReasonDialog" in built;
+
+// R7 (revision 13): the component comes from loadReasonDialog, never from the index. Until the
+// kit exists the stand-in module is empty, and ReasonDialog is an inert stand-in that draws nothing.
+const loadedDialog = await loadReasonDialog();
+const loadedComponent = loadedDialog.ReasonDialog;
+export const ReasonDialog: ComponentType<ReasonDialogProps> =
+  typeof loadedComponent === "function" ||
+  (typeof loadedComponent === "object" && loadedComponent !== null)
+    ? (loadedComponent as ComponentType<ReasonDialogProps>)
+    : () => null;
 
 /** A query that must find something: fails on an assertion, with a message, when it doesn't. */
 export function found<T>(value: T | null | undefined, what: string): T {

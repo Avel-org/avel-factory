@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from "vitest";
 import {
   found,
   hasLoadReasonDialog,
+  indexHasReasonDialog,
   loadReasonDialog,
   ReasonDialog,
   type ReasonDialogProps,
@@ -199,9 +200,14 @@ describe("UC-09 ReasonDialog", () => {
     expect(screen.queryByRole("button", { name: /^Copy / })).toBeNull();
   });
 
-  test("UC-09 (R7) loadReasonDialog resolves to a module whose ReasonDialog is the kit index's ReasonDialog", async () => {
+  test("UC-09 (R7) loadReasonDialog resolves to a module with a ReasonDialog component (pins existing behaviour: passes)", async () => {
     expect(hasLoadReasonDialog, "the kit index exports loadReasonDialog").toBe(true);
     const loaded = await loadReasonDialog();
     expect(loaded.ReasonDialog).toBe(ReasonDialog);
+    expect(typeof ReasonDialog).toBe("function");
+  });
+
+  test("UC-09 (R7) the kit index has no ReasonDialog value: loadReasonDialog is its only way to the dialog", () => {
+    expect(indexHasReasonDialog, "the kit index has no ReasonDialog export").toBe(false);
   });
 });
