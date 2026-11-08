@@ -144,6 +144,11 @@ test("UC-31: on a phone the actions are D11's two-column grid, 44px tall, and th
   const dialog = page.getByRole("dialog");
   const input = dialog.getByRole("textbox");
   await expect(input).toBeVisible();
+  // Read sizes once the dialog's open animation has finished: av-dialog-in's scale makes
+  // boundingBox() read under 44px while it runs (revision 13). No sleep, and motion stays on.
+  await dialog.evaluate((el) =>
+    Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)),
+  );
   expect(await input.evaluate((el) => getComputedStyle(el).fontSize)).toBe("16px");
   const inputBox = await input.boundingBox();
   expect(inputBox).not.toBeNull();
