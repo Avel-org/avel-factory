@@ -1,4 +1,4 @@
-status: open
+status: routed
 severity: P2
 title: SSR client's baseUrl comes from the incoming request URL (Host-derived)
 

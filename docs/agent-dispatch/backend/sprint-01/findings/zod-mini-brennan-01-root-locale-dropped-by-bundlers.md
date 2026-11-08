@@ -1,4 +1,4 @@
-status: open
+status: fixed (fb5fee5, 9bc22af: sideEffects ["./dist/index.js"]; the Step 1 boot-time locale note stays with Axis)
 severity: P3
 module: zod-mini
 reviewer: brennan (review-spec)

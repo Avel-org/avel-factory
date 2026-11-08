@@ -1,4 +1,4 @@
-status: open
+status: fixed (d789a2a: contract.md section 6, vendor text NOT NULL, no default)
 severity: P3
 title: The names table adds `usage_log.vendor` with no type, nullability or default
 reviewer: Brennan (review-spec), agent-brennan-slice-review-spec (a2)

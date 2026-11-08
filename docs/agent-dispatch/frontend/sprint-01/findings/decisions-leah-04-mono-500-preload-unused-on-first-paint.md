@@ -1,4 +1,4 @@
-status: open (a2: re-checked, still open)
+status: fixed (NEMI-02, 523b795: Mono 400 preload)
 severity: P2
 owner: Leon a2 (same cause as finding 02)
 

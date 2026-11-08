@@ -1,4 +1,4 @@
-status: open
+status: closed (INT's decisions, contract revision 10)
 severity: P3
 owner: Ghost (`apps/web/src/data/client.ts`, `errors.ts`); Axis if the route table is generated (S1-7)
 

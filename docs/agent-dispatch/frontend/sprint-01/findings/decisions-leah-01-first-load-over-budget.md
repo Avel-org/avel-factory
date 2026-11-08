@@ -1,4 +1,4 @@
-status: open (a2: re-checked, still open)
+status: fixed (S1-6, 9392017: / first load 150.35 kB, under 160)
 severity: P1
 owner: INT to sequence; reductions below
 

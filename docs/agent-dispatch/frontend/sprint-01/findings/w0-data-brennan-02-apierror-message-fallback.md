@@ -1,4 +1,4 @@
-status: open
+status: fixed (UI contract revision 12, section 3 ApiError.bodyMessage and each kind's message)
 severity: P3
 owner: Zero (UI contract wording); no code change for Ghost
 

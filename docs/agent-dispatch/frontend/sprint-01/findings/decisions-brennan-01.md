@@ -1,4 +1,4 @@
-status: open
+status: fixed (D15, 193a66f; UC-08 D15 kit tests)
 severity: P3
 owner: Zero (UI contract section 4, D-rules), then Fantem (apps/web/src/kit/DecisionTag.tsx). Not Leon's: his diff draws the row exactly as 5.1 says.
 

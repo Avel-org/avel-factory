@@ -1,4 +1,4 @@
-status: open
+status: fixed
 severity: P2
 title: pnpm-lock.yaml is not updated for packages/contract-mock's dependencies
 

@@ -1,4 +1,4 @@
-status: open
+status: routed (Step 1, sprint-00 D47)
 severity: P3
 title: `missions.kind`'s freeze can be bypassed in two updates by clearing `onboarding_started_at` first. The build does what contract.md says; the gap is in the contract
 reviewer: Brennan (review-spec), agent-brennan-m2-db-review-spec (a1)

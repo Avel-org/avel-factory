@@ -1,4 +1,4 @@
-status: open
+status: fixed (UI contract revision 6, section 3 createApiClient; decisions.md 2026-11-07 160 kB budget)
 severity: P3
 module: w0-data
 reviewer: Brennan (agent-brennan-w0-data-review-spec, a1), at 3183bc1

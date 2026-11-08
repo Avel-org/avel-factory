@@ -1,4 +1,4 @@
-status: open
+status: closed (INT's decisions, contract revision 10)
 severity: P3
 owner: INT (ordering); Nemi, Leon, Fantem for the individual items
 

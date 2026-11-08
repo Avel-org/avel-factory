@@ -1,4 +1,4 @@
-status: open
+status: closed (INT's decisions, contract revision 10)
 severity: P3
 owner: Nemi (apps/web config) if it is ever pursued; INT decides
 

@@ -1,4 +1,4 @@
-status: open
+status: closed (INT's decisions, contract revision 10)
 severity: P3
 owner: Nemi (`apps/web/vite.config.ts`); upstream TanStack Start for the proper fix; INT decides
 

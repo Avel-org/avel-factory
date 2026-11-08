@@ -1,4 +1,4 @@
-status: open
+status: fixed (D11, 193a66f; UC-31 a4, 1c2213d)
 severity: P2
 owner: INT (known: D11's grid becomes a kit.css rule; Fantem)
 

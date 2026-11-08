@@ -1,4 +1,4 @@
-status: open
+status: fixed (D25, e36737f: routes 39 and 44 send rowVersion, route 5 exempt)
 severity: P3
 title: Routes 5, 39 and 44 change a mutable row named in their path but send no `rowVersion`, against Axis's own rule A3
 reviewer: Brennan (review-spec), agent-brennan-m1-contract-review-spec (a1)

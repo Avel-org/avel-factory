@@ -1,4 +1,4 @@
-status: open
+status: fixed (d789a2a: D3 item 1 marked superseded, B7 says five CHECKs)
 severity: P3
 title: decisions.md: D3 still says the map isn't in the repo, and the B7 recheck miscounts mission_pauses' CHECKs
 reviewer: Brennan (review-spec), agent-brennan-slice-review-spec (a2)

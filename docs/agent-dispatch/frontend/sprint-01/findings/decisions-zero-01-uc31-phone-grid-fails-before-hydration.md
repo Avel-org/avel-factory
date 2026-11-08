@@ -1,4 +1,4 @@
-status: open
+status: fixed (D11 as kit.css's .av-dt-pair rule, 193a66f; Fenn's UC-31 a4, 1c2213d)
 severity: P1
 owner: Fantem (kit.css: D11's phone grid as a CSS rule) and Zero (contract section 4, D11 and "What stays inline"), per INT's decision. Not Leon's code.
 

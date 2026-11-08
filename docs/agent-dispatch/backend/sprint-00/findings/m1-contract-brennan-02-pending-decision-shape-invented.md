@@ -1,4 +1,4 @@
-status: open
+status: fixed (D30, e36737f: PendingDecisionDto is Placeholder; Step 1 routes 52 to 54 decide it)
 severity: P3
 title: Route 52's "typed placeholder" fixes a discriminator (`source: 'proposal' | 'factory_change'`) that no doc defines
 reviewer: Brennan (review-spec), agent-brennan-m1-contract-review-spec (a1)

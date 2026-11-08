@@ -1,4 +1,4 @@
-status: open
+status: fixed (D15, the facts list only with a fact, 193a66f)
 severity: P2
 owner: Fantem (apps/web/src/kit/DecisionTag.tsx) and Zero (contract section 4, a new D-change). Not Leon's code: his factory row props are section 5.1's, word for word.
 

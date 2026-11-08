@@ -1,4 +1,4 @@
-status: open
+status: closed (INT's decisions, contract revision 10)
 severity: P3
 owner: Ghost (data core, UI contract section 3), Leon (the module), Fenn (locked tests), Zero (contract revision); INT decides
 

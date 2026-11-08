@@ -1,4 +1,4 @@
-status: open
+status: fixed (D15, 193a66f)
 severity: P3
 owner: Fantem (kit/DecisionTag.tsx)
 
