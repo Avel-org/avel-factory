@@ -3,64 +3,70 @@
 verdict: PASS
 
 ## Summary
-Nemi's w0-fonts diff (bedd8f0, report 9e9f51b) does what UI contract section 6 asks and nothing else. It adds one preload for IBM Plex Mono 500, in the same link form as Inter's. There's no Mono 400 preload, no fallback metrics, and nothing else in `__root.tsx` changed. The worktree build is red, but that comes from main (Ghost's `src/router.tsx` isn't merged), not from this diff. A scratchpad build with a stub router shows both preloads in the SSR HTML of `/`, and their URLs are the same ones the `@font-face` rules load. No findings.
+Attempt a2 reviews only NEMI-02, as INT scoped it: commit 800cd50 (Nemi's 286d71d, cherry-picked onto main ab520cd) swaps `__root.tsx`'s IBM Plex Mono 500 preload for Mono 400, in the same link form as Inter's. It meets UI contract section 6 (revision 10's correction, still the rule in revision 12) and DL's `HashChip`, and it builds, typechecks, lints and tests clean. The size-matched fallbacks part of ZERO-02 (NEMI-03, ac820a7) isn't in this commit: INT is holding it, so I didn't review it and this verdict doesn't cover it.
 
 ## Pre-flight
-- **Part 2 files, all read:**
-  - `.claude/agents/zero.md`
-  - `codebase-analysis.md`
-  - `docs/ui-contracts/decisions-approval-page.md`: sections 0, 6 (the `__root.tsx` bullets in full) and 8
-  - `docs/design/CR-W2 Pending decisions.md`: skimmed, nothing about fonts
-  - `decisions.md`: 2026-11-07 "Fonts" and "w0-fonts" in full
-  - Frontend Map v0.6: line 289 and the performance budgets around it
-  - design library v1.1: the three `@font-face` rules (lines 11 to 15), `--av-font-mono` (line 402), and `font: 500 … var(--av-font-mono)` uses
-  - `Step 0 and Step 1 plan.md`: skimmed, nothing about fonts
-  - this task doc
-- **Zero's Read first list:** `API and data reference.md` and `CR-16 Dispatch package contract.md` exist. Neither bears on one head link, so I only skimmed them.
-- **Branch:** `frontend/sprint-01/agent-zero-w0-fonts-review-frontend-a1`, at 9e9f51b. `AVEL_BASE` = 7904002.
-- **Part 7 commands:** all available after `pnpm install --frozen-lockfile`, because the worktree had no `node_modules`. Build, typecheck and test fail on the missing router entry, which is on main too. See Verification.
+- Part 2 files, in order. All read:
+  1. `.claude/agents/zero.md`
+  2. `codebase-analysis.md`
+  3. `docs/ui-contracts/decisions-approval-page.md` (revision 12; section 6 and section 8 in full)
+  4. `CR-W2 Pending decisions.md` (skimmed: nothing in it touches fonts)
+  5. `decisions.md` (the "Fonts" entry, "Revision 10" and "Revision 11")
+  6. Frontend Map v0.6 (line 289)
+  7. Design library v1.1 (`HashChip`'s source, `dt`, at byte offset about 497,000)
+  8. `Step 0 and Step 1 plan.md` (skimmed)
+  9. Section 6's `__root.tsx` bullets
+  10. This task doc
+- Read first: `API and data reference.md` and `CR-16 Dispatch package contract.md` are both present. Nothing in either touches this diff.
+- Branch: `frontend/sprint-01/agent-zero-w0-fonts-review-frontend-a2`, at 800cd50. `AVEL_BASE` = ab520cd = `main`.
+- Part 7 commands: all available. The worktree had no `node_modules`, so I ran `pnpm install --frozen-lockfile` first. The lockfile didn't change.
 
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| ZERO-01 | DONE: PASS, no findings | this report |
+| ZERO-01 | DONE (judged by revision 10's form; see Deviations 2) | this report's commit |
+| ZERO-02 | DONE for the preload swap (NEMI-02). The fallbacks part is out of scope (INT; Deviations 1) | this report's commit |
+
+What I checked:
+- **The diff** (`git diff ab520cd..800cd50`) is `apps/web/src/routes/__root.tsx`, +2 and -2:
+  - the import at line 7, `ibm-plex-mono-400.woff2?url`;
+  - the second link's `href` at line 53.
+  - Everything else in the file is unchanged: Inter's preload, the stylesheet link, the theme cookie, the context and the shell.
+  - `git diff 286d71d^ 286d71d | diff - <(git diff 800cd50^ 800cd50)` → no difference, so the cherry-pick is the same patch.
+- **The link form** (`__root.tsx:51-57`): `rel: "preload"`, `as: "font"`, `type: "font/woff2"`, `crossOrigin: "anonymous"`. These are the same four fields as Inter's link at lines 44-50.
+  - In the build, `dist/server/assets/router-*.js` holds exactly two `"preload"` links: `inter_variable_default` and `ibm_plex_mono_400_default`.
+  - The only Plex file the server bundle references is `ibm-plex-mono-400-DMJ8VG8y.woff2`.
+- **Mono 400 is the weight the first paint of `/` uses:**
+  - **DL's `HashChip` (`dt`):** the chip's style object sets `fontFamily: "var(--av-font-mono)"` and no `fontWeight`. The only `fontWeight: 500` is on the prefix span, which is `var(--av-font-sans)`.
+  - **The kit's copy:** `kit.css`'s `[data-ui="HashChip"]` sets no weight, so it inherits `body`'s `var(--av-weight-body)`, which is `400` (`tokens.css:398`). `.av-hash-prefix` is sans 500.
+  - **Every other mono rule** in `kit.css` is weight 400 or unset (the Tag kbd and mono tones, `.av-err-code`), and `modules/` sets no mono family.
+  - So Mono 500 isn't used on first paint, which matches section 6: "Mono 500 isn't preloaded".
+- **`fonts.css`** still declares both Plex faces, 400 and 500. Section 6 asks for that ("loads Inter Variable and IBM Plex Mono"), and this diff doesn't touch it.
+- **ZERO-02's Verify line:**
+  - `grep` → `ibm-plex-mono-400.woff2` only. ✓
+  - `tail -1 app.css` → `@import "./base.css";`. That's the expected state with NEMI-03 held: no `font-fallbacks.css` import yet.
+  - The diff stat lists only `__root.tsx`.
 
 ## Findings
 none
 
 ## Contract to files
-Each check in ZERO-01, against `apps/web/src/routes/__root.tsx` at 9e9f51b:
-- **One added preload for IBM Plex Mono 500:**
-  - line 7 imports `../styles/fonts/ibm-plex-mono-500.woff2?url`, which exists (`apps/web/src/styles/fonts/`);
-  - lines 51 to 57 add the link, right after Inter's;
-  - `git diff --stat` shows 8 insertions and 0 deletions in this file.
-- **In Inter's link form:** lines 51 to 57 have the same keys and values as Inter's at lines 44 to 50 (`rel: "preload"`, `as: "font"`, `type: "font/woff2"`, `crossOrigin: "anonymous"`). Only `href` differs.
-- **No Mono 400 preload:** the diff doesn't import `ibm-plex-mono-400`. The rendered HTML (below) has exactly two font preloads.
-- **No fallback metrics:** the diff has no `size-adjust`, `ascent-override` or `@font-face` change. `fonts.css` isn't in the diff. This follows section 6 and Decisions, "Fonts".
-- **Nothing else in `__root.tsx` changed:** the diff has only the two hunks above.
-- **Nothing outside the territory:** `git diff --name-only main...HEAD` lists `apps/web/src/routes/__root.tsx` and Nemi's completion report. Those are exactly the two paths in Nemi's Part 5. Neither path is in `locks.md`.
-- **The preloads reach the SSR HTML of `/`, and they aren't wasted:** I checked this in a scratchpad copy outside the worktree, with a stub `src/router.tsx` and a stub `index.tsx`. Neither stub was written in the worktree. I ran `vite build`, then rendered `/` with `dist/server/server.js`:
-  ```
-  200
-  <link rel="stylesheet" href="/assets/app-C8r0pGhX.css" data-precedence="default"/>
-  ...
-  <link rel="preload" href="/assets/inter-variable-Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin="anonymous"/>
-  <link rel="preload" href="/assets/ibm-plex-mono-500-DSY6xOcd.woff2" as="font" type="font/woff2" crossorigin="anonymous"/>
-  $ grep -o 'url([^)]*woff2)' dist/client/assets/*.css
-  url(/assets/inter-variable-Dx4kXJAl.woff2)
-  url(/assets/ibm-plex-mono-400-DMJ8VG8y.woff2)
-  url(/assets/ibm-plex-mono-500-DSY6xOcd.woff2)
-  ```
-  The preload's href is the same hashed URL the `@font-face` rule loads, so the file downloads only once.
-- **Types:** in the same copy, `tsc -p tsconfig.json` reports one error, `vite.config.ts(60,53)`: `@avel/contract-mock` isn't found, which is Ghost's pending package. `__root.tsx` has no errors.
+- Section 6, "preloads … Inter Variable, and IBM Plex Mono 400 … Mono 500 isn't preloaded" (revision 10): `apps/web/src/routes/__root.tsx:7`, `:44-57`.
+- Frontend Map v0.6 line 289 ("preloaded"): the same lines.
+- Section 6's size-matched fallbacks (revision 11), section 8's CLS under 0.02, and font-fallbacks.css: not in this diff (NEMI-03 is held by INT).
 
 ## Deviations
-- I ran `pnpm install --frozen-lockfile` in the worktree, because it had no `node_modules`. This writes only ignored files: `git status` stays clean.
-- The task's Expected says "builds", and the worktree build doesn't. I still give PASS, because the failure is on main as well (`Could not resolve entry for router entry: router`), which INT accepted (decisions.md, 2026-11-07, "Merge order"). The diff itself builds in the scratchpad copy with a stub router.
+1. **Scope narrowed by INT** (`[from INT]`, this session): "review NEMI-02 only".
+   - So ZERO-02's fallback checks weren't done: the metrics recomputed by the formula, the inputs checked against the font files, the stacks, `tokens.css` unchanged, the `app.css` import, and the CLS re-run.
+   - NEMI-03 (ac820a7, its CLS was 0.172) needs its own review once INT releases it.
+2. **ZERO-01's wording is a1's, and revision 10 reversed it.** ZERO-01 asks for one Mono 500 preload and "no Mono 400 preload". Revision 10 makes it the other way round, and ZERO-02 says the same.
+   - I judged the parts that still hold: one added Plex preload, in Inter's link form, nothing else changed in `__root.tsx`, and nothing outside the territory. The weight I checked against is revision 10's.
+   - The plan should drop or reword ZERO-01 for any later attempt.
+3. **No live check of the server's HTML.** This session isn't allowed to run local HTTP requests (both `curl localhost` and the dev server's output were denied), so I stopped the dev server.
+   - Instead I checked the preload links in the built SSR bundle. I didn't run a browser "preloaded but not used" check.
 
 ## Limitations
-- The SSR check ran on a stub router and a stub index route, not on Ghost's and Leon's real ones. The head links come from the root route alone, so the result should hold once those land. A re-run after w0-data merges would confirm it.
-- Whether the Mono 500 preload is actually used on first paint depends on the HashChip being visible on `/`. That's for Leah's review to measure.
+- I didn't run the CLS measure. It belongs to the fallbacks, which aren't in this diff, and local HTTP is denied here anyway (Deviations 3).
 
 ## Parked chains
 none
@@ -69,49 +75,52 @@ none
 none
 
 ## Issues for other agents
-- **Leah:** `/` now has two font preloads, and they match the `@font-face` URLs. In the rendered `<head>`, the stylesheet link comes before both preloads. That's how React 19 orders a `precedence` stylesheet, and it's not from this diff. Note it if it matters for your measurement.
+- **INT:** NEMI-03 (the fallbacks, ac820a7) still needs a review-frontend against section 6's "The size-matched fallbacks" once it's released. ZERO-01 in `plan.toml` is stale against revision 10 (Deviations 2).
+- **Leah:** the Mono 400 preload is the fix for decisions-leah-04. It can be re-checked once this is merged.
 
 ## Files changed
 ```
-apps/web/src/routes/__root.tsx                                                 (Nemi, under review)
-docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md (Nemi, under review)
-docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md (this report)
+docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md
 ```
+(Before this commit, `git diff --name-only main...HEAD` listed only Nemi's `apps/web/src/routes/__root.tsx`, the commit under review.)
 
 ## Verification
 ```
-$ pnpm --filter @avel/web build && git diff "$(git merge-base main HEAD)"..HEAD --stat   # ZERO-01's verify
-apps/web build: Error: Could not resolve entry for router entry: router in .../apps/web/src
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @avel/web@0.0.0 build: `vite build`      (exit 1; on main too)
-$ git diff 7904002..9e9f51b --stat
- apps/web/src/routes/__root.tsx                     |  8 ++
- .../agent-nemi-w0-fonts-build-completion.md        | 96 ++++++++++++++++++++++
- 2 files changed, 104 insertions(+)
-
 $ pnpm --filter "@avel/web..." build
-packages/contract build$ tsc -p tsconfig.json   (ok)
-apps/web build: Error: Could not resolve entry for router entry: router in .../apps/web/src
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @avel/web@0.0.0 build: `vite build`
-exit 1
+...
+apps/web build: dist/client/assets/routes-rEFXJ-4c.js                 54.14 kB │ gzip:  19.20 kB
+apps/web build: dist/client/assets/index-BNrD8qk7.js                 461.83 kB │ gzip: 143.88 kB
+apps/web build: ✓ built in 1.27s
+...
+apps/web build: dist/server/server.js                                      261.21 kB │ gzip: 63.19 kB
+apps/web build: ✓ built in 143ms
+apps/web build: Done
 
 $ pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck
-No projects matched the filters "@avel/contract-mock" in ".../frontend-sprint-01-agent-zero-w0-fonts-review-frontend-a1"
-apps/web typecheck: Error: Could not resolve entry for router entry: router in .../apps/web/src
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @avel/web@0.0.0 typecheck
-exit 1
+packages/contract typecheck: Done
+packages/contract-mock typecheck: Done
+apps/web typecheck: Done
 
 $ pnpm lint
 > biome check .
-Checked 136 files in 73ms. No fixes applied.
-exit 0
+Checked 213 files in 155ms. No fixes applied.
 
 $ pnpm --filter @avel/web test
-Startup Error: Could not resolve entry for router entry: router in .../apps/web/src
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @avel/web@0.0.0 test: `vitest run`
-exit 1
+ Test Files  14 passed (14)
+      Tests  196 passed (196)
 
-$ git diff --name-only main...HEAD
+$ grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx
+ibm-plex-mono-400.woff2
+
+$ tail -1 apps/web/src/styles/app.css
+@import "./base.css";
+
+$ git diff "$(git merge-base main HEAD)"..HEAD --stat     # before this report
+ apps/web/src/routes/__root.tsx | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+$ git diff --name-only main...HEAD                         # after this report
 apps/web/src/routes/__root.tsx
-docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md
-(plus this report, committed last)
+docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md
 ```
+`__root.tsx` is the builder's commit under review (800cd50). The only path I wrote is my report, which is in Part 5.
