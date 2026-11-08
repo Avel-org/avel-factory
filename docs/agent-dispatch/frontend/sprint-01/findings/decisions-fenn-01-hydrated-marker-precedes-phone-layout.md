@@ -1,4 +1,4 @@
-status: open
+status: fixed (Leon a3, 3789364; FENN-04 met: 10 green runs in Zero's review a2 on Leon's a3, plus 3 on main 8386bb5 in Fenn's a7)
 severity: P1
 title: data-hydrated is set 15 to 30 ms before the list switches from the server's desk layout to the phone layout. A tap in that window opens Reject instead of Approve, and the same switch is the 0.13 layout shift on `/`.
 found by: Fenn, decisions-test-e2e a5 (report 73e235e on frontend/sprint-01/agent-fenn-decisions-test-e2e-a5, verdict BLOCKED). Filed by Zero for INT, since Fenn writes only the report.

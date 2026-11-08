@@ -1,4 +1,4 @@
-status: open
+status: routed (sprint-02, fallbacks revisited with the shell; Zero decisions.md 2026-11-07)
 severity: P2
 owner: INT to decide; Zero (section 6), Nemi (NEMI-03)
 

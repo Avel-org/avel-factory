@@ -1,4 +1,4 @@
-status: open
+status: fixed (Leon a3, 3789364; FENN-04 met: 10 green runs in Zero's review a2 on Leon's a3, plus 3 on main 8386bb5 in Fenn's a7)
 severity: P2
 title: The locked end-to-end suite failed 4 of 14 runs on main. Each failure is a phone test, one of the first three after Playwright starts the dev server. It fails waiting for the hydration marker or for the reason dialog's confirm button.
 found by: Zero, in the main checkout while checking decisions-zero-01 for INT (not a review session)

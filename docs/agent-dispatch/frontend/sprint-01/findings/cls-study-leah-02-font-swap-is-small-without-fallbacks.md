@@ -1,4 +1,4 @@
-status: open
+status: routed (sprint-02, fallbacks revisited with the shell; Zero decisions.md 2026-11-07)
 severity: P3
 owner: INT to decide (section 6's fallbacks); see cls-study-leah-03 and cls-study-leah-04
 

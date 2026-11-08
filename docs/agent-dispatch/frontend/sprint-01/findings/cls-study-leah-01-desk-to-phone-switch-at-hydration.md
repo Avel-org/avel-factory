@@ -1,4 +1,4 @@
-status: open
+status: routed (sprint-02, option (a) with the app shell: D16, UC-32, throttled measure; 0.13 stays open)
 severity: P1
 owner: INT to decide; Leon (`useIsPhone`, `DecisionsScreen.tsx:134-140`) and Fantem (kit.css `[data-layout="phone"]` rules)
 

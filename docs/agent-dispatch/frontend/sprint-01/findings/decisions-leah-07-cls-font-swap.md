@@ -1,4 +1,4 @@
-status: open
+status: routed (sprint-02, with the app shell; fallbacks dropped for sprint-01, NEMI-03 not merged; INT)
 severity: P2
 owner: INT to decide (no size-matched fallback yet: decisions.md, "Fonts"); Fantem/Nemi
 

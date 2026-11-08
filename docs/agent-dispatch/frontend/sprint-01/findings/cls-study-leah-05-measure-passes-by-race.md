@@ -1,4 +1,4 @@
-status: open
+status: routed (sprint-02, with the throttled measure in section 6)
 severity: P2
 owner: Zero (section 6 "The measure", section 8)
 

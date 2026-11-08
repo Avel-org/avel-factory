@@ -678,3 +678,15 @@ INT took option (c) first (Leon's decisions build a3 and Fenn's e2e a6, planned 
   - **Who:** Leah's cls-study a3 re-measures main after Leon's a4 and Fenn's a7, and checks D16's focus order on a phone.
 - **Focus order, accepted for now:** on a phone the desk DOM puts Approve before Reject while Reject is drawn on the left. The server's HTML has done that since D11 (revision 10), and it's now what a phone keeps. Leah judges it in a3. If she finds it a defect, D16 changes.
 - **Not decided:** section 6's fallback formula (cls-study-leah-02 to 04). The fallbacks stay held.
+
+## 2026-11-07: Sprint-01 closes with option (c); option (a) and the fallbacks move to sprint-02 (INT)
+
+- **Sprint-01 finishes with option (c) only:** Leon's decisions build a3 (the marker after the final layout), then Fenn's decisions-test-e2e a6 (FENN-04, 10 green). Then sprint-01 closes. decisions-fenn-01 closes with them.
+- **Option (a) moves to sprint-02, with the app shell.** That's revision 15's D16, the page on `layout="desk"`, UC-32, section 6's throttled measure, Fantem's w0-kit a6, Leon's a4, Fenn's e2e a7 and Leah's cls-study a3.
+  - 3b4a7c0 stays as the plan for that work. None of those attempts is dispatched in sprint-01, and Brennan doesn't review revision 15 now.
+  - Until then the contract on main describes D16 and a `layout="desk"` page that sprint-01 doesn't build. The sprint-01 page still switches to `layout="phone"` after hydration. So cls-study-leah-01's 0.13 stays open into sprint-02, and so do UC-32 and the throttled measure.
+  - Leon's loader task (revision 10's fifth task) goes with his a4, so it moves to sprint-02 too. **INT accepts the deep import for sprint-01:** the page's `import("../../../kit/ReasonDialog")` (`DecisionsScreen.tsx:105`) breaks R7's "never by a deep import" and stays as it is. Leon fixes it in sprint-02 with the rest of option (a).
+- **Section 6's size-matched fallbacks are dropped for sprint-01.** Nemi's NEMI-03 (ac820a7) isn't merged, and no fallback rule ships. They're revisited with the shell in sprint-02, with Leah's cls-study a2 numbers (findings 02 to 04: the formula's 138.27% raises the swap shift; one method, 107.50%, takes it to about 0).
+  - decisions-leah-07 is routed to sprint-02.
+- **Fenn's e2e a7 isn't merged** (UC-32, 5abf046, PARTIAL: it fails first, as it should, until D16 and Leon's a4 land). It stays on `frontend/sprint-01/agent-fenn-decisions-test-e2e-a7` as sprint-02's start for UC-32.
+- **The contract header** gets one line (INT): revision 15 applies from sprint-02, sprint-01 ships revision 14, and section 6's fallbacks are dropped for sprint-01. The sections' own text is unchanged.
