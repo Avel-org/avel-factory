@@ -1,5 +1,10 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { CompletionTaskStatus } from "./value-lists.js";
+
+// Classic zod sets English messages as the default on its first schema; zod/mini doesn't.
+// The same default here keeps every issue message, and so BAD_REQUEST's details (S1-3),
+// as they were. An explicit z.config() locale still wins, as it does with classic.
+if (!z.core.globalConfig.localeError) z.config(z.locales.en());
 
 /**
  * The completion report schema (E6): what `completion_reports.body` holds.
@@ -17,7 +22,7 @@ import { CompletionTaskStatus } from "./value-lists.js";
  * column, not part of the body.
  */
 
-const Text = z.string().trim().min(1);
+const Text = z.string().check(z.trim(), z.minLength(1));
 
 /** One pre-flight check: a verification command or a checklist item, and its result (CR-10 item 6). */
 export const PreflightResult = z.object({
@@ -31,7 +36,7 @@ export type PreflightResult = z.infer<typeof PreflightResult>;
 export const CompletionTask = z.object({
   id: Text,
   status: z.enum(CompletionTaskStatus),
-  commit: z.string().min(1).nullable(),
+  commit: z.nullable(z.string().check(z.minLength(1))),
 });
 export type CompletionTask = z.infer<typeof CompletionTask>;
 
@@ -65,7 +70,7 @@ export const CompletionReportBody = z.object({
   issuesForOthers: z.array(Text),
   dependencyRequests: z.array(Text),
   escalations: z.array(Text),
-  preflight: z.array(PreflightResult).min(1),
+  preflight: z.array(PreflightResult).check(z.minLength(1)),
   contractToFiles: z.array(ContractItemFiles),
   deviations: z.array(Deviation),
   limitations: z.array(Text),

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import {
   CloseoutItemKind,
   CloseoutItemState,
@@ -32,11 +32,11 @@ export const SkillDto = z.object({
   version: z.string(),
   layer: z.string(),
   type: z.string(),
-  versionRange: z.string().nullable(),
+  versionRange: z.nullable(z.string()),
   contentSha256: z.string(),
   author: z.enum(SkillAuthor),
   source: z.enum(SkillSource),
-  sourceUrl: z.string().nullable(),
+  sourceUrl: z.nullable(z.string()),
   factoryCommit: z.string(),
   status: z.enum(IndexStatus),
   createdAt: IsoTime,
@@ -49,15 +49,15 @@ export type SkillDto = z.infer<typeof SkillDto>;
  * written or import)". The folder's files come as multipart.
  */
 export const CreateSkillInput = z.object({
-  slug: z.string().min(1),
-  version: z.string().min(1),
-  layer: z.string().min(1),
-  type: z.string().min(1),
-  versionRange: z.string().min(1).optional(),
+  slug: z.string().check(z.minLength(1)),
+  version: z.string().check(z.minLength(1)),
+  layer: z.string().check(z.minLength(1)),
+  type: z.string().check(z.minLength(1)),
+  versionRange: z.optional(z.string().check(z.minLength(1))),
   author: z.enum(SkillAuthor),
   source: z.enum(SkillSource),
-  sourceUrl: z.url().optional(),
-  files: z.array(FileBody).min(1),
+  sourceUrl: z.optional(z.url()),
+  files: z.array(FileBody).check(z.minLength(1)),
 });
 export type CreateSkillInput = z.infer<typeof CreateSkillInput>;
 
@@ -68,8 +68,8 @@ export type SkillIdInput = z.infer<typeof SkillIdInput>;
 export const UpdateSkillInput = z.object({
   itemId: Uuid,
   rowVersion: RowVersion,
-  status: z.enum(IndexStatus).optional(),
-  files: z.array(FileBody).min(1).optional(),
+  status: z.optional(z.enum(IndexStatus)),
+  files: z.optional(z.array(FileBody).check(z.minLength(1))),
 });
 export type UpdateSkillInput = z.infer<typeof UpdateSkillInput>;
 
@@ -77,7 +77,7 @@ export type UpdateSkillInput = z.infer<typeof UpdateSkillInput>;
 export const KbEntryDto = z.object({
   id: Uuid,
   layer: z.enum(LibraryLayer),
-  clientId: Uuid.nullable(),
+  clientId: z.nullable(Uuid),
   kind: z.string(),
   tags: z.array(z.string()),
   path: z.string(),
@@ -92,11 +92,11 @@ export type KbEntryDto = z.infer<typeof KbEntryDto>;
 /** Route 79: a knowledge entry; its body is the file at `path` in the factory repo. */
 export const CreateKbEntryInput = z.object({
   layer: z.enum(LibraryLayer),
-  clientId: Uuid.optional(),
-  kind: z.string().min(1),
-  tags: z.array(z.string().min(1)).optional(),
-  path: z.string().min(1),
-  body: z.string().min(1),
+  clientId: z.optional(Uuid),
+  kind: z.string().check(z.minLength(1)),
+  tags: z.optional(z.array(z.string().check(z.minLength(1)))),
+  path: z.string().check(z.minLength(1)),
+  body: z.string().check(z.minLength(1)),
 });
 export type CreateKbEntryInput = z.infer<typeof CreateKbEntryInput>;
 
@@ -107,9 +107,9 @@ export type KbEntryIdInput = z.infer<typeof KbEntryIdInput>;
 export const UpdateKbEntryInput = z.object({
   itemId: Uuid,
   rowVersion: RowVersion,
-  status: z.enum(KbEntryStatus).optional(),
-  tags: z.array(z.string().min(1)).optional(),
-  body: z.string().min(1).optional(),
+  status: z.optional(z.enum(KbEntryStatus)),
+  tags: z.optional(z.array(z.string().check(z.minLength(1)))),
+  body: z.optional(z.string().check(z.minLength(1))),
 });
 export type UpdateKbEntryInput = z.infer<typeof UpdateKbEntryInput>;
 
@@ -117,8 +117,8 @@ export type UpdateKbEntryInput = z.infer<typeof UpdateKbEntryInput>;
 export const RuleDto = z.object({
   id: Uuid,
   scope: z.enum(LibraryLayer),
-  stack: z.string().nullable(),
-  clientId: Uuid.nullable(),
+  stack: z.nullable(z.string()),
+  clientId: z.nullable(Uuid),
   path: z.string(),
   sha256: z.string(),
   status: z.enum(IndexStatus),
@@ -130,10 +130,10 @@ export type RuleDto = z.infer<typeof RuleDto>;
 /** Route 83: a rule; its body is the file at `path` in the factory repo. */
 export const CreateRuleInput = z.object({
   scope: z.enum(LibraryLayer),
-  stack: z.string().min(1).optional(),
-  clientId: Uuid.optional(),
-  path: z.string().min(1),
-  body: z.string().min(1),
+  stack: z.optional(z.string().check(z.minLength(1))),
+  clientId: z.optional(Uuid),
+  path: z.string().check(z.minLength(1)),
+  body: z.string().check(z.minLength(1)),
 });
 export type CreateRuleInput = z.infer<typeof CreateRuleInput>;
 
@@ -144,8 +144,8 @@ export type RuleIdInput = z.infer<typeof RuleIdInput>;
 export const UpdateRuleInput = z.object({
   itemId: Uuid,
   rowVersion: RowVersion,
-  status: z.enum(IndexStatus).optional(),
-  body: z.string().min(1).optional(),
+  status: z.optional(z.enum(IndexStatus)),
+  body: z.optional(z.string().check(z.minLength(1))),
 });
 export type UpdateRuleInput = z.infer<typeof UpdateRuleInput>;
 
@@ -158,7 +158,7 @@ export const TemplateDto = z.object({
   scaffoldCommit: z.string(),
   factoryCommit: z.string(),
   status: z.enum(IndexStatus),
-  sourceMissionId: Uuid.nullable(),
+  sourceMissionId: z.nullable(Uuid),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -166,12 +166,12 @@ export type TemplateDto = z.infer<typeof TemplateDto>;
 
 /** Route 87: a project template version. */
 export const CreateTemplateInput = z.object({
-  slug: z.string().min(1),
-  version: z.string().min(1),
-  packageKey: z.string().min(1),
-  path: z.string().min(1),
+  slug: z.string().check(z.minLength(1)),
+  version: z.string().check(z.minLength(1)),
+  packageKey: z.string().check(z.minLength(1)),
+  path: z.string().check(z.minLength(1)),
   scaffoldCommit: Sha,
-  sourceMissionId: Uuid.optional(),
+  sourceMissionId: z.optional(Uuid),
 });
 export type CreateTemplateInput = z.infer<typeof CreateTemplateInput>;
 
@@ -180,12 +180,12 @@ export type CreateTemplateInput = z.infer<typeof CreateTemplateInput>;
  * `itemId` is the string `<slug>@<version>` (e.g. `landing-page@3`), which the server
  * parses, so a template slug can't contain `@` (D31).
  */
-export const TemplateIdInput = z.object({ itemId: z.string().min(1) });
+export const TemplateIdInput = z.object({ itemId: z.string().check(z.minLength(1)) });
 export type TemplateIdInput = z.infer<typeof TemplateIdInput>;
 
 /** Route 89: retire a template version. */
 export const UpdateTemplateInput = z.object({
-  itemId: z.string().min(1),
+  itemId: z.string().check(z.minLength(1)),
   rowVersion: RowVersion,
   status: z.enum(IndexStatus),
 });
@@ -202,7 +202,7 @@ export const RulesVersionDto = z.object({
 export type RulesVersionDto = z.infer<typeof RulesVersionDto>;
 
 /** Route 90: "What `avel check` runs". */
-export const GetRulesBundleInput = z.object({ rulesVersion: z.string().min(1) });
+export const GetRulesBundleInput = z.object({ rulesVersion: z.string().check(z.minLength(1)) });
 export type GetRulesBundleInput = z.infer<typeof GetRulesBundleInput>;
 
 export const RulesBundleDto = z.object({
@@ -216,14 +216,14 @@ export const CloseoutItemDto = z.object({
   id: Uuid,
   missionId: Uuid,
   kind: z.enum(CloseoutItemKind),
-  findingId: Uuid.nullable(),
-  moduleRunId: Uuid.nullable(),
-  note: z.string().nullable(),
+  findingId: z.nullable(Uuid),
+  moduleRunId: z.nullable(Uuid),
+  note: z.nullable(z.string()),
   state: z.enum(CloseoutItemState),
   createdAt: IsoTime,
   ...mutableFields,
 });
 export type CloseoutItemDto = z.infer<typeof CloseoutItemDto>;
 
-export const ListCloseoutItemsInput = PageQuery.extend({ missionId: Uuid });
+export const ListCloseoutItemsInput = z.extend(PageQuery, { missionId: Uuid });
 export type ListCloseoutItemsInput = z.infer<typeof ListCloseoutItemsInput>;

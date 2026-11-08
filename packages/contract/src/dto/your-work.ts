@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import {
   ArchiveStatus,
   HumanTimeActivity,
@@ -15,11 +15,11 @@ export const TimeEntryDto = z.object({
   id: Uuid,
   userId: Uuid,
   missionId: Uuid,
-  dispatchId: Uuid.nullable(),
+  dispatchId: z.nullable(Uuid),
   activity: z.enum(HumanTimeActivity),
   startedAt: IsoTime,
-  endedAt: IsoTime.nullable(),
-  minutes: z.int().nullable(),
+  endedAt: z.nullable(IsoTime),
+  minutes: z.nullable(z.int()),
   source: z.enum(HumanTimeSource),
   state: z.enum(HumanTimeState),
   createdAt: IsoTime,
@@ -40,23 +40,23 @@ export const OperatorEventInput = z.discriminatedUnion("source", [
   }),
   z.object({
     source: z.literal("heartbeat"),
-    missionId: Uuid.optional(),
+    missionId: z.optional(Uuid),
     at: IsoTime,
   }),
   z.object({
     source: z.literal("time"),
     missionId: Uuid,
-    dispatchId: Uuid.optional(),
+    dispatchId: z.optional(Uuid),
     activity: z.enum(HumanTimeActivity),
     startedAt: IsoTime,
-    minutes: z.int().min(1),
+    minutes: z.int().check(z.minimum(1)),
   }),
 ]);
 export type OperatorEventInput = z.infer<typeof OperatorEventInput>;
 
 /** Route 65's output: the time entry it opened or moved, if any. */
 export const OperatorEventResultDto = z.object({
-  timeEntry: TimeEntryDto.nullable(),
+  timeEntry: z.nullable(TimeEntryDto),
 });
 export type OperatorEventResultDto = z.infer<typeof OperatorEventResultDto>;
 
@@ -64,21 +64,23 @@ export type OperatorEventResultDto = z.infer<typeof OperatorEventResultDto>;
 export const UpdateTimeEntryInput = z.object({
   timeEntryId: Uuid,
   rowVersion: RowVersion,
-  state: z.enum(HumanTimeState).extract(["confirmed", "discarded"]).optional(),
-  activity: z.enum(HumanTimeActivity).optional(),
-  minutes: z.int().min(0).optional(),
+  state: z.optional(
+    z.enum(["confirmed", "discarded"] as const satisfies readonly HumanTimeState[]),
+  ),
+  activity: z.optional(z.enum(HumanTimeActivity)),
+  minutes: z.optional(z.int().check(z.minimum(0))),
 });
 export type UpdateTimeEntryInput = z.infer<typeof UpdateTimeEntryInput>;
 
 /** `notes`. */
 export const NoteDto = z.object({
   id: Uuid,
-  missionId: Uuid.nullable(),
+  missionId: z.nullable(Uuid),
   userId: Uuid,
   body: z.string(),
   source: z.enum(NoteSource),
   state: z.enum(ArchiveStatus),
-  redactedAt: IsoTime.nullable(),
+  redactedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -86,8 +88,8 @@ export type NoteDto = z.infer<typeof NoteDto>;
 
 /** Route 68: "Add a note, from the web or CLI". */
 export const CreateNoteInput = z.object({
-  body: z.string().trim().min(1),
+  body: z.string().check(z.trim(), z.minLength(1)),
   source: z.enum(NoteSource),
-  missionId: Uuid.optional(),
+  missionId: z.optional(Uuid),
 });
 export type CreateNoteInput = z.infer<typeof CreateNoteInput>;

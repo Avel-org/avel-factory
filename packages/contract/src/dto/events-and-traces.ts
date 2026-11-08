@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { EventKind } from "../events.js";
 import { AgentTraceKind, ProjectKind } from "../value-lists.js";
 import { IsoTime, Json, Uuid } from "./common.js";
@@ -12,9 +12,9 @@ import { IsoTime, Json, Uuid } from "./common.js";
 export const EventDto = z.object({
   seq: z.int(),
   schemaVersion: z.int(),
-  missionId: Uuid.nullable(),
-  dispatchId: Uuid.nullable(),
-  attemptId: Uuid.nullable(),
+  missionId: z.nullable(Uuid),
+  dispatchId: z.nullable(Uuid),
+  attemptId: z.nullable(Uuid),
   kind: z.enum(EventKind),
   payload: Json,
   at: IsoTime,
@@ -26,7 +26,7 @@ export type EventDto = z.infer<typeof EventDto>;
  * is the event iterator's, not a field here.
  */
 export const EventStreamInput = z.object({
-  missionId: Uuid.optional(),
+  missionId: z.optional(Uuid),
 });
 export type EventStreamInput = z.infer<typeof EventStreamInput>;
 
@@ -34,8 +34,8 @@ export type EventStreamInput = z.infer<typeof EventStreamInput>;
 export const AgentTraceDto = z.object({
   traceSeq: z.int(),
   at: IsoTime,
-  attemptId: Uuid.nullable(),
-  sessionId: Uuid.nullable(),
+  attemptId: z.nullable(Uuid),
+  sessionId: z.nullable(Uuid),
   kind: z.enum(AgentTraceKind),
   body: Json,
 });
@@ -44,17 +44,19 @@ export type AgentTraceDto = z.infer<typeof AgentTraceDto>;
 /** Route 64's input: `?attemptId=` or `?sessionId=`, exactly one. */
 export const TraceStreamInput = z
   .object({
-    attemptId: Uuid.optional(),
-    sessionId: Uuid.optional(),
+    attemptId: z.optional(Uuid),
+    sessionId: z.optional(Uuid),
   })
-  .refine((v) => (v.attemptId === undefined) !== (v.sessionId === undefined), {
-    message: "Send exactly one of attemptId and sessionId",
-  });
+  .check(
+    z.refine((v) => (v.attemptId === undefined) !== (v.sessionId === undefined), {
+      message: "Send exactly one of attemptId and sessionId",
+    }),
+  );
 export type TraceStreamInput = z.infer<typeof TraceStreamInput>;
 
 /**
  * `mission.created`'s payload carries the mission's kind (CR-13: "the `mission.created`
  * event carries it"). Other kinds' payloads aren't typed until CR-W1 is decided.
  */
-export const MissionCreatedPayload = z.object({ kind: z.enum(ProjectKind) }).loose();
+export const MissionCreatedPayload = z.looseObject({ kind: z.enum(ProjectKind) });
 export type MissionCreatedPayload = z.infer<typeof MissionCreatedPayload>;

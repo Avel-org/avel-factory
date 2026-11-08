@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { IsoTime, Micros, Placeholder } from "./common.js";
 
 /** Evals, later (route 92). */
@@ -30,7 +30,7 @@ export const AgentConfigDto = z.object({
 export type AgentConfigDto = z.infer<typeof AgentConfigDto>;
 
 /** Route 92: "Live results per config". The results have no shape yet. */
-export const EvalConfigDto = AgentConfigDto.extend({
+export const EvalConfigDto = z.extend(AgentConfigDto, {
   results: Placeholder,
 });
 export type EvalConfigDto = z.infer<typeof EvalConfigDto>;

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { ArchiveStatus, ClientKind, RepoConnectionState } from "../value-lists.js";
 import { IsoTime, Json, mutableFields, RowVersion, Uuid } from "./common.js";
 
@@ -14,7 +14,7 @@ export const ClientDto = z.object({
   name: z.string(),
   contacts: Json,
   status: z.enum(ArchiveStatus),
-  archivedAt: IsoTime.nullable(),
+  archivedAt: z.nullable(IsoTime),
   kind: z.enum(ClientKind),
   createdAt: IsoTime,
   ...mutableFields,
@@ -23,9 +23,9 @@ export type ClientDto = z.infer<typeof ClientDto>;
 
 /** Route 9. `kind` is required: `clients.kind` has no default (D20). */
 export const CreateClientInput = z.object({
-  name: z.string().trim().min(1),
+  name: z.string().check(z.trim(), z.minLength(1)),
   kind: z.enum(ClientKind),
-  contacts: Json.optional(),
+  contacts: z.optional(Json),
 });
 export type CreateClientInput = z.infer<typeof CreateClientInput>;
 
@@ -36,9 +36,9 @@ export type ClientIdInput = z.infer<typeof ClientIdInput>;
 export const UpdateClientInput = z.object({
   clientId: Uuid,
   rowVersion: RowVersion,
-  name: z.string().trim().min(1).optional(),
-  contacts: Json.optional(),
-  status: z.enum(ArchiveStatus).optional(),
+  name: z.optional(z.string().check(z.trim(), z.minLength(1))),
+  contacts: z.optional(Json),
+  status: z.optional(z.enum(ArchiveStatus)),
 });
 export type UpdateClientInput = z.infer<typeof UpdateClientInput>;
 
@@ -53,7 +53,7 @@ export const RepoConnectionDto = z.object({
   readExpiresAt: IsoTime,
   writeExpiresAt: IsoTime,
   state: z.enum(RepoConnectionState),
-  revokedAt: IsoTime.nullable(),
+  revokedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -62,10 +62,10 @@ export type RepoConnectionDto = z.infer<typeof RepoConnectionDto>;
 /** Route 13: "one per client, with a read token and a write token". Step-up. */
 export const CreateRepoConnectionInput = z.object({
   clientId: Uuid,
-  owner: z.string().min(1),
-  repos: z.array(z.string().min(1)).min(1),
-  readToken: z.string().min(1),
-  writeToken: z.string().min(1),
+  owner: z.string().check(z.minLength(1)),
+  repos: z.array(z.string().check(z.minLength(1))).check(z.minLength(1)),
+  readToken: z.string().check(z.minLength(1)),
+  writeToken: z.string().check(z.minLength(1)),
 });
 export type CreateRepoConnectionInput = z.infer<typeof CreateRepoConnectionInput>;
 
@@ -76,7 +76,7 @@ export type RepoConnectionIdInput = z.infer<typeof RepoConnectionIdInput>;
 export const UpdateRepoConnectionInput = z.object({
   connectionId: Uuid,
   rowVersion: RowVersion,
-  repos: z.array(z.string().min(1)).min(1),
+  repos: z.array(z.string().check(z.minLength(1))).check(z.minLength(1)),
 });
 export type UpdateRepoConnectionInput = z.infer<typeof UpdateRepoConnectionInput>;
 
@@ -91,7 +91,7 @@ export type RevokeRepoConnectionInput = z.infer<typeof RevokeRepoConnectionInput
 export const RepoTokenCheckDto = z.object({
   ok: z.boolean(),
   scopes: z.array(z.string()),
-  expiresAt: IsoTime.nullable(),
+  expiresAt: z.nullable(IsoTime),
 });
 export type RepoTokenCheckDto = z.infer<typeof RepoTokenCheckDto>;
 
@@ -108,10 +108,12 @@ export const RotateRepoConnectionInput = z
   .object({
     connectionId: Uuid,
     rowVersion: RowVersion,
-    readToken: z.string().min(1).optional(),
-    writeToken: z.string().min(1).optional(),
+    readToken: z.optional(z.string().check(z.minLength(1))),
+    writeToken: z.optional(z.string().check(z.minLength(1))),
   })
-  .refine((v) => (v.readToken === undefined) !== (v.writeToken === undefined), {
-    message: "Send exactly one of readToken and writeToken",
-  });
+  .check(
+    z.refine((v) => (v.readToken === undefined) !== (v.writeToken === undefined), {
+      message: "Send exactly one of readToken and writeToken",
+    }),
+  );
 export type RotateRepoConnectionInput = z.infer<typeof RotateRepoConnectionInput>;

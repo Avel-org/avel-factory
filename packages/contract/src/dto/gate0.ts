@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import {
   Checkpoint,
   CheckpointState,
@@ -27,20 +27,20 @@ import {
 export const UploadDto = z.object({
   id: Uuid,
   missionId: Uuid,
-  sessionId: Uuid.nullable(),
-  blobKey: z.string().nullable(),
+  sessionId: z.nullable(Uuid),
+  blobKey: z.nullable(z.string()),
   name: z.string(),
   mime: z.string(),
   sizeBytes: z.int(),
   parseStatus: z.enum(UploadParseStatus),
   state: z.enum(UploadState),
-  removedAt: IsoTime.nullable(),
+  removedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
 export type UploadDto = z.infer<typeof UploadDto>;
 
-export const ListUploadsInput = PageQuery.extend({ missionId: Uuid });
+export const ListUploadsInput = z.extend(PageQuery, { missionId: Uuid });
 export type ListUploadsInput = z.infer<typeof ListUploadsInput>;
 
 /** Route 36: one file, sent as multipart. */
@@ -67,8 +67,8 @@ export const CheckpointDto = z.object({
   sections: Json,
   state: z.enum(CheckpointState),
   staleModuleLabels: z.array(z.string()),
-  approvedAt: IsoTime.nullable(),
-  approvedBy: Uuid.nullable(),
+  approvedAt: z.nullable(IsoTime),
+  approvedBy: z.nullable(Uuid),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -78,13 +78,13 @@ export const CheckpointIdInput = z.object({ checkpointId: Uuid });
 export type CheckpointIdInput = z.infer<typeof CheckpointIdInput>;
 
 /** Route 39: generate a draft. Sends the checkpoint's `rowVersion` (D25, finding 01). */
-export const DraftCheckpointInput = CheckpointIdInput.extend({ rowVersion: RowVersion });
+export const DraftCheckpointInput = z.extend(CheckpointIdInput, { rowVersion: RowVersion });
 export type DraftCheckpointInput = z.infer<typeof DraftCheckpointInput>;
 
 /** Route 38: edit one section of `checkpoints.sections`. */
 export const UpdateCheckpointSectionInput = z.object({
   checkpointId: Uuid,
-  sectionKey: z.string().min(1),
+  sectionKey: z.string().check(z.minLength(1)),
   rowVersion: RowVersion,
   section: Json,
 });
@@ -109,7 +109,7 @@ export type RequestCheckpointChangesInput = z.infer<typeof RequestCheckpointChan
 export const ReopenCheckpointInput = z.object({
   checkpointId: Uuid,
   rowVersion: RowVersion,
-  reason: Reason.optional(),
+  reason: z.optional(Reason),
 });
 export type ReopenCheckpointInput = z.infer<typeof ReopenCheckpointInput>;
 
@@ -122,15 +122,15 @@ export const FactDto = z.object({
   value: Json,
   source: z.enum(FactSource),
   status: z.enum(FactStatus),
-  messageId: Uuid.nullable(),
-  spanStart: z.int().nullable(),
-  spanEnd: z.int().nullable(),
-  uploadId: Uuid.nullable(),
-  repoCommit: z.string().nullable(),
-  repoPath: z.string().nullable(),
-  supersedesFactId: Uuid.nullable(),
+  messageId: z.nullable(Uuid),
+  spanStart: z.nullable(z.int()),
+  spanEnd: z.nullable(z.int()),
+  uploadId: z.nullable(Uuid),
+  repoCommit: z.nullable(z.string()),
+  repoPath: z.nullable(z.string()),
+  supersedesFactId: z.nullable(Uuid),
   scanFlagged: z.boolean(),
-  redactedAt: IsoTime.nullable(),
+  redactedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -140,7 +140,7 @@ export type FactDto = z.infer<typeof FactDto>;
 export const UpdateFactInput = z.object({
   factId: Uuid,
   rowVersion: RowVersion,
-  status: z.enum(FactStatus).exclude(["proposed"]),
+  status: z.enum(FactStatus.filter((v): v is Exclude<FactStatus, "proposed"> => v !== "proposed")),
 });
 export type UpdateFactInput = z.infer<typeof UpdateFactInput>;
 
@@ -150,12 +150,12 @@ export const QuestionDto = z.object({
   sessionId: Uuid,
   stage: z.enum(Stage),
   text: z.string(),
-  options: Json.nullable(),
-  recommended: z.string().nullable(),
-  answer: z.string().nullable(),
-  answeredAt: IsoTime.nullable(),
+  options: z.nullable(Json),
+  recommended: z.nullable(z.string()),
+  answer: z.nullable(z.string()),
+  answeredAt: z.nullable(IsoTime),
   blocking: z.boolean(),
-  moduleLabel: z.string().nullable(),
+  moduleLabel: z.nullable(z.string()),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -165,7 +165,7 @@ export type QuestionDto = z.infer<typeof QuestionDto>;
 export const AnswerQuestionInput = z.object({
   questionId: Uuid,
   rowVersion: RowVersion,
-  answer: z.string().trim().min(1),
+  answer: z.string().check(z.trim(), z.minLength(1)),
 });
 export type AnswerQuestionInput = z.infer<typeof AnswerQuestionInput>;
 
@@ -175,12 +175,12 @@ export type AnswerQuestionInput = z.infer<typeof AnswerQuestionInput>;
  */
 export const SecretDto = z.object({
   id: Uuid,
-  missionId: Uuid.nullable(),
-  clientId: Uuid.nullable(),
+  missionId: z.nullable(Uuid),
+  clientId: z.nullable(Uuid),
   name: z.string(),
   keyVersion: z.int(),
   state: z.enum(SecretState),
-  destroyedAt: IsoTime.nullable(),
+  destroyedAt: z.nullable(IsoTime),
   createdAt: IsoTime,
   ...mutableFields,
 });
@@ -189,7 +189,7 @@ export type SecretDto = z.infer<typeof SecretDto>;
 /** Route 45: write-only. Step-up. (Step 4, per CR-1.) */
 export const PutSecretInput = z.object({
   missionId: Uuid,
-  secretName: z.string().min(1),
-  value: z.string().min(1),
+  secretName: z.string().check(z.minLength(1)),
+  value: z.string().check(z.minLength(1)),
 });
 export type PutSecretInput = z.infer<typeof PutSecretInput>;

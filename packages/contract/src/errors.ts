@@ -1,5 +1,10 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { MissionState } from "./value-lists.js";
+
+// Classic zod sets English messages as the default on its first schema; zod/mini doesn't.
+// The same default here keeps every issue message, and so BAD_REQUEST's details (S1-3),
+// as they were. An explicit z.config() locale still wins, as it does with classic.
+if (!z.core.globalConfig.localeError) z.config(z.locales.en());
 
 /**
  * The error map (contract.md section 5, E4; D5; D21; CR-16).
@@ -33,7 +38,7 @@ export const errorMap = {
   TOO_MANY_REQUESTS: {
     status: 429,
     message: "Rate limited",
-    data: z.object({ retryAfterMs: z.int().min(0) }),
+    data: z.object({ retryAfterMs: z.int().check(z.minimum(0)) }),
   },
   STEP_UP_REQUIRED: { status: 403, message: "A credential action with no valid grant" },
   STALE_VERSION: {
@@ -95,7 +100,7 @@ export const errorStatus = Object.fromEntries(
 export const ErrorBody = z.object({
   code: z.string(),
   message: z.string(),
-  details: z.json().optional(),
+  details: z.optional(z.json()),
   requestId: z.string(),
 });
 export type ErrorBody = z.infer<typeof ErrorBody>;
