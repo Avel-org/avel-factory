@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { render, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
@@ -297,23 +299,96 @@ describe("UC-08 DecisionTag labels, link, id, disabled reason, request ID and la
     expect(within(card).queryByRole("button", { name: /^Copy / })).toBeNull();
   });
 
-  test("UC-08 phone (D11): Reject on the left and Approve on the right in a two-column grid, 1fr and 1.4fr, gap 10px", () => {
+  test("UC-08 phone (D11): Reject then Approve in one av-dt-pair container, with no inline grid style", () => {
     const { card } = draw({ layout: "phone" });
     const approve = button(card, "Approve");
     const reject = button(card, "Reject…");
     expect(reject.compareDocumentPosition(approve) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    const grid = found(approve.parentElement, "the actions container");
-    expect(grid).toBe(reject.parentElement);
-    const columns = grid.style.gridTemplateColumns || grid.className.toString();
-    expect(columns).toContain("1.4fr");
-    expect(columns).toContain("1fr");
-    expect(grid.style.gap || grid.className.toString()).toContain("10px");
+    const pair = found(approve.parentElement, "the actions container");
+    expect(pair).toBe(reject.parentElement);
+    expect(pair.classList.contains("av-dt-pair")).toBe(true);
+    expect(pair.style.gridTemplateColumns).toBe("");
+    expect(pair.style.display).toBe("");
+    expect(pair.style.gap).toBe("");
   });
 
-  test("UC-08 desk: the actions are not the phone's two-column grid", () => {
+  test("UC-08 desk (D11): Approve then Reject in one av-dt-pair container, with no inline grid style", () => {
     const { card } = draw({ layout: "desk" });
-    const grid = found(button(card, "Approve").parentElement, "the actions container");
-    expect(grid.style.gridTemplateColumns).not.toContain("1.4fr");
-    expect(grid.className.toString()).not.toContain("1.4fr");
+    const approve = button(card, "Approve");
+    const reject = button(card, "Reject…");
+    expect(approve.compareDocumentPosition(reject) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const pair = found(approve.parentElement, "the actions container");
+    expect(pair).toBe(reject.parentElement);
+    expect(pair.classList.contains("av-dt-pair")).toBe(true);
+    expect(pair.style.gridTemplateColumns).toBe("");
+    expect(pair.style.display).toBe("");
+  });
+
+  test("UC-08 (D11) kit.css draws .av-dt-pair as the grid for the phone layout, outside any media block", () => {
+    const { outside } = splitMedia(readKitCss());
+    const rule = found(
+      rulesFor(outside, ".av-dt-pair").find((r) => r.selector.includes("phone")) ?? null,
+      'a phone ".av-dt-pair" rule outside the media block',
+    );
+    expect(rule.body).toMatch(/display:\s*grid/);
+    expect(rule.body).toMatch(
+      /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1\.4fr\)/,
+    );
+    expect(rule.body).toMatch(/gap:\s*10px/);
+  });
+
+  test("UC-08 (D11) kit.css draws the desk layout's .av-dt-pair as the grid only inside @media (max-width: 899px)", () => {
+    const { outside, media } = splitMedia(readKitCss());
+    const inside = found(
+      rulesFor(media, ".av-dt-pair").find((r) => r.selector.includes("desk")) ?? null,
+      'a desk ".av-dt-pair" rule inside the (max-width: 899px) block',
+    );
+    expect(inside.body).toMatch(/display:\s*grid/);
+    expect(inside.body).toMatch(
+      /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1\.4fr\)/,
+    );
+    expect(inside.body).toMatch(/gap:\s*10px/);
+    const deskOutside = rulesFor(outside, ".av-dt-pair").filter((r) => r.selector.includes("desk"));
+    for (const r of deskOutside) {
+      expect(r.body).not.toMatch(/grid-template-columns/);
+      expect(r.body).not.toMatch(/display:\s*grid/);
+    }
   });
 });
+
+function readKitCss(): string {
+  const raw = readFileSync(resolve(import.meta.dirname, "../../src/kit/kit.css"), "utf8");
+  return raw.replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
+/** The css split into the text of every `@media (max-width: 899px) { ... }` block, and the rest. */
+function splitMedia(css: string): { outside: string; media: string } {
+  let outside = "";
+  let media = "";
+  let at = 0;
+  const open = /@media\s*\(\s*max-width:\s*899px\s*\)\s*\{/g;
+  for (let m = open.exec(css); m; m = open.exec(css)) {
+    outside += css.slice(at, m.index);
+    let depth = 1;
+    let i = open.lastIndex;
+    while (i < css.length && depth > 0) {
+      if (css[i] === "{") depth++;
+      else if (css[i] === "}") depth--;
+      i++;
+    }
+    media += css.slice(open.lastIndex, i - 1);
+    at = i;
+    open.lastIndex = i;
+  }
+  return { outside: outside + css.slice(at), media };
+}
+
+function rulesFor(css: string, hook: string): { selector: string; body: string }[] {
+  const rules: { selector: string; body: string }[] = [];
+  const re = /([^{}]+)\{([^{}]*)\}/g;
+  for (let m = re.exec(css); m; m = re.exec(css)) {
+    const selector = (m[1] ?? "").trim();
+    if (selector.includes(hook)) rules.push({ selector, body: m[2] ?? "" });
+  }
+  return rules;
+}

@@ -1,7 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
-import { found, ReasonDialog, type ReasonDialogProps } from "./kit";
+import {
+  found,
+  hasLoadReasonDialog,
+  loadReasonDialog,
+  ReasonDialog,
+  type ReasonDialogProps,
+} from "./kit";
 
 // UC-09: ReasonDialog (UI contract section 4, R1 to R4; DL's Go).
 
@@ -191,5 +197,11 @@ describe("UC-09 ReasonDialog", () => {
     open({ error: "The server didn't accept this reason." });
     expect(dialog()).not.toBeNull();
     expect(screen.queryByRole("button", { name: /^Copy / })).toBeNull();
+  });
+
+  test("UC-09 (R7) loadReasonDialog resolves to a module whose ReasonDialog is the kit index's ReasonDialog", async () => {
+    expect(hasLoadReasonDialog, "the kit index exports loadReasonDialog").toBe(true);
+    const loaded = await loadReasonDialog();
+    expect(loaded.ReasonDialog).toBe(ReasonDialog);
   });
 });
