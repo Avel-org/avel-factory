@@ -584,3 +584,11 @@ INT accepted all of revision 10, kept the centred dialog (no phone bottom sheet)
   - **Where they go:** `tokens.css` stays DL's copy. The four font stacks are overridden in a new `styles/font-fallbacks.css`, imported last in `app.css`, with each fallback family second. So `app.css` moves from w0-app's territory to w0-fonts', the way `__root.tsx` did. w0-app's `styles/**` is now its three other sheets and `fonts/**`.
   - **The measure:** Leah's method from decisions-leah-07, with the fonts delayed 1.2 s, three runs. It also names the face drawn before the swap, so the measure covers the fallback rule and not a system font. Leah's section 8 check takes the 0.02 line from w0-fonts a2.
 - **The `fetch(` grep** (my decisions review a1, Deviations). `grep -rn 'fetch('` matched `refetch(` and `afterRefetch(`, so it failed on correct code. ZERO-01's verify is now `grep -rnE '(^|[^[:alnum:]_])fetch[[:space:]]*\('`. It lists nothing on Leon's a2 and does catch `fetch(` and `globalThis.fetch(` (checked on sample lines).
+
+## 2026-11-07: Queued for revision 12 (INT, after Ghost's w0-data a2 merged at e0af395)
+
+- **w0-data-brennan-02 (P3, section 3's wording; no code change).** Revision 12 will say:
+  1. `ApiError.bodyMessage: string` is the `ErrorBody`'s `message` as sent (Ghost's a2, `data/errors.ts`). `ApiError.message` is oRPC's: `body.message`, or oRPC's fallback when that's `""` (`fallbackORPCErrorMessage`: the code's common message, else the code).
+  2. `forbidden`, `conflict` and `unprocessable` carry `message` from `e.message`, so they get oRPC's fallback, as merged. That's the intent: an empty server message never gives a blank panel body. `stale.message` reads `bodyMessage` (`""` allowed), because 5.3's null-version stale row has its own copy for the empty case.
+  - It's wording only, and the merged code already does both. So it waits for the next revision that has a change of substance, as INT asked, and isn't a revision of its own.
+- **Brennan's first-run `test/data` failure (w0-data a2 review, Limitations).** It failed once and passed in 4 reruns, with no output kept. With no evidence, it isn't a finding and gets no dispatch yet. If Fenn, INT or a reviewer sees it again, keep the full output, and then it's a task for Fenn's w0-data tests (a locked-test change, under the override).
