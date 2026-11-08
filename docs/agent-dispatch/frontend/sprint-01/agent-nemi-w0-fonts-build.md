@@ -26,12 +26,13 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
 9. `docs/ui-contracts/decisions-approval-page.md`: section 6, the __root.tsx bullets: which font files are preloaded and which aren't
 10. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, 'Fonts': why Mono 500 and not 400, and why there's no size-matched fallback yet
-11. `docs/design/AVEL Web App — Frontend Map v0.6.md`: Performance budgets, line 289: fonts self-hosted, subset, preloaded
-12. `docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build.md`: this task doc: follow it exactly
+11. `docs/design/AVEL Web App — Frontend Map v0.6.md`: Performance budgets, line 289: fonts self-hosted, subset, preloaded, with a size-matched fallback
+12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-07-cls-font-swap.md`: a2: CLS 0.13 from the font swap; her method, which your measure repeats
+13. `docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289).
 
 **The rest of this sprint:**
 
@@ -77,17 +78,27 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build && grep -c 'rel: "preload"' apps/web/src/routes/__root.tsx && grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx`
 - **Expected:** each exits 0; 2; ibm-plex-mono-400.woff2 only
 
+### NEMI-03: Attempt a2 (revision 11): apps/web/src/styles/font-fallbacks.css with the two fallback @font-face rules (local Arial then Liberation Sans; local Courier New then Liberation Mono), their four metrics by section 6's formula with the inputs in a comment, and the four font stacks with each fallback family second; imported last in app.css (P1)
+
+- **Required:** CLS on / under 0.02 in each of three runs with the fonts delayed 1.2 s (section 6, 'The measure'); the face drawn before the swap is the fallback rule's; no value tuned by hand; tokens.css unchanged; no dependency added
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build && grep -nE 'size-adjust|ascent-override|descent-override|line-gap-override|local\(' apps/web/src/styles/font-fallbacks.css && tail -1 apps/web/src/styles/app.css && git diff "$(git merge-base main HEAD)"..HEAD --stat -- apps/web/src/styles/tokens.css`
+- **Expected:** each exits 0; the four descriptors of each rule and its local() sources listed; app.css's last line imports font-fallbacks.css; tokens.css not in the stat; and the CLS of each run, delayed and not, with the faces drawn, which you report
+
 **Notes:**
 
 - This is a follow-up to your merged w0-app: __root.tsx is already on main. Change only its head links: add the Mono 500 preload in the same form as Inter Variable's (a ?url import of apps/web/src/styles/fonts/ibm-plex-mono-500.woff2, rel preload, as font, type font/woff2, crossOrigin anonymous). Nothing else in the file changes.
 - Don't preload ibm-plex-mono-400.woff2, and don't add fallback metrics (size-adjust and the like): neither is in section 6, and the design library has no fallback values (decisions.md, 'Fonts').
 - Attempt a2 (2026-11-07, revision 10): a1 is merged. Do only the second task. The first paint uses Mono 400, not 500: DL's HashChip value has no weight, and its 500 is on the prefix, in Inter (section 6; decisions.md, 'Revision 10'). So the preload moves from ibm-plex-mono-500.woff2 to ibm-plex-mono-400.woff2, in the same link form. This replaces a1's note above, which said not to preload 400.
+- a2 also takes the third task (revision 11; INT, on Leah's decisions-leah-07): the size-matched fallbacks, as section 6's 'The size-matched fallbacks' gives them. This replaces a1's note that there are no fallback metrics. app.css moves to this module so you can import font-fallbacks.css last; tokens.css isn't yours here and doesn't change.
+- The four values are computed, not chosen (section 0's exception). Read the tables with a throwaway script outside the repo (for example fontTools in a scratch venv); add no dependency. On Linux the fallback files are Liberation Sans and Liberation Mono (fc-match -f '%{file}' 'Liberation Sans'). Write each rule's inputs in its comment. If the formula's values leave CLS at 0.02 or more, don't tune them: report the three runs and stop.
+- The measure is a throwaway Playwright script (apps/web/e2e is Fenn's and locked): the dev server with AVEL_API=mock, Chromium at 390x844 with touch, each .woff2 delayed 1.2 s with page.route, the layout-shift observer registered before navigation (addInitScript), summed over 3 s after [data-ui="DecisionsPage"][data-hydrated="true"], three runs; then the same three runs with the fonts undelayed. Also report the fallback face each family drew in before the swap (CDP CSS.getPlatformFontsForNode on a sans node and on a HashChip value). Run it on main plus your change; Leon's a2 is merged, so / is the real page.
 
 ## 5. Territory
 
 **You may change only:**
 
 - `apps/web/src/routes/__root.tsx`
+- `apps/web/src/styles/{app.css,font-fallbacks.css}`
 - `docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md`
 
 **You may not change:**
@@ -100,7 +111,8 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/modules/decisions/**` (LEON)
 - `apps/web/src/router.tsx` (GHOST)
 - `apps/web/src/routes/index.tsx` (LEON)
-- `apps/web/src/styles/**` (NEMI)
+- `apps/web/src/styles/fonts/**` (NEMI)
+- `apps/web/src/styles/{tokens.css,base.css,fonts.css}` (NEMI)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/kit/**` (FENN, locked tests)
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
@@ -164,6 +176,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | --- | --- | --- |
 | NEMI-01 | DONE / PARKED / BLOCKED | |
 | NEMI-02 | DONE / PARKED / BLOCKED | |
+| NEMI-03 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -212,8 +225,9 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - NEMI-01: apps/web/src/routes/__root.tsx: preload IBM Plex Mono 500 beside Inter Variable, in the same link form; no Mono 400 preload, no other change
 - NEMI-02: Attempt a2: apps/web/src/routes/__root.tsx preloads IBM Plex Mono 400 instead of 500, in the same link form; no other change
+- NEMI-03: Attempt a2 (revision 11): apps/web/src/styles/font-fallbacks.css with the two fallback @font-face rules (local Arial then Liberation Sans; local Courier New then Liberation Mono), their four metrics by section 6's formula with the inputs in a comment, and the four font stacks with each fallback family second; imported last in app.css
 
-You may change only: apps/web/src/routes/__root.tsx, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md.
+You may change only: apps/web/src/routes/__root.tsx, apps/web/src/styles/{app.css,font-fallbacks.css}, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,

@@ -37,7 +37,7 @@ Review the approval page on a phone: labels, focus, 44px targets, the reason dia
 
 - `agent-brennan-approvals-uic-review-spec`: Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your start commit, against CR-W2, the Frontend Map v0.6, the design library and backend m1's packages/contract, before anything is built on it.
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
-- `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+- `agent-nemi-w0-fonts-build`: The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
@@ -70,10 +70,10 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web build && pnpm --filter @avel/web exec playwright test`
 - **Expected:** builds; the locked end-to-end tests pass; the route's gzipped first-load JS size, which you report; over 160 kB is a finding
 
-### LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts') (P2)
+### LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint (from Nemi's w0-fonts a2, with the size-matched fallbacks; section 6, 'The measure'; revision 11) (P2)
 
 - **Verify:** `pnpm --filter @avel/web build && grep -n -A4 'rel: "preload"' apps/web/src/routes/__root.tsx`
-- **Expected:** two font preloads (Inter Variable, IBM Plex Mono 500); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not
+- **Expected:** two font preloads (Inter Variable, IBM Plex Mono 400 from w0-fonts a2, 500 before); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not
 
 **Notes:**
 
@@ -98,7 +98,9 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/router.tsx` (GHOST)
 - `apps/web/src/routes/__root.tsx` (NEMI)
 - `apps/web/src/routes/index.tsx` (LEON)
-- `apps/web/src/styles/**` (NEMI)
+- `apps/web/src/styles/fonts/**` (NEMI)
+- `apps/web/src/styles/{app.css,font-fallbacks.css}` (NEMI)
+- `apps/web/src/styles/{tokens.css,base.css,fonts.css}` (NEMI)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/kit/**` (FENN, locked tests)
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
@@ -212,7 +214,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against sprint-01's 160 kB gzip budget (Frontend Map's 150 kB returns with zod/mini)
-- LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')
+- LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint (from Nemi's w0-fonts a2, with the size-matched fallbacks; section 6, 'The measure'; revision 11)
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

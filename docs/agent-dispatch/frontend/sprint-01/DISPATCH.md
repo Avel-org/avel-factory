@@ -64,8 +64,10 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | Paths | Owner |
 | --- | --- |
 | `apps/web/{tsconfig.json,.gitignore}` | NEMI (build) |
-| `apps/web/src/styles/**` | NEMI (build) |
+| `apps/web/src/styles/{tokens.css,base.css,fonts.css}` | NEMI (build) |
+| `apps/web/src/styles/fonts/**` | NEMI (build) |
 | `apps/web/src/routes/__root.tsx` | NEMI (build) |
+| `apps/web/src/styles/{app.css,font-fallbacks.css}` | NEMI (build) |
 | `apps/web/{package.json,vite.config.ts}` | NEMI (build) |
 | `apps/web/vitest.config.ts` | FENN (test-unit) |
 | `apps/web/test/setup/**` | FENN (test-unit) |

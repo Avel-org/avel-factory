@@ -37,7 +37,7 @@ apps/web as @avel/web: the TanStack Start app config, its dependencies, the toke
 **The rest of this sprint:**
 
 - `agent-brennan-approvals-uic-review-spec`: Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your start commit, against CR-W2, the Frontend Map v0.6, the design library and backend m1's packages/contract, before anything is built on it.
-- `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+- `agent-nemi-w0-fonts-build`: The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
@@ -95,7 +95,8 @@ Do them in order. Finish each one, verified, before the next.
 **You may change only:**
 
 - `apps/web/{tsconfig.json,.gitignore}`
-- `apps/web/src/styles/**`
+- `apps/web/src/styles/{tokens.css,base.css,fonts.css}`
+- `apps/web/src/styles/fonts/**`
 - `docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md`
 
 **You may not change:**
@@ -109,6 +110,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/router.tsx` (GHOST)
 - `apps/web/src/routes/__root.tsx` (NEMI)
 - `apps/web/src/routes/index.tsx` (LEON)
+- `apps/web/src/styles/{app.css,font-fallbacks.css}` (NEMI)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/kit/**` (FENN, locked tests)
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
@@ -222,7 +224,7 @@ Your tasks:
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 
-You may change only: apps/web/{tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
+You may change only: apps/web/{tsconfig.json,.gitignore}, apps/web/src/styles/{tokens.css,base.css,fonts.css}, apps/web/src/styles/fonts/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,

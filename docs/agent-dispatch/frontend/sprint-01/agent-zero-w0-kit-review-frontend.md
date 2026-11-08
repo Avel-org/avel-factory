@@ -36,7 +36,7 @@ Review the kit against UI contract section 4 and the design library.
 
 - `agent-brennan-approvals-uic-review-spec`: Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your start commit, against CR-W2, the Frontend Map v0.6, the design library and backend m1's packages/contract, before anything is built on it.
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
-- `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+- `agent-nemi-w0-fonts-build`: The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
@@ -74,7 +74,7 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && git diff "$(git merge-base main HEAD)"..HEAD -- apps/web/src/kit/kit.css | grep '^+' | grep -nE '[0-9]+px' ; git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** the locked tests pass; the only px literals added are the 899px breakpoint and DL's own; only apps/web/src/kit files changed
 
-### ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over) and R7 loadReasonDialog against section 4 (P1)
+### ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4 (P1)
 
 - **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** the locked tests pass; no inline grid; only apps/web/src/kit files changed
@@ -97,7 +97,9 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/router.tsx` (GHOST)
 - `apps/web/src/routes/__root.tsx` (NEMI)
 - `apps/web/src/routes/index.tsx` (LEON)
-- `apps/web/src/styles/**` (NEMI)
+- `apps/web/src/styles/fonts/**` (NEMI)
+- `apps/web/src/styles/{app.css,font-fallbacks.css}` (NEMI)
+- `apps/web/src/styles/{tokens.css,base.css,fonts.css}` (NEMI)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/kit/**` (FENN, locked tests)
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
@@ -213,7 +215,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
 - ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
-- ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over) and R7 loadReasonDialog against section 4
+- ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

@@ -39,7 +39,7 @@ Your tasks:
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 
-You may change only: apps/web/{tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
+You may change only: apps/web/{tsconfig.json,.gitignore}, apps/web/src/styles/{tokens.css,base.css,fonts.css}, apps/web/src/styles/fonts/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
@@ -60,8 +60,9 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - NEMI-01: apps/web/src/routes/__root.tsx: preload IBM Plex Mono 500 beside Inter Variable, in the same link form; no Mono 400 preload, no other change
 - NEMI-02: Attempt a2: apps/web/src/routes/__root.tsx preloads IBM Plex Mono 400 instead of 500, in the same link form; no other change
+- NEMI-03: Attempt a2 (revision 11): apps/web/src/styles/font-fallbacks.css with the two fallback @font-face rules (local Arial then Liberation Sans; local Courier New then Liberation Mono), their four metrics by section 6's formula with the inputs in a comment, and the four font stacks with each fallback family second; imported last in app.css
 
-You may change only: apps/web/src/routes/__root.tsx, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md.
+You may change only: apps/web/src/routes/__root.tsx, apps/web/src/styles/{app.css,font-fallbacks.css}, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
@@ -81,7 +82,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in Inter's link form, no Mono 400 preload, no fallback metrics, nothing else changed in __root.tsx, nothing outside the territory
-- ZERO-02: Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed
+- ZERO-02: Attempt a2: review the preload swap (Mono 400 replaces Mono 500 in the same link form) and the size-matched fallbacks against section 6 (revision 11): each metric recomputed from its stated inputs by the formula, the inputs checked against the font files, the stacks DL's with the fallback second, tokens.css unchanged, and Nemi's CLS runs re-run once
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -345,6 +346,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/
 - FENN-02: Attempt a2: UC-08's D11 tests to revision 10's form (the av-dt-pair hook in both layouts, the grid values and the phone media rule read from kit.css), and UC-09 adds loadReasonDialog (R7): it resolves to a module whose ReasonDialog is the kit index's ReasonDialog
+- FENN-03: The D15 attempt: UC-08 adds D15 (section 4, revision 11): a tag with neither evidence nor consequence has no .av-dt-facts element; one with evidence only, and one with consequence only, each has one
 
 You may change only: apps/web/test/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -370,6 +372,7 @@ Your tasks:
 - FANTEM-03: Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike)
 - FANTEM-04: Attempt a3: K1 in kit.css under @media (max-width: 899px), Button at least var(--av-touch-min) tall, HashChip's copy and the dialog's Close button with a tap area of at least var(--av-touch-min) square and their drawn size unchanged, ReasonDialog's textarea at var(--av-phone-body); R5, the Dialog frame's aria-describedby naming its description when there is one
 - FANTEM-05: Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts
+- FANTEM-06: Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -392,7 +395,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
 - ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
-- ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over) and R7 loadReasonDialog against section 4
+- ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -545,7 +548,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against sprint-01's 160 kB gzip budget (Frontend Map's 150 kB returns with zod/mini)
-- LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')
+- LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint (from Nemi's w0-fonts a2, with the size-matched fallbacks; section 6, 'The measure'; revision 11)
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

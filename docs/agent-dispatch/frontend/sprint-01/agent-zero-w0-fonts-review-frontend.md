@@ -35,7 +35,7 @@ Review the w0-fonts diff against UI contract section 6's font bullets.
 
 - `agent-brennan-approvals-uic-review-spec`: Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your start commit, against CR-W2, the Frontend Map v0.6, the design library and backend m1's packages/contract, before anything is built on it.
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
-- `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+- `agent-nemi-w0-fonts-build`: The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
 - `agent-zane-w0-split-review-security`: Review w0-split a2's new build dependencies (@rolldown/plugin-babel, @babel/core, babel-plugin-react-compiler) and its server-function stub: the stub never reaches the server build, and a server function can't be added without the build failing.
@@ -68,10 +68,10 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web build && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** builds; only apps/web/src/routes/__root.tsx changed
 
-### ZERO-02: Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed (P1)
+### ZERO-02: Attempt a2: review the preload swap (Mono 400 replaces Mono 500 in the same link form) and the size-matched fallbacks against section 6 (revision 11): each metric recomputed from its stated inputs by the formula, the inputs checked against the font files, the stacks DL's with the fallback second, tokens.css unchanged, and Nemi's CLS runs re-run once (P1)
 
-- **Verify:** `grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx && git diff "$(git merge-base main HEAD)"..HEAD --stat`
-- **Expected:** ibm-plex-mono-400.woff2 only; only apps/web/src/routes/__root.tsx changed
+- **Verify:** `grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx && tail -1 apps/web/src/styles/app.css && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** ibm-plex-mono-400.woff2 only; app.css ends with the font-fallbacks.css import; only __root.tsx, app.css and font-fallbacks.css changed; each metric within 0.01 of your recomputation; your CLS run under 0.02
 
 ## 5. Territory
 
@@ -91,7 +91,9 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/router.tsx` (GHOST)
 - `apps/web/src/routes/__root.tsx` (NEMI)
 - `apps/web/src/routes/index.tsx` (LEON)
-- `apps/web/src/styles/**` (NEMI)
+- `apps/web/src/styles/fonts/**` (NEMI)
+- `apps/web/src/styles/{app.css,font-fallbacks.css}` (NEMI)
+- `apps/web/src/styles/{tokens.css,base.css,fonts.css}` (NEMI)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/kit/**` (FENN, locked tests)
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
@@ -205,7 +207,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in Inter's link form, no Mono 400 preload, no fallback metrics, nothing else changed in __root.tsx, nothing outside the territory
-- ZERO-02: Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed
+- ZERO-02: Attempt a2: review the preload swap (Mono 400 replaces Mono 500 in the same link form) and the size-matched fallbacks against section 6 (revision 11): each metric recomputed from its stated inputs by the formula, the inputs checked against the font files, the stacks DL's with the fallback second, tokens.css unchanged, and Nemi's CLS runs re-run once
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

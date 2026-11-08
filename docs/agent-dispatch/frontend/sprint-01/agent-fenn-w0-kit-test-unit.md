@@ -24,10 +24,11 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: section 4 (props, states, copy, changes R1 to R4, E1, W1, D1 to D14) and section 7 (UC-08 to UC-10)
+9. `docs/ui-contracts/decisions-approval-page.md`: section 4 (props, states, copy, changes R1 to R4, E1, W1, D1 to D15) and section 7 (UC-08 to UC-10)
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: DecisionTag's and ReasonDialog's copy and states
-11. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, 'Revision 10': why D11 moves to kit.css and the kit gets loadReasonDialog
-12. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit.md`: this task doc: follow it exactly
+11. `docs/agent-dispatch/frontend/sprint-01/decisions.md`: 2026-11-07, 'Revision 10': why D11 moves to kit.css and the kit gets loadReasonDialog; 'Revision 11': D15
+12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md`: D15's attempt: the empty facts list, and the done-when
+13. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -37,7 +38,7 @@ The kit's component tests: UC-08 to UC-10.
 
 - `agent-brennan-approvals-uic-review-spec`: Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your start commit, against CR-W2, the Frontend Map v0.6, the design library and backend m1's packages/contract, before anything is built on it.
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
-- `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+- `agent-nemi-w0-fonts-build`: The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
@@ -77,11 +78,18 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** the same assertion failures three times, only in the D11 and loadReasonDialog tests; only apps/web/test/kit changed
 
+### FENN-03: The D15 attempt: UC-08 adds D15 (section 4, revision 11): a tag with neither evidence nor consequence has no .av-dt-facts element; one with evidence only, and one with consequence only, each has one (P1)
+
+- **Required:** One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); every other UC-08 to UC-10 test unchanged; the no-fact test fails first on main with an assertion, the other two pass, three runs in a row
+- **Verify:** `for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** the same single assertion failure three times, in the D15 no-fact test; only apps/web/test/kit changed
+
 **Notes:**
 
 - Attempt a2 (2026-11-07, revision 10; INT's decision on Leon's decisions a2, deviation 2): a1 is merged and locked (locks.md, w0-kit · 965071b). Do only the second task. It changes locked tests, which INT decided: make the commit with AVEL_LOCK_OVERRIDE="w0-kit tests a2: D11 is a kit.css rule, and loadReasonDialog (INT, revision 10)" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's w0-kit line to your commit. Fantem's w0-kit a4 builds to these tests.
 - D11 (section 4, revision 10): Approve and Reject share a container with the class av-dt-pair in both layouts, with no inline grid style. kit.css draws it as D11's grid with layout="phone", and with layout="desk" under @media (max-width: 899px). jsdom doesn't apply media queries or linked sheets. So check the hook in the DOM, and check the rule's values by reading apps/web/src/kit/kit.css as text (node:fs): grid-template-columns minmax(0, 1fr) minmax(0, 1.4fr) and gap 10px for .av-dt-pair, inside a max-width: 899px media block for the desk layout. UC-31, end to end, checks the computed layout on a phone.
 - Keep everything else UC-08 asserts. The phone DOM is still Reject then Approve, and the desk DOM is still Approve then Reject. The desk test stops asserting 'not the phone's grid' through the inline style: at desk width the container must not be the grid, and that's the media rule's job, so assert that the desk layout's grid rule sits only inside the media block.
+- The D15 attempt (revision 11; INT): the attempt after the D11 tests. INT ran those as a3, so this is a4 unless INT says otherwise. Start after the D11 tests are merged and locks.md's w0-kit line has moved to them. Do only the third task. It adds to locked tests, so make the commit with AVEL_LOCK_OVERRIDE="w0-kit tests a4: D15, the facts list only with a fact (INT, revision 11)". After the merge, INT moves locks.md's w0-kit line again. Fantem's w0-kit a4 builds to these tests too.
 
 ## 5. Territory
 
@@ -101,7 +109,9 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/router.tsx` (GHOST)
 - `apps/web/src/routes/__root.tsx` (NEMI)
 - `apps/web/src/routes/index.tsx` (LEON)
-- `apps/web/src/styles/**` (NEMI)
+- `apps/web/src/styles/fonts/**` (NEMI)
+- `apps/web/src/styles/{app.css,font-fallbacks.css}` (NEMI)
+- `apps/web/src/styles/{tokens.css,base.css,fonts.css}` (NEMI)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
@@ -162,6 +172,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | --- | --- | --- |
 | FENN-01 | DONE / PARKED / BLOCKED | |
 | FENN-02 | DONE / PARKED / BLOCKED | |
+| FENN-03 | DONE / PARKED / BLOCKED | |
 
 ## Tests
 Each test: its scenario ID, its file and name, and its failure line (or "pins existing behaviour: passes").
@@ -216,6 +227,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/
 - FENN-02: Attempt a2: UC-08's D11 tests to revision 10's form (the av-dt-pair hook in both layouts, the grid values and the phone media rule read from kit.css), and UC-09 adds loadReasonDialog (R7): it resolves to a module whose ReasonDialog is the kit index's ReasonDialog
+- FENN-03: The D15 attempt: UC-08 adds D15 (section 4, revision 11): a tag with neither evidence nor consequence has no .av-dt-facts element; one with evidence only, and one with consequence only, each has one
 
 You may change only: apps/web/test/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

@@ -119,9 +119,12 @@ domain = "apps/web as @avel/web: the TanStack Start app config, its dependencies
 # 2026-11-07 (revision 9): apps/web/package.json moved to w0-split, its next writer, the same way
 # (decisions.md, "Revision 9"). Revision 10: vite.config.ts moved to w0-split too (its a2 is the
 # next writer). w0-app's merged work is unchanged.
+# Revision 11: apps/web/src/styles/app.css moved to w0-fonts, and w0-fonts a2 writes the new
+# styles/font-fallbacks.css (decisions.md, "Revision 11"). w0-app keeps its other styles.
 territory = [
   "apps/web/{tsconfig.json,.gitignore}",
-  "apps/web/src/styles/**",
+  "apps/web/src/styles/{tokens.css,base.css,fonts.css}",
+  "apps/web/src/styles/fonts/**",
 ]
 after = ["agent-brennan-approvals-uic-review-spec", "backend/sprint-00/agent-axis-m1-contract-api-contract"]
 context = [
@@ -163,18 +166,25 @@ expected = "builds; the file is listed"
 agent = "nemi"
 module = "w0-fonts"
 role = "build"
-domain = "The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289)."
-territory = ["apps/web/src/routes/__root.tsx"]
+domain = "The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289)."
+territory = [
+  "apps/web/src/routes/__root.tsx",
+  "apps/web/src/styles/{app.css,font-fallbacks.css}",
+]
 after = ["agent-nemi-w0-app-build"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 6, the __root.tsx bullets: which font files are preloaded and which aren't" },
   { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Fonts': why Mono 500 and not 400, and why there's no size-matched fallback yet" },
-  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets, line 289: fonts self-hosted, subset, preloaded" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "Performance budgets, line 289: fonts self-hosted, subset, preloaded, with a size-matched fallback" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-07-cls-font-swap.md", why = "a2: CLS 0.13 from the font swap; her method, which your measure repeats" },
 ]
 notes = [
   "This is a follow-up to your merged w0-app: __root.tsx is already on main. Change only its head links: add the Mono 500 preload in the same form as Inter Variable's (a ?url import of apps/web/src/styles/fonts/ibm-plex-mono-500.woff2, rel preload, as font, type font/woff2, crossOrigin anonymous). Nothing else in the file changes.",
   "Don't preload ibm-plex-mono-400.woff2, and don't add fallback metrics (size-adjust and the like): neither is in section 6, and the design library has no fallback values (decisions.md, 'Fonts').",
   "Attempt a2 (2026-11-07, revision 10): a1 is merged. Do only the second task. The first paint uses Mono 400, not 500: DL's HashChip value has no weight, and its 500 is on the prefix, in Inter (section 6; decisions.md, 'Revision 10'). So the preload moves from ibm-plex-mono-500.woff2 to ibm-plex-mono-400.woff2, in the same link form. This replaces a1's note above, which said not to preload 400.",
+  "a2 also takes the third task (revision 11; INT, on Leah's decisions-leah-07): the size-matched fallbacks, as section 6's 'The size-matched fallbacks' gives them. This replaces a1's note that there are no fallback metrics. app.css moves to this module so you can import font-fallbacks.css last; tokens.css isn't yours here and doesn't change.",
+  "The four values are computed, not chosen (section 0's exception). Read the tables with a throwaway script outside the repo (for example fontTools in a scratch venv); add no dependency. On Linux the fallback files are Liberation Sans and Liberation Mono (fc-match -f '%{file}' 'Liberation Sans'). Write each rule's inputs in its comment. If the formula's values leave CLS at 0.02 or more, don't tune them: report the three runs and stop.",
+  "The measure is a throwaway Playwright script (apps/web/e2e is Fenn's and locked): the dev server with AVEL_API=mock, Chromium at 390x844 with touch, each .woff2 delayed 1.2 s with page.route, the layout-shift observer registered before navigation (addInitScript), summed over 3 s after [data-ui=\"DecisionsPage\"][data-hydrated=\"true\"], three runs; then the same three runs with the fonts undelayed. Also report the fallback face each family drew in before the swap (CDP CSS.getPlatformFontsForNode on a sans node and on a HashChip value). Run it on main plus your change; Leon's a2 is merged, so / is the real page.",
 ]
 
 [[dispatch.task]]
@@ -191,6 +201,13 @@ required = "Exactly two font preloads (Inter Variable, IBM Plex Mono 400) in the
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build && grep -c 'rel: \"preload\"' apps/web/src/routes/__root.tsx && grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx"
 expected = "each exits 0; 2; ibm-plex-mono-400.woff2 only"
 
+[[dispatch.task]]
+title = "Attempt a2 (revision 11): apps/web/src/styles/font-fallbacks.css with the two fallback @font-face rules (local Arial then Liberation Sans; local Courier New then Liberation Mono), their four metrics by section 6's formula with the inputs in a comment, and the four font stacks with each fallback family second; imported last in app.css"
+priority = "P1"
+required = "CLS on / under 0.02 in each of three runs with the fonts delayed 1.2 s (section 6, 'The measure'); the face drawn before the swap is the fallback rule's; no value tuned by hand; tokens.css unchanged; no dependency added"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build && grep -nE 'size-adjust|ascent-override|descent-override|line-gap-override|local\\(' apps/web/src/styles/font-fallbacks.css && tail -1 apps/web/src/styles/app.css && git diff \"$(git merge-base main HEAD)\"..HEAD --stat -- apps/web/src/styles/tokens.css"
+expected = "each exits 0; the four descriptors of each rule and its local() sources listed; app.css's last line imports font-fallbacks.css; tokens.css not in the stat; and the CLS of each run, delayed and not, with the faces drawn, which you report"
+
 [[dispatch]]
 agent = "zero"
 module = "w0-fonts"
@@ -206,9 +223,9 @@ verify = "pnpm --filter @avel/web build && git diff \"$(git merge-base main HEAD
 expected = "builds; only apps/web/src/routes/__root.tsx changed"
 
 [[dispatch.task]]
-title = "Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed"
-verify = "grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
-expected = "ibm-plex-mono-400.woff2 only; only apps/web/src/routes/__root.tsx changed"
+title = "Attempt a2: review the preload swap (Mono 400 replaces Mono 500 in the same link form) and the size-matched fallbacks against section 6 (revision 11): each metric recomputed from its stated inputs by the formula, the inputs checked against the font files, the stacks DL's with the fallback second, tokens.css unchanged, and Nemi's CLS runs re-run once"
+verify = "grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx && tail -1 apps/web/src/styles/app.css && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "ibm-plex-mono-400.woff2 only; app.css ends with the font-fallbacks.css import; only __root.tsx, app.css and font-fallbacks.css changed; each metric within 0.01 of your recomputation; your CLS run under 0.02"
 
 # ------------------------------------------------------------------ w0-split: Nemi (revision 9)
 # Added 2026-11-07 after Leah's decisions a11y-perf a1 (decisions.md, "Revision 9"; INT's decision 3).
@@ -499,14 +516,16 @@ domain = "The kit's component tests: UC-08 to UC-10."
 territory = ["apps/web/test/kit/**"]
 after = ["agent-fenn-w0-data-test-unit"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (props, states, copy, changes R1 to R4, E1, W1, D1 to D14) and section 7 (UC-08 to UC-10)" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (props, states, copy, changes R1 to R4, E1, W1, D1 to D15) and section 7 (UC-08 to UC-10)" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "DecisionTag's and ReasonDialog's copy and states" },
-  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Revision 10': why D11 moves to kit.css and the kit gets loadReasonDialog" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Revision 10': why D11 moves to kit.css and the kit gets loadReasonDialog; 'Revision 11': D15" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md", why = "D15's attempt: the empty facts list, and the done-when" },
 ]
 notes = [
   "Attempt a2 (2026-11-07, revision 10; INT's decision on Leon's decisions a2, deviation 2): a1 is merged and locked (locks.md, w0-kit · 965071b). Do only the second task. It changes locked tests, which INT decided: make the commit with AVEL_LOCK_OVERRIDE=\"w0-kit tests a2: D11 is a kit.css rule, and loadReasonDialog (INT, revision 10)\" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's w0-kit line to your commit. Fantem's w0-kit a4 builds to these tests.",
   "D11 (section 4, revision 10): Approve and Reject share a container with the class av-dt-pair in both layouts, with no inline grid style. kit.css draws it as D11's grid with layout=\"phone\", and with layout=\"desk\" under @media (max-width: 899px). jsdom doesn't apply media queries or linked sheets. So check the hook in the DOM, and check the rule's values by reading apps/web/src/kit/kit.css as text (node:fs): grid-template-columns minmax(0, 1fr) minmax(0, 1.4fr) and gap 10px for .av-dt-pair, inside a max-width: 899px media block for the desk layout. UC-31, end to end, checks the computed layout on a phone.",
   "Keep everything else UC-08 asserts. The phone DOM is still Reject then Approve, and the desk DOM is still Approve then Reject. The desk test stops asserting 'not the phone's grid' through the inline style: at desk width the container must not be the grid, and that's the media rule's job, so assert that the desk layout's grid rule sits only inside the media block.",
+  "The D15 attempt (revision 11; INT): the attempt after the D11 tests. INT ran those as a3, so this is a4 unless INT says otherwise. Start after the D11 tests are merged and locks.md's w0-kit line has moved to them. Do only the third task. It adds to locked tests, so make the commit with AVEL_LOCK_OVERRIDE=\"w0-kit tests a4: D15, the facts list only with a fact (INT, revision 11)\". After the merge, INT moves locks.md's w0-kit line again. Fantem's w0-kit a4 builds to these tests too.",
 ]
 
 [[dispatch.task]]
@@ -523,6 +542,13 @@ required = "One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); every
 verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "the same assertion failures three times, only in the D11 and loadReasonDialog tests; only apps/web/test/kit changed"
 
+[[dispatch.task]]
+title = "The D15 attempt: UC-08 adds D15 (section 4, revision 11): a tag with neither evidence nor consequence has no .av-dt-facts element; one with evidence only, and one with consequence only, each has one"
+priority = "P1"
+required = "One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); every other UC-08 to UC-10 test unchanged; the no-fact test fails first on main with an assertion, the other two pass, three runs in a row"
+verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the same single assertion failure three times, in the D15 no-fact test; only apps/web/test/kit changed"
+
 [[dispatch]]
 agent = "fantem"
 module = "w0-kit"
@@ -531,8 +557,10 @@ domain = "The kit components the page needs, ported from the design library with
 territory = ["apps/web/src/kit/**"]
 after = ["agent-nemi-w0-app-build"]
 context = [
-  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R4, E1, W1 and D1 to D14" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R4, E1, W1 and D1 to D15" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "each component's source, states and copy (search its data-ui name), and the tokens" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md", why = "a4, D15: the Factory PR card's empty facts list (Brennan)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-02-factory-pr-card-empty-facts-rule.md", why = "a4, D15: the same, measured at 390x844 (Zero)" },
 ]
 notes = [
   "The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.",
@@ -540,6 +568,7 @@ notes = [
   "Attempt a3 (2026-11-07, revision 9; Leah's decisions a11y-perf a1, finding 02, on main at 3d3ccfc): a1 and a2 are merged. Do only the fourth task, K1 and R5 in section 4. Values come from DL's tokens only: --av-touch-min (44px) and --av-phone-body (16px), under @media (max-width: 899px). DL sets them through [data-density=\"phone\"], which nothing in sprint-01 sets, and the dialog draws in a portal on body, so a page attribute wouldn't reach it. Don't add a data-density attribute.",
   "Attempt a4 (2026-11-07, revision 10; INT's decisions on Leon's decisions a2): a1 to a3 are merged. Do only the fifth task. It builds to Fenn's w0-kit tests a2, which are locked first (locks.md's w0-kit line moves to them). D11 leaves 'What stays inline': the phone grid becomes kit.css's .av-dt-pair rule (section 4, D11), and the desk layout gets the same container under @media (max-width: 899px), so the server's desk HTML is D11 on a phone before hydration. Keep each layout's DOM order. At 900px and over, the desk row looks exactly as it does now.",
   "R7, loadReasonDialog: index.ts exports it beside ReasonDialog. Show the split on a scratch merge of frontend/sprint-01/agent-leon-decisions-build-a2, with Leon's deep import switched to loadReasonDialog, then thrown away: ReasonDialog is in a chunk of its own, outside /'s first load. If the static re-export keeps it in a shared chunk, stop and report. Don't drop the export: the locked tests use it.",
+  "a4 also takes D15 (revision 11; INT, on decisions-brennan-01 and decisions-zero-02), the sixth task: DecisionTag draws .av-dt-facts only when evidence or consequence is given. It's one condition around the dl at DecisionTag.tsx:315; kit.css doesn't change for it. Fenn's D15 tests (his w0-kit tests a4) lock it: start a4 after they're merged. If INT dispatches you before that, build it and show it on the scratch merge with Leon's a2 instead: at 390x844 the Factory PR card has no .av-dt-facts and one top rule above Open on GitHub, and a proposal card still has its list.",
   "For the copy and Close buttons, the tap area grows and the drawn size doesn't: a row or chip that gets taller is a defect. Say in your report how you made the area and how you measured it (for example document.elementFromPoint at 21px from the button's centre, at 390x844).",
 ]
 
@@ -578,6 +607,13 @@ required = "Fenn's locked w0-kit a2 tests pass unchanged; no new literal values 
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && grep -n 'av-dt-pair' apps/web/src/kit/kit.css apps/web/src/kit/DecisionTag.tsx && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && grep -n 'loadReasonDialog' apps/web/src/kit/index.ts"
 expected = "typechecks; the locked kit tests pass; the rule and the hook listed; no inline grid; the export listed; and from the scratch merge, UC-31's result and the chunk list, which you report"
 
+[[dispatch.task]]
+title = "Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given"
+priority = "P2"
+required = "Fenn's locked D15 tests pass unchanged; a card with a fact draws exactly as before; on the scratch merge with Leon's a2, the Factory PR card at 390x844 has no .av-dt-facts and one top rule above Open on GitHub"
+verify = "pnpm --filter @avel/web exec vitest run test/kit && grep -n -B2 'av-dt-facts' apps/web/src/kit/DecisionTag.tsx"
+expected = "the locked kit tests pass; the dl listed inside its evidence-or-consequence condition; and from the scratch merge, the Factory PR card's top-border elements, which you report"
+
 [[dispatch]]
 agent = "zero"
 module = "w0-kit"
@@ -599,7 +635,7 @@ verify = "pnpm --filter @avel/web exec vitest run test/kit && git diff \"$(git m
 expected = "the locked tests pass; the only px literals added are the 899px breakpoint and DL's own; only apps/web/src/kit files changed"
 
 [[dispatch.task]]
-title = "Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over) and R7 loadReasonDialog against section 4"
+title = "Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4"
 verify = "pnpm --filter @avel/web exec vitest run test/kit && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "the locked tests pass; no inline grid; only apps/web/src/kit files changed"
 
@@ -744,8 +780,8 @@ context = [
 
 [[dispatch.task]]
 title = "Review the decisions diff: each row's props, the reason step, the exact route 54 body, every error state and copy string as section 5 gives them; no fetch, no server data in state, index.ts light"
-verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test && ! grep -rn 'fetch(' apps/web/src/modules/decisions"
-expected = "all locked tests pass; no line listed (state use is judged by reading: no server data in state; decisions.md, 'Revision 9')"
+verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test && ! grep -rnE '(^|[^[:alnum:]_])fetch[[:space:]]*\\(' apps/web/src/modules/decisions"
+expected = "all locked tests pass; no line listed: the pattern matches fetch( and globalThis.fetch(, not refetch( (revision 11); state use is judged by reading: no server data in state (decisions.md, 'Revision 9')"
 
 [[dispatch]]
 agent = "brennan"
@@ -784,10 +820,10 @@ verify = "pnpm --filter @avel/web build && pnpm --filter @avel/web exec playwrig
 expected = "builds; the locked end-to-end tests pass; the route's gzipped first-load JS size, which you report; over 160 kB is a finding"
 
 [[dispatch.task]]
-title = "Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')"
+title = "Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint (from Nemi's w0-fonts a2, with the size-matched fallbacks; section 6, 'The measure'; revision 11)"
 priority = "P2"
 verify = "pnpm --filter @avel/web build && grep -n -A4 'rel: \"preload\"' apps/web/src/routes/__root.tsx"
-expected = "two font preloads (Inter Variable, IBM Plex Mono 500); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not"
+expected = "two font preloads (Inter Variable, IBM Plex Mono 400 from w0-fonts a2, 500 before); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not"
 
 # ------------------------------------------------------------------ size-study: Leah (revision 9 follow-up)
 # Added 2026-11-07 (INT): S1-6 saves 17.25 kB (173.53 to 156.28), short of FM's 150. Leah measures

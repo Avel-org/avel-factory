@@ -568,3 +568,19 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
 
   - **What I propose:** one more study, Leah's size-study a2, at INT's call. It would measure 03 together with the no-zod path, 07c and the chunk rule, built on set A (stub, compiler, lazy dialog) and run to level A. With all of them, the page would be about 127 to 132 kB. That would give W2 numbers before any of it is built. Nothing is planned until INT says so.
 - **No new scenarios.** UC-08 and UC-09 change under Fenn's override (D11's form, `loadReasonDialog`). UC-31's spec stands.
+
+## 2026-11-07: Revision 11 of the UI contract (the decisions a2 reviews; INT's decisions)
+
+INT accepted all of revision 10, kept the centred dialog (no phone bottom sheet), and put the W2 size study off until later. INT then added two gaps before Fantem's w0-kit a4 and Nemi's w0-fonts a2 start.
+
+- **D15, the facts list only with a fact** (decisions-brennan-01, decisions-zero-02).
+  - **The rule:** `DecisionTag` draws `.av-dt-facts` only when `evidence` or `consequence` is given. DL always draws its `dl`, but every DL specimen has evidence. Section 5.1's `factory_change` row has neither, so the page drew an empty 11px strip between two rules. That's section 4's new row D15, and UC-08 gains the case.
+  - **The fix:** Fantem's w0-kit a4 takes it as a sixth task, one condition at `DecisionTag.tsx:315`.
+  - **The test:** the kit tests are locked, so the tests come from Fenn, in the attempt after his D11 tests. INT ran those as a3, so this one is a4, under the override. Fenn's open attempt can't take new instructions, so the D15 tests can't go in it.
+  - **The order:** Fenn's D11 tests, then Fenn's D15 tests, then Fantem's a4. If INT starts Fantem's a4 before the D15 tests are merged, his task doc says to show the fix on the scratch merge instead.
+- **The size-matched font fallbacks** (decisions-leah-07: CLS 0.13 from the font swap). They replace the "Fonts" decision's "not in sprint-01". Nemi's w0-fonts a2 takes them as a third task.
+  - **The faces:** two `@font-face` rules, `local("Arial"), local("Liberation Sans")` and `local("Courier New"), local("Liberation Mono")`. Each pair is metric-compatible, and the Linux Chromium the tests run in has only the Liberation faces.
+  - **The values:** none are in DL. So section 0's value rule gains one exception: the four metrics are computed by section 6's formula (`OS/2.xAvgCharWidth`, or the mono's advance, for `size-adjust`; `hhea` over UPM for the three overrides), with the inputs in a comment beside each rule. A value tuned by hand to pass isn't allowed. If the formula misses 0.02, Nemi reports and stops.
+  - **Where they go:** `tokens.css` stays DL's copy. The four font stacks are overridden in a new `styles/font-fallbacks.css`, imported last in `app.css`, with each fallback family second. So `app.css` moves from w0-app's territory to w0-fonts', the way `__root.tsx` did. w0-app's `styles/**` is now its three other sheets and `fonts/**`.
+  - **The measure:** Leah's method from decisions-leah-07, with the fonts delayed 1.2 s, three runs. It also names the face drawn before the swap, so the measure covers the fallback rule and not a system font. Leah's section 8 check takes the 0.02 line from w0-fonts a2.
+- **The `fetch(` grep** (my decisions review a1, Deviations). `grep -rn 'fetch('` matched `refetch(` and `afterRefetch(`, so it failed on correct code. ZERO-01's verify is now `grep -rnE '(^|[^[:alnum:]_])fetch[[:space:]]*\('`. It lists nothing on Leon's a2 and does catch `fetch(` and `globalThis.fetch(` (checked on sample lines).

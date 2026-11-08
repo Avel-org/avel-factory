@@ -24,9 +24,11 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
-9. `docs/ui-contracts/decisions-approval-page.md`: section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R4, E1, W1 and D1 to D14
+9. `docs/ui-contracts/decisions-approval-page.md`: section 0's value rule, and section 4: the components, the props ported and left out, and changes R1 to R4, E1, W1 and D1 to D15
 10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: each component's source, states and copy (search its data-ui name), and the tokens
-11. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
+11. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md`: a4, D15: the Factory PR card's empty facts list (Brennan)
+12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-02-factory-pr-card-empty-facts-rule.md`: a4, D15: the same, measured at 390x844 (Zero)
+13. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -36,7 +38,7 @@ The kit components the page needs, ported from the design library with UI contra
 
 - `agent-brennan-approvals-uic-review-spec`: Review the UI contract docs/ui-contracts/decisions-approval-page.md, as at your start commit, against CR-W2, the Frontend Map v0.6, the design library and backend m1's packages/contract, before anything is built on it.
 - `agent-nemi-w0-app-build`: apps/web as @avel/web: the TanStack Start app config, its dependencies, the token stylesheet from the design library, and the root route shell with the theme cookie (UI contract section 6). No screens.
-- `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
+- `agent-nemi-w0-fonts-build`: The font preloads in the root route's head, and from a2 the size-matched font fallbacks (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
@@ -94,6 +96,12 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && grep -n 'av-dt-pair' apps/web/src/kit/kit.css apps/web/src/kit/DecisionTag.tsx && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && grep -n 'loadReasonDialog' apps/web/src/kit/index.ts`
 - **Expected:** typechecks; the locked kit tests pass; the rule and the hook listed; no inline grid; the export listed; and from the scratch merge, UC-31's result and the chunk list, which you report
 
+### FANTEM-06: Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given (P2)
+
+- **Required:** Fenn's locked D15 tests pass unchanged; a card with a fact draws exactly as before; on the scratch merge with Leon's a2, the Factory PR card at 390x844 has no .av-dt-facts and one top rule above Open on GitHub
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && grep -n -B2 'av-dt-facts' apps/web/src/kit/DecisionTag.tsx`
+- **Expected:** the locked kit tests pass; the dl listed inside its evidence-or-consequence condition; and from the scratch merge, the Factory PR card's top-border elements, which you report
+
 **Notes:**
 
 - The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.
@@ -101,6 +109,7 @@ Do them in order. Finish each one, verified, before the next.
 - Attempt a3 (2026-11-07, revision 9; Leah's decisions a11y-perf a1, finding 02, on main at 3d3ccfc): a1 and a2 are merged. Do only the fourth task, K1 and R5 in section 4. Values come from DL's tokens only: --av-touch-min (44px) and --av-phone-body (16px), under @media (max-width: 899px). DL sets them through [data-density="phone"], which nothing in sprint-01 sets, and the dialog draws in a portal on body, so a page attribute wouldn't reach it. Don't add a data-density attribute.
 - Attempt a4 (2026-11-07, revision 10; INT's decisions on Leon's decisions a2): a1 to a3 are merged. Do only the fifth task. It builds to Fenn's w0-kit tests a2, which are locked first (locks.md's w0-kit line moves to them). D11 leaves 'What stays inline': the phone grid becomes kit.css's .av-dt-pair rule (section 4, D11), and the desk layout gets the same container under @media (max-width: 899px), so the server's desk HTML is D11 on a phone before hydration. Keep each layout's DOM order. At 900px and over, the desk row looks exactly as it does now.
 - R7, loadReasonDialog: index.ts exports it beside ReasonDialog. Show the split on a scratch merge of frontend/sprint-01/agent-leon-decisions-build-a2, with Leon's deep import switched to loadReasonDialog, then thrown away: ReasonDialog is in a chunk of its own, outside /'s first load. If the static re-export keeps it in a shared chunk, stop and report. Don't drop the export: the locked tests use it.
+- a4 also takes D15 (revision 11; INT, on decisions-brennan-01 and decisions-zero-02), the sixth task: DecisionTag draws .av-dt-facts only when evidence or consequence is given. It's one condition around the dl at DecisionTag.tsx:315; kit.css doesn't change for it. Fenn's D15 tests (his w0-kit tests a4) lock it: start a4 after they're merged. If INT dispatches you before that, build it and show it on the scratch merge with Leon's a2 instead: at 390x844 the Factory PR card has no .av-dt-facts and one top rule above Open on GitHub, and a proposal card still has its list.
 - For the copy and Close buttons, the tap area grows and the drawn size doesn't: a row or chip that gets taller is a defect. Say in your report how you made the area and how you measured it (for example document.elementFromPoint at 21px from the button's centre, at 390x844).
 
 ## 5. Territory
@@ -120,7 +129,9 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/src/router.tsx` (GHOST)
 - `apps/web/src/routes/__root.tsx` (NEMI)
 - `apps/web/src/routes/index.tsx` (LEON)
-- `apps/web/src/styles/**` (NEMI)
+- `apps/web/src/styles/fonts/**` (NEMI)
+- `apps/web/src/styles/{app.css,font-fallbacks.css}` (NEMI)
+- `apps/web/src/styles/{tokens.css,base.css,fonts.css}` (NEMI)
 - `apps/web/test/data/**` (FENN, locked tests)
 - `apps/web/test/kit/**` (FENN, locked tests)
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
@@ -187,6 +198,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | FANTEM-03 | DONE / PARKED / BLOCKED | |
 | FANTEM-04 | DONE / PARKED / BLOCKED | |
 | FANTEM-05 | DONE / PARKED / BLOCKED | |
+| FANTEM-06 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -238,6 +250,7 @@ Your tasks:
 - FANTEM-03: Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike)
 - FANTEM-04: Attempt a3: K1 in kit.css under @media (max-width: 899px), Button at least var(--av-touch-min) tall, HashChip's copy and the dialog's Close button with a tap area of at least var(--av-touch-min) square and their drawn size unchanged, ReasonDialog's textarea at var(--av-phone-body); R5, the Dialog frame's aria-describedby naming its description when there is one
 - FANTEM-05: Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts
+- FANTEM-06: Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
