@@ -88,7 +88,7 @@ none
 - **INT:**
   - Finding w0-split-zero-01 is a contract rewording for revision 12, alongside the queued w0-data-brennan-02. It needs no code change, and w0-split a2 can merge as built.
   - `/`'s first load at 0d5626e is 143.87 + 3.41 + 19.24 = **166.52 kB** gzip (entry, `compiler-runtime`, `routes`). That's still over sprint-01's 160 until S1-6's two halves land.
-  - The compiler cost +3.61 kB against Leah's +2.44, so the 150 kB margin after S1-6 is about 0.8 kB, not 2.
+  - The compiler cost +3.61 kB against Leah's +2.44, so the 150 kB margin after S1-6 is about 1.0 kB (150 − 147.8 − 1.17), not 2.2.
 - **Leah:** the first-load figure above, and the renamed shared chunk (`compiler-runtime-*.js` replaces `jsx-runtime-*.js`).
 - **Fantem and Leon:** Nemi's report lists four compiler bailouts in your territories: `DecisionTag` and `usePress` (`useMemo(canHover, [])`), `useDialogFocus` (ref written during render) and `ProposalDecision` (`for` with an empty test). They're not findings here. Each one runs uncompiled and correct.
 - **Fenn / Fantem:** the six failing web tests (UC-08 D11 ×4, UC-08 D15, UC-09 R7) fail identically on main b1932d9. They're the failing-first tests for w0-kit a4.
