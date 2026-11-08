@@ -25,7 +25,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
 8. `docs/design/Step 0 and Step 1 plan.md`: this sprint's source
 9. `docs/ui-contracts/decisions-approval-page.md`: section 5
-10. `docs/agent-dispatch/frontend/sprint-01/agent-zero-decisions-review-frontend.md`: this task doc: follow it exactly
+10. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-fenn-01-hydrated-marker-precedes-phone-layout.md`: a2 and a3: the marker and the layout switch, and INT's ruling
+11. `docs/agent-dispatch/frontend/sprint-01/agent-zero-decisions-review-frontend.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -68,6 +69,18 @@ Do them in order. Finish each one, verified, before the next.
 
 - **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test && ! grep -rnE '(^|[^[:alnum:]_])fetch[[:space:]]*\(' apps/web/src/modules/decisions`
 - **Expected:** all locked tests pass; no line listed: the pattern matches fetch( and globalThis.fetch(, not refetch( (revision 11); state use is judged by reading: no server data in state (decisions.md, 'Revision 9')
+
+### ZERO-02: Attempt a2: review Leon's decisions build a3 (LEON-06): data-hydrated set in a commit after every tag has its final layout, never on a timer; absent from the server's HTML; no hydration mismatch; only the module changed (P1)
+
+- **Required:** The marker's timing checked with your own probe at 390x844 (no rect or order change after it, 10 fresh loads), not taken from the report
+- **Verify:** `pnpm --filter @avel/web test && for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test 2>&1 | grep -E 'passed|failed|flaky'; done`
+- **Expected:** the locked tests pass; 10 lines of "5 passed"
+
+### ZERO-03: Attempt a3: review Leon's decisions build a4: the loader (R7, no import past kit/index.ts) and layout="desk" everywhere, with no viewport read in the module (section 5, 'Phone', revision 15) (P1)
+
+- **Required:** UC-32's check run by hand at 390x844 (JS off against hydrated, within 1px); no matchMedia or useIsPhone; ReasonDialog still in its own chunk
+- **Verify:** `! grep -rnE 'matchMedia|useIsPhone|kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test`
+- **Expected:** no line listed; the locked tests pass
 
 ## 5. Territory
 
@@ -152,6 +165,8 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | ZERO-01 | DONE / PARKED / BLOCKED | |
+| ZERO-02 | DONE / PARKED / BLOCKED | |
+| ZERO-03 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-*.md`): its path, severity and title. "none" if none.
@@ -202,6 +217,8 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the decisions diff: each row's props, the reason step, the exact route 54 body, every error state and copy string as section 5 gives them; no fetch, no server data in state, index.ts light
+- ZERO-02: Attempt a2: review Leon's decisions build a3 (LEON-06): data-hydrated set in a commit after every tag has its final layout, never on a timer; absent from the server's HTML; no hydration mismatch; only the module changed
+- ZERO-03: Attempt a3: review Leon's decisions build a4: the loader (R7, no import past kit/index.ts) and layout="desk" everywhere, with no viewport read in the module (section 5, 'Phone', revision 15)
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-decisions-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

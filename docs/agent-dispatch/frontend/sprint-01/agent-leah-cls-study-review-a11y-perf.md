@@ -77,6 +77,12 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `ls docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-*.md`
 - **Expected:** the CLS table for both fallback versions against main's, with the faces drawn; on your branch, the findings files; and the recommendation, with the numbers behind it
 
+### LEAH-03: Attempt a3: CLS on / at 390x844 on main after D16 and Leon's a4, by section 6's measure (revision 15): fonts normal and delayed 1.2 s, each unthrottled and at 4x CPU, three runs each, with each shift's sources, FCP and hydration time; and D16's focus order on a phone (P1)
+
+- **Required:** Under 0.02 in all four cases on the production build, or a finding with each shift's sources; the dev server measured too, for information; the focus-order judgement with its evidence
+- **Verify:** `pnpm --filter "@avel/web..." build && pnpm --filter @avel/web test`
+- **Expected:** exits 0; the four-case table with FCP and hydration columns, and the focus-order check, which you report
+
 **Notes:**
 
 - There's no diff to review. Run every experiment on a scratch worktree outside the repo (git worktree add --detach under your session's scratchpad), and remove it when you're done. Never commit code and never push. On your branch, write only your report and findings/cls-study-leah-*.md.
@@ -84,6 +90,8 @@ Do them in order. Finish each one, verified, before the next.
 - This machine (WSL) has no Liberation, Arial or Courier New for Chromium. Nemi exposed /mnt/c/Windows/Fonts' Arial and Courier New to Chromium through a scratch FONTCONFIG_FILE, changing nothing on the system. Do the same, and say which local() face each run drew in (CDP CSS.getPlatformFontsForNode). A run where neither local() source resolves measures a system font, not the fallback.
 - The method is section 6's 'The measure': Chromium at 390x844 with touch, the layout-shift observer registered before navigation (addInitScript), summed over 3 s after [data-ui="DecisionsPage"][data-hydrated="true"], three runs per case. Record each shift's time and its sources (node, previous and current rects), so the cause is seen, not guessed. Measure on the dev server with AVEL_API=mock, and on the production build served as in your size study, since the dev server can differ.
 - INT's guess, which nobody has measured: the old inline D11 grid caused a shift at hydration, and Fantem's a4 (D11 in kit.css, merged at 193a66f) removed it. Test it directly: main as it is, and d8bc228 (main just before the a4 merge) as the before case.
+- Attempt a3 (revision 15; INT): the re-measure. Start after Leon's decisions build a4 and Fenn's e2e a7 are merged. Do only the third task. Section 6's 'The measure' now takes your a2 finding 05: production build, the four cases with the 4x throttle, flagged entries counted, FCP and hydration recorded. Measure main as it is: the fallbacks are still held, and the formula isn't decided, so don't measure ac820a7 or the one-method version again.
+- Also check D16's focus order on a phone: the desk DOM puts Approve before Reject while Reject is drawn on the left (section 4, D16). Say whether that's acceptable under WCAG 2.4.3 and 1.3.2, with a screen reader's swipe order at 390x844. If it isn't, it's a finding.
 
 ## 5. Territory
 
@@ -169,6 +177,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | --- | --- | --- |
 | LEAH-01 | DONE / PARKED / BLOCKED | |
 | LEAH-02 | DONE / PARKED / BLOCKED | |
+| LEAH-03 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-*.md`): its path, severity and title. "none" if none.
@@ -220,6 +229,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - LEAH-01: CLS on / at 390x844: main, and d8bc228 (before D11 moved to kit.css), each with the fonts normal, all woff2 aborted, and each woff2 delayed 1.2 s, on the dev server and the production build; three runs per case, each shift with its time and sources; one findings file for each cause found
 - LEAH-02: The fallbacks: main plus Nemi's ac820a7 (the formula as section 6 gives it), and main plus the same rules with size-adjust from one average-width method for both files (Nemi's Limitations: the a-to-z-and-space weighted average, 107.50% for the sans, and the three overrides recomputed from it), each with the fonts delayed 1.2 s and normal, three runs; then your recommendation for section 6: keep, change the formula, or drop the fallbacks
+- LEAH-03: Attempt a3: CLS on / at 390x844 on main after D16 and Leon's a4, by section 6's measure (revision 15): fonts normal and delayed 1.2 s, each unthrottled and at 4x CPU, three runs each, with each shift's sources, FCP and hydration time; and D16's focus order on a phone
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

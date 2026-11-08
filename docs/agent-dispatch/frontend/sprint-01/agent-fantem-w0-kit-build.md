@@ -29,7 +29,9 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 11. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-brennan-01.md`: a4, D15: the Factory PR card's empty facts list (Brennan)
 12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-02-factory-pr-card-empty-facts-rule.md`: a4, D15: the same, measured at 390x844 (Zero)
 13. `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-03-r7-split-fails-with-static-export.md`: a5: why the static ReasonDialog export goes, and the measured chunks
-14. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
+14. `docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md`: a6: the 0.13 shift's sources, and every rect and style that changes from the server's desk HTML to the hydrated phone layout
+15. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-fenn-01-hydrated-marker-precedes-phone-layout.md`: a6: the same switch moves the buttons under a tap; INT's ruling, option (a)
+16. `docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -110,6 +112,12 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && ! grep -nE '^export \{[^}]*\bReasonDialog\b' apps/web/src/kit/index.ts && grep -n 'loadReasonDialog' apps/web/src/kit/index.ts`
 - **Expected:** typechecks; the locked kit tests pass; no value export listed; the loader listed; and from the scratch copy, the ReasonDialog and route chunk sizes against main's, which you report
 
+### FANTEM-08: Attempt a6 (revision 15): D16, the desk layout draws the phone layout under @media (max-width: 899px) from kit.css alone, with the phone layout's own values; the DOM unchanged (P1)
+
+- **Required:** No new literal value (every value is one kit.css already uses for layout="phone" or Button's lg size); DecisionTag's DOM unchanged; at 390x844 a desk tag and a phone tag with the same props match within 1px (article, head, title, facts list, footer, each button and link) for the four rows the notes name; at 1280x800 nothing changes against main; the locked kit tests pass unchanged
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build >/dev/null && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** typechecks; the locked tests pass; the build exits 0; only apps/web/src/kit/kit.css changed (or kit/** if you say why); and the two rect tables, at 390 and 1280, which you report
+
 **Notes:**
 
 - The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.
@@ -120,6 +128,9 @@ Do them in order. Finish each one, verified, before the next.
 - a4 also takes D15 (revision 11; INT, on decisions-brennan-01 and decisions-zero-02), the sixth task: DecisionTag draws .av-dt-facts only when evidence or consequence is given. It's one condition around the dl at DecisionTag.tsx:315; kit.css doesn't change for it. Fenn's D15 tests (his w0-kit tests a4) lock it: start a4 after they're merged. If INT dispatches you before that, build it and show it on the scratch merge with Leon's a2 instead: at 390x844 the Factory PR card has no .av-dt-facts and one top rule above Open on GitHub, and a proposal card still has its list.
 - Attempt a5 (revision 13; INT, option (c) of w0-kit-zero-03): a1 to a4 are merged. Do only the seventh task. Start after Fenn's w0-kit tests R7 attempt is merged and locks.md's w0-kit line has moved to it. index.ts drops its ReasonDialog value export: loadReasonDialog is the only way to the dialog (a type-only ReasonDialogProps export may stay). This replaces a4's note that the export stays. Show the split on a scratch copy with DecisionsScreen.tsx calling the kit's loadReasonDialog instead of its deep import (thrown away; Leon's a3 makes that change): ReasonDialog and Dialog in their own chunk, and /'s route chunk no bigger than main's.
 - For the copy and Close buttons, the tap area grows and the drawn size doesn't: a row or chip that gets taller is a defect. Say in your report how you made the area and how you measured it (for example document.elementFromPoint at 21px from the button's centre, at 390x844).
+- Attempt a6 (revision 15; INT, option (a) of decisions-fenn-01 and cls-study-leah-01): a1 to a5 are merged. Do only the eighth task, D16. Start once revision 15 is on main. Leon's next attempt builds on it: the page then draws layout="desk" on a phone too, so D16 is what a phone sees.
+- D16 extends D11's approach to the rest of the phone layout. Under the K1 @media (max-width: 899px) block, [data-layout="desk"] gets every rule [data-layout="phone"] has (kit.css:758, 769, 876, 883, 886), plus the actions as .av-dt-actions-phone draws them, with the desk row's spacer drawing nothing. Approve and Reject (data-size md) get Button's lg values and block width, as the phone layout's Buttons have. Every value is one kit.css already uses for the phone layout or for Button's lg size: no new literal. DecisionTag.tsx's DOM doesn't change. At 900px and over, nothing changes.
+- The check is D16's: at 390x844, a desk tag and a phone tag with the same props draw the article, head, title, facts list, footer, and each button and link at the same rect, within 1px. Do it on a scratch page in your scratchpad, not in the repo, for a decidable row with facts, a factory_change row (link, no facts), a stale row and a notAllowed row with Refresh list. At 1280x800, the desk tag's rects are the same as on main. Report both tables.
 
 ## 5. Territory
 
@@ -209,6 +220,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | FANTEM-05 | DONE / PARKED / BLOCKED | |
 | FANTEM-06 | DONE / PARKED / BLOCKED | |
 | FANTEM-07 | DONE / PARKED / BLOCKED | |
+| FANTEM-08 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -262,6 +274,7 @@ Your tasks:
 - FANTEM-05: Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts
 - FANTEM-06: Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given
 - FANTEM-07: Attempt a5 (revision 13): kit/index.ts exports no ReasonDialog value; loadReasonDialog is the only way to the dialog (section 4, R7)
+- FANTEM-08: Attempt a6 (revision 15): D16, the desk layout draws the phone layout under @media (max-width: 899px) from kit.css alone, with the phone layout's own values; the DOM unchanged
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

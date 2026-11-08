@@ -29,7 +29,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 11. `docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-04-uc31-reads-confirm-during-dialog-animation.md`: the UC-31 attempt: the confirm button read during av-dialog-in's scale (revision 13)
 12. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-e2e-zero-01-phone-tests-flake-after-dev-server-start.md`: the flake attempt (a5): 4 of 14 runs on main fail, all on the phone project, with the failing lines and outputs
 13. `docs/agent-dispatch/frontend/sprint-01/findings/decisions-fenn-01-hydrated-marker-precedes-phone-layout.md`: a6: your a5 cause, filed for Leon, and INT's ruling (Leon's a3 moves the marker; you run FENN-04 again)
-14. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
+14. `docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md`: a7: the shift UC-32 checks for, with its sources
+15. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -92,6 +93,12 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test 2>&1 | grep -E 'passed|failed|flaky'; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** 10 lines of "5 passed" with UC-31 desk skipped as before, and no failed or flaky line; only apps/web/e2e/** or apps/web/playwright.config.ts changed
 
+### FENN-05: The UC-32 attempt (a7): UC-32, on a phone nothing moves at hydration (section 7, revision 15); then FENN-04's bar again with UC-32 in the suite (P1)
+
+- **Required:** One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); UC-32 fails on a scratch copy of 1dca02d and passes on main; no other test changes; retries 0, no fixed sleep, no reducedMotion; 10 runs in a row green on main, each with its own dev server
+- **Verify:** `for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test 2>&1 | grep -E 'passed|failed|flaky'; done; git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** 10 lines of "6 passed" (UC-31 and UC-32 desk skipped) and no failed or flaky line; only apps/web/e2e/** changed; and UC-32's failure on the 1dca02d copy, which you report
+
 **Notes:**
 
 - Attempt a2 (2026-11-07, revision 9; INT's decision 2): a1 is merged and locked (locks.md, decisions-e2e). Do only the second task. It changes a locked test, which INT decided: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a2: wait for the hydration marker before the first click (INT, revision 9)" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's decisions-e2e line to your commit.
@@ -103,6 +110,8 @@ Do them in order. Finish each one, verified, before the next.
 - If the cause is in the app (for example, the page drops the dialog or the click after data-hydrated is set), don't work around it in the tests. Stop, and report it under Deviations with the evidence. It becomes a finding for the module that owns it.
 - Attempt a6 (2026-11-07; INT, decisions-fenn-01): FENN-04 again, after Leon's decisions build a3 is merged. a3 sets data-hydrated only once every tag has its final layout, which was your a5 cause. Do only the fourth task, with its bar as written: 10 runs in a row green on main, each with its own dev server. No test change is expected. If it passes unchanged, your commit is only the report, with no lock override and no lock move. If a test change still turns out to be needed, the a5 rules hold: find the cause first, and use AVEL_LOCK_OVERRIDE="decisions-e2e a6: <what> (INT, decisions-fenn-01)". If the cause is in the app again, stop and report it as in a5.
 - Not in a6: the 0.13 layout shift on / (cls-study-leah-01). The desk-to-phone switch still happens in Leon's a3, only before the marker. It's INT's option (a), planned after this.
+- Attempt a7 (revision 15; INT, option (a)): after Leon's decisions build a4 is merged. Do only the fifth task. It adds UC-32 to the locked suite: make the commit with AVEL_LOCK_OVERRIDE="decisions-e2e a7: UC-32, nothing moves at hydration (INT, revision 15)". After the merge, INT moves locks.md's decisions-e2e line.
+- UC-32 (section 7): a second browser context with javaScriptEnabled false reads the server's HTML at 390x844, and the test's own page reads the same elements after data-hydrated. Compare boundingBox() within 1px. No fixed sleep, no reducedMotion. Show it fails first: run it against a scratch copy (git archive) of 1dca02d, before D16 and Leon's a4, and report the failing line.
 
 ## 5. Territory
 
@@ -187,6 +196,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | FENN-02 | DONE / PARKED / BLOCKED | |
 | FENN-03 | DONE / PARKED / BLOCKED | |
 | FENN-04 | DONE / PARKED / BLOCKED | |
+| FENN-05 | DONE / PARKED / BLOCKED | |
 
 ## Tests
 Each test: its scenario ID, its file and name, and its failure line (or "pins existing behaviour: passes").
@@ -243,6 +253,7 @@ Your tasks:
 - FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
 - FENN-03: The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes
 - FENN-04: The flake attempt: UC-29 to UC-31 pass on the phone project right after Playwright starts the dev server (decisions-e2e-zero-01); find the cause first and fix it in the tests or the Playwright config
+- FENN-05: The UC-32 attempt (a7): UC-32, on a phone nothing moves at hydration (section 7, revision 15); then FENN-04's bar again with UC-32 in the suite
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

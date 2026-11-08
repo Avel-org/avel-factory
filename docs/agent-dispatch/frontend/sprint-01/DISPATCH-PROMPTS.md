@@ -375,6 +375,7 @@ Your tasks:
 - FANTEM-05: Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts
 - FANTEM-06: Attempt a4 (revision 11): D15, DecisionTag draws the .av-dt-facts list only when evidence or consequence is given
 - FANTEM-07: Attempt a5 (revision 13): kit/index.ts exports no ReasonDialog value; loadReasonDialog is the only way to the dialog (section 4, R7)
+- FANTEM-08: Attempt a6 (revision 15): D16, the desk layout draws the phone layout under @media (max-width: 899px) from kit.css alone, with the phone layout's own values; the DOM unchanged
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -399,6 +400,7 @@ Your tasks:
 - ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
 - ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over), R7 loadReasonDialog and D15 (no facts list without a fact, a card with one unchanged) against section 4
 - ZERO-04: Attempt a5: review R7 against revision 13: no ReasonDialog value exported from kit/index.ts, loadReasonDialog unchanged, and the split shown on a scratch copy with the page on loadReasonDialog (the dialog in its own chunk, the route chunk no bigger)
+- ZERO-05: Attempt a7: review Fantem's w0-kit a6 against revision 15's D16: the desk layout under 900px draws the phone layout from kit.css alone, values only from the phone layout and Button's lg size, the DOM unchanged, nothing changed at 900px and over
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -465,6 +467,7 @@ Your tasks:
 - FENN-02: Attempt a2: in each of UC-29 to UC-31, after its SSR checks and before its first click, wait for [data-ui="DecisionsPage"][data-hydrated="true"] (UI contract section 7, revision 9); nothing else in the specs changes
 - FENN-03: The UC-31 attempt: UC-31 reads the reason dialog's sizes once its open animation has finished (section 7, UC-31; revision 13); nothing else in the specs changes
 - FENN-04: The flake attempt: UC-29 to UC-31 pass on the phone project right after Playwright starts the dev server (decisions-e2e-zero-01); find the cause first and fix it in the tests or the Playwright config
+- FENN-05: The UC-32 attempt (a7): UC-32, on a phone nothing moves at hydration (section 7, revision 15); then FENN-04's bar again with UC-32 in the suite
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -491,6 +494,7 @@ Your tasks:
 - LEON-04: Attempt a2: the hydration marker, data-hydrated="true" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9)
 - LEON-05: Attempt a3: ReasonDialog through the kit's loadReasonDialog, with no import past kit/index.ts; the null-version stale row's body from UiError.stale.message (revision 10)
 - LEON-06: Attempt a3: the hydration marker waits for the final layout: data-hydrated="true" is set only in a commit after every DecisionTag on the page has its client layout, so no early tap lands on the wrong button (decisions-fenn-01, bar point 2; section 5, the hydration marker)
+- LEON-07: Attempt a4 (revision 15): every DecisionTag drawn with layout="desk"; no viewport read in the module (no matchMedia, no useIsPhone); nothing moves at hydration on a phone
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -512,6 +516,8 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the decisions diff: each row's props, the reason step, the exact route 54 body, every error state and copy string as section 5 gives them; no fetch, no server data in state, index.ts light
+- ZERO-02: Attempt a2: review Leon's decisions build a3 (LEON-06): data-hydrated set in a commit after every tag has its final layout, never on a timer; absent from the server's HTML; no hydration mismatch; only the module changed
+- ZERO-03: Attempt a3: review Leon's decisions build a4: the loader (R7, no import past kit/index.ts) and layout="desk" everywhere, with no viewport read in the module (section 5, 'Phone', revision 15)
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-decisions-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -599,6 +605,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - LEAH-01: CLS on / at 390x844: main, and d8bc228 (before D11 moved to kit.css), each with the fonts normal, all woff2 aborted, and each woff2 delayed 1.2 s, on the dev server and the production build; three runs per case, each shift with its time and sources; one findings file for each cause found
 - LEAH-02: The fallbacks: main plus Nemi's ac820a7 (the formula as section 6 gives it), and main plus the same rules with size-adjust from one average-width method for both files (Nemi's Limitations: the a-to-z-and-space weighted average, 107.50% for the sans, and the three overrides recomputed from it), each with the fonts delayed 1.2 s and normal, three runs; then your recommendation for section 6: keep, change the formula, or drop the fallbacks
+- LEAH-03: Attempt a3: CLS on / at 390x844 on main after D16 and Leon's a4, by section 6's measure (revision 15): fonts normal and delayed 1.2 s, each unthrottled and at 4x CPU, three runs each, with each shift's sources, FCP and hydration time; and D16's focus order on a phone
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

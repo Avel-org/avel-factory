@@ -659,3 +659,22 @@ INT merged Fantem's w0-kit a5 with my review a6 at ed3fd2b (197/197 unit tests; 
   - UI contract revision 15: section 4, the phone look from CSS under 900px on the server's desk HTML; section 5, no client layout switch.
   - Then Fantem's w0-kit a6, Leon's next attempt, Fenn again, and Leah's re-measure at 4x CPU throttle (cls-study-leah-05 accepted).
 - **Not decided:** section 6's fallback formula (cls-study-leah-03 and 04). It stays held.
+
+## 2026-11-07: Revision 15 of the UI contract (cls-study-leah-01 and 05, decisions-fenn-01; INT, option (a))
+
+INT took option (c) first (Leon's decisions build a3 and Fenn's e2e a6, planned at 1dca02d), then option (a) for the 0.13 layout shift.
+
+- **D16: on a phone, the desk layout draws the phone layout** (section 4).
+  - **The rule:** with `layout="desk"`, `kit.css` draws every difference the phone layout makes under `@media (max-width: 899px)`, with the phone layout's own values. That's D11's approach, extended to the body, head, facts, actions and the buttons' `lg` size. The DOM doesn't change, and no JavaScript reads the viewport.
+  - **The check:** at 390px, a desk tag and a phone tag with the same props match within 1px. At 900px and over nothing changes.
+  - **Who:** Fantem's w0-kit a6, reviewed in my w0-kit review a7.
+- **The page draws `layout="desk"` everywhere** (section 5, "Phone"). No `matchMedia`, no `useIsPhone`.
+  - **Who:** Leon's decisions build a4. It's the loader attempt (revision 10's fifth task) with the seventh task added, so it's one round, not two. It starts after his a3 and Fantem's a6 are merged. My decisions review a2 covers his a3, and a3 covers his a4.
+- **The hydration marker waits for the final layout** (section 5). Revision 9's "`useSyncExternalStore` and no `useEffect`" goes: the rule is now when it's set (in a commit, after the final layout, never on a timer), and how is the page's. That's what Leon's a3 builds.
+- **UC-32: nothing moves at hydration on a phone** (section 7). It compares rects with JavaScript off against after `data-hydrated`, within 1px.
+  - **Who:** Fenn's decisions-e2e a7, after Leon's a4, under an override of the decisions-e2e lock. It has to fail on a scratch copy of 1dca02d, and then the suite must be green 10 runs in a row.
+  - It's planned after Leon's a4, in INT's order, rather than ahead as a failing test. The scratch copy gives the failing run.
+- **Section 6's measure takes Leah's finding 05** (INT: yes). It's on a production build, in four cases: fonts normal and delayed, each unthrottled and at 4x CPU. Flagged entries count, and each run records FCP and hydration time.
+  - **Who:** Leah's cls-study a3 re-measures main after Leon's a4 and Fenn's a7, and checks D16's focus order on a phone.
+- **Focus order, accepted for now:** on a phone the desk DOM puts Approve before Reject while Reject is drawn on the left. The server's HTML has done that since D11 (revision 10), and it's now what a phone keeps. Leah judges it in a3. If she finds it a defect, D16 changes.
+- **Not decided:** section 6's fallback formula (cls-study-leah-02 to 04). The fallbacks stay held.
