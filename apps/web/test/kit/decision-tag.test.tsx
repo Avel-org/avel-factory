@@ -354,6 +354,25 @@ describe("UC-08 DecisionTag labels, link, id, disabled reason, request ID and la
       expect(r.body).not.toMatch(/display:\s*grid/);
     }
   });
+
+  test("UC-08 (D15) neither evidence nor consequence: no .av-dt-facts element is drawn", () => {
+    const { card } = draw({ evidence: undefined, consequence: undefined });
+    expect(card.querySelector(".av-dt-facts")).toBeNull();
+  });
+
+  test("UC-08 (D15) evidence only, pins existing behaviour: one .av-dt-facts element, holding the evidence", () => {
+    const { card } = draw({ consequence: undefined });
+    const facts = card.querySelectorAll(".av-dt-facts");
+    expect(facts).toHaveLength(1);
+    expect(facts[0]?.textContent).toContain(seen.evidence as string);
+  });
+
+  test("UC-08 (D15) consequence only, pins existing behaviour: one .av-dt-facts element, holding the consequence", () => {
+    const { card } = draw({ evidence: undefined });
+    const facts = card.querySelectorAll(".av-dt-facts");
+    expect(facts).toHaveLength(1);
+    expect(facts[0]?.textContent).toContain(seen.consequence as string);
+  });
 });
 
 function readKitCss(): string {
