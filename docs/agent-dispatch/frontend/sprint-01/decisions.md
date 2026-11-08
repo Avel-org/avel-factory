@@ -628,3 +628,12 @@ INT merged Nemi's w0-split a2 and Fantem's w0-kit a4 at ab520cd (196/196 unit te
 
   Section 6's fallbacks are then kept, changed or dropped on her numbers, in a later revision. NEMI-03 is decided with them. I'm not changing section 6's formula before then, because Nemi's 107.50% is one run's figure and hasn't been measured on the page.
 - **S1-6, the web half.** INT opened Ghost's w0-data a3 on review-base/s1-6 (main plus Axis's a1). It's the a2 task doc's third task (zod/mini), run as a3 because a2 is merged. My w0-data review and Zane's apply as written ("Attempt a2" tasks), against the a3 diff. INT has asked Axis whether the English locale can stay out of the web. That's a contract-side question with no web contract change until he answers. If the answer means `apps/web` has to call `z.config(...)` or import a locale, it comes back to me as a section 3 change.
+
+## 2026-11-07: Revision 14 of the UI contract (Zero's w0-kit a6 review; INT's decision)
+
+INT merged Fantem's w0-kit a5 with my review a6 at ed3fd2b (197/197 unit tests; lint exit 0 in a6). w0-kit-zero-03 and 04 are fixed.
+
+- **R7: `/`'s route chunk may grow by the loader's own call** (w0-kit-zero-05, option (a)).
+  - **Why:** with the page on `loadReasonDialog`, `/`'s route chunk is 54162 / 18929 B (raw / gzip -9) against main's 54146 / 18921: +16 B raw, +8 B gzip. Those bytes are the exported `() => import("./ReasonDialog")` wrapper and its call, which Rolldown doesn't inline across modules. Any exported loader costs them, so no kit change can remove them.
+  - **The rule:** the route chunk holds none of the dialog's code, and grows by at most the loader's call (under 0.05 kB gzip). The dialog's own chunk (2573 B gzip) is unchanged, and nothing in `/`'s first load preloads it. Section 8's budget still covers the first load as a whole (+6 B in the measure).
+  - **No work for anyone:** Fantem's a5 already meets the new rule. Leon's a3 is reviewed against it.
