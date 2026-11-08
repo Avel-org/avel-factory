@@ -11,6 +11,20 @@ AXIS-01 to AXIS-03 are done and pass their own checks:
 
 The verdict is PARTIAL because Part 7's `pnpm typecheck` and `pnpm test` fail in `apps/web`. The web on main builds its own row schemas from the contract's schemas, using classic methods: `apps/web/src/data/pending-decisions.ts:40` calls `Uuid.nullable()`, and `client.ts` constrains on classic `z.ZodType`. So **this branch can't merge to main on its own.** It has to land together with Ghost's w0-data a3, as S1-6 ("Lands together") already requires. Backend can't touch `apps/web`.
 
+**Revision (INT on 719a41f): the locale move, 07cc98b.** INT confirmed the joint landing, on `review-base/s1-6` (d6eacae). INT asked whether the web can skip the English locale (about 1.1 kB gzip). **Yes, and without a new subpath.**
+- **The move:** the default now lives only in the root entry `src/index.ts` (`@avel/contract`). `dto/common.ts`, `errors.ts` and `completion-report.ts` no longer set it.
+- **Who imports what:** the web imports only subpaths, on this base and on d6eacae: `errors`, `routes/decisions`, `dto/common`, `dto/decisions`, `value-lists`. Its dev-server mock loads on the Node side.
+- **Why RIGG-03 stays green with no test change:** the locked tests load `src/index.ts` (`test/helpers/contract.ts`, `ENTRY`).
+- **No `package.json` change:** a `locale-en` subpath would need a new `exports` entry. The root needs none.
+- **The S1-6 amendment** (the locale, Deviation 2's forms, the memoizer "no", the landing) is in `decisions.md`, at INT's request.
+- **One open point for INT: bundling the root.** With `sideEffects: false`, a bundler drops `index.ts`'s own statement when only its re-exports are used. Rolldown did that on a root-only probe. Node without a bundler isn't affected: the server as planned, the mock, tools/docs and the tests. A bundled server or CLI would lose the messages unless `package.json` says `"sideEffects": ["./dist/index.js"]` (packaging-only, no bump, D58; I haven't tested it) or the consumer calls `z.config` itself.
+- **Checks after the move:**
+  - contract 61/61;
+  - `OPENAPI-UNCHANGED`;
+  - lint exits 0;
+  - in node, the root gives `"Invalid input: expected string, received undefined"` and `dist/dto/decisions.js` alone gives `"Invalid input"`;
+  - a rolldown bundle of the web's subpath imports holds no locale strings (`Invalid input: expected` ×0, against ×2 in a bundle that loads the locale).
+
 ## Pre-flight
 - **Part 2 files, all read:**
   1. `.claude/agents/axis.md`
@@ -37,7 +51,7 @@ The verdict is PARTIAL because Part 7's `pnpm typecheck` and `pnpm test` fail in
 ## Tasks
 | Task | Status | Commit |
 | --- | --- | --- |
-| AXIS-01 | DONE | 2bb36d4 |
+| AXIS-01 | DONE | 2bb36d4, 07cc98b (the locale moved to the root entry) |
 | AXIS-02 | DONE | 45b0a84 |
 | AXIS-03 | DONE | 90942dc |
 
@@ -66,7 +80,7 @@ The verdict is PARTIAL because Part 7's `pnpm typecheck` and `pnpm test` fail in
   - "`.meta` 1" is oRPC's `base.meta(...)` in `routes/route.ts`, not zod (see Deviations).
 - **`Page<T>`** is now `<T extends core.$ZodType>`, so classic schemas can still be paged (S1-6, Consumers).
 - **One schema object per shared schema (S1-8):** `Placeholder`, `MetricsDto` and `PendingDecisionDto` are still the same object. The byte-identical OpenAPI document shows it: every Placeholder field still points at `MetricsDto`.
-- **The English locale:** a guarded default in the three root schema modules (see Deviations 1). Without it, every issue message turns into "Invalid input".
+- **The English locale:** a guarded default in the root entry `src/index.ts` (07cc98b; at first in the three root schema modules, see Deviations 1). Without it, every issue message turns into "Invalid input".
 - **`package.json`:** not changed.
 
 ### AXIS-02: openapi.ts
@@ -100,7 +114,7 @@ Found 3 errors.
 | S1-6 "The `Page<T>` constraint becomes `$ZodType`" | `packages/contract/src/dto/common.ts` |
 | S1-6 spike check 2: the OpenAPI document is unchanged | `tools/docs/src/openapi.ts` |
 | S1-6 "Lint: noRestrictedImports bans zod" | `biome.json` |
-| S1-6 "What doesn't change": S1-3's details and messages | the locale default in `dto/common.ts`, `errors.ts`, `completion-report.ts` |
+| S1-6 "What doesn't change": S1-3's details and messages | the locale default in `src/index.ts` (root entry only) |
 | S1-8: shared schemas stay one object | unchanged aliases in `dto/metering.ts` and `dto/decisions.ts`; byte-identical `openapi.json` |
 | RIGG-01, RIGG-02, RIGG-03 | all of the above; 17/17 pass |
 | The 44 locked tests | 44/44 pass |
@@ -111,12 +125,11 @@ Found 3 errors.
    - **What I saw:** with the whole contract on mini, RIGG-03 failed on 7 cases. Every message became `"Invalid input"` instead of, for example, `"Invalid input: expected string, received undefined"`.
    - **Why it matters on the wire:** S1-3 makes `ErrorBody.message` and `issues[].message` these messages.
    - **The spike's check 5 didn't catch this.** Its half-moved contract still imported classic zod, and that set the locale for the whole process.
-   - **The fix:** `if (!z.core.globalConfig.localeError) z.config(z.locales.en());` in `dto/common.ts`, `errors.ts` and `completion-report.ts`. Every other DTO module imports `common.ts`, and those three are the import graph's roots.
-     - Each subpath on its own gives the classic messages. I checked that by importing only `dist/errors.js`, only `dist/completion-report.js` and only `dist/dto/decisions.js` in node.
-     - It's the same rule classic follows, so an explicit `z.config()` locale still wins.
-     - It's a top-level statement in modules whose exports are used, so `sideEffects: false` keeps it.
+   - **The fix:** `if (!z.core.globalConfig.localeError) z.config(z.locales.en());`, the same rule classic follows, so an explicit `z.config()` locale still wins.
+     - **At 2bb36d4:** the guard was in `dto/common.ts`, `errors.ts` and `completion-report.ts`, so every subpath set it.
+     - **Since 07cc98b (INT):** it's in `src/index.ts` only, so the web, which uses subpaths only, doesn't pay for it. Code that wants S1-3's messages imports the root entry once (see the Revision in the Summary).
    - **Its cost:** about 1.1 kB gzip. Rolldown (Vite 8, the web's bundler), minified: 5,240 B without it and 6,335 B with it, on a small mini schema. esbuild doesn't tree-shake `z.locales` and pulls in every locale (80 kB). That matters only if someone bundles the contract with esbuild.
-   - **Needs INT:** please record this in sprint-01 `decisions.md`, as an S1-6 amendment. `decisions.md` is outside my Part 5 territory, so I couldn't record it as Part 6 asks.
+   - **Recorded** in sprint-01 `decisions.md` as an S1-6 amendment, at INT's request. That file is outside Part 5; INT asked for it in so many words.
 2. **`.extract` (3), `.exclude` (1) and `.loose` (1) aren't in S1-6's list.** zod/mini has none of them as methods. The forms I used keep the types (RIGG-02) and the OpenAPI output (byte-identical):
    - `.extract([...])` became `z.enum([...] as const satisfies readonly List[])`, in `dto/agent.ts` (`EscalationKind`), `dto/gates.ts` and `dto/your-work.ts`. The same values in the same order, and tsc still checks that each one is in the value list. Biome then made `ProposalKind` an inline `type` import in `agent.ts`. The runtime "Key not found" throw is now a compile error.
    - `.exclude(["proposed"])` became `z.enum(FactStatus.filter((v): v is Exclude<FactStatus, "proposed"> => v !== "proposed"))`, in `dto/gate0.ts`. It's still derived from `FactStatus`, in order: `["confirmed", "rejected"]`.
@@ -126,8 +139,8 @@ Found 3 errors.
 5. **Part 7's typecheck and test aren't green**, because of `apps/web`. See Issues for other agents and P0 discoveries.
 
 ## Limitations
-- **The size number isn't mine.** It's the spike's: `index-*.js` went from **173.53 kB to 156.28 kB** gzip (17.25 kB) with both packages on mini. That number didn't include the English locale (Deviation 1), so expect about 1.1 kB less saving, roughly 16.2 kB. Leah measures the real number at the joint landing.
-- **The memoizer:** classic also sets a default parse memoizer (`_ensureDefaultMemoizer`), and mini doesn't. It only changes the outcome for cyclic JavaScript object graphs passed to a recursive schema (`z.json()`). JSON from the wire can't be cyclic, so I didn't add a second global default. Say if you want it.
+- **The size number isn't mine.** It's the spike's: `index-*.js` went from **173.53 kB to 156.28 kB** gzip (17.25 kB) with both packages on mini. Since 07cc98b the locale isn't in the web's bundle, so the spike's figure stands. Leah measures the real number at the joint landing.
+- **The memoizer:** classic also sets a default parse memoizer (`_ensureDefaultMemoizer`), and mini doesn't. It only changes the outcome for cyclic JavaScript object graphs passed to a recursive schema (`z.json()`). JSON from the wire can't be cyclic, so it isn't added (INT: no).
 - **Rigg's done-when 5 build test (5 s timeout) is flaky.** It failed once, in my first contract run (5,817 ms), and passed in the three runs after. I didn't change it: it's locked.
 
 ## Parked chains
@@ -144,25 +157,27 @@ none
 
 ## Issues for other agents
 - **INT:**
-  - the merge sequencing (P0 above);
-  - record Deviation 1 (the locale) and Deviation 2's forms in sprint-01 `decisions.md` as an S1-6 amendment;
-  - say whether the memoizer gap needs closing.
+  - the merge sequencing: answered, a joint landing on `review-base/s1-6`;
+  - the S1-6 amendment: recorded in `decisions.md`;
+  - the memoizer: answered, no;
+  - **open:** whether to add `"sideEffects": ["./dist/index.js"]` before anything bundles the root entry (Revision, in the Summary).
 - **Zero and Ghost (frontend, through INT):**
   - `pending-decisions.ts` needs mini forms for every chained call on contract schemas. Line 40's `Uuid.nullable()` is the first; then `z.int().min(1)`, `z.string().nullable()` and the rest.
   - `client.ts`'s `SchemaInput`/`SchemaOutput` should constrain on `$ZodType` (from `zod/v4/core`) or `z.ZodMiniType`.
-  - The web doesn't need its own `z.config` for English: the contract's modules set it.
+  - The web's subpath imports don't set the English locale (07cc98b), so the web's own zod messages are mini's plain `"Invalid input"`. A field error the web shows from its own parse needs its own text, or `z.config(z.locales.en())` in the web if you want English and accept about 1.1 kB. Messages that come from the server in `ErrorBody` are unaffected.
   - The 5 UC-08/UC-09 kit failures are pre-existing at cbb0b19, and not caused by this branch.
 - **Brennan (review-spec):**
-  - Deviation 1 is the one judgement call.
+  - Deviation 1 is the one judgement call: the locale lives in the root entry, with the bundling point open.
   - The `satisfies`/`filter` enum forms are Deviation 2.
   - The codemod isn't committed. The diff is the evidence, and `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated/openapi.json` reproduces check 2.
-- **Leah:** the expected saving is about 1.1 kB below the spike's 17.25 kB, because of the locale.
+- **Leah:** the locale isn't in the web's bundle (07cc98b), so the spike's 17.25 kB should hold.
 
 ## Files changed
 ```text
 $ git diff --name-only main...HEAD
 biome.json
 docs/agent-dispatch/backend/sprint-01/agent-axis-zod-mini-api-contract-completion.md
+docs/agent-dispatch/backend/sprint-01/decisions.md
 packages/contract/src/completion-report.ts
 packages/contract/src/dto/agent.ts
 packages/contract/src/dto/audit.ts
@@ -186,9 +201,10 @@ packages/contract/src/dto/plan.ts
 packages/contract/src/dto/receipts.ts
 packages/contract/src/dto/your-work.ts
 packages/contract/src/errors.ts
+packages/contract/src/index.ts
 tools/docs/src/openapi.ts
 ```
-Every path is inside Part 5. No `packages/contract/test/**` path or `locks.md` path is touched.
+Every path is inside Part 5, except `decisions.md`, which INT asked for. No `packages/contract/test/**` path or `locks.md` path is touched.
 
 ## Verification
 The task checks:
