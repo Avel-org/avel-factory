@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 import { IsoTime, Placeholder, Sha, Uuid } from "./common.js";
 
 /** Factory repo (routes 71 to 73). */
@@ -28,7 +28,7 @@ export type FactoryVersionDto = z.infer<typeof FactoryVersionDto>;
 /**
  * Route 71: "Merged commits, which missions are on each, and knowledge releases".
  */
-export const FactoryVersionViewDto = FactoryVersionDto.extend({
+export const FactoryVersionViewDto = z.extend(FactoryVersionDto, {
   missionIds: z.array(Uuid),
   kbReleases: z.array(KbReleaseDto),
 });
@@ -40,7 +40,7 @@ export type FactoryVersionViewDto = z.infer<typeof FactoryVersionViewDto>;
  * placeholder.
  */
 export const FactoryChangeDto = z.object({
-  changeId: z.string().min(1),
+  changeId: z.string().check(z.minLength(1)),
   headSha: Sha,
   change: Placeholder,
 });
@@ -48,7 +48,7 @@ export type FactoryChangeDto = z.infer<typeof FactoryChangeDto>;
 
 /** Route 73: "Approve and merge", at the head you saw (`headSha`, Q4). */
 export const MergeFactoryChangeInput = z.object({
-  changeId: z.string().min(1),
+  changeId: z.string().check(z.minLength(1)),
   headSha: Sha,
 });
 export type MergeFactoryChangeInput = z.infer<typeof MergeFactoryChangeInput>;
