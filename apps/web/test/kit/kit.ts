@@ -96,6 +96,15 @@ export const ReasonDialog = pick<ReasonDialogProps>("ReasonDialog");
 export const ErrorPanel = pick<ErrorPanelProps>("ErrorPanel");
 export const WidgetState = pick<WidgetStateProps>("WidgetState");
 
+/** The kit index's loadReasonDialog (R7); a stand-in that resolves to an empty module until it exists. */
+export const loadReasonDialog: () => Promise<Record<string, unknown>> =
+  typeof built.loadReasonDialog === "function"
+    ? (built.loadReasonDialog as () => Promise<Record<string, unknown>>)
+    : () => Promise.resolve({});
+
+/** Whether the kit index exports loadReasonDialog as a function. */
+export const hasLoadReasonDialog = typeof built.loadReasonDialog === "function";
+
 /** A query that must find something: fails on an assertion, with a message, when it doesn't. */
 export function found<T>(value: T | null | undefined, what: string): T {
   expect(value, `expected ${what} to be drawn`).not.toBeNull();
