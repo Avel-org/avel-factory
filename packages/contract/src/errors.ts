@@ -1,11 +1,6 @@
 import * as z from "zod/mini";
 import { MissionState } from "./value-lists.js";
 
-// Classic zod sets English messages as the default on its first schema; zod/mini doesn't.
-// The same default here keeps every issue message, and so BAD_REQUEST's details (S1-3),
-// as they were. An explicit z.config() locale still wins, as it does with classic.
-if (!z.core.globalConfig.localeError) z.config(z.locales.en());
-
 /**
  * The error map (contract.md section 5, E4; D5; D21; CR-16).
  *

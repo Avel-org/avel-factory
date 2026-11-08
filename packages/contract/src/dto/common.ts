@@ -1,11 +1,6 @@
 import * as z from "zod/mini";
 import type * as core from "zod/v4/core";
 
-// Classic zod sets English messages as the default on its first schema; zod/mini doesn't.
-// The same default here keeps every issue message, and so BAD_REQUEST's details (S1-3),
-// as they were. An explicit z.config() locale still wins, as it does with classic.
-if (!z.core.globalConfig.localeError) z.config(z.locales.en());
-
 /**
  * The value rules every DTO follows (contract.md section 4, rule 5; API and data
  * reference, Conventions): IDs are UUIDv7 strings, times are ISO strings with a
