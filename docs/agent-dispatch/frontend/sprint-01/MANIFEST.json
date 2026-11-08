@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-01",
-  "planSha256": "f13fc934220d401397763a5bfeec9beef45abf6e213f2d3704bad37e457c9f2c",
-  "packageSha256": "03c0b2afc124271536d6fae68e9c3e51ae5d554ed8a0754a50aaf55dffa233a7",
+  "planSha256": "bb577df7e54af9db5f9ae2f112b07dec1ca36e5f732a70e9c430c77fd029fbd9",
+  "packageSha256": "b2efb2979aef80de85cd676d70bee1eaff946c4275f8fee9a9015c8acd92fbc1",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "7dd765477a30306932b2991fba52fa3224e28c766c494a052917b9c5199388ff",
-      "bytes": 43759
+      "sha256": "7c0a672d5a53fc653fdec9525916b1431d7828543ebe3e787dc19b262f3607eb",
+      "bytes": 43900
     },
     {
       "path": "DISPATCH.md",
@@ -170,8 +170,8 @@
     {
       "path": "agent-zero-w0-split-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "62e1757c4ea4b635a2c92d070e16f88d219a35a9a5792eac70fc6cef05bc71f9",
-      "bytes": 13467
+      "sha256": "fe8a9f610ae61e162b92a66a61e95fec2e654499755b540ee21b5e06767ac892",
+      "bytes": 13749
     },
     {
       "path": "codebase-analysis.md",

@@ -68,7 +68,7 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*(js|css)' && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** builds, with the app CSS still emitted; only apps/web/package.json changed
 
-### ZERO-02: Attempt a2: review the server-function stub (client environment only, the guard and the alarm as section 6 gives them) and the React Compiler (the three dev dependencies, after react(), apps/web/src only); nothing outside apps/web/{package.json,vite.config.ts} (P1)
+### ZERO-02: Attempt a2: review the server-function stub (client environment only, the guard as section 6 gives it, and the alarm as revision 12 rewords it on main: no stub used, or any real client-rpc, seroval or seroval-plugins module in a client chunk, fails the build) and the React Compiler (the three dev dependencies, after react(), apps/web/src only); nothing outside apps/web/{package.json,vite.config.ts} (P1)
 
 - **Verify:** `pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js' && ! grep -l 'seroval\|fromCrossJSON' apps/web/dist/client/assets/*.js && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** builds; no client file listed; only apps/web/package.json and vite.config.ts changed
@@ -207,7 +207,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-split diff: one sideEffects field naming CSS files only, no dependency or script change, nothing outside apps/web/package.json
-- ZERO-02: Attempt a2: review the server-function stub (client environment only, the guard and the alarm as section 6 gives them) and the React Compiler (the three dev dependencies, after react(), apps/web/src only); nothing outside apps/web/{package.json,vite.config.ts}
+- ZERO-02: Attempt a2: review the server-function stub (client environment only, the guard as section 6 gives it, and the alarm as revision 12 rewords it on main: no stub used, or any real client-rpc, seroval or seroval-plugins module in a client chunk, fails the build) and the React Compiler (the three dev dependencies, after react(), apps/web/src only); nothing outside apps/web/{package.json,vite.config.ts}
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-split-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
