@@ -39,7 +39,7 @@ Your tasks:
 - NEMI-02: apps/web/src/styles/tokens.css: the design library's token stylesheet, every declaration under the same selectors with the same value, plus the Tailwind @theme mapping that reads them
 - NEMI-03: apps/web/src/routes/__root.tsx: the html shell, data-theme from the avel-theme cookie on the server before first paint (default light), the two fonts, the QueryClient from the router context, and an Outlet
 
-You may change only: apps/web/{vite.config.ts,tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
+You may change only: apps/web/{tsconfig.json,.gitignore}, apps/web/src/styles/**, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-app-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
@@ -59,6 +59,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - NEMI-01: apps/web/src/routes/__root.tsx: preload IBM Plex Mono 500 beside Inter Variable, in the same link form; no Mono 400 preload, no other change
+- NEMI-02: Attempt a2: apps/web/src/routes/__root.tsx preloads IBM Plex Mono 400 instead of 500, in the same link form; no other change
 
 You may change only: apps/web/src/routes/__root.tsx, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-fonts-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -80,6 +81,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in Inter's link form, no Mono 400 preload, no fallback metrics, nothing else changed in __root.tsx, nothing outside the territory
+- ZERO-02: Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -101,8 +103,10 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - NEMI-01: apps/web/package.json: "sideEffects": ["**/*.css"], and no other change
+- NEMI-02: Attempt a2: the server-function stub in vite.config.ts (section 6): three start-client-core client-rpc modules resolved to throwing stubs in the client environment only, with the createServerFn guard and the unused-stub alarm
+- NEMI-03: Attempt a2: the React Compiler on (section 6; FM line 299): @rolldown/plugin-babel, @babel/core and babel-plugin-react-compiler as exact dev dependencies, babel({ presets: [reactCompilerPreset()] }) after react(), over apps/web/src only
 
-You may change only: apps/web/package.json, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md.
+You may change only: apps/web/{package.json,vite.config.ts}, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
@@ -122,12 +126,34 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-split diff: one sideEffects field naming CSS files only, no dependency or script change, nothing outside apps/web/package.json
+- ZERO-02: Attempt a2: review the server-function stub (client environment only, the guard and the alarm as section 6 gives them) and the React Compiler (the three dev dependencies, after react(), apps/web/src only); nothing outside apps/web/{package.json,vite.config.ts}
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-split-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
 write docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-split-review-frontend-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```
+
+## agent-zane-w0-split-review-security
+
+```text
+You are ZANE on avel-factory, frontend sprint-01 (step 1: The minimal approval page on the contract mock, with the thin W0 slice under it).
+Dispatch: agent-zane-w0-split-review-security. Branch: frontend/sprint-01/agent-zane-w0-split-review-security-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-01/agent-zane-w0-split-review-security.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- ZANE-01: Review every dependency w0-split a2 adds (pinned exact, on section 6's list, dev only, install scripts accounted for, licence compatible) and the stub: client environment only, the createServerFn guard fails the build
+
+You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zane-w0-split-review-security-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zane-*.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-01/agent-zane-w0-split-review-security-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
 Never push, rebase or force anything. If the task doc is missing something you need,
 don't guess: say so in your report.
 ```
@@ -318,6 +344,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - FENN-01: UC-08 (DecisionTag, one test per state), UC-09 (ReasonDialog) and UC-10 (ErrorPanel) in apps/web/test/kit/
+- FENN-02: Attempt a2: UC-08's D11 tests to revision 10's form (the av-dt-pair hook in both layouts, the grid values and the phone media rule read from kit.css), and UC-09 adds loadReasonDialog (R7): it resolves to a module whose ReasonDialog is the kit index's ReasonDialog
 
 You may change only: apps/web/test/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fenn-w0-kit-test-unit-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -342,6 +369,7 @@ Your tasks:
 - FANTEM-02: DecisionTag with DecisionTagProps exactly as section 4 gives them, and changes D1 to D14 from the library
 - FANTEM-03: Attempt a2: the kit's styles as one static stylesheet, apps/web/src/kit/kit.css, exported as kitStylesheetHref from kit/index.ts; KitStyles.tsx and every CSS string and style object moved there, with the same values; inline style only for per-render values and the values the locked tests read (D11's grid, D6's strike)
 - FANTEM-04: Attempt a3: K1 in kit.css under @media (max-width: 899px), Button at least var(--av-touch-min) tall, HashChip's copy and the dialog's Close button with a tap area of at least var(--av-touch-min) square and their drawn size unchanged, ReasonDialog's textarea at var(--av-phone-body); R5, the Dialog frame's aria-describedby naming its description when there is one
+- FANTEM-05: Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-01/agent-fantem-w0-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -364,6 +392,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 Your tasks:
 - ZERO-01: Review the w0-kit diff: props, states, copy and data-ui names as section 4 gives them, values by section 0's rule, plain props with no oRPC or router import
 - ZERO-02: Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description
+- ZERO-03: Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over) and R7 loadReasonDialog against section 4
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -452,6 +481,7 @@ Your tasks:
 - LEON-02: Deciding (section 5.2), every error and list state (sections 5.3 and 5.4), and the contract version banner (5.5)
 - LEON-03: Attempt a2: the module's styles as a static stylesheet, modules/decisions/decisions.css; screens.ts exports decisionsScreenStylesheets (kitStylesheetHref and the module's ?url), linked by route /'s head; ReasonDialog loaded with React.lazy and fetched once the list has rendered (section 5, 'Styles and loading')
 - LEON-04: Attempt a2: the hydration marker, data-hydrated="true" on the DecisionsPage root once hydrated, read with useSyncExternalStore (server snapshot false), absent from the server's HTML (section 5, revision 9)
+- LEON-05: Attempt a3: ReasonDialog through the kit's loadReasonDialog, with no import past kit/index.ts; the null-version stale row's body from UiError.stale.message (revision 10)
 
 You may change only: apps/web/src/modules/decisions/**, apps/web/src/routes/index.tsx, docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
@@ -515,7 +545,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEAH-01: Review the decisions diff for accessibility on phone and desk, and the / route's initial JavaScript against sprint-01's 160 kB gzip budget (Frontend Map's 150 kB returns with zod/mini)
-- LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')
+- LEAH-02: Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-leah-decisions-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/decisions-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

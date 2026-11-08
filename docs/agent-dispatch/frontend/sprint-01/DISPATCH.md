@@ -38,6 +38,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | [`agent-zero-w0-fonts-review-frontend`](agent-zero-w0-fonts-review-frontend.md) | ZERO | review-frontend | w0-fonts | once `agent-nemi-w0-fonts-build` has its completion report, checked out at its result commit |
 | [`agent-nemi-w0-split-build`](agent-nemi-w0-split-build.md) | NEMI | build | w0-split | at once (no test dispatch in this module); after `agent-nemi-w0-app-build` is merged into main |
 | [`agent-zero-w0-split-review-frontend`](agent-zero-w0-split-review-frontend.md) | ZERO | review-frontend | w0-split | once `agent-nemi-w0-split-build` has its completion report, checked out at its result commit |
+| [`agent-zane-w0-split-review-security`](agent-zane-w0-split-review-security.md) | ZANE | review-security | w0-split | once `agent-nemi-w0-split-build` has its completion report, checked out at its result commit |
 | [`agent-zero-w0-app-review-frontend`](agent-zero-w0-app-review-frontend.md) | ZERO | review-frontend | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
 | [`agent-zane-w0-app-review-security`](agent-zane-w0-app-review-security.md) | ZANE | review-security | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
 | [`agent-brennan-w0-app-review-spec`](agent-brennan-w0-app-review-spec.md) | BRENNAN | review-spec | w0-app | once `agent-nemi-w0-app-build` has its completion report, checked out at its result commit |
@@ -62,10 +63,10 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 
 | Paths | Owner |
 | --- | --- |
-| `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` | NEMI (build) |
+| `apps/web/{tsconfig.json,.gitignore}` | NEMI (build) |
 | `apps/web/src/styles/**` | NEMI (build) |
 | `apps/web/src/routes/__root.tsx` | NEMI (build) |
-| `apps/web/package.json` | NEMI (build) |
+| `apps/web/{package.json,vite.config.ts}` | NEMI (build) |
 | `apps/web/vitest.config.ts` | FENN (test-unit) |
 | `apps/web/test/setup/**` | FENN (test-unit) |
 | `apps/web/test/data/**` | FENN (test-unit) |
@@ -83,6 +84,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | `docs/agent-dispatch/frontend/sprint-01/findings/approvals-uic-brennan-*.md` | BRENNAN (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zero-*.md` | ZERO (findings) |
+| `docs/agent-dispatch/frontend/sprint-01/findings/w0-split-zane-*.md` | ZANE (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-zane-*.md` | ZANE (findings) |
 | `docs/agent-dispatch/frontend/sprint-01/findings/w0-app-brennan-*.md` | BRENNAN (findings) |

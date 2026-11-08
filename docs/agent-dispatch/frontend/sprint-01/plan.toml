@@ -117,9 +117,10 @@ domain = "apps/web as @avel/web: the TanStack Start app config, its dependencies
 # The path moved to w0-fonts, its next writer, because the kit allows one writer per path
 # (decisions.md, "w0-fonts"). w0-app's merged work is unchanged.
 # 2026-11-07 (revision 9): apps/web/package.json moved to w0-split, its next writer, the same way
-# (decisions.md, "Revision 9"). w0-app's merged work is unchanged.
+# (decisions.md, "Revision 9"). Revision 10: vite.config.ts moved to w0-split too (its a2 is the
+# next writer). w0-app's merged work is unchanged.
 territory = [
-  "apps/web/{vite.config.ts,tsconfig.json,.gitignore}",
+  "apps/web/{tsconfig.json,.gitignore}",
   "apps/web/src/styles/**",
 ]
 after = ["agent-brennan-approvals-uic-review-spec", "backend/sprint-00/agent-axis-m1-contract-api-contract"]
@@ -173,6 +174,7 @@ context = [
 notes = [
   "This is a follow-up to your merged w0-app: __root.tsx is already on main. Change only its head links: add the Mono 500 preload in the same form as Inter Variable's (a ?url import of apps/web/src/styles/fonts/ibm-plex-mono-500.woff2, rel preload, as font, type font/woff2, crossOrigin anonymous). Nothing else in the file changes.",
   "Don't preload ibm-plex-mono-400.woff2, and don't add fallback metrics (size-adjust and the like): neither is in section 6, and the design library has no fallback values (decisions.md, 'Fonts').",
+  "Attempt a2 (2026-11-07, revision 10): a1 is merged. Do only the second task. The first paint uses Mono 400, not 500: DL's HashChip value has no weight, and its 500 is on the prefix, in Inter (section 6; decisions.md, 'Revision 10'). So the preload moves from ibm-plex-mono-500.woff2 to ibm-plex-mono-400.woff2, in the same link form. This replaces a1's note above, which said not to preload 400.",
 ]
 
 [[dispatch.task]]
@@ -181,6 +183,13 @@ priority = "P2"
 required = "Exactly two font preloads (Inter Variable, IBM Plex Mono 500) in the root head, both in the built SSR HTML of /"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build && grep -c 'rel: \"preload\"' apps/web/src/routes/__root.tsx && grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx"
 expected = "each exits 0; 2; ibm-plex-mono-500.woff2 only"
+
+[[dispatch.task]]
+title = "Attempt a2: apps/web/src/routes/__root.tsx preloads IBM Plex Mono 400 instead of 500, in the same link form; no other change"
+priority = "P2"
+required = "Exactly two font preloads (Inter Variable, IBM Plex Mono 400) in the root head"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web build && grep -c 'rel: \"preload\"' apps/web/src/routes/__root.tsx && grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx"
+expected = "each exits 0; 2; ibm-plex-mono-400.woff2 only"
 
 [[dispatch]]
 agent = "zero"
@@ -196,6 +205,11 @@ title = "Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in In
 verify = "pnpm --filter @avel/web build && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "builds; only apps/web/src/routes/__root.tsx changed"
 
+[[dispatch.task]]
+title = "Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed"
+verify = "grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "ibm-plex-mono-400.woff2 only; only apps/web/src/routes/__root.tsx changed"
+
 # ------------------------------------------------------------------ w0-split: Nemi (revision 9)
 # Added 2026-11-07 after Leah's decisions a11y-perf a1 (decisions.md, "Revision 9"; INT's decision 3).
 # No tests module: one line in package.json, measured by the build.
@@ -204,7 +218,8 @@ agent = "nemi"
 module = "w0-split"
 role = "build"
 domain = "The route split: @avel/web's package.json declares \"sideEffects\": [\"**/*.css\"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6)."
-territory = ["apps/web/package.json"]
+# Revision 10: vite.config.ts moved here from w0-app, for a2 (decisions.md, "Revision 10").
+territory = ["apps/web/{package.json,vite.config.ts}"]
 after = ["agent-nemi-w0-app-build"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 5, 'The route split', and section 6, the sideEffects bullet" },
@@ -214,6 +229,10 @@ context = [
 notes = [
   "This is a follow-up to your merged w0-app: package.json is already on main. Add one field, \"sideEffects\": [\"**/*.css\"], after \"type\". Nothing else in the file changes, and no dependency changes, so pnpm-lock.yaml doesn't either.",
   "Don't touch vite.config.ts: TanStack Start always runs the router's code splitter, and autoCodeSplitting isn't an option in its config (start-plugin-core's schema omits it). The field is what makes the split real: without it, the loader's import of screens.ts keeps the screen in the entry chunk.",
+  "Attempt a2 (2026-11-07, revision 10; INT's decisions on Leah's size study, report 1e07129): a1 is merged. Do only the second and third tasks: the server-function stub (size study, finding 04) and the React Compiler (finding 05), both in UI contract section 6. Read both findings in full; their scratch diffs are what Leah measured. Leah's study is on main (the report and findings 01 to 08, cherry-picked); if it isn't, read it with git show 1e07129:docs/agent-dispatch/frontend/sprint-01/findings/<file>.",
+  "The stub matches three files inside @tanstack/start-client-core (1.170.39 under react-start 1.169.4) in the client environment only. Add section 6's guard (the build fails if createServerFn appears under apps/web/src) and its alarm (a client build fails if any of the three stubs wasn't used). Show each one firing in your report: run it once on a scratch edit, and don't commit the edit.",
+  "The React Compiler goes in through @rolldown/plugin-babel, @babel/core and babel-plugin-react-compiler, as dev dependencies pinned exact, with babel({ presets: [reactCompilerPreset()] }) after react(). Leah found the baseline doesn't build with it yet: make it build. Don't touch apps/web/vitest.config.ts (Fenn's, locked). pnpm-lock.yaml isn't yours: run pnpm install so your commands work, but don't commit it, and list the versions you added under Contract to files.",
+  "Leon's decisions module isn't on main yet, so the sizes on main are small. Report main's chunks, then measure on a scratch merge of frontend/sprint-01/agent-leon-decisions-build-a2 with your change (thrown away): /'s first load as section 8 counts it, against Leon's 173.94 kB. Leah's study expects about -11.0 kB for the stub and +2.4 kB for the compiler.",
   "On main today, / has no screen yet (Leon's decisions isn't merged), so the split shows little. Zero measured it on Leon's a1 (c3effb3): the route chunk went from 0.07 kB to 20.0 kB gzip, and the entry from 176.6 to 157.3 kB. Report your build's chunk list as it is. If a CSS file stops loading (the page's tokens or base styles missing in the dev server), stop and report it under Deviations.",
 ]
 
@@ -223,6 +242,20 @@ priority = "P1"
 required = "The build, typecheck and the web's tests pass as before; __root.tsx's tokens.css and base.css still load in the dev server and the build"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*(js|css)' && grep -n '\"sideEffects\"' apps/web/package.json && git diff \"$(git merge-base main HEAD)\" --stat"
 expected = "each exits 0; the client chunks and the app CSS, which you report; one sideEffects line; only apps/web/package.json changed"
+
+[[dispatch.task]]
+title = "Attempt a2: the server-function stub in vite.config.ts (section 6): three start-client-core client-rpc modules resolved to throwing stubs in the client environment only, with the createServerFn guard and the unused-stub alarm"
+priority = "P0"
+required = "No seroval and no serverFnFetcher in the client bundle; the server build is unchanged; / renders on the server and hydrates in the dev server and the production build; the guard and the alarm each shown failing a build on a scratch edit; the web's tests pass"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js' && ! grep -l 'seroval\\|fromCrossJSON' apps/web/dist/client/assets/*.js"
+expected = "each exits 0; the client chunks, which you report; no client file listed"
+
+[[dispatch.task]]
+title = "Attempt a2: the React Compiler on (section 6; FM line 299): @rolldown/plugin-babel, @babel/core and babel-plugin-react-compiler as exact dev dependencies, babel({ presets: [reactCompilerPreset()] }) after react(), over apps/web/src only"
+priority = "P1"
+required = "The production build compiles the web's components (a useMemoCache slot or react/compiler-runtime in the route chunk); no compiler diagnostic left unreported; / hydrates; the web's tests and the end-to-end tests pass"
+verify = "pnpm install && pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js' && grep -l 'compiler-runtime\\|useMemoCache\\|react.memo_cache_sentinel' apps/web/dist/client/assets/*.js; pnpm --filter @avel/web exec playwright test 2>&1 | tail -8"
+expected = "each exits 0; the client chunks; at least one client file listed; the end-to-end result (UC-31 fails until Fantem's w0-kit a4 is merged, so say which), which you report"
 
 [[dispatch]]
 agent = "zero"
@@ -237,6 +270,28 @@ context = [
 title = "Review the w0-split diff: one sideEffects field naming CSS files only, no dependency or script change, nothing outside apps/web/package.json"
 verify = "pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*(js|css)' && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "builds, with the app CSS still emitted; only apps/web/package.json changed"
+
+[[dispatch.task]]
+title = "Attempt a2: review the server-function stub (client environment only, the guard and the alarm as section 6 gives them) and the React Compiler (the three dev dependencies, after react(), apps/web/src only); nothing outside apps/web/{package.json,vite.config.ts}"
+verify = "pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js' && ! grep -l 'seroval\\|fromCrossJSON' apps/web/dist/client/assets/*.js && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "builds; no client file listed; only apps/web/package.json and vite.config.ts changed"
+
+[[dispatch]]
+agent = "zane"
+module = "w0-split"
+role = "review-security"
+domain = "Review w0-split a2's new build dependencies (@rolldown/plugin-babel, @babel/core, babel-plugin-react-compiler) and its server-function stub: the stub never reaches the server build, and a server function can't be added without the build failing."
+context = [
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 6: the dependencies, the server-function stub, its guard and its alarm" },
+]
+notes = [
+  "Review attempt a2 only, Nemi's w0-split a2. a1 was a single sideEffects line and wasn't a security review's.",
+]
+
+[[dispatch.task]]
+title = "Review every dependency w0-split a2 adds (pinned exact, on section 6's list, dev only, install scripts accounted for, licence compatible) and the stub: client environment only, the createServerFn guard fails the build"
+verify = "git diff \"$(git merge-base main HEAD)\"..HEAD -- apps/web/package.json apps/web/vite.config.ts | grep '^+' | head -200"
+expected = "the added dependencies and the plugin, each of which you've checked"
 
 [[dispatch]]
 agent = "zero"
@@ -446,6 +501,12 @@ after = ["agent-fenn-w0-data-test-unit"]
 context = [
   { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 4 (props, states, copy, changes R1 to R4, E1, W1, D1 to D14) and section 7 (UC-08 to UC-10)" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.1.html", why = "DecisionTag's and ReasonDialog's copy and states" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/decisions.md", why = "2026-11-07, 'Revision 10': why D11 moves to kit.css and the kit gets loadReasonDialog" },
+]
+notes = [
+  "Attempt a2 (2026-11-07, revision 10; INT's decision on Leon's decisions a2, deviation 2): a1 is merged and locked (locks.md, w0-kit · 965071b). Do only the second task. It changes locked tests, which INT decided: make the commit with AVEL_LOCK_OVERRIDE=\"w0-kit tests a2: D11 is a kit.css rule, and loadReasonDialog (INT, revision 10)\" so check_locks.py logs it as lock.overridden. After the merge, INT moves locks.md's w0-kit line to your commit. Fantem's w0-kit a4 builds to these tests.",
+  "D11 (section 4, revision 10): Approve and Reject share a container with the class av-dt-pair in both layouts, with no inline grid style. kit.css draws it as D11's grid with layout=\"phone\", and with layout=\"desk\" under @media (max-width: 899px). jsdom doesn't apply media queries or linked sheets. So check the hook in the DOM, and check the rule's values by reading apps/web/src/kit/kit.css as text (node:fs): grid-template-columns minmax(0, 1fr) minmax(0, 1.4fr) and gap 10px for .av-dt-pair, inside a max-width: 899px media block for the desk layout. UC-31, end to end, checks the computed layout on a phone.",
+  "Keep everything else UC-08 asserts. The phone DOM is still Reject then Approve, and the desk DOM is still Approve then Reject. The desk test stops asserting 'not the phone's grid' through the inline style: at desk width the container must not be the grid, and that's the media rule's job, so assert that the desk layout's grid rule sits only inside the media block.",
 ]
 
 [[dispatch.task]]
@@ -454,6 +515,13 @@ priority = "P0"
 required = "Queries by role, data-ui and text; each carries its UC ID and fails first with an assertion, three runs in a row"
 verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done"
 expected = "the same assertion failures three times"
+
+[[dispatch.task]]
+title = "Attempt a2: UC-08's D11 tests to revision 10's form (the av-dt-pair hook in both layouts, the grid values and the phone media rule read from kit.css), and UC-09 adds loadReasonDialog (R7): it resolves to a module whose ReasonDialog is the kit index's ReasonDialog"
+priority = "P0"
+required = "One commit, made with AVEL_LOCK_OVERRIDE set (INT's decision); every other UC-08 to UC-10 test unchanged; the new tests fail first on main with an assertion (no av-dt-pair, no loadReasonDialog), three runs in a row"
+verify = "for i in 1 2 3; do pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -5; done; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the same assertion failures three times, only in the D11 and loadReasonDialog tests; only apps/web/test/kit changed"
 
 [[dispatch]]
 agent = "fantem"
@@ -470,6 +538,8 @@ notes = [
   "The library's components are bundled in its HTML: find each by its data-ui name. Port them to TypeScript with Tailwind classes or style objects that read --av-* tokens only.",
   "Attempt a2 (2026-11-07, INT's build split of Leon's branch): the first two tasks are merged (a1). Do only the third, the kit's styles moved to apps/web/src/kit/kit.css (UI contract section 4, 'The kit's styles'; decisions.md, 'Revision 7'). Button's and DecisionTag's style strings are most of their gzipped size. Keep every value; change where it lives. The locked kit tests must still pass unchanged. If one can't without CSS in JS, stop and report it under Deviations.",
   "Attempt a3 (2026-11-07, revision 9; Leah's decisions a11y-perf a1, finding 02, on main at 3d3ccfc): a1 and a2 are merged. Do only the fourth task, K1 and R5 in section 4. Values come from DL's tokens only: --av-touch-min (44px) and --av-phone-body (16px), under @media (max-width: 899px). DL sets them through [data-density=\"phone\"], which nothing in sprint-01 sets, and the dialog draws in a portal on body, so a page attribute wouldn't reach it. Don't add a data-density attribute.",
+  "Attempt a4 (2026-11-07, revision 10; INT's decisions on Leon's decisions a2): a1 to a3 are merged. Do only the fifth task. It builds to Fenn's w0-kit tests a2, which are locked first (locks.md's w0-kit line moves to them). D11 leaves 'What stays inline': the phone grid becomes kit.css's .av-dt-pair rule (section 4, D11), and the desk layout gets the same container under @media (max-width: 899px), so the server's desk HTML is D11 on a phone before hydration. Keep each layout's DOM order. At 900px and over, the desk row looks exactly as it does now.",
+  "R7, loadReasonDialog: index.ts exports it beside ReasonDialog. Show the split on a scratch merge of frontend/sprint-01/agent-leon-decisions-build-a2, with Leon's deep import switched to loadReasonDialog, then thrown away: ReasonDialog is in a chunk of its own, outside /'s first load. If the static re-export keeps it in a shared chunk, stop and report. Don't drop the export: the locked tests use it.",
   "For the copy and Close buttons, the tap area grows and the drawn size doesn't: a row or chip that gets taller is a defect. Say in your report how you made the area and how you measured it (for example document.elementFromPoint at 21px from the button's centre, at 390x844).",
 ]
 
@@ -501,6 +571,13 @@ required = "No new literal values (section 0); nothing changes at 900px and over
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && grep -n 'max-width: 899px\\|--av-touch-min\\|--av-phone-body' apps/web/src/kit/kit.css && grep -n 'aria-describedby' apps/web/src/kit/Dialog.tsx && ! grep -rlE '<style|dangerouslySetInnerHTML' apps/web/src/kit"
 expected = "typechecks; the locked kit tests pass; the K1 rules listed; Dialog's aria-describedby listed; no file listed; the measurements, which you report"
 
+[[dispatch.task]]
+title = "Attempt a4: D11 as kit.css's .av-dt-pair rule (phone layout always; desk layout under @media (max-width: 899px), Reject in the left column), no inline grid style; R7, loadReasonDialog exported from kit/index.ts"
+priority = "P0"
+required = "Fenn's locked w0-kit a2 tests pass unchanged; no new literal values (D11's are DL's); nothing changes at 900px and over; on the scratch merge with Leon's a2, the locked UC-31 passes on the phone project and ReasonDialog is in its own chunk"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit && grep -n 'av-dt-pair' apps/web/src/kit/kit.css apps/web/src/kit/DecisionTag.tsx && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && grep -n 'loadReasonDialog' apps/web/src/kit/index.ts"
+expected = "typechecks; the locked kit tests pass; the rule and the hook listed; no inline grid; the export listed; and from the scratch merge, UC-31's result and the chunk list, which you report"
+
 [[dispatch]]
 agent = "zero"
 module = "w0-kit"
@@ -520,6 +597,11 @@ expected = "the locked tests pass; no line listed"
 title = "Attempt a3: review K1 and R5 against section 4: DL's tokens only, phone width only, tap areas without taller rows, aria-describedby only with a description"
 verify = "pnpm --filter @avel/web exec vitest run test/kit && git diff \"$(git merge-base main HEAD)\"..HEAD -- apps/web/src/kit/kit.css | grep '^+' | grep -nE '[0-9]+px' ; git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "the locked tests pass; the only px literals added are the 899px breakpoint and DL's own; only apps/web/src/kit files changed"
+
+[[dispatch.task]]
+title = "Attempt a4: review D11 in kit.css (both layouts, the media rule, DOM order kept, the desk row unchanged at 900px and over) and R7 loadReasonDialog against section 4"
+verify = "pnpm --filter @avel/web exec vitest run test/kit && ! grep -n 'gridTemplateColumns' apps/web/src/kit/DecisionTag.tsx && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the locked tests pass; no inline grid; only apps/web/src/kit files changed"
 
 [[dispatch]]
 agent = "brennan"
@@ -611,6 +693,7 @@ notes = [
   "Attempt a2 (2026-11-07): fix what a1 left PARTIAL, then the third and fourth tasks: the module's styles and the lazy ReasonDialog (decisions.md, 'Revision 7'), and the hydration marker (revision 9). Start after Fantem's w0-kit a2 is merged: it gives you kit.css and kitStylesheetHref. a1's Deviations 1 to 4 are accepted and now in the contract (section 5, 5.3, 5.4). Deviation 3 stays as built until Ghost's follow-up adds message to UiError.",
   "Leah's review of a1 (revision 9; report and findings on main at 3d3ccfc, in Context). Yours: link kit.css and decisions.css from /'s head so the server's HTML carries them (findings 02 and 04: with kit.css linked, HashChip draws in Mono 500 on first paint), the lazy ReasonDialog, and the hydration marker (finding 03). Not yours, and don't work around them in decisions.css: the 44px tap targets, the 16px input and the dialog's aria-describedby are the kit's (Fantem's w0-kit a3, section 4, K1 and R5); Fenn's end-to-end a2 waits for your marker; Nemi's w0-split makes the route split real; zod/mini is Ghost's, after Axis's S1-6.",
   "Your end-to-end run needs Fenn's e2e a2 and Fantem's w0-kit a3 on main, and your chunk sizes need Nemi's w0-split. INT dispatches you once they're merged. If one isn't when you reach the verify, run what you can, say which wasn't merged, and report the failures it explains under Limitations.",
+  "Attempt a3 (revision 10), after a2 is merged: do only the fifth task. It waits for Fantem's w0-kit a4 (loadReasonDialog) and Ghost's w0-data a2 (UiError.stale.message). The lazy dialog loads through the kit's loadReasonDialog (section 4, R7; section 5), and your deep import of kit/ReasonDialog goes. The null-version stale row reads UiError.stale.message (5.3). If one of the two isn't merged when you start, do the other and say which.",
   "UiError.stale.message (revision 9): Ghost's w0-data a2 adds it. If it's on main when you start, the null-version stale row's body reads it (5.3), and your raw read goes. If it isn't, keep your a1 read as built and say so in your report: the switch then comes in a later fix.",
   "The budget: report /'s first load as section 8 counts it (every JS file / loads, gzipped and summed, without the lazy dialog's chunk). Over 160 kB isn't yours to fix in a2: zod/mini is the cut that clears it.",
 ]
@@ -642,6 +725,13 @@ priority = "P0"
 required = "No hydration mismatch warning; the server's HTML of / has no data-hydrated; the hydrated page has it; Fenn's e2e a2 passes"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/decisions && pnpm --filter @avel/web exec playwright test"
 expected = "typechecks; the locked tests pass, end to end included"
+
+[[dispatch.task]]
+title = "Attempt a3: ReasonDialog through the kit's loadReasonDialog, with no import past kit/index.ts; the null-version stale row's body from UiError.stale.message (revision 10)"
+priority = "P2"
+required = "No import of kit/ReasonDialog or any other kit file but index.ts; ReasonDialog still in its own chunk; every locked test passes, UC-31 included"
+verify = "! grep -rn 'kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js'"
+expected = "no line listed; each exits 0; the chunks, with ReasonDialog's own and /'s first load as section 8 counts it, which you report"
 
 [[dispatch]]
 agent = "zero"
@@ -685,7 +775,7 @@ context = [
 ]
 notes = [
   "Attempt a2 (revision 9): re-check your a1 findings (decisions-leah-01 to 04, on main at 3d3ccfc) after Leon's decisions a2, Fantem's w0-kit a3 and Nemi's w0-split are merged. For each, say whether it's closed, citing file:line. A still-open finding keeps its file name; a new one is numbered from 05.",
-  "The first load is section 8's: every JS file / loads before it can be used (the entry, and every chunk the server's HTML loads or preloads for /, the route's chunk included), gzipped and summed; not the lazy dialog. Over 160 kB is still a finding until Ghost's w0-data a2 and Axis's S1-6 are merged; from then, over 150 kB is. Say which held at your start commit.",
+  "The first load is section 8's: every JS file / loads before it can be used (the entry, and every chunk the server's HTML loads or preloads for /, the route's chunk included), gzipped and summed; not the lazy dialog. Over 160 kB is still a finding until Ghost's w0-data a2, Axis's S1-6 and Nemi's w0-split a2 (the server-function stub, with the React Compiler on) are all merged; from then, over 150 kB is (section 8, revision 10). Say which held at your start commit. Measure with your size study's production-serve method.",
 ]
 
 [[dispatch.task]]
@@ -694,7 +784,7 @@ verify = "pnpm --filter @avel/web build && pnpm --filter @avel/web exec playwrig
 expected = "builds; the locked end-to-end tests pass; the route's gzipped first-load JS size, which you report; over 160 kB is a finding"
 
 [[dispatch.task]]
-title = "Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 500 are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')"
+title = "Fonts on / (Frontend Map v0.6 line 289; UI contract section 6): Inter Variable and IBM Plex Mono 400 (revision 10; 500 before Nemi's w0-fonts a2) are preloaded and both are used by the first paint; layout shift on / at 390x844 against the CLS budget (under 0.02), measured with the fonts arriving after first paint, since there's no size-matched fallback yet (decisions.md, 'Fonts')"
 priority = "P2"
 verify = "pnpm --filter @avel/web build && grep -n -A4 'rel: \"preload\"' apps/web/src/routes/__root.tsx"
 expected = "two font preloads (Inter Variable, IBM Plex Mono 500); the CLS figure you measured on /, with the method; if it's 0.02 or more, a finding naming the font swap as the cause or not"

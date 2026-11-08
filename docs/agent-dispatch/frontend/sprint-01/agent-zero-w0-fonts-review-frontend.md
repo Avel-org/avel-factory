@@ -38,6 +38,7 @@ Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-nemi-w0-split-build`: The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], so TanStack Start's code splitter puts each route's screen in its own chunk (UI contract section 5, 'The route split'; section 6).
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
+- `agent-zane-w0-split-review-security`: Review w0-split a2's new build dependencies (@rolldown/plugin-babel, @babel/core, babel-plugin-react-compiler) and its server-function stub: the stub never reaches the server build, and a server function can't be added without the build failing.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -67,6 +68,11 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web build && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** builds; only apps/web/src/routes/__root.tsx changed
 
+### ZERO-02: Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed (P1)
+
+- **Verify:** `grep -o 'ibm-plex-mono-[0-9]*.woff2' apps/web/src/routes/__root.tsx && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** ibm-plex-mono-400.woff2 only; only apps/web/src/routes/__root.tsx changed
+
 ## 5. Territory
 
 **You may change only:**
@@ -77,7 +83,6 @@ Do them in order. Finish each one, verified, before the next.
 **You may not change:**
 
 - `apps/web/e2e/**` (FENN, locked tests)
-- `apps/web/package.json` (NEMI)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/data/**` (GHOST)
 - `apps/web/src/kit/**` (FANTEM)
@@ -92,7 +97,8 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{package.json,vite.config.ts}` (NEMI)
+- `apps/web/{tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
@@ -148,6 +154,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | ZERO-01 | DONE / PARKED / BLOCKED | |
+| ZERO-02 | DONE / PARKED / BLOCKED | |
 
 ## Findings
 One line per finding file you wrote (`docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md`): its path, severity and title. "none" if none.
@@ -198,6 +205,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - ZERO-01: Review the w0-fonts diff: one added preload for IBM Plex Mono 500 in Inter's link form, no Mono 400 preload, no fallback metrics, nothing else changed in __root.tsx, nothing outside the territory
+- ZERO-02: Attempt a2: review the preload swap: Mono 400 replaces Mono 500 in the same link form, nothing else changed
 
 You may change only: docs/agent-dispatch/frontend/sprint-01/agent-zero-w0-fonts-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-01/findings/w0-fonts-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

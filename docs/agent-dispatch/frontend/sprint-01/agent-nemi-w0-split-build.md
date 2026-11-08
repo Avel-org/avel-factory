@@ -40,6 +40,7 @@ The route split: @avel/web's package.json declares "sideEffects": ["**/*.css"], 
 - `agent-nemi-w0-fonts-build`: The IBM Plex Mono 500 preload in the root route's head, beside Inter Variable's (UI contract section 6; Frontend Map v0.6 line 289).
 - `agent-zero-w0-fonts-review-frontend`: Review the w0-fonts diff against UI contract section 6's font bullets.
 - `agent-zero-w0-split-review-frontend`: Review the w0-split diff against UI contract sections 5 ('The route split') and 6.
+- `agent-zane-w0-split-review-security`: Review w0-split a2's new build dependencies (@rolldown/plugin-babel, @babel/core, babel-plugin-react-compiler) and its server-function stub: the stub never reaches the server build, and a server function can't be added without the build failing.
 - `agent-zero-w0-app-review-frontend`: Review apps/web's config, tokens and shell against UI contract section 6 and the design library.
 - `agent-zane-w0-app-review-security`: Review the new dependencies apps/web adds (UI contract section 6): each is needed, pinned, maintained and licensed.
 - `agent-brennan-w0-app-review-spec`: Review apps/web's config, tokens and shell against UI contract section 6.
@@ -70,17 +71,33 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*(js|css)' && grep -n '"sideEffects"' apps/web/package.json && git diff "$(git merge-base main HEAD)" --stat`
 - **Expected:** each exits 0; the client chunks and the app CSS, which you report; one sideEffects line; only apps/web/package.json changed
 
+### NEMI-02: Attempt a2: the server-function stub in vite.config.ts (section 6): three start-client-core client-rpc modules resolved to throwing stubs in the client environment only, with the createServerFn guard and the unused-stub alarm (P0)
+
+- **Required:** No seroval and no serverFnFetcher in the client bundle; the server build is unchanged; / renders on the server and hydrates in the dev server and the production build; the guard and the alarm each shown failing a build on a scratch edit; the web's tests pass
+- **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js' && ! grep -l 'seroval\|fromCrossJSON' apps/web/dist/client/assets/*.js`
+- **Expected:** each exits 0; the client chunks, which you report; no client file listed
+
+### NEMI-03: Attempt a2: the React Compiler on (section 6; FM line 299): @rolldown/plugin-babel, @babel/core and babel-plugin-react-compiler as exact dev dependencies, babel({ presets: [reactCompilerPreset()] }) after react(), over apps/web/src only (P1)
+
+- **Required:** The production build compiles the web's components (a useMemoCache slot or react/compiler-runtime in the route chunk); no compiler diagnostic left unreported; / hydrates; the web's tests and the end-to-end tests pass
+- **Verify:** `pnpm install && pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web build 2>&1 | grep -E 'client/assets/.*js' && grep -l 'compiler-runtime\|useMemoCache\|react.memo_cache_sentinel' apps/web/dist/client/assets/*.js; pnpm --filter @avel/web exec playwright test 2>&1 | tail -8`
+- **Expected:** each exits 0; the client chunks; at least one client file listed; the end-to-end result (UC-31 fails until Fantem's w0-kit a4 is merged, so say which), which you report
+
 **Notes:**
 
 - This is a follow-up to your merged w0-app: package.json is already on main. Add one field, "sideEffects": ["**/*.css"], after "type". Nothing else in the file changes, and no dependency changes, so pnpm-lock.yaml doesn't either.
 - Don't touch vite.config.ts: TanStack Start always runs the router's code splitter, and autoCodeSplitting isn't an option in its config (start-plugin-core's schema omits it). The field is what makes the split real: without it, the loader's import of screens.ts keeps the screen in the entry chunk.
+- Attempt a2 (2026-11-07, revision 10; INT's decisions on Leah's size study, report 1e07129): a1 is merged. Do only the second and third tasks: the server-function stub (size study, finding 04) and the React Compiler (finding 05), both in UI contract section 6. Read both findings in full; their scratch diffs are what Leah measured. Leah's study is on main (the report and findings 01 to 08, cherry-picked); if it isn't, read it with git show 1e07129:docs/agent-dispatch/frontend/sprint-01/findings/<file>.
+- The stub matches three files inside @tanstack/start-client-core (1.170.39 under react-start 1.169.4) in the client environment only. Add section 6's guard (the build fails if createServerFn appears under apps/web/src) and its alarm (a client build fails if any of the three stubs wasn't used). Show each one firing in your report: run it once on a scratch edit, and don't commit the edit.
+- The React Compiler goes in through @rolldown/plugin-babel, @babel/core and babel-plugin-react-compiler, as dev dependencies pinned exact, with babel({ presets: [reactCompilerPreset()] }) after react(). Leah found the baseline doesn't build with it yet: make it build. Don't touch apps/web/vitest.config.ts (Fenn's, locked). pnpm-lock.yaml isn't yours: run pnpm install so your commands work, but don't commit it, and list the versions you added under Contract to files.
+- Leon's decisions module isn't on main yet, so the sizes on main are small. Report main's chunks, then measure on a scratch merge of frontend/sprint-01/agent-leon-decisions-build-a2 with your change (thrown away): /'s first load as section 8 counts it, against Leon's 173.94 kB. Leah's study expects about -11.0 kB for the stub and +2.4 kB for the compiler.
 - On main today, / has no screen yet (Leon's decisions isn't merged), so the split shows little. Zero measured it on Leon's a1 (c3effb3): the route chunk went from 0.07 kB to 20.0 kB gzip, and the entry from 176.6 to 157.3 kB. Report your build's chunk list as it is. If a CSS file stops loading (the page's tokens or base styles missing in the dev server), stop and report it under Deviations.
 
 ## 5. Territory
 
 **You may change only:**
 
-- `apps/web/package.json`
+- `apps/web/{package.json,vite.config.ts}`
 - `docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md`
 
 **You may not change:**
@@ -100,7 +117,7 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/test/modules/decisions/**` (FENN, locked tests)
 - `apps/web/test/setup/**` (FENN, locked tests)
 - `apps/web/vitest.config.ts` (FENN, locked tests)
-- `apps/web/{vite.config.ts,tsconfig.json,.gitignore}` (NEMI)
+- `apps/web/{tsconfig.json,.gitignore}` (NEMI)
 - `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
@@ -156,6 +173,8 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | NEMI-01 | DONE / PARKED / BLOCKED | |
+| NEMI-02 | DONE / PARKED / BLOCKED | |
+| NEMI-03 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -203,8 +222,10 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - NEMI-01: apps/web/package.json: "sideEffects": ["**/*.css"], and no other change
+- NEMI-02: Attempt a2: the server-function stub in vite.config.ts (section 6): three start-client-core client-rpc modules resolved to throwing stubs in the client environment only, with the createServerFn guard and the unused-stub alarm
+- NEMI-03: Attempt a2: the React Compiler on (section 6; FM line 299): @rolldown/plugin-babel, @babel/core and babel-plugin-react-compiler as exact dev dependencies, babel({ presets: [reactCompilerPreset()] }) after react(), over apps/web/src only
 
-You may change only: apps/web/package.json, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md.
+You may change only: apps/web/{package.json,vite.config.ts}, docs/agent-dispatch/frontend/sprint-01/agent-nemi-w0-split-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
 
 Work by Part 6 of the task doc. Finish with Part 7: run every verification command,

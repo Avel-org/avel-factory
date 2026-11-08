@@ -526,3 +526,45 @@ Lead: Zero. Scope (INT, 2026-11-05 22:22): Step 1's minimal approval page, serve
   - **`UiError.stale.message`:** the `ErrorBody`'s message, or `""` when the body isn't an `ErrorBody`, so the field is always a string (section 3's table, and 5.3's null-version row). UC-04 matches `UiError` with `toMatchObject`, so the locked tests hold.
   - **Neither waits for S1-6.** If Axis's module isn't merged when Ghost starts, he does these two first.
   - **Leon:** if Ghost's a2 is on main when Leon starts, 5.3's null-version row reads `UiError.stale.message`. If it isn't, Leon keeps a1's read, and the switch is a later fix.
+
+## 2026-11-07: Revision 10 of the UI contract (Leah's size study, Leon's decisions a2; INT's decisions)
+
+- **Input:** INT's decisions on Leah's size study (report 1e07129, PASS: the study is complete) and Leon's decisions a2 (d480f0e, PARTIAL).
+- **The budget (INT):** 150 kB gzip for `/`'s first load once three things are merged:
+  - both halves of S1-6 (Axis's contract, Ghost's w0-data a2);
+  - Nemi's server-function stub (w0-split a2), with the React Compiler on.
+  - Until then, it's 160 kB. This is in contract section 8.
+  - Leah's projection with all of it is 147.8 kB, so the margin is about 2 kB.
+- **Nemi, w0-split a2 (INT's decisions 2 and 3):**
+  - the stub plugin in `vite.config.ts`, client environment only (size study, finding 04, -11.03 kB);
+  - its `createServerFn` guard, plus an alarm I added: a client build fails if any of the three stubs went unused, so a Start upgrade can't bring the bytes back unseen;
+  - the React Compiler through `@rolldown/plugin-babel`, as Leah measured it (finding 05, +2.44 kB). FM line 299 is then met.
+  - **Why w0-split and not a new module:** `vite.config.ts` moves to w0-split from w0-app. A new module would leave w0-split's only path (`package.json`) with a second writer, and the renderer refuses a build with no territory. Zane reviews the three new dev dependencies (a new dispatch, `agent-zane-w0-split-review-security`, for a2 only).
+- **The Mono preload is corrected (my mistake in "Fonts" above):** DL's `HashChip` (`dt`) sets no weight on the chip, so the value it draws is IBM Plex Mono **400**. The `fontWeight: 500` is on the prefix span, which is in Inter. Leon found it (HashChip computes 400 with `kit.css` linked), and it's the cause of Leah's finding 04.
+  - Nemi's w0-fonts a2 swaps the preload to Mono 400.
+  - Section 6 now says so.
+  - Leah's fonts check reads 400.
+- **UC-31 (INT's decision 4, the CSS fix):** D11 becomes a `kit.css` rule, not inline.
+  - **The hook:** Approve and Reject share a container with the class `av-dt-pair`, in both layouts. `kit.css` draws it as D11's grid with `layout="phone"`, and with `layout="desk"` under `@media (max-width: 899px)`. So the server's desk HTML is D11 on a phone before hydration.
+  - **DOM order:** each layout keeps its own. At phone width, the grid places Reject in the left column of the desk DOM.
+  - **The inline list:** D11 leaves section 4's "What stays inline". D6's strike and D12's stamp animation stay.
+  - **The locked UC-08 phone test** reads `style.gridTemplateColumns || className` for `1.4fr`, so it changes. That's Fenn's w0-kit tests a2, with the override, and it checks the hook in the DOM and the values in `kit.css`'s text. Fantem's w0-kit a4 builds to it.
+  - **UC-31's locked spec doesn't change.** It measures computed layout and box positions, and the media rule satisfies those before hydration.
+- **Leon's ask, R7 `loadReasonDialog`:** `kit/index.ts` exports `() => import("./ReasonDialog")`, so the module loads the dialog through the index. Fantem proves the split on a scratch merge with Leon's a2.
+  - **The switch is Leon's a3,** after a2 merges, with `UiError.stale.message` from Ghost's a2.
+  - **Leon's a2 merges as built** (INT): after its reviews and INT's screenshots, with UC-31 red until Fantem's a4 lands.
+- **Further cuts, beyond Leah's set A (INT's decision 5). My proposal: none for sprint-01, and one more measurement for W2.** A with the Compiler is 147.8 kB, under 150. What's left costs more than it's worth for a four-row page. The margin matters at W2, when shared code grows. All figures are gzip, first load:
+
+  | Item | Saving | How real | Cost | My call |
+  | --- | --- | --- | --- | --- |
+  | 03 thin oRPC link | 7.7 alone, 8.6 on top of the stub | A, no lock override | Ghost (`client.ts`, `errors.ts`, a new `thin-link.ts`), Leon's `api.ts` (manual query keys), contract sections 3 and 5, FM line 30 ("every call goes through the typed oRPC client") | **W2, measured first.** Leah says it's thrown away at W4. That's weaker than she put it: FM's live layer is one SSE stream owned by `events` (FM lines 31 and 55), not an oRPC link. Uploads and query arrays would still need adding |
+  | **New: no zod at runtime in the browser** | about 5 to 9 (my estimate: classic was 26.2 alone, and S1-6 took 17.25; what's left is zod/mini's core and the contract's schemas) | C | Axis: S1-7's build-time minified router as a contract subpath. Ghost: `ErrorBody` and the row checked without zod, generated from the contract rather than hand-copied, or they drift. UC-24's unreadable band must keep working. Section 3's zod rule changes | **W2, measured together with 03.** The two remove oRPC's and zod's runtime from the browser together: about 13 to 17 kB |
+  | 07c error path lazy | 2 to 3 | C | Leon. Prefetch after the list renders, as the dialog does, so only an error before the prefetch lands waits a request. A first-load error is drawn by the server and hydrates when its chunk arrives | **W2**, when there are more error states to split |
+  | **New: the shared `jsx-runtime` chunk** in Leon's a2 (3.39 kB gzip, 8.91 raw) | a few hundred bytes (C) | C | Nemi's `vite.config.ts` (chunking options). The lazy dialog made the bundler split a shared chunk that `/` loads anyway. A separate chunk compresses worse, and costs a request | **Measure it with the rest.** If it's real, it's a one-line chunking rule |
+  | 08: router pieces the page never runs | 2 to 4 | C | patching TanStack per file | **Don't:** fragile, and links arrive at W2 |
+  | 08: icons | 1 to 2 | C | Fantem; against FM's per-icon rule | **Don't** |
+  | 08: inline style objects | 0 | n/a | done in Leon's a2 (`decisions.css`) | already done |
+  | 01 TanStack Query to loaders; 02 Preact | 12.5; 58 (doesn't hydrate) | A; C | 37 locked tests and FM's data layer; a broken page | **Don't** (Leah's calls stand) |
+
+  - **What I propose:** one more study, Leah's size-study a2, at INT's call. It would measure 03 together with the no-zod path, 07c and the chunk rule, built on set A (stub, compiler, lazy dialog) and run to level A. With all of them, the page would be about 127 to 132 kB. That would give W2 numbers before any of it is built. Nothing is planned until INT says so.
+- **No new scenarios.** UC-08 and UC-09 change under Fenn's override (D11's form, `loadReasonDialog`). UC-31's spec stands.
