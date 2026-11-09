@@ -81,7 +81,7 @@ type AppShellProps = {
 
 - **`ScreenHeader`** is DL's `ea` header (`.scr-head`): `{ eyebrow?, title, lead?, side? }`, with the title as the `h1`. It has no spec button (S11).
 - **`SegmentedControl`** is DL's `Nme` (`.lib-seg`): `{ label; value; options: { value; label; icon }[]; onChange(value, from: HTMLElement) }`, with no call for the current option.
-- **`Icon`** adds `menu`, `plus`, `panel-left`, `chevron-right`, `sun`, `moon`, `square`, `layers`, `loader`, `x`, and section 4's nav icons.
+- **`Icon`** adds `menu`, `plus`, `panel-left`, `chevron-right`, `sun`, `moon`, `loader`, `x`, and section 4's nav icons.
 - **`kit.css`** holds the shell's DL rules and S1's canvas, with every hover rule under `(hover: hover) and (pointer: fine)`.
 
 ## 4. Nav model (Leon, `system`)
@@ -115,7 +115,7 @@ Labels are DL's ("Gates and integration", not the brief's "Gates"). Icons are fr
 **`_shell`** (`ssr: true`):
 - its loader awaits routes 52, 19 and 8. A failure is swallowed, and that part isn't drawn.
 - It reads the cookies `avel-rail` (`open` or `collapsed`) and `avel-project` (a UUID).
-- `__root` reads `avel-theme` and `avel-depth` (`flat` or `glass`) onto `<html>`. Depth defaults to `glass`, as in DL. The theme defaults to light (S12).
+- `__root` reads `avel-theme` (`light` or `night`) onto `data-theme`, light by default (S12), and always writes `data-depth="glass"` (S16).
 - The client writes each cookie with `path=/; max-age=31536000; samesite=lax`.
 
 **Crumbs and title:**
@@ -132,10 +132,9 @@ Each page is `ScreenHeader`, its content, and then `WidgetState` `empty` (with n
 | All projects (missions) | `Projects`, `All projects`, `Every project, with its client and state.`† (S15) | One link per project row | `layout-grid`, `No projects yet`†, `A project appears here once you start one with Canon.`† |
 | Progress (missions) | `Project`, the project label or `Project`† | none | `list-checks`, `No parts yet`, `Parts appear here once the plan is approved.` (DL) |
 | Clients (clients) | `Business`, `Clients`, `The clients you build for.`† (S15) | Route 8's names | `building`, `No clients yet`†, `A client appears here when you start their first project.`† |
-| Settings (system) | `Factory`, `Settings`, `Theme and depth.`† (S15) | The Theme and Depth groups (below) | none (CLI sessions wait for route 4) |
+| Settings (system) | `Factory`, `Settings`, no lead (S16) | The Appearance section (below) | none (CLI sessions wait for route 4) |
 
-**Settings' groups:** `SegmentedControl`s `Theme` (`Light` `sun`, `Night` `moon`) and `Depth` (`Flat` `square`, `Glass` `layers`), as in DL's `_me`. A switch is DL's `setPrefs` (its reveal, or `.lib-theme-fade`; none under reduced motion) and sets the `<html>` attribute and cookie.
-- **Labels:** a visible `span` (`Theme`, `Depth`) above each, as in DL's Display pop, and the `aria-label`.
+**Settings' Appearance section (S16):** an `h2` `Appearance`†, then a visible `Theme` label and a `SegmentedControl` `Theme`: `Light` (`sun`, value `light`) and `Dark`† (`moon`, value `night`). A switch is DL's `setPrefs` (its reveal, or `.lib-theme-fade`; none under reduced motion) and sets `data-theme` and `avel-theme`.
 - **At 760px and narrower:** the Display pop's rules, so `.lib-seg-label { display: inline }` and `.lib-seg-btn { height: 44px; min-width: 44px; padding: 0 12px }` (44px for its 36px†). Wider, DL's `.lib-seg` cascade.
 - **Where:** `modules/system/settings.css`, scoped to the page (the kit is unchanged). SH-11 reads it as text.
 
@@ -168,7 +167,8 @@ Each page is `ScreenHeader`, its content, and then `WidgetState` `empty` (with n
 - **S11.** No spec button.
 - **S12.** Light by default, because the server can't read the OS preference.
 - **S13.** Progress at `/missions/$missionId` (DL), not FM's index redirect.
-- **S14.** No command palette (`Fme`, Jump to, its keys) and no header switches: Theme and Depth are on Settings only (Int).
+- **S14.** No command palette (`Fme`, Jump to, its keys) and no header switches: Theme is on Settings only (Int).
+- **S16.** No Depth setting or cookie: always glass. Theme reads `Light` and `Dark` (Int).
 - **S15.** Product labels for DL's library ones: `nav "Main"`, and section 5's leads (Int).
 
 ## 8. Budget
@@ -189,7 +189,7 @@ Tests land as `test.fails` until their build merges (rule 1).
 - **SH-06** `kit.css` read as text: section 1's breakpoints, the canvas, the hover gate, the `[data-ui="AppShell"]` keys.
 - **SH-07** ScreenHeader; SegmentedControl's roles, `aria-checked` and no call on the current option.
 - **SH-10** ShellLayout, mock: entries only for routes that exist; section 4's order, icons and hrefs; project rows from routes 19 and 8 (labels, links, counts, children); tabs from `avel-project`; crumbs and titles.
-- **SH-11** Section 5's pages, empty and with rows; Settings' groups; a header with only the menu button.
+- **SH-11** Section 5's pages, empty and with rows; Settings' Appearance section; a header with only the menu button.
 - **SH-14** `data-hydrated`: absent in the server's HTML and the hydration render, present after the commit.
 
 **End to end:**
@@ -202,7 +202,7 @@ Tests land as `test.fails` until their build merges (rule 1).
   - the tabs and More;
   - 44px targets;
   - no sideways scroll.
-- **SH-23** Settings' Theme and Depth set their cookies, and a reload paints them from the server's HTML.
+- **SH-23** Settings' Theme sets `avel-theme`, and a reload paints it from the server's HTML, with `data-depth="glass"` and no `avel-depth` cookie.
 - **SH-24** Nothing moves at hydration (UC-32's method) on `/` and `/missions`, comparing drawn elements only:
   - at 1280: the Decisions row, the header, the `h1`;
   - at 900: the header, the menu button, the `h1`;

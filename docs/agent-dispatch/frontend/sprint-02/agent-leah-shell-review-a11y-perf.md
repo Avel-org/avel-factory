@@ -48,7 +48,7 @@ The shell and its pages on main once sprint-02 is merged: rule 7's size check, l
 - `agent-ghost-clients-build`: The clients module's first cut: route 8's query options through index.ts, and the Clients screen through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
 - `agent-zero-missions-review-frontend`: Review Leon's missions module against shell-layout.md sections 4 and 5.
 - `agent-zero-clients-review-frontend`: Review Ghost's clients module against shell-layout.md sections 4 and 5.
-- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings with Theme and Depth, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings' Appearance section (the theme only), __root's theme cookie and fixed glass depth, and the sprint's route files (shell-layout.md sections 4 to 6).
 - `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
 - `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
 - `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
@@ -63,7 +63,7 @@ Do them in order. Finish each one, verified, before the next.
 - **Verify:** `pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js'`
 - **Expected:** the client chunks, and the first-load and CLS tables, which you report
 
-### LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' radio groups, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3 (P0)
+### LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' theme switch, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3 (P0)
 
 - **Required:** No axe violation, or a finding per violation; a judgement on the focus order, with evidence
 - **Verify:** `pnpm --filter @avel/web exec playwright test 2>&1 | tail -6`
@@ -194,7 +194,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEAH-01: Performance: /'s first load against rule 7, and layout shift by section 8 (production build, three runs each, with sources, FCP and hydration time)
-- LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' radio groups, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3
+- LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' theme switch, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3
 
 You may change only: docs/agent-dispatch/frontend/sprint-02/agent-leah-shell-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/shell-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

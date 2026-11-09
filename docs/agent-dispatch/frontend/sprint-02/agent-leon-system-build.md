@@ -27,13 +27,13 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 9. `docs/agent-dispatch/avel/procedures.md`: this sprint's source
 10. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
 11. `docs/ui-contracts/shell-layout.md`: sections 1, 2 (header behaviour), 4, 5 (Settings), 6 and 8
-12. `docs/ui-contracts/kit-v1.9.md`: section 3's last line: data-depth on <html>
+12. `docs/ui-contracts/kit-v1.9.md`: section 3's last line: data-theme, and data-depth always glass, on <html>
 13. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: AU (preferences and the theme reveal), for Settings' switches
 14. `docs/agent-dispatch/frontend/sprint-02/agent-leon-system-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings with Theme and Depth, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings' Appearance section (the theme only), __root's theme cookie and fixed glass depth, and the sprint's route files (shell-layout.md sections 4 to 6).
 
 **The rest of this sprint:**
 
@@ -57,7 +57,7 @@ The shell route and the system module: _shell, ShellLayout (nav from routes, pro
 
 Do them in order. Finish each one, verified, before the next.
 
-### LEON-01: _shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's avel-depth (P0)
+### LEON-01: _shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's data-theme and fixed data-depth="glass" (P0)
 
 - **Required:** SH-10 and SH-14 pass; SH-20 to SH-24 pass end to end; UC-29 to UC-32 pass on the shell; no viewport read
 - **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20`
@@ -195,7 +195,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-leon-system-bu
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- LEON-01: _shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's avel-depth
+- LEON-01: _shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's data-theme and fixed data-depth="glass"
 - LEON-02: The route files of section 6 (All projects, Progress, Clients, Settings), and Settings' screen
 
 You may change only: apps/web/src/modules/system/**, apps/web/src/routes/**, docs/agent-dispatch/frontend/sprint-02/agent-leon-system-build-completion.md.

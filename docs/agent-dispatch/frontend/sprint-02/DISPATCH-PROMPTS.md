@@ -249,7 +249,7 @@ Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-leon-system-bu
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- LEON-01: _shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's avel-depth
+- LEON-01: _shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's data-theme and fixed data-depth="glass"
 - LEON-02: The route files of section 6 (All projects, Progress, Clients, Settings), and Settings' screen
 
 You may change only: apps/web/src/modules/system/**, apps/web/src/routes/**, docs/agent-dispatch/frontend/sprint-02/agent-leon-system-build-completion.md.
@@ -335,7 +335,7 @@ Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
 - LEAH-01: Performance: /'s first load against rule 7, and layout shift by section 8 (production build, three runs each, with sources, FCP and hydration time)
-- LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' radio groups, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3
+- LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' theme switch, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3
 
 You may change only: docs/agent-dispatch/frontend/sprint-02/agent-leah-shell-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/shell-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

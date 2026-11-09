@@ -202,3 +202,26 @@ Int: the shell should read as a professional app. `shell-layout.md` is now revis
 - **The plan:** one goal line now says an empty state "where there can be nothing to show", because Settings has none.
 
 **Brennan's six P3s** are copied to `backlog.md`.
+
+## 2026-11-08: Int's call on Settings: no Depth, Light and Dark, one Appearance section (S16)
+
+Int: Settings isn't a design library.
+- **No Depth setting:**
+  - no Flat or Glass control, and no `avel-depth` cookie;
+  - `__root` always writes `data-depth="glass"`, so DL's glass rules keep applying;
+  - `SegmentedControl` is still the kit part, and the `square` and `layers` icons go.
+- **Theme reads `Light` and `Dark`.** The stored value stays `night` (`avel-theme`, `data-theme`), because DL's night tokens are keyed on it. Users never see that value.
+- **Settings is one plain `Appearance` section:** an `h2` `Appearance`, then the visible `Theme` label and its switch. The page has no lead. Its eyebrow stays `Factory`, its nav group.
+- **What carries over:** the phone rules from layout-uic-brennan-02 (option labels kept, 44px under 760px, in `modules/system/settings.css`), and the reveal and cookie behaviour.
+
+**What changed in `shell-layout.md`** (15,088 bytes, under the 15 KB aim):
+- section 3's icon list;
+- section 4's `__root` line;
+- section 5's Settings row and the Appearance section;
+- section 7: S14 now says "Theme is on Settings only", and S16 is new;
+- section 9: SH-11 (the Appearance section) and SH-23 (the theme cookie, `data-depth="glass"` in the server's HTML, and no `avel-depth` cookie).
+
+**Elsewhere:**
+- **`kit-v1.9.md` section 3:** its last line now gives `data-theme` from `avel-theme`, and `data-depth` always `glass`.
+- **`plan.toml`:** Leon's system domain, its kit-v1.9 context line and task title, and Leah's a11y task title.
+- **Fenn's e2e block** names no depth, so it's still untouched.

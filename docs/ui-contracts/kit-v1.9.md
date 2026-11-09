@@ -40,7 +40,7 @@ Zero, 2026-11-08. Status: **revision 1, for Brennan's one review, with `shell-la
 - **Fonts:** `font-fallbacks.css`, from Nemi's ac820a7, imported last. One method (cls-study-leah-04):
   - **sans:** `local("Arial")` and `local("Liberation Sans")`; `size-adjust: 107.50%`, `ascent-override: 90.12%`, `descent-override: 22.44%`, `line-gap-override: 0.00%`;
   - **mono, unchanged:** `local("Courier New")` and `local("Liberation Mono")`; `99.98%`, `102.52%`, `27.50%`, `0.00%`.
-- **Theme and depth on `<html>`:** `__root.tsx` (system's dispatch, `routes/**`) sets `data-depth` from `avel-depth`, beside `data-theme` (`shell-layout.md` section 4).
+- **Theme and depth on `<html>`:** `__root.tsx` (system's dispatch, `routes/**`) sets `data-theme` from `avel-theme`, and always `data-depth="glass"`, with no depth setting (`shell-layout.md` section 4, S16).
 
 ## 4. Scenarios (Fenn)
 

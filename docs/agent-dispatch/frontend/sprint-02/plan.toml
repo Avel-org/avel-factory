@@ -366,12 +366,12 @@ expected = "the tests pass"
 agent = "leon"
 module = "system"
 role = "build"
-domain = "The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings with Theme and Depth, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6)."
+domain = "The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings' Appearance section (the theme only), __root's theme cookie and fixed glass depth, and the sprint's route files (shell-layout.md sections 4 to 6)."
 territory = ["apps/web/src/modules/system/**", "apps/web/src/routes/**"]
 after = ["agent-leon-missions-build", "agent-ghost-clients-build", "agent-nemi-shell-styles-build"]
 context = [
   { path = "docs/ui-contracts/shell-layout.md", why = "sections 1, 2 (header behaviour), 4, 5 (Settings), 6 and 8" },
-  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 3's last line: data-depth on <html>" },
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 3's last line: data-theme, and data-depth always glass, on <html>" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "AU (preferences and the theme reveal), for Settings' switches" },
 ]
 notes = [
@@ -381,7 +381,7 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "_shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's avel-depth"
+title = "_shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's data-theme and fixed data-depth=\"glass\""
 priority = "P0"
 required = "SH-10 and SH-14 pass; SH-20 to SH-24 pass end to end; UC-29 to UC-32 pass on the shell; no viewport read"
 verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20"
@@ -471,7 +471,7 @@ verify = "pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*j
 expected = "the client chunks, and the first-load and CLS tables, which you report"
 
 [[dispatch.task]]
-title = "Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' radio groups, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3"
+title = "Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' theme switch, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3"
 priority = "P0"
 required = "No axe violation, or a finding per violation; a judgement on the focus order, with evidence"
 verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -6"
