@@ -6,6 +6,16 @@ Lead: Axis. Step 1 (the scaffold). The slice isn't written yet: sprint-00 comes 
 
 - **CR-W2 (D37 in sprint-00):** `docs/design/CR-W2 Pending decisions.md`, accepted. Its `packages/contract` changes (section 8, item 5) and the note on Plan line 89 (route 52 reads `missions` and `clients`) go into this slice.
 
+- **S1-10's two additions to `1.0.0` (INT, 2026-11-08):** both are accepted, and both are items of this slice. The source is `docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md`, Axis's answer, sections 1 and 3.
+  - **Contract item (Axis, api-contract): `SESSION_COOKIE_NAMES`.**
+    - **The export:** `@avel/contract` exports `SESSION_COOKIE_NAMES = ["__Secure-better-auth.session_token", "better-auth.session_token"] as const`, from `src/version.ts` beside `CONTRACT_VERSION_HEADER`, and re-exported from `src/index.ts`.
+    - **The version:** it ships in `1.0.0`, so there's no separate bump.
+    - **Test:** the server's Better Auth config produces exactly these names: the `__Secure-` one with an https base URL, the plain one with http. The test reads the names from the auth instance's cookie settings. It doesn't rewrite them.
+  - **Server item (identity, item 3 of section 8's order): no session token in any body.**
+    - **The answers:** `POST /api/auth/sign-in/email` answers without `token`. `GET /api/auth/get-session` answers without `session.token`. Every other field, and every `Set-Cookie`, is unchanged.
+    - **The mechanism** is the builder's choice (a Better Auth `after` hook, or the Hono wrapper that already fronts sign-in for the lockout).
+    - **Test:** after a sign-in, neither body contains the session token's value, checked as a substring of the raw response text and not only as the absence of a field. Get-session is checked both before and after a refresh (`updateAge`).
+
 ## Decisions
 
 - **S1-1. A write with no `Idempotency-Key`:** 400 `BAD_REQUEST`, `details: { field: "Idempotency-Key" }`. This matches Zero's provisional mock.
@@ -193,7 +203,7 @@ Lead: Axis. Step 1 (the scaffold). The slice isn't written yet: sprint-00 comes 
     - No `slug`.
   - **03, onboarding step:** goes in CR-W5 as `onboarding: { step, of: 5 } | null`. The server maps `Stage` to it (opener and discovery 1, breakdown 2, mission_roster 3, context 4, finalize 5, otherwise null). Route 21's `onboarding.progress` takes the same shape.
   - **In the slice (INT, item d):** the contract fields and CR-20's input go into `1.0.0`, so CR-20 costs no major bump. The column goes into the migration of the step that builds route 20.
-- **S1-10. The sign-in wire, `/api/auth/*`** (Zero's frontend sprint-02 escalation 04; INT asked Axis for the call, 2026-11-08). The full answer is in `docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md`, checked against Better Auth 1.7.18's source. **What goes into the Step 1 slice:**
+- **S1-10. The sign-in wire, `/api/auth/*`** (Zero's frontend sprint-02 escalation 04; INT asked Axis for the call, 2026-11-08). **Status:** accepted by INT, 2026-11-08. The two `1.0.0` additions are under "Carried in from INT". The full answer is in `docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md`, checked against Better Auth 1.7.18's source. **What goes into the Step 1 slice:**
   - **Paths:** Better Auth's defaults under `/api/auth`: `sign-in/email`, `get-session` and `sign-out`. Its errors keep their own `{ code, message }` body.
   - **No session token in any body:** the server strips `token` from sign-in's answer and `session.token` from get-session's. A test checks neither body carries it.
   - **The sign-in limits:** AVEL's own wrapper in front of `POST /api/auth/sign-in/email` applies 5 a minute per email and per IP, plus the lockout of 10 failures in 15 minutes. The lockout is counted per submitted email, whether or not the email exists. Better Auth's own limiter is off.
