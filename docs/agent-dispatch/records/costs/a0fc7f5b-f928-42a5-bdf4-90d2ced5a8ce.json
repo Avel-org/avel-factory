@@ -4,21 +4,21 @@
  "branch": "main",
  "cwd": "/home/jt0629/projects/avel-factory",
  "first_at": "2026-11-09T04:24:13.771Z",
- "last_at": "2026-11-09T04:45:38.319Z",
- "updated_at": "2026-11-09T04:45:48Z",
+ "last_at": "2026-11-09T04:59:00.003Z",
+ "updated_at": "2026-11-09T04:59:13Z",
  "tokens": {
   "claude-opus-5-5": {
-   "input": 76,
-   "output": 32824,
+   "input": 138,
+   "output": 71034,
    "cache_write_5m": 0,
-   "cache_write_1h": 90076,
-   "cache_read": 1982911,
-   "messages": 35
+   "cache_write_1h": 161411,
+   "cache_read": 5894426,
+   "messages": 65
   }
  },
- "cost_usd": 1.774,
+ "cost_usd": 3.8914,
  "cost_usd_by_model": {
-  "claude-opus-5-5": 1.774
+  "claude-opus-5-5": 3.8914
  },
  "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
 }

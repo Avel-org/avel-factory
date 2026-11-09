@@ -1,0 +1,24 @@
+{
+ "session_id": "b88b7c12-7138-479c-b3c5-ff18d1245786",
+ "name": "FENN shell-test-unit a1",
+ "branch": "frontend/sprint-02/agent-fenn-shell-test-unit-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-02-agent-fenn-shell-test-unit-a1",
+ "first_at": "2026-11-09T04:45:58.179Z",
+ "last_at": "2026-11-09T04:58:31.267Z",
+ "updated_at": "2026-11-09T04:58:37Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 84,
+   "output": 58042,
+   "cache_write_5m": 0,
+   "cache_write_1h": 170264,
+   "cache_read": 4804602,
+   "messages": 42
+  }
+ },
+ "cost_usd": 2.2226,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 2.2226
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
