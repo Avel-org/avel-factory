@@ -333,30 +333,54 @@ def check(plan):
         errors.append(str(e))
     # Territories: one writer per path. A module's builder and its test writer
     # may share a folder: the tests are locked before the build starts, and the
-    # builder's task doc lists them as off limits.
+    # builder's task doc lists them as off limits. Two writers may also share a
+    # path when one runs after the other (its after chain reaches the other), so
+    # they never write at the same time (INT, 2026-11-08, sprint-02 sign-in).
     writers = [d for d in plan.dispatches if d.kind != "review"]
     for i, a in enumerate(writers):
         for b in writers[i + 1:]:
             pair = {a.kind, b.kind}
+            ordered = runs_after(plan, a, b) or runs_after(plan, b, a)
             for ga in a.territory:
                 for gb in b.territory:
                     if not overlaps(ga, gb):
                         continue
-                    if pair == {"build", "test"}:
+                    if pair == {"build", "test"} or ordered:
                         continue
                     errors.append(f"{a.name} ({ga}) and {b.name} ({gb}) would both write the same paths")
     return errors
 
 
+def runs_after(plan, a, b):
+    """True if a's after chain reaches b: b is merged before a starts."""
+    seen, todo = set(), list(a.after)
+    while todo:
+        n = todo.pop()
+        if n == b.name:
+            return True
+        if n in seen or "/" in n:
+            continue
+        seen.add(n)
+        o = plan.by_name(n)
+        if o:
+            todo.extend(o.after)
+    return False
+
+
 def fill_locked_out(plan):
-    """Each dispatch's DO NOT list: every other dispatch's paths, with the owner's name."""
+    """Each dispatch's DO NOT list: every other dispatch's paths, with the owner's name.
+    A path d shares with a dispatch it runs after is d's to write, so it's left
+    out, except a test writer's paths in a build's list (locked tests stay off limits)."""
     for d in plan.dispatches:
         out = []
         for o in plan.dispatches:
             if o is d:
                 continue
+            shared_after = runs_after(plan, d, o) and not (o.kind == "test" and d.kind != "test")
             for g in own_paths(plan, o) if o.kind != "review" else []:
                 if g.startswith(plan.folder + "/"):
+                    continue
+                if shared_after and any(overlaps(g, t) for t in d.territory):
                     continue
                 if (g, o.agent.upper()) not in out:
                     out.append((g, o.agent.upper() + (", locked tests" if o.kind == "test" else "")))
