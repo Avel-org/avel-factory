@@ -132,9 +132,12 @@ Each page is `ScreenHeader`, its content, and then `WidgetState` `empty` (with n
 | All projects (missions) | `Projects`, `All projects`, `Every project, with its client and state.`† (S15) | One link per project row | `layout-grid`, `No projects yet`†, `A project appears here once you start one with Canon.`† |
 | Progress (missions) | `Project`, the project label or `Project`† | none | `list-checks`, `No parts yet`, `Parts appear here once the plan is approved.` (DL) |
 | Clients (clients) | `Business`, `Clients`, `The clients you build for.`† (S15) | Route 8's names | `building`, `No clients yet`†, `A client appears here when you start their first project.`† |
-| Settings (system) | `Factory`, `Settings`, `Theme, depth and your CLI sessions.`† (S15) | The Theme and Depth groups (below) | `key-round`, `No CLI sessions`†, `A session appears here when you sign in with the avel CLI.`† |
+| Settings (system) | `Factory`, `Settings`, `Theme and depth.`† (S15) | The Theme and Depth groups (below) | none (CLI sessions wait for route 4) |
 
-**Settings' groups:** `SegmentedControl`s `Theme` (`Light` `sun`, `Night` `moon`) and `Depth` (`Flat` `square`, `Glass` `layers`), as in DL's `_me`. A switch is DL's `setPrefs` (a view-transition reveal from the button, or `.lib-theme-fade`, nothing under reduced motion), and sets the `<html>` attribute and its cookie.
+**Settings' groups:** `SegmentedControl`s `Theme` (`Light` `sun`, `Night` `moon`) and `Depth` (`Flat` `square`, `Glass` `layers`), as in DL's `_me`. A switch is DL's `setPrefs` (its reveal, or `.lib-theme-fade`; none under reduced motion) and sets the `<html>` attribute and cookie.
+- **Labels:** a visible `span` (`Theme`, `Depth`) above each, as in DL's Display pop, and the `aria-label`.
+- **At 760px and narrower:** the Display pop's rules, so `.lib-seg-label { display: inline }` and `.lib-seg-btn { height: 44px; min-width: 44px; padding: 0 12px }` (44px for its 36px†). Wider, DL's `.lib-seg` cascade.
+- **Where:** `modules/system/settings.css`, scoped to the page (the kit is unchanged). SH-11 reads it as text.
 
 ## 6. Routes in sprint-02 (Leon's `system` dispatch, `routes/**`)
 

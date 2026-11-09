@@ -6,7 +6,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 
 - Every screen sits in v1.9's shell: the rounded canvas and 264px sidebar at 1024px and wider (64px collapsed, remembered), the sheet below, the phone tab bar at 760px and narrower, focus mode (shell-layout.md sections 1 to 3)
 - The nav is built from the routes that exist, in the brief's groups, with the projects from route 19 and their waiting counts from route 52 (section 4)
-- All projects, Progress, Clients and Settings are real pages: ScreenHeader, content, and an empty state (section 5)
+- All projects, Progress, Clients and Settings are real pages: ScreenHeader, content, and an empty state where there can be nothing to show (section 5)
 - The kit, the approval page and the styles follow v1.9 (kit-v1.9.md)
 
 ## Done when

@@ -183,3 +183,22 @@ Int: the shell should read as a professional app. `shell-layout.md` is now revis
 - **Already out by S3:** the version line, mode switch, planned rows, Preview, simulator and back-to-top.
 
 **Fenn's shell-test-e2e block in `plan.toml` is not touched,** because INT is drafting its change (a screenshot and video per page). It still names SH-26 in its domain, context and task title. Please drop it in that change. Everything else in the plan follows S14: Brennan's review, Fenn unit, Fantem's kit, Leon's system and Leah's a11y task.
+
+## 2026-11-08: Brennan's layout-uic a1 (FAIL, two P2s) answered in section 5; no second round (Int)
+
+**Int's call:** layout-uic gets no round 2. Procedures rule 2 reviews a spec once, so anything left goes to the build's review: Zero's system review (Settings) and Leah's a11y pass. R1 (Fenn unit, Fenn e2e, Ghost's mock) opens on this commit.
+
+**`shell-layout.md` section 5 changed, and nothing else in the contract.** The file is 15,069 bytes, under the 15 KB aim.
+- **layout-uic-brennan-01 (CLI sessions with no source): option (a), the row is dropped.**
+  - Settings has no empty state: its two groups always show.
+  - The lead is now `Theme and depth.`†.
+  - CLI sessions come with route 4's slice, so there's no mock route, no `key-round` icon and no SH-11 rows for Settings.
+- **layout-uic-brennan-02 (the segmented controls on phone): labels, and 44px targets under 760px.**
+  - **Labels:** each group has a visible `span` (`Theme`, `Depth`) above it, as in DL's Display pop, and keeps its `aria-label`.
+  - **At 760px and narrower:** Settings takes the Display pop's rules. The option labels stay shown, and each button is `height: 44px; min-width: 44px; padding: 0 12px`. The 44px replaces the pop's 36px (†), to meet the sprint's target size.
+  - **Wider than 760px:** DL's `.lib-seg` cascade is unchanged.
+  - **Where:** the rules live in `modules/system/settings.css`, scoped to the page, which is Leon's territory, so the kit's `.lib-seg` is untouched. SH-11 reads that sheet as text. Leah's 44px check now has a defined target.
+- **The finding files stay as Brennan wrote them.** Zero's system review checks the build against both.
+- **The plan:** one goal line now says an empty state "where there can be nothing to show", because Settings has none.
+
+**Brennan's six P3s** are copied to `backlog.md`.

@@ -2,8 +2,8 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-02",
-  "planSha256": "bb13d92876729d18a842883726e9b90690409d10d7d2da1f2927c5a592c4efff",
-  "packageSha256": "4ef1224a8c1c746eff2f9f3f9fdd15d12c55bb15bf3ec48fb8cfe0471dc47ec9",
+  "planSha256": "711394f6b8d0d6f8edb95c31eb3440c03d7967c3f4768a5f94cfdb1263c247d5",
+  "packageSha256": "e85240e55796c190e18d7b778ebf73d5b8e774ad2dcdcf390fe74d1decf5a194",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
@@ -14,8 +14,8 @@
     {
       "path": "DISPATCH.md",
       "kind": "dispatch_md",
-      "sha256": "e47e479dbd4a5007de2b7d5b4210a67a791787b1304e34948a5da3b1de7abfe4",
-      "bytes": 7464
+      "sha256": "ffe589016265a6e55241518a0431997822c93762dfd00081a9b6db01a16489ef",
+      "bytes": 7499
     },
     {
       "path": "agent-brennan-layout-uic-review-spec.md",
