@@ -193,3 +193,12 @@ Lead: Axis. Step 1 (the scaffold). The slice isn't written yet: sprint-00 comes 
     - No `slug`.
   - **03, onboarding step:** goes in CR-W5 as `onboarding: { step, of: 5 } | null`. The server maps `Stage` to it (opener and discovery 1, breakdown 2, mission_roster 3, context 4, finalize 5, otherwise null). Route 21's `onboarding.progress` takes the same shape.
   - **In the slice (INT, item d):** the contract fields and CR-20's input go into `1.0.0`, so CR-20 costs no major bump. The column goes into the migration of the step that builds route 20.
+- **S1-10. The sign-in wire, `/api/auth/*`** (Zero's frontend sprint-02 escalation 04; INT asked Axis for the call, 2026-11-08). The full answer is in `docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md`, checked against Better Auth 1.7.18's source. **What goes into the Step 1 slice:**
+  - **Paths:** Better Auth's defaults under `/api/auth`: `sign-in/email`, `get-session` and `sign-out`. Its errors keep their own `{ code, message }` body.
+  - **No session token in any body:** the server strips `token` from sign-in's answer and `session.token` from get-session's. A test checks neither body carries it.
+  - **The sign-in limits:** AVEL's own wrapper in front of `POST /api/auth/sign-in/email` applies 5 a minute per email and per IP, plus the lockout of 10 failures in 15 minutes. The lockout is counted per submitted email, whether or not the email exists. Better Auth's own limiter is off.
+    - **Both answer** 429 `{ code: "TOO_MANY_REQUESTS", message }`, with `X-Retry-After` and `Retry-After` carrying the same whole seconds.
+    - **During the lockout,** the right password also gets the 429.
+  - **The cookie:** Better Auth's default, `[__Secure-]better-auth.session_token`, `HttpOnly`, `SameSite=Lax`, `Path=/`, 7 days. The cookie cache is off, so it's the only cookie. The web's origin is in `trustedOrigins`.
+  - **The contract's `1.0.0`:** exports `SESSION_COOKIE_NAMES` (the `__Secure-` name, then the plain one).
+  - **For the web:** SSR forwards only that cookie, and passes back a `Set-Cookie` from get-session's refresh.
