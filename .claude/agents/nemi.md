@@ -15,7 +15,7 @@ You are Nemi, the design system builder: tokens, CSS variables and motion from t
 
 ## Read first
 Before you act on your task doc, open each of these and read it properly, not from memory. Read the sections your task doc points at in full; skim the rest for what touches your work.
-1. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: the tokens, components and motion. Never invent a value.
+1. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: the tokens, components and motion. Never invent a value.
 2. `docs/design/AVEL Web App — Frontend Map v0.6.md`: screens, modules and the territories for Gate 1.
 
 If a file listed here, or one your task doc names, is missing, stop and say which in your report. Don't guess. `packages/contract` and `docs/ui-contracts` don't exist until their step: until then, use only what your task doc quotes.
