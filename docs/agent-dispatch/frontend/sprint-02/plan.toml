@@ -16,7 +16,7 @@ team = "frontend"
 sprint = "sprint-02"
 lead = "zero"
 step = "1"
-title = "The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9"
+title = "The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9"
 goals = [
   "Every screen sits in v1.9's shell: the rounded canvas and 264px sidebar at 1024px and wider (64px collapsed, remembered), the sheet below, the phone tab bar at 760px and narrower, focus mode (shell-layout.md sections 1 to 3)",
   "The nav is built from the routes that exist, in the brief's groups, with the projects from route 19 and their waiting counts from route 52 (section 4)",
@@ -24,7 +24,7 @@ goals = [
   "The kit, the approval page and the styles follow v1.9 (kit-v1.9.md)",
 ]
 done_when = [
-  "SH-01 to SH-14 pass (unit), and SH-20 to SH-26 pass on the phone, 900 and desk projects.",
+  "SH-01 to SH-14 pass (unit, no SH-08), and SH-20 to SH-25 pass on the phone, 900 and desk projects.",
   "UC-29 to UC-32 pass on the shell, and the locked tests pass.",
   "Nothing moves at hydration (SH-24), and layout shift is under 0.02 by shell-layout.md section 8.",
   "/ passes procedures rule 7's size check, and axe finds nothing on any built route at 1280 and 390.",
@@ -64,7 +64,7 @@ conventions = [
   "A file under a lock in locks.md changes only in a commit made with AVEL_LOCK_OVERRIDE set, and only when the task doc says so",
 ]
 notes = [
-  "Scenario IDs SH-01 to SH-14 and SH-20 to SH-26 (shell-layout.md section 9, kit-v1.9.md section 4) and UC-01 to UC-32 (the approval page contract) name every test. A dispatch that meets something the contracts leave open stops and reports it under Deviations.",
+  "Scenario IDs SH-01 to SH-14 and SH-20 to SH-25, with no SH-08 (shell-layout.md section 9, kit-v1.9.md section 4) and UC-01 to UC-32 (the approval page contract) name every test. A dispatch that meets something the contracts leave open stops and reports it under Deviations.",
   "packages/contract is the backend's. The API gaps are escalations 01 to 03 in docs/agent-dispatch/frontend/sprint-02/escalations/, with the stand-ins the contract gives; never edit the contract.",
   "Procedures rule 1: main stays green. Fail-first tests land as test.fails until their build merges. Rule 7: / must pass the 150 KB size check. Every build that changes /'s JavaScript reports its figure.",
 ]
@@ -86,13 +86,13 @@ context = [
 notes = [
   "This is a first review of a new spec. app-shell.md is gone. Your a1 findings on it (shell-uic-brennan-01 to 07) are answered in decisions.md. Check that the answers carried into the new contract hold, and raise any that don't as new findings here.",
   "Raise only what would make the build or its tests wrong (procedures rule 2). P3s go to docs/agent-dispatch/frontend/sprint-02/backlog.md, not as findings.",
-  "Every value, string and markup claim given as DL's is checked against v1.9's bundled source: grep the HTML for the class or the function (QV, _me, Fme, jme, AU, ea, the Dw screen tree).",
+  "Every value, string and markup claim given as DL's is checked against v1.9's bundled source: grep the HTML for the class or the function (QV, _me, Nme, jme, AU, ea, the Dw screen tree). Int's calls S14 and S15 (no palette, no header switches, product labels) are not findings.",
 ]
 
 [[dispatch.task]]
-title = "Design: shell-layout.md's frame, sidebar, header, tab bar, palette and nav table are DL v1.9's (final cascade, DL's functions' markup and copy), and each departure is S1 to S13 or marked †"
+title = "Design: shell-layout.md's frame, sidebar, header, tab bar, Settings' groups and nav table are DL v1.9's (final cascade, DL's functions' markup and copy), and each departure is S1 to S15 or marked †"
 priority = "P0"
-verify = "grep -c 'lib-rail-head\\|lib-tabbar\\|lib-palette\\|lib-rail-tip' 'docs/design/AVEL Enclosure Grid · Design library v1.9.html' && wc -c docs/ui-contracts/shell-layout.md docs/ui-contracts/kit-v1.9.md"
+verify = "grep -c 'lib-rail-head\\|lib-tabbar\\|lib-seg\\|lib-rail-tip' 'docs/design/AVEL Enclosure Grid · Design library v1.9.html' && wc -c docs/ui-contracts/shell-layout.md docs/ui-contracts/kit-v1.9.md"
 expected = "a non-zero count, from which you checked sections 1 to 4; both files' sizes (shell-layout.md under 15 KB)"
 
 [[dispatch.task]]
@@ -102,7 +102,7 @@ verify = "git show d936a50~1:'docs/design/AVEL Enclosure Grid · Design library 
 expected = "the style diff's line count, which you read against kit-v1.9.md sections 1 and 3"
 
 [[dispatch.task]]
-title = "Buildable and testable: the nav from staticData, the route files and their owners, the dispatch order (missions and clients before system), and SH-01 to SH-14 and SH-20 to SH-26 covering every section"
+title = "Buildable and testable: the nav from staticData, the route files and their owners, the dispatch order (missions and clients before system), and SH-01 to SH-14 and SH-20 to SH-25 covering every section"
 priority = "P1"
 verify = "grep -n '^- \\*\\*SH-' docs/ui-contracts/shell-layout.md docs/ui-contracts/kit-v1.9.md | wc -l"
 expected = "each SH ID traced to the section it tests"
@@ -128,7 +128,7 @@ notes = [
 ]
 
 [[dispatch.task]]
-title = "SH-01 to SH-09 and SH-14: AppShell, ScreenHeader, JumpPalette, kit.css as text, and kit-v1.9.md section 1's component changes"
+title = "SH-01 to SH-07, SH-09 and SH-14: AppShell, ScreenHeader, SegmentedControl, kit.css as text, and kit-v1.9.md section 1's component changes"
 priority = "P0"
 required = "Each test carries its SH ID, renders the kit with plain props and a test renderLink, and is marked test.fails until the kit lands"
 verify = "pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -15"
@@ -196,35 +196,35 @@ expected = "typechecks; the data tests pass; only packages/contract-mock changed
 agent = "fantem"
 module = "shell-kit"
 role = "build"
-domain = "The kit's shell from v1.9: AppShell, ScreenHeader, JumpPalette (lazy), the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1)."
+domain = "The kit's shell from v1.9: AppShell, ScreenHeader, SegmentedControl, the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1)."
 territory = ["apps/web/src/kit/**"]
 after = ["agent-fenn-shell-test-unit", "agent-fenn-shell-test-e2e"]
 context = [
   { path = "docs/ui-contracts/shell-layout.md", why = "sections 0 to 3 and 7" },
   { path = "docs/ui-contracts/kit-v1.9.md", why = "section 1" },
-  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the CSS for .lib-*, .scr-head and the palette, and the bundled functions QV (rail), _me (header), Fme (palette), jme (tab bar) and ea (screen header)" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the CSS for .lib-*, .scr-head and .lib-seg, and the bundled functions QV (rail), _me (header), Nme (radio group), jme (tab bar) and ea (screen header)" },
   { path = "docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md", why = "D16: what moves today" },
 ]
 notes = [
   "Build to the locked tests, and flip their test.fails as each lands, in the same commit.",
   "Every value is DL v1.9's final cascade or a token, with the DL class in a comment. Hovers go under (hover: hover) and (pointer: fine).",
-  "Nothing reads the viewport in JavaScript. The only things measured are the highlight's glide on a client navigation and the collapsed tooltip on hover or focus. JumpPalette loads only through loadJumpPalette.",
+  "Nothing reads the viewport in JavaScript. The only things measured are the highlight's glide on a client navigation and the collapsed tooltip on hover or focus.",
   "Report /'s first load from your build and the kit chunk's size (procedures rule 7).",
 ]
 
 [[dispatch.task]]
-title = "AppShell (frame, canvas, rail with collapse and tooltip, nav with the highlight, header with Jump to, Theme, Depth and Display, sheet, tab bar, skip link, focus mode, marker) and ScreenHeader, exported with their types"
+title = "AppShell (frame, canvas, rail with collapse and tooltip, nav with the highlight, header with the menu button, crumbs and progress line only, sheet, tab bar, skip link, focus mode, marker) and ScreenHeader, exported with their types"
 priority = "P0"
 required = "SH-01 to SH-07 and SH-14 pass with their test.fails flipped; shell-layout.md sections 1 to 3 exactly"
 verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit"
 expected = "typechecks; every kit test passes"
 
 [[dispatch.task]]
-title = "JumpPalette and loadJumpPalette; Icon's additions"
+title = "SegmentedControl (DL's Nme) and Icon's additions"
 priority = "P1"
-required = "SH-08 passes; the palette is its own chunk"
-verify = "pnpm --filter @avel/web exec vitest run test/kit && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js'"
-expected = "the tests pass; the chunk list shows the palette apart"
+required = "SH-07's SegmentedControl cases pass; no palette, Jump to or header switch anywhere in the kit (S14)"
+verify = "pnpm --filter @avel/web exec vitest run test/kit && ! grep -rnE 'JumpPalette|Jump to|lib-palette|lib-jump|lib-display' apps/web/src/kit"
+expected = "the tests pass; no line listed"
 
 [[dispatch.task]]
 title = "kit-v1.9.md section 1: Button busy and reasonPlacement, DecisionTag's buttons, ReasonDialog's tip and ReasonField, Dialog's exit and DialogClose, hover gating, and D16"
@@ -269,7 +269,7 @@ context = [
 ]
 
 [[dispatch.task]]
-title = "Names, props, ARIA, sheet and palette focus, every value traced to DL v1.9 or a token, nothing read from the viewport, the palette out of the first load; D16 re-run"
+title = "Names, props, ARIA, sheet focus, every value traced to DL v1.9 or a token, nothing read from the viewport, no palette or header switch (S14); D16 re-run"
 priority = "P0"
 verify = "pnpm --filter @avel/web test && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js' && git diff \"$(git merge-base main HEAD)\"..HEAD -- apps/web/src/kit/kit.css | head -400"
 expected = "the tests pass; the chunk list; the kit.css diff, each new value traced"
@@ -356,13 +356,13 @@ expected = "the tests pass"
 agent = "leon"
 module = "system"
 role = "build"
-domain = "The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, palette items, keys, cookies), Settings, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6)."
+domain = "The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings with Theme and Depth, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6)."
 territory = ["apps/web/src/modules/system/**", "apps/web/src/routes/**"]
 after = ["agent-leon-missions-build", "agent-ghost-clients-build", "agent-nemi-shell-styles-build"]
 context = [
   { path = "docs/ui-contracts/shell-layout.md", why = "sections 1, 2 (header behaviour), 4, 5 (Settings), 6 and 8" },
   { path = "docs/ui-contracts/kit-v1.9.md", why = "section 3's last line: data-depth on <html>" },
-  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "AU (preferences and the theme reveal) and the app's key handler, for the keys" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "AU (preferences and the theme reveal), for Settings' switches" },
 ]
 notes = [
   "routes/index.tsx moves to routes/_shell/index.tsx with its loader and ssr unchanged; its head gains Decisions · AVEL. Don't touch modules/decisions: Ghost's follow-up merges after you.",
@@ -373,7 +373,7 @@ notes = [
 [[dispatch.task]]
 title = "_shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's avel-depth"
 priority = "P0"
-required = "SH-10 and SH-14 pass; SH-20 to SH-24 and SH-26 pass end to end; UC-29 to UC-32 pass on the shell; no viewport read"
+required = "SH-10 and SH-14 pass; SH-20 to SH-24 pass end to end; UC-29 to UC-32 pass on the shell; no viewport read"
 verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20"
 expected = "every unit and end-to-end test passes on every project it runs on"
 
@@ -419,7 +419,7 @@ context = [
 ]
 
 [[dispatch.task]]
-title = "The nav from staticData, project rows, counts, tabs, crumbs, titles, cookies, palette items and keys as section 4 gives them; route files as section 6; boundaries through index.ts; SH-24 re-run"
+title = "The nav from staticData, project rows, counts, tabs, crumbs, titles, cookies and the ⌘B key as section 4 gives them, and no other shortcut; route files as section 6; boundaries through index.ts; SH-24 re-run"
 priority = "P0"
 verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && ! grep -rnE 'modules/(decisions|missions|clients)/(api|screens)' apps/web/src/modules/system"
 expected = "the tests pass; no deep import into another module"
@@ -445,7 +445,7 @@ expected = "no line listed; the tests pass; 10 green runs"
 agent = "leah"
 module = "shell"
 role = "review-a11y-perf"
-domain = "The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, palette, skip link, targets, and D16's focus order."
+domain = "The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, skip link, targets, and D16's focus order."
 after = ["agent-leon-system-build", "agent-ghost-decisions-build"]
 context = [
   { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 to 3 and 8" },
@@ -461,7 +461,7 @@ verify = "pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*j
 expected = "the client chunks, and the first-load and CLS tables, which you report"
 
 [[dispatch.task]]
-title = "Accessibility: axe on every built route at 1280 and 390; the sheet, the palette (combobox and listbox), the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3"
+title = "Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' radio groups, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3"
 priority = "P0"
 required = "No axe violation, or a finding per violation; a judgement on the focus order, with evidence"
 verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -6"

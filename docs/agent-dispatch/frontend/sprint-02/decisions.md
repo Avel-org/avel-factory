@@ -152,3 +152,34 @@ Brennan's a1 (report fac0a54) failed revision 1 on one P1, five P2s and one P3. 
 - **Watch the work (`…/live`)** goes to `factory`.
 
 The contracts and the plan already say this, so nothing is re-rendered. Next is Brennan's layout-uic review, on Int's word.
+
+## 2026-11-08: Int's calls on the shell, before Brennan's review: a product, not a design library
+
+Int: the shell should read as a professional app. `shell-layout.md` is now revision 2 (14,749 bytes, down from 14,999).
+
+**1. No command palette (S14).**
+- **What goes:** `JumpPalette` (DL's `Fme`), `loadJumpPalette`, the sidebar's `Jump to ⌘K` field, the ⌘K, Ctrl+K and `/` keys, the palette's groups and actions (with the `T` and `D` keys), SH-08 and SH-26.
+- **What stays:** ⌘B and Ctrl+B collapse the sidebar.
+- **Icons:** `search` and `corner-down-left` go, because they served only the palette and Jump to.
+
+**2. The header's right side (S14).**
+- **What goes:** Jump to, the Light/Night and Flat/Glass switches, and the phone Display button and panel. The header is now the menu button, the crumbs and the progress line, at every width. On phone it has no search.
+- **Theme and Depth are on Settings only.** They use a new kit part, `SegmentedControl`: DL's `Nme`, the radio group `_me` drew. It keeps the same reveal and the same cookies. `AppShell` loses `theme`, `depth`, `onTheme`, `onDepth` and `onJump`.
+- **Scenarios:** SH-07 covers `SegmentedControl`. SH-11 covers Settings' groups and a header with only the menu button. SH-22 loses the Display panel. SH-23 sets Theme and Depth from Settings.
+
+**3. The wording audit (S15).** I made these changes in `shell-layout.md`. Int can overrule any of them:
+
+| Where | DL's wording | Now | Why |
+| --- | --- | --- | --- |
+| Sidebar nav's `aria-label` | `Screens` | `Main` | "Screens" is how the library names its contents. `Main` matches DL's tab bar. The two are never exposed together (the tab bar shows only where the sidebar is a modal sheet). |
+| All projects' lead | `Every mission, filter by state, client, package` | `Every project, with its client and state.` | "Mission" is internal, and there are no filters this sprint. |
+| Clients' lead | `Clients and repo connections, step-up for credentials` | `The clients you build for.` | It promises repo connections and step-up, which aren't built, in jargon. |
+| Settings' lead | `Theme, CLI sessions, health` | `Theme, depth and your CLI sessions.` | There's no health panel. Depth is now here. |
+
+**Left as they are, for Int to decide:**
+- **`Depth` with `Flat` and `Glass`,** and **`Night`** (most apps say `Dark`). They're DL's words and Int named Theme and Depth. Plain options: `Dark`, and `Surfaces` with `Solid` and `Translucent`.
+- **The DL class names** (`lib-*`) in `kit.css`. Users never see them, and they keep each value traceable to DL.
+- **`kit-v1.9.md`:** the audit found no library wording in its labels or copy. Its "library chrome" lines name DL's source sections, not text the product shows. Unchanged.
+- **Already out by S3:** the version line, mode switch, planned rows, Preview, simulator and back-to-top.
+
+**Fenn's shell-test-e2e block in `plan.toml` is not touched,** because INT is drafting its change (a screenshot and video per page). It still names SH-26 in its domain, context and task title. Please drop it in that change. Everything else in the plan follows S14: Brennan's review, Fenn unit, Fantem's kit, Leon's system and Leah's a11y task.

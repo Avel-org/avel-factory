@@ -1,6 +1,6 @@
 # LEON: system build
 
-Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
+Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
 
 Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the plan and re-render.
 
@@ -28,12 +28,12 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 10. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
 11. `docs/ui-contracts/shell-layout.md`: sections 1, 2 (header behaviour), 4, 5 (Settings), 6 and 8
 12. `docs/ui-contracts/kit-v1.9.md`: section 3's last line: data-depth on <html>
-13. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: AU (preferences and the theme reveal) and the app's key handler, for the keys
+13. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: AU (preferences and the theme reveal), for Settings' switches
 14. `docs/agent-dispatch/frontend/sprint-02/agent-leon-system-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, palette items, keys, cookies), Settings, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings with Theme and Depth, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
 
 **The rest of this sprint:**
 
@@ -41,7 +41,7 @@ The shell route and the system module: _shell, ShellLayout (nav from routes, pro
 - `agent-fenn-shell-test-unit`: The unit and screen tests for the shell, the v1.9 kit, the nav model, the four pages, the approval page on the shell and the styles (SH-01 to SH-14).
 - `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
 - `agent-ghost-mock-build`: The contract mock serves route 19 (GET /api/missions) and route 8 (GET /api/clients), with fixtures that match fixtures.step1's decision rows (shell-layout.md section 4).
-- `agent-fantem-shell-kit-build`: The kit's shell from v1.9: AppShell, ScreenHeader, JumpPalette (lazy), the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
+- `agent-fantem-shell-kit-build`: The kit's shell from v1.9: AppShell, ScreenHeader, SegmentedControl, the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
 - `agent-nemi-shell-styles-build`: The styles on v1.9: tokens.css copied again, base.css's hover gate, the new chrome.css, and the size-matched font fallbacks (kit-v1.9.md section 3).
 - `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against shell-layout.md sections 1 to 3 and kit-v1.9.md section 1.
 - `agent-leon-missions-build`: The missions module's first cut: route 19's query options through index.ts, and the All projects and Progress screens through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
@@ -51,7 +51,7 @@ The shell route and the system module: _shell, ShellLayout (nav from routes, pro
 - `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
 - `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
 - `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
-- `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, palette, skip link, targets, and D16's focus order.
+- `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, skip link, targets, and D16's focus order.
 
 ## 4. Tasks
 
@@ -59,7 +59,7 @@ Do them in order. Finish each one, verified, before the next.
 
 ### LEON-01: _shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's avel-depth (P0)
 
-- **Required:** SH-10 and SH-14 pass; SH-20 to SH-24 and SH-26 pass end to end; UC-29 to UC-32 pass on the shell; no viewport read
+- **Required:** SH-10 and SH-14 pass; SH-20 to SH-24 pass end to end; UC-29 to UC-32 pass on the shell; no viewport read
 - **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20`
 - **Expected:** every unit and end-to-end test passes on every project it runs on
 
@@ -188,7 +188,7 @@ Say the same in the session. The operator takes it from there.
 This is your first message. `/dispatch` and `scripts/dispatch.sh` send it; the factory's runner will too.
 
 ```text
-You are LEON on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
+You are LEON on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
 Dispatch: agent-leon-system-build. Branch: frontend/sprint-02/agent-leon-system-build-a<attempt>, in your own worktree.
 
 Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-leon-system-build.md in full. It is your whole briefing.

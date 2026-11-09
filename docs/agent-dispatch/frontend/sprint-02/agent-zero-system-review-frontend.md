@@ -1,6 +1,6 @@
 # ZERO: system review-frontend
 
-Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
+Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
 
 Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the plan and re-render.
 
@@ -39,23 +39,23 @@ Review Leon's shell route and system module against shell-layout.md sections 4 t
 - `agent-fenn-shell-test-unit`: The unit and screen tests for the shell, the v1.9 kit, the nav model, the four pages, the approval page on the shell and the styles (SH-01 to SH-14).
 - `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
 - `agent-ghost-mock-build`: The contract mock serves route 19 (GET /api/missions) and route 8 (GET /api/clients), with fixtures that match fixtures.step1's decision rows (shell-layout.md section 4).
-- `agent-fantem-shell-kit-build`: The kit's shell from v1.9: AppShell, ScreenHeader, JumpPalette (lazy), the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
+- `agent-fantem-shell-kit-build`: The kit's shell from v1.9: AppShell, ScreenHeader, SegmentedControl, the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
 - `agent-nemi-shell-styles-build`: The styles on v1.9: tokens.css copied again, base.css's hover gate, the new chrome.css, and the size-matched font fallbacks (kit-v1.9.md section 3).
 - `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against shell-layout.md sections 1 to 3 and kit-v1.9.md section 1.
 - `agent-leon-missions-build`: The missions module's first cut: route 19's query options through index.ts, and the All projects and Progress screens through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
 - `agent-ghost-clients-build`: The clients module's first cut: route 8's query options through index.ts, and the Clients screen through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
 - `agent-zero-missions-review-frontend`: Review Leon's missions module against shell-layout.md sections 4 and 5.
 - `agent-zero-clients-review-frontend`: Review Ghost's clients module against shell-layout.md sections 4 and 5.
-- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, palette items, keys, cookies), Settings, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings with Theme and Depth, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
 - `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
 - `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
-- `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, palette, skip link, targets, and D16's focus order.
+- `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, skip link, targets, and D16's focus order.
 
 ## 4. Tasks
 
 Do them in order. Finish each one, verified, before the next.
 
-### ZERO-01: The nav from staticData, project rows, counts, tabs, crumbs, titles, cookies, palette items and keys as section 4 gives them; route files as section 6; boundaries through index.ts; SH-24 re-run (P0)
+### ZERO-01: The nav from staticData, project rows, counts, tabs, crumbs, titles, cookies and the ⌘B key as section 4 gives them, and no other shortcut; route files as section 6; boundaries through index.ts; SH-24 re-run (P0)
 
 - **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && ! grep -rnE 'modules/(decisions|missions|clients)/(api|screens)' apps/web/src/modules/system`
 - **Expected:** the tests pass; no deep import into another module
@@ -176,14 +176,14 @@ Say the same in the session. The operator takes it from there.
 This is your first message. `/dispatch` and `scripts/dispatch.sh` send it; the factory's runner will too.
 
 ```text
-You are ZERO on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
+You are ZERO on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
 Dispatch: agent-zero-system-review-frontend. Branch: frontend/sprint-02/agent-zero-system-review-frontend-a<attempt>, in your own worktree.
 
 Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-zero-system-review-frontend.md in full. It is your whole briefing.
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- ZERO-01: The nav from staticData, project rows, counts, tabs, crumbs, titles, cookies, palette items and keys as section 4 gives them; route files as section 6; boundaries through index.ts; SH-24 re-run
+- ZERO-01: The nav from staticData, project rows, counts, tabs, crumbs, titles, cookies and the ⌘B key as section 4 gives them, and no other shortcut; route files as section 6; boundaries through index.ts; SH-24 re-run
 
 You may change only: docs/agent-dispatch/frontend/sprint-02/agent-zero-system-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/system-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

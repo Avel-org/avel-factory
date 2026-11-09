@@ -1,12 +1,12 @@
 # UI contract: the shell layout (frontend sprint-02)
 
-Zero, 2026-11-08. **Revision 1, for Brennan's one review.** Replaces `app-shell.md`; follows `docs/design/AVEL Shell Layout brief v1.9.md`. Companion: `kit-v1.9.md`. Decisions: sprint-02's `decisions.md`.
+Zero, 2026-11-08. **Revision 2, for Brennan's one review.** Replaces `app-shell.md`; follows `docs/design/AVEL Shell Layout brief v1.9.md` with Int's calls (S14, S15). Companion: `kit-v1.9.md`. Decisions: sprint-02's `decisions.md`.
 
 ## 0. Rules and scope
 
 - **DL** is `docs/design/AVEL Enclosure Grid · Design library v1.9.html`. It wins over everything earlier (Int).
 - **Values** are DL's final cascade (the last DL rule for that element at that width) or a token, with the DL class in a comment.
-- **Markup, ARIA and copy** are DL's functions', word for word: the `.lib-app` render, the rail `QV`, the header `_me`, the palette `Fme`, the tab bar `jme`, preferences `AU`. Departures: S1 to S13 (section 7). † copy is this contract's.
+- **Markup, ARIA and copy** are DL's functions', word for word: the `.lib-app` render, the rail `QV`, the header `_me`, the radio group `Nme`, the tab bar `jme`, preferences `AU`. Departures: S1 to S15 (section 7). † copy is this contract's.
 - **Nothing moves at hydration.** Every width is a media query. Preferences are cookies the server reads. Nothing is measured until the user acts.
 - **Out of sprint-02:**
   - the ten pages section 4 marks 03 (sprint-03, each one entering the nav when its route exists);
@@ -44,21 +44,18 @@ Zero, 2026-11-08. **Revision 1, for Brennan's one review.** Replaces `app-shell.
 1. **The rail head:** the brand link to `/`, with the 32px mark and `AVEL`, and no sub line (S3).
    - **Open:** the collapse toggle sits beside the brand.
    - **In the sheet:** `.lib-rail-close` (`Close navigation`) replaces it.
-2. **`Jump to ⌘K`:** opens the palette.
-3. **The nav:** `nav "Screens"`, with section 4's groups.
+2. **The nav:** `nav "Main"`† (S15), with section 4's groups.
    - An empty group isn't drawn.
    - The current row has `aria-current="page"`.
    - Project rows follow New project. The open project draws its pages as `.lib-nav-child` rows on DL's tree line.
-4. **The highlight (S4):** in the server's HTML, the current row draws `.lib-nav-indicator`'s look itself. On a client navigation it glides from the old row to the new one with the Web Animations API (`translateY`, 260ms, `--av-ease`). Under reduced motion, nothing moves.
-5. **Collapsed** (`.lib-rail[data-collapsed]`): DL's rules apply, and the tooltip comes from each item's rect when it's hovered or focused.
+3. **The highlight (S4):** in the server's HTML, the current row draws `.lib-nav-indicator`'s look itself. On a client navigation it glides from the old row to the new one with the Web Animations API (`translateY`, 260ms, `--av-ease`). Under reduced motion, nothing moves.
+4. **Collapsed** (`.lib-rail[data-collapsed]`): DL's rules apply, and the tooltip comes from each item's rect when it's hovered or focused.
    - ⌘B or Ctrl+B toggles it, and so does the toggle.
    - The 240ms grid transition runs only on a toggle.
 
 **Header:**
-- **The parts:** the menu button, the breadcrumb, `Jump to`, the Theme and Depth radio groups, the phone-only Display button and its panel, and the progress line.
+- **The parts:** the menu button, the breadcrumb and the progress line. Nothing on the right, at any width (S14).
 - **The progress line** shows how far the scroller is scrolled, and is 0 in the server's HTML.
-- **A Theme or Depth switch** behaves as DL's `setPrefs`: a view-transition reveal from the button, or `.lib-theme-fade`, and nothing under reduced motion.
-- **What a switch sets:** the `<html>` attribute and its cookie.
 
 **Tab bar:** Decisions, Project, Release and More, as `jme` draws them.
 - **Project:** goes to the last project opened (the `avel-project` cookie), or to `/missions`. It's current on `/missions` and on every project page but Release.
@@ -77,22 +74,19 @@ type AppShellProps = {
   tabs: { id: string; label: string; href: string; icon: IconName; badge?: ShellItem["badge"] }[];
   currentId: string | null; crumbs: { label: string; href?: string }[];
   collapsed: boolean; onCollapsedChange(next: boolean): void;
-  theme: "light" | "night"; depth: "flat" | "glass";
-  onTheme(t: "light" | "night", from: HTMLElement): void; onDepth(d: "flat" | "glass", from: HTMLElement): void;
-  onJump(): void; focus?: boolean; children: React.ReactNode;
+  focus?: boolean; children: React.ReactNode;
   renderLink(p: { href: string; className: string; "aria-current"?: "page"; onClick?(): void; children: React.ReactNode }): React.ReactNode;
 };
 ```
 
 - **`ScreenHeader`** is DL's `ea` header (`.scr-head`): `{ eyebrow?, title, lead?, side? }`, with the title as the `h1`. It has no spec button (S11).
-- **`JumpPalette`** is DL's `Fme`: `{ items: { id; group; label; icon; kbd?; keys?; run(): void }[]; onClose }`, with DL's matching, keys and copy, and focus returned to the opener.
-  - **Loading:** only through `loadJumpPalette()` in `kit/index.ts`, so it's out of the first load (as AP's R7).
-- **`Icon`** adds `menu`, `plus`, `search`, `panel-left`, `chevron-right`, `sun`, `moon`, `square`, `layers`, `corner-down-left`, `loader`, `x`, and section 4's nav icons.
+- **`SegmentedControl`** is DL's `Nme` (`.lib-seg`): `{ label; value; options: { value; label; icon }[]; onChange(value, from: HTMLElement) }`, with no call for the current option.
+- **`Icon`** adds `menu`, `plus`, `panel-left`, `chevron-right`, `sun`, `moon`, `square`, `layers`, `loader`, `x`, and section 4's nav icons.
 - **`kit.css`** holds the shell's DL rules and S1's canvas, with every hover rule under `(hover: hover) and (pointer: fine)`.
 
 ## 4. Nav model (Leon, `system`)
 
-**Entries come from routes.** A route's `staticData.nav = { group, order, label, icon }` (or `projectPage = { order, label }`) puts it in the sidebar, in the palette's `Screens` group and in the crumbs. `ShellLayout` reads them from the router's route tree, so an entry appears exactly when its route file exists (the brief).
+**Entries come from routes.** A route's `staticData.nav = { group, order, label, icon }` (or `projectPage = { order, label }`) puts it in the sidebar and in the crumbs. `ShellLayout` reads them from the router's route tree, so an entry appears exactly when its route file exists (the brief).
 
 | Group | Entries, in order: label · route · module · icon · sprint |
 | --- | --- |
@@ -124,14 +118,10 @@ Labels are DL's ("Gates and integration", not the brief's "Gates"). Icons are fr
 - `__root` reads `avel-theme` and `avel-depth` (`flat` or `glass`) onto `<html>`. Depth defaults to `glass`, as in DL. The theme defaults to light (S12).
 - The client writes each cookie with `path=/; max-age=31536000; samesite=lax`.
 
-**Crumbs, title and palette:**
+**Crumbs and title:**
 - **Crumbs:** a top-level page is `[label]`. A project page is `[All projects, {project}, {page}]`, the first two as links. Progress stops at `{project}`.
 - **The document title:** `{last crumb} · AVEL`†.
-- **The palette:**
-  - `Actions`: `Review what's waiting ({n})` or `Open Decisions`, and `Start a new project` once `/missions/new` exists;
-  - `Screens`: the nav entries;
-  - `Settings`: DL's theme, sidebar and depth actions, with `T`, `⌘B` and `D`.
-- **Keys:** ⌘K, Ctrl+K and `/` open the palette.
+- **Keys:** ⌘B and Ctrl+B collapse the sidebar (section 2). No other shortcut (S14).
 
 ## 5. Sprint-02's pages
 
@@ -139,10 +129,12 @@ Each page is `ScreenHeader`, its content, and then `WidgetState` `empty` (with n
 
 | Page (module) | Eyebrow, title, lead | Content | Empty: icon, title, message |
 | --- | --- | --- | --- |
-| All projects (missions) | `Projects`, `All projects`, DL's `what` | One link per project row | `layout-grid`, `No projects yet`†, `A project appears here once you start one with Canon.`† |
+| All projects (missions) | `Projects`, `All projects`, `Every project, with its client and state.`† (S15) | One link per project row | `layout-grid`, `No projects yet`†, `A project appears here once you start one with Canon.`† |
 | Progress (missions) | `Project`, the project label or `Project`† | none | `list-checks`, `No parts yet`, `Parts appear here once the plan is approved.` (DL) |
-| Clients (clients) | `Business`, `Clients`, DL's `what` | Route 8's names | `building`, `No clients yet`†, `A client appears here when you start their first project.`† |
-| Settings (system) | `Factory`, `Settings`, DL's `what` | The Theme and Depth groups | `key-round`, `No CLI sessions`†, `A session appears here when you sign in with the avel CLI.`† |
+| Clients (clients) | `Business`, `Clients`, `The clients you build for.`† (S15) | Route 8's names | `building`, `No clients yet`†, `A client appears here when you start their first project.`† |
+| Settings (system) | `Factory`, `Settings`, `Theme, depth and your CLI sessions.`† (S15) | The Theme and Depth groups (below) | `key-round`, `No CLI sessions`†, `A session appears here when you sign in with the avel CLI.`† |
+
+**Settings' groups:** `SegmentedControl`s `Theme` (`Light` `sun`, `Night` `moon`) and `Depth` (`Flat` `square`, `Glass` `layers`), as in DL's `_me`. A switch is DL's `setPrefs` (a view-transition reveal from the button, or `.lib-theme-fade`, nothing under reduced motion), and sets the `<html>` attribute and its cookie.
 
 ## 6. Routes in sprint-02 (Leon's `system` dispatch, `routes/**`)
 
@@ -173,6 +165,8 @@ Each page is `ScreenHeader`, its content, and then `WidgetState` `empty` (with n
 - **S11.** No spec button.
 - **S12.** Light by default, because the server can't read the OS preference.
 - **S13.** Progress at `/missions/$missionId` (DL), not FM's index redirect.
+- **S14.** No command palette (`Fme`, Jump to, its keys) and no header switches: Theme and Depth are on Settings only (Int).
+- **S15.** Product labels for DL's library ones: `nav "Main"`, and section 5's leads (Int).
 
 ## 8. Budget
 
@@ -187,13 +181,12 @@ Tests land as `test.fails` until their build merges (rule 1).
 - **SH-01** The brand, the groups and items in order, `aria-current`, the crumbs.
 - **SH-02** Badges and their labels: nav, project rows, tab.
 - **SH-03** The sheet: closed and `inert` in `renderToString`; opens; focus and trap; the four ways to close; focus returned.
-- **SH-04** Collapse: `data-rail` in the server's HTML; the toggle's label and `aria-expanded`; ⌘B; the tooltip on hover and on focus.
+- **SH-04** Collapse: `data-rail` in the server's HTML; the toggle's label and `aria-expanded`; ⌘B and Ctrl+B; the tooltip on hover and on focus.
 - **SH-05** `data-focus` and `data-tabbar`; no tab bar in focus mode.
 - **SH-06** `kit.css` read as text: section 1's breakpoints, the canvas, the hover gate, the `[data-ui="AppShell"]` keys.
-- **SH-07** ScreenHeader.
-- **SH-08** JumpPalette through `loadJumpPalette`: matching, the keys, the empty copy, focus returned.
+- **SH-07** ScreenHeader; SegmentedControl's roles, `aria-checked` and no call on the current option.
 - **SH-10** ShellLayout, mock: entries only for routes that exist; section 4's order, icons and hrefs; project rows from routes 19 and 8 (labels, links, counts, children); tabs from `avel-project`; crumbs and titles.
-- **SH-11** Section 5's pages, empty and with rows.
+- **SH-11** Section 5's pages, empty and with rows; Settings' groups; a header with only the menu button.
 - **SH-14** `data-hydrated`: absent in the server's HTML and the hydration render, present after the commit.
 
 **End to end:**
@@ -205,13 +198,11 @@ Tests land as `test.fails` until their build merges (rule 1).
 - **SH-22** At 390:
   - the tabs and More;
   - 44px targets;
-  - the Display panel;
   - no sideways scroll.
-- **SH-23** Theme and Depth set their cookies, and a reload paints them from the server's HTML.
+- **SH-23** Settings' Theme and Depth set their cookies, and a reload paints them from the server's HTML.
 - **SH-24** Nothing moves at hydration (UC-32's method) on `/` and `/missions`, comparing drawn elements only:
   - at 1280: the Decisions row, the header, the `h1`;
   - at 900: the header, the menu button, the `h1`;
   - at 390: the header, the tab bar, its Decisions tab, the `h1`.
-- **SH-26** ⌘K and `/` open the palette, and Enter navigates.
 
 `kit-v1.9.md` holds SH-09, SH-12, SH-13 and SH-25.

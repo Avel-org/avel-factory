@@ -1,4 +1,4 @@
-# Frontend sprint-02: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
+# Frontend sprint-02: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
 
 Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 
@@ -11,7 +11,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 
 ## Done when
 
-1. SH-01 to SH-14 pass (unit), and SH-20 to SH-26 pass on the phone, 900 and desk projects.
+1. SH-01 to SH-14 pass (unit, no SH-08), and SH-20 to SH-25 pass on the phone, 900 and desk projects.
 2. UC-29 to UC-32 pass on the shell, and the locked tests pass.
 3. Nothing moves at hydration (SH-24), and layout shift is under 0.02 by shell-layout.md section 8.
 4. / passes procedures rule 7's size check, and axe finds nothing on any built route at 1280 and 390.

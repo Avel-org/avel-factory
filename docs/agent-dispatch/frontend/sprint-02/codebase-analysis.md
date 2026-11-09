@@ -32,6 +32,6 @@ A pnpm workspace in TypeScript (Biome, Vitest; tsconfig.base.json strict). apps/
 
 ## Notes
 
-- Scenario IDs SH-01 to SH-14 and SH-20 to SH-26 (shell-layout.md section 9, kit-v1.9.md section 4) and UC-01 to UC-32 (the approval page contract) name every test. A dispatch that meets something the contracts leave open stops and reports it under Deviations.
+- Scenario IDs SH-01 to SH-14 and SH-20 to SH-25, with no SH-08 (shell-layout.md section 9, kit-v1.9.md section 4) and UC-01 to UC-32 (the approval page contract) name every test. A dispatch that meets something the contracts leave open stops and reports it under Deviations.
 - packages/contract is the backend's. The API gaps are escalations 01 to 03 in docs/agent-dispatch/frontend/sprint-02/escalations/, with the stand-ins the contract gives; never edit the contract.
 - Procedures rule 1: main stays green. Fail-first tests land as test.fails until their build merges. Rule 7: / must pass the 150 KB size check. Every build that changes /'s JavaScript reports its figure.
