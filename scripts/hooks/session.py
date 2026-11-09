@@ -14,12 +14,21 @@ Session state: <main>/.git/avel/sessions.json, keyed by session name (AVEL_FROM:
 and ~/.wezterm.lua reads it for toasts and tab badges.
 Cost records: docs/agent-dispatch/records/costs/<session_id>.json.
 
+Session caps (docs/agent-dispatch/avel/procedures.md, rule 4): a dispatch session
+(its name ends in " a<N>") gets $4 or 60 minutes from its first prompt, whichever
+comes first. Its cost is re-read from the transcript at most every 2 minutes. At
+the cap the hook logs session.over_cap once, and tells the session to stop and
+write its completion report: on PostToolUse it prints that to stderr and exits 2,
+which Claude Code shows to the model (the tool has already run, so nothing is
+blocked). It repeats every 10 minutes while the session keeps working.
+
 A session without AVEL_FROM (not started by the control room) is ignored.
-The hook always exits 0 and prints nothing, so it can't block Claude.
+Apart from the cap message, the hook exits 0 and prints nothing.
 """
 import fcntl
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -28,6 +37,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import events  # noqa: E402
 
 PRICES = Path(__file__).resolve().parent.parent / "lib" / "prices.json"
+CAP_USD = 4.0          # procedures.md rule 4
+CAP_SECONDS = 3600
+COST_EVERY = 120       # seconds between transcript re-reads
+NUDGE_EVERY = 600
+DISPATCH_RE = re.compile(r" a\d+$")
 
 
 def update_state(name, change):
@@ -149,15 +163,50 @@ def main():
     subject = {"type": "session", "ref": name}
 
     if kind == "PostToolUse":
+        dispatch = bool(DISPATCH_RE.search(name))
+        cost = {}
+        if dispatch:
+            t = hook.get("transcript_path")
+            st = {}
+            update_state(name, lambda e: st.update(e))
+            if t and os.path.isfile(t) and now - st.get("cost_at", 0) >= COST_EVERY:
+                totals, _, _ = usage_by_model(t)
+                usd, _ = price(totals)
+                cost = {"cost_usd": usd or 0.0, "cost_at": now}
+        nudge = []
+
         def beat(e):
             e["beat"] = now
             if e.get("state") == "waiting":    # a tool ran, so the prompt was answered
                 e.update(state="active", since=now, msg="")
+            if not dispatch:
+                return
+            e.setdefault("started", now)
+            e.update(cost)
+            usd, mins = e.get("cost_usd", 0.0), (now - e["started"]) / 60
+            if usd >= CAP_USD or mins >= CAP_SECONDS / 60:
+                first = "capped" not in e
+                if first or now - e.get("nudged", 0) >= NUDGE_EVERY:
+                    e.setdefault("capped", now)
+                    e["nudged"] = now
+                    nudge.append((first, usd, mins))
         update_state(name, beat)
+        if nudge:
+            first, usd, mins = nudge[0]
+            if first:
+                events.emit("session.over_cap", actor=name, subject=subject,
+                            data={"cost_usd": round(usd, 2), "minutes": round(mins)})
+            return (f"Session cap reached: ${usd:.2f} and {mins:.0f} minutes against the cap of "
+                    f"${CAP_USD:.0f} or {CAP_SECONDS // 60} minutes (docs/agent-dispatch/avel/procedures.md, rule 4). "
+                    "Stop starting new work. Commit what is done, write your completion report as Part 7 of "
+                    "your task doc says (status PARTIAL if the work isn't finished, with what is left), "
+                    "commit it, tell INT, and end. The next attempt starts from your report, not from this session.")
 
     elif kind == "UserPromptSubmit":
         def active(e):
             e.update(state="active", since=now, beat=now, msg="", session_id=hook.get("session_id"))
+            if DISPATCH_RE.search(name):
+                e.setdefault("started", now)
         if update_state(name, active) != "active":
             events.emit("session.resumed", actor=name, subject=subject)
 
@@ -188,7 +237,10 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        cap = main()
+        if cap:
+            print(cap, file=sys.stderr)
+            sys.exit(2)
     except Exception as e:  # never block a session
         try:
             with open(events.state_dir() / "hook-errors.log", "a") as f:

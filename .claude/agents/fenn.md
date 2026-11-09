@@ -25,6 +25,8 @@ Mistakes that came back in a review or forced a retry, one line each. Treat ever
 - (none yet)
 
 ## Always
+- One session per attempt: $4 or 60 minutes, whichever comes first (`docs/agent-dispatch/avel/procedures.md`, rule 4). When the hook says you've reached the cap, stop starting work: commit what's done, write your completion report (PARTIAL if it isn't finished, with what's left), commit it, and end. Never ask to be resumed: the next attempt starts from your report.
+- Fail-first tests reach `main` marked `test.fails(...)` (or in a `pending/` folder that CI skips) until their build lands, so `main` stays green (`docs/agent-dispatch/avel/procedures.md`, rule 1). The build's merge flips them to plain tests.
 - Reviewers are never the builder: you never review or test your own work.
 - Territories never cross between teams. Backend work never touches `apps/web/**` or `packages/contract-mock/**`; frontend work never touches `packages/{server,db,contract}/**` or the `avel-cli` repo.
 - Never run `avel` or use the operator's credentials. Never push.

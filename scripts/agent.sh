@@ -60,13 +60,26 @@ have=$(git -C "$repo" show "$base:$doc" | sha256sum | cut -d' ' -f1)
 
 int_pane=$(avel_pane_for INT) || { echo "open the control room first: Ctrl+a then v, or scripts/control-room.sh" >&2; exit 1; }
 
-# Six at a time across both teams, counting reviews (the factory's 6 slots).
-# Only dispatch tabs count ("<AGENT> <module>-<role> a<N>"), not INT or the
-# standing crew tabs that Ctrl+a v opens (one word: "AXIS", "SOAP", ...).
+# Three at a time across both teams, counting reviews (procedures.md, rule 5:
+# the work-in-progress limit, until merges keep up). Only dispatch tabs count
+# ("<AGENT> <module>-<role> a<N>"), not INT or the standing crew tabs that
+# Ctrl+a v opens (one word: "AXIS", "SOAP", ...).
 running=$(avel_tabs | awk -F'\t' '$2 ~ / a[0-9]+$/' | grep -c . || true)
-if (( running >= 6 )); then
-  echo "6 agent sessions are already open. Close one (after its report) before starting another." >&2
+if (( running >= 3 )); then
+  echo "3 agent sessions are already open. Close one (after its report) before starting another." >&2
   exit 1
+fi
+
+# Finish before starting (rule 5): nothing new starts while a module is ready
+# to merge and waiting on INT. AVEL_FORCE=1 overrides, on the operator's word.
+if [[ ${AVEL_FORCE:-} != 1 ]]; then
+  ready=$(cd "$repo/scripts" && python3 -c '
+import merge_board
+print(" ".join(m.module for m in merge_board.load("..") if m.status == "READY"))' 2>/dev/null || true)
+  if [[ -n $ready ]]; then
+    echo "ready to merge, waiting on INT: $ready. Merge first (scripts/merge.sh), or AVEL_FORCE=1 on the operator's word." >&2
+    exit 1
+  fi
 fi
 
 title="${agent^^} $rest a$attempt"
@@ -81,10 +94,14 @@ git -C "$repo" worktree add -q -b "$branch" "$wt" "$base"
 
 # Model and tools come from the agent file. Before the agent files exist,
 # fall back to the roster's model.
+# Model by role (procedures.md, rule 4): Opus for builders on hard modules, the
+# security review and the first spec review of a contract; Sonnet for test
+# writers, doc reviews, frontend kit work and every re-review (attempt 2 on).
 case $agent in
-  rigg|fenn|zane|leah|breach) model=sonnet ;;
+  rigg|fenn|leah|breach|fantem) model=sonnet ;;
   *) model=opus ;;
 esac
+[[ $rest == *review-* || $rest == *red-team ]] && (( attempt >= 2 )) && model=sonnet
 prompt="/dispatch $team/$sprint/$task"
 # What a reviewer diffs against: where the attempt's branch left main.
 # For a builder or test writer this is just its start commit.
@@ -94,7 +111,7 @@ cmd="[ -s \"\$HOME/.nvm/nvm.sh\" ] && . \"\$HOME/.nvm/nvm.sh\"
 cd $(printf %q "$wt") || exec bash
 export AVEL_FROM=$(printf %q "$title") AVEL_BASE=$avel_base
 if [ -f .claude/agents/$agent.md ]; then
-  claude --agent $agent -n $(printf %q "$title") $(printf %q "$prompt")
+  claude --agent $agent --model $model -n $(printf %q "$title") $(printf %q "$prompt")
 else
   claude --model $model -n $(printf %q "$title") $(printf %q "$prompt")
 fi

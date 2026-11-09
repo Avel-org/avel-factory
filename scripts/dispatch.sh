@@ -2,7 +2,7 @@
 # Start every dispatch in a sprint that's ready now, the way the factory's
 # scheduler will: a module's tests first, its build once they're merged and
 # locked, its reviews once the build has its report (checked out at the
-# build's result commit). Up to the 6 slots; scripts/agent.sh opens each one.
+# build's result commit). Up to the 3 slots; scripts/agent.sh opens each one.
 # Retries are never automatic: a dispatch with an attempt is skipped.
 #
 # Usage: scripts/dispatch.sh <team>/<sprint> [--dry-run]
@@ -30,7 +30,7 @@ while IFS=$'\t' read -r state name a b; do
         echo "$out"; started=$((started + 1))
       else
         echo "not started  $name: $out" >&2
-        [[ $out == *"already open"*"6"* || $out == 6* ]] && break
+        [[ $out == *"already open"*"3"* || $out == 3* || $out == "ready to merge"* ]] && break
       fi ;;
     WAIT) echo "waiting      $name: $a" ;;
     SKIP) echo "skipped      $name: $a" ;;

@@ -49,7 +49,7 @@ SCRIPTS = Path(__file__).resolve().parent
 REPO = Path(os.environ.get("AVEL_REPO") or SCRIPTS.parent)   # AVEL_REPO: point at another checkout
 REFRESH = 2.0          # seconds between WezTerm polls
 GIT_REFRESH = 10.0     # seconds between git lookups for dispatch tabs
-SLOTS = 6              # the factory's limit on dispatch sessions
+SLOTS = 3              # procedures.md rule 5: the work-in-progress limit
 STALL = 600            # seconds without tool activity before a working session is stalled
 
 # Team tabs in roster order: (tab, team color key, [(agent, role)]).
@@ -208,6 +208,14 @@ class State:
             age = self.stall_age(name)
             if age is not None:
                 out.append((1, f"{name} stalled: working, no tool activity for {ago(age)}", "block", name))
+            # procedures.md rule 4: dispatch sessions are capped and never resumed after 10 idle minutes
+            if name in self.sessions and re.search(r" a\d+$", name):
+                if h.get("capped"):
+                    out.append((1, f"{name} over its cap (${h.get('cost_usd', 0):.2f}): end it after its report",
+                                "block", name))
+                elif h.get("state") == "idle" and time.time() - h.get("since", time.time()) > STALL:
+                    out.append((6, f"{name} idle {ago(time.time() - h['since'])}: end it, don't resume "
+                                   "(a new attempt starts from its report)", "gwarn", name))
         for m in self.board:
             ref = f"board:{m.team}/{m.sprint}/{m.module}"
             if m.lock_breaks:
@@ -555,7 +563,7 @@ class UI:
                 self.put(py, 2, f" {m.module}: ready to merge? ", self.pairs["title"])
                 lines = [(("✓ " if ok else "✗ ") + label, "ok" if ok else "no") for label, ok in m.checklist()]
                 if m.status == "READY" and m.build and m.build.latest:
-                    lines.append((f"m opens a merge tab: git merge --no-ff {m.build.latest.branch}", "dim"))
+                    lines.append((f"m opens a merge tab: scripts/merge.sh {m.build.latest.branch}", "dim"))
                 for j, (line, c) in enumerate(lines[:prev_lines]):
                     self.put(py + 1 + j, 2, line, self.pairs[c])
             elif row and row[0] == "task":
@@ -614,7 +622,7 @@ class UI:
             if not m or m.status != "READY":
                 return self.say("not ready to merge: see the checklist below")
             branch = m.build.latest.branch
-            cmd = f"git merge --no-ff {branch} && pnpm test"
+            cmd = f"scripts/merge.sh {branch}"
             self.spawn_tab(f"MERGE {m.module}",
                            "echo 'Merge " + m.module + ": check the command, then press Enter (Ctrl+c to cancel).'; "
                            f"read -e -i {json.dumps(cmd)} -p '$ ' c && eval \"$c\"; exec bash")

@@ -1,7 +1,7 @@
 ---
 name: fantem
 description: Frontend builder for shared components, built to the UI contract with the design tokens.
-model: opus
+model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -26,6 +26,8 @@ Mistakes that came back in a review or forced a retry, one line each. Treat ever
 - (none yet)
 
 ## Always
+- One session per attempt: $4 or 60 minutes, whichever comes first (`docs/agent-dispatch/avel/procedures.md`, rule 4). When the hook says you've reached the cap, stop starting work: commit what's done, write your completion report (PARTIAL if it isn't finished, with what's left), commit it, and end. Never ask to be resumed: the next attempt starts from your report.
+- Done means the done-when tests pass (`docs/agent-dispatch/avel/procedures.md`, rule 3). Don't polish what no test or budget asks for: say it in your report's follow-ups instead.
 - Reviewers are never the builder: you never review or test your own work.
 - Territories never cross between teams. Backend work never touches `apps/web/**` or `packages/contract-mock/**`; frontend work never touches `packages/{server,db,contract}/**` or the `avel-cli` repo.
 - Never run `avel` or use the operator's credentials. Never push.

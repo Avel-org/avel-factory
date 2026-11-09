@@ -52,6 +52,8 @@ The first section of INT lists what's waiting on you, most urgent first:
 | `m2: ready to merge (Enter, then m)` | the merge board's checklist | opens the merge board at m2 |
 | `m2: 1 open finding(s) to route` | `findings/*m2*` without a closed status | opens the merge board at m2 |
 | `m2: start BRENNAN review-spec (Ctrl+a s, needs the build SHA)` | a build report with a review that hasn't started | opens the merge board at m2 |
+| `SOAP m2-build a1 over its cap ($4.12): end it after its report` | `capped` in sessions.json, set by the session hook at $4 or 60 minutes (procedures.md, rule 4) | opens the session |
+| `SOAP m2-build a1 idle 12m: end it, don't resume` | a dispatch session idle past 10 minutes (rule 4) | opens the session |
 
 - **When it's empty:** it says `all clear`.
 - **In the session list:** a waiting session reads `needs you 2m`, and a stalled one reads `stalled 14m`.
@@ -135,7 +137,7 @@ Shaped like `avel doctor`: one line per check, `✓`, `!` or `✗`, and exit 1 i
 
 - **Tools:** wezterm and its mux, node, claude, python 3.13+ and pnpm.
 - **Repo:** that scripts, agent files and docs are committed, all 15 agent files, the session hooks, the lock hook, and hook errors (`.git/avel/hook-errors.log`).
-- **Worktrees and slots:** stale worktrees, worktrees on merged branches, the INT tab and dispatch slots in use out of 6.
+- **Worktrees and slots:** stale worktrees, worktrees on merged branches, the INT tab and dispatch slots in use out of 3 (procedures.md, rule 5).
 - **Records:** that they're writable, the last event, cost records and the prices file.
 - **WezTerm config:** the toasts, the theme toggle and IBM Plex Mono.
 

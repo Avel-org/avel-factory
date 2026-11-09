@@ -9,7 +9,7 @@ The factory's dispatch, built early (CR-16 item 3). A sprint's plan goes in, and
 | `docs/agent-dispatch/` | agent-dispatch, vendored unchanged (`VENDORED.md`: source, commit, licence) |
 | `docs/agent-dispatch/<team>/sprint-NN/plan.toml` | The sprint's plan. The lead writes it |
 | `scripts/render.py` | Checks the plan and renders the package |
-| `scripts/dispatch.sh <team>/sprint-NN` | Starts every dispatch that's ready, up to the 6 slots |
+| `scripts/dispatch.sh <team>/sprint-NN` | Starts every dispatch that's ready, up to the 3 slots, and nothing while a module waits to merge |
 | `scripts/agent.sh` | Opens one dispatch. It refuses a task doc that isn't committed or isn't what was rendered |
 | `.claude/commands/dispatch.md` | `/dispatch <team>/sprint-NN/<task doc>`: read the task doc, follow its Activation |
 
