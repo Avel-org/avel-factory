@@ -49,6 +49,7 @@ Review Ghost's clients module against shell-layout.md sections 4 and 5.
 - `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
 - `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
 - `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
+- `agent-brennan-login-uic-review-spec`: Review docs/ui-contracts/login.md, the one review before the build (procedures rule 2), against the Frontend Map, the Step 0 and Step 1 plan's Better Auth items and the design library v1.9.
 - `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, skip link, targets, and D16's focus order.
 
 ## 4. Tasks

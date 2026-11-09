@@ -373,6 +373,7 @@ context = [
   { path = "docs/ui-contracts/shell-layout.md", why = "sections 1, 2 (header behaviour), 4, 5 (Settings), 6 and 8" },
   { path = "docs/ui-contracts/kit-v1.9.md", why = "section 3's last line: data-theme, and data-depth always glass, on <html>" },
   { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "AU (preferences and the theme reveal), for Settings' switches" },
+  { path = "docs/ui-contracts/login.md", why = "section 4: Settings draws the Account section below Appearance; section 2: the guard already in __root" },
 ]
 notes = [
   "routes/index.tsx moves to routes/_shell/index.tsx with its loader and ssr unchanged; its head gains Decisions · AVEL. Don't touch modules/decisions: Ghost's follow-up merges after you.",
@@ -449,6 +450,162 @@ title = "layout=desk everywhere, no viewport read, loadReasonDialog, ScreenHeade
 priority = "P0"
 verify = "! grep -rnE 'matchMedia|useIsPhone|kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web test && for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test -g UC-32 2>&1 | grep -E 'passed|failed|flaky'; done"
 expected = "no line listed; the tests pass; 10 green runs"
+
+# ------------------------------------------------------------------ Sign-in (login.md, INT 2026-11-08): before system's shell build
+#   L0 Brennan reviews login.md once; L1 Fenn unit, Fenn e2e (after their shell dispatches) and Ghost's auth mock (after his mock);
+#   L2 Leon's login build after the shell kit, then Zero reviews it; Leon's system build follows it.
+#   Only L0 is live: L1 and L2 are a draft below until INT settles the shared territories.
+[[dispatch]]
+agent = "brennan"
+module = "login-uic"
+role = "review-spec"
+domain = "Review docs/ui-contracts/login.md, the one review before the build (procedures rule 2), against the Frontend Map, the Step 0 and Step 1 plan's Better Auth items and the design library v1.9."
+context = [
+  { path = "docs/ui-contracts/login.md", why = "under review, whole" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "the /login and system rows, the root guard (line 188), Errors (401, 429), State (Session) and Security" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "item 5 (Better Auth: one operator, no sign-up, the lockout), Rate limits, and test 7" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "mh (the step-up dialog) for the card, fields and alert, and the 401 panel copy" },
+  { path = "docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md", why = "the stand-in wire the contract builds on" },
+  { path = "docs/agent-dispatch/avel/procedures.md", why = "rules 2 and 3: severity and the 15 KB budget" },
+]
+notes = [
+  "Raise only what would make the build or its tests wrong (procedures rule 2). P3s go under Issues for other agents, for Zero to copy to backlog.md.",
+  "The wire is a stand-in (escalation 04): judge whether the web reads only what section 1 names, not whether Better Auth will answer so.",
+]
+
+[[dispatch.task]]
+title = "Faithful: the /login page, the guard, 401 and sign-out as FM and the Step 0 and Step 1 plan give them; every value from mh or a token; every string DL's or marked †"
+priority = "P0"
+verify = "grep -c 'av-stepup-pw\\|Your session ended' 'docs/design/AVEL Enclosure Grid · Design library v1.9.html' && wc -c docs/ui-contracts/login.md"
+expected = "a non-zero count, from which you checked sections 0 to 4; the file's size (under 15 KB)"
+
+[[dispatch.task]]
+title = "Safe and buildable: next can't redirect off-site, nothing secret is stored or logged, the mock's lockout and sessions match section 5, the owners and order in section 6, and LG-01 to LG-08 and LG-20 to LG-23 covering every section"
+priority = "P1"
+verify = "grep -n '^- \\*\\*LG-' docs/ui-contracts/login.md | wc -l"
+expected = "12, each traced to the section it tests"
+
+# DRAFT, not rendered (decisions.md, 2026-11-08 'Sign-in'): render.py allows one writer per path, and these five
+# share paths with shell-test-unit, shell-test-e2e (in flight), mock-build and system-build. Uncomment once INT decides.
+# [[dispatch]]
+# agent = "fenn"
+# module = "login"
+# role = "test-unit"
+# domain = "The unit tests for sign-in: /login, next, the copy table, the guard, 401, the Account section, and the mock's /api/auth/* (login.md section 7, LG-01 to LG-08)."
+# territory = ["apps/web/test/**"]
+# after = ["agent-brennan-login-uic-review-spec", "agent-fenn-shell-test-unit"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 1 to 5 and 7" },
+#   { path = "docs/agent-dispatch/frontend/sprint-01/locks.md", why = "the locked paths you change under the override" },
+# ]
+# notes = [
+#   "New files go in test/modules/system/ and, for LG-08, test/data/. If you touch a locked path, commit with AVEL_LOCK_OVERRIDE=\"login tests a1: <what> (INT, login.md)\".",
+#   "Procedures rule 1: the new tests land marked test.fails, and nothing in the suite goes red. LG-07 stays marked until system's build too.",
+#   "LG-04 and LG-08 fix the mock's now(). Use resetAuth() between unit tests.",
+# ]
+#
+# [[dispatch.task]]
+# title = "LG-01 to LG-08, each with its ID, against the mock in process"
+# priority = "P0"
+# required = "Each test carries its LG ID and is marked to fail until its build lands; no test reads a real password or the cookie's value"
+# verify = "pnpm --filter @avel/web test 2>&1 | tail -15 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+# expected = "the run passes with the new tests as expected failures; only apps/web/test changed"
+#
+# [[dispatch]]
+# agent = "fenn"
+# module = "login"
+# role = "test-e2e"
+# domain = "Sign-in end to end with Playwright on AVEL_API=mock (LG-20 to LG-23), and the signed-in setup every other spec runs under."
+# territory = ["apps/web/e2e/**", "apps/web/playwright.config.ts"]
+# after = ["agent-brennan-login-uic-review-spec", "agent-fenn-shell-test-e2e", "agent-ghost-auth-mock-build"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 2 to 5 and 7" },
+# ]
+# notes = [
+#   "e2e/** and playwright.config.ts are locked. INT's decision in this plan: change them with AVEL_LOCK_OVERRIDE=\"login e2e a1: <what> (INT, login.md)\".",
+#   "LG-23 first: a setup project that signs in as fixtures.operator through the dev server and saves storageState (outside git, under test-results). Phone, 900 and desk depend on it. The LG specs start from an empty storageState. The setup isn't a fail-first test: it passes on Ghost's auth mock, which merges before you.",
+#   "Mark LG-20 to LG-22 test.fail() until Leon's login build (LG-22 until system's too). Retries 0, no fixed sleep.",
+#   "Add /login, signed out, to evidence.spec.ts's pages.",
+# ]
+#
+# [[dispatch.task]]
+# title = "LG-23's signed-in setup, then LG-20 to LG-22"
+# priority = "P0"
+# required = "Every existing spec passes, unchanged, under the setup; the LG tests carry their IDs and are marked to fail until their build"
+# verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -25 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+# expected = "the suite passes with the new tests as expected failures; only apps/web/e2e and playwright.config.ts changed"
+#
+# [[dispatch]]
+# agent = "ghost"
+# module = "auth-mock"
+# role = "build"
+# domain = "The contract mock serves sign-in, the session read and sign-out under /api/auth/*, with a seeded operator, sessions by cookie and the lockout (login.md section 5)."
+# territory = ["packages/contract-mock/**"]
+# after = ["agent-brennan-login-uic-review-spec", "agent-ghost-mock-build"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 1 and 5" },
+#   { path = "docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md", why = "the stand-in wire" },
+# ]
+# notes = [
+#   "Contract routes keep answering without a session: nothing about 8, 19 or 52 to 54 changes.",
+#   "reset() keeps sessions (e2e workers share one dev server), and resetAuth() drops them. The vite plugin's /__mock/reset needs no change.",
+#   "Fenn's LG-08 tests in test/data/ are yours to make pass.",
+# ]
+#
+# [[dispatch.task]]
+# title = "/api/auth/sign-in/email, get-session and sign-out on the mock; fixtures.operator; the lockout on now(); reset and resetAuth; the redacted password in recorded()"
+# priority = "P0"
+# required = "LG-08 passes with its test.fails flipped; every existing mock and decisions test passes unchanged"
+# verify = "pnpm --filter @avel/contract-mock typecheck && pnpm --filter @avel/web test 2>&1 | tail -8 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+# expected = "typechecks; the tests pass; only packages/contract-mock changed"
+#
+# [[dispatch]]
+# agent = "leon"
+# module = "login"
+# role = "build"
+# domain = "Sign-in in the system module: api.ts for /api/auth/*, sessionQueryOptions, /login, the root guard, 401 handling and the Account section (login.md sections 1 to 4)."
+# territory = ["apps/web/src/modules/system/**", "apps/web/src/routes/**"]
+# after = ["agent-fantem-shell-kit-build", "agent-ghost-auth-mock-build", "agent-fenn-login-test-unit", "agent-fenn-login-test-e2e"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "the contract, whole" },
+#   { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "mh: the card, label, input and alert values, and the 401 panel copy" },
+#   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "the guard (line 188), Errors and Security" },
+# ]
+# notes = [
+#   "No better-auth package: api.ts calls the three endpoints with fetch. Never log, store or put in a URL the password or the token.",
+#   "The Account section is a component system's index.ts exports. Settings doesn't exist yet: your system build draws it below Appearance.",
+#   "Flip LG-01 to LG-06, LG-20 and LG-21 as they pass. Report /'s first load from your build (procedures rule 7).",
+# ]
+#
+# [[dispatch.task]]
+# title = "api.ts, sessionQueryOptions, routes/login.tsx and LoginScreen with login.css; __root's guard and the 401 subscription"
+# priority = "P0"
+# required = "LG-01 to LG-06, LG-20 and LG-21 pass; every other test passes under LG-23's setup; next is never followed off-site"
+# verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20"
+# expected = "typechecks; every unit and end-to-end test passes on every project"
+#
+# [[dispatch.task]]
+# title = "The Account section (sign-out), exported for Settings"
+# priority = "P1"
+# required = "LG-07's cases that don't need Settings pass with a test harness; nothing in modules/system imports past another module's index.ts"
+# verify = "pnpm --filter @avel/web exec vitest run test/modules/system && ! grep -rnE 'modules/(decisions|missions|clients)/(api|screens)' apps/web/src/modules/system"
+# expected = "the tests pass; no deep import"
+#
+# [[dispatch]]
+# agent = "zero"
+# module = "login"
+# role = "review-frontend"
+# domain = "Review Leon's sign-in build against login.md sections 0 to 4."
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 0 to 4 and 7" },
+# ]
+#
+# [[dispatch.task]]
+# title = "The wire as section 1, the guard and next as section 2 (try //, /\\ and an absolute URL by hand), the page and its copy table as section 3, the Account section as section 4; nothing secret stored or logged"
+# priority = "P0"
+# verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test -g 'LG-' 2>&1 | tail -10 && ! grep -rnE 'localStorage|sessionStorage|console\\.' apps/web/src/modules/system"
+# expected = "the tests pass; no line listed"
+
 
 # ------------------------------------------------------------------ R5: Leah on main
 [[dispatch]]

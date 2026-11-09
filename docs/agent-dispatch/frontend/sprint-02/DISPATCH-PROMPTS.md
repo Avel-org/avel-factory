@@ -324,6 +324,28 @@ Never push, rebase or force anything. If the task doc is missing something you n
 don't guess: say so in your report.
 ```
 
+## agent-brennan-login-uic-review-spec
+
+```text
+You are BRENNAN on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
+Dispatch: agent-brennan-login-uic-review-spec. Branch: frontend/sprint-02/agent-brennan-login-uic-review-spec-a<attempt>, in your own worktree.
+
+Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-brennan-login-uic-review-spec.md in full. It is your whole briefing.
+Read every file in its Part 2, in order. If one is missing, stop and say which.
+
+Your tasks:
+- BRENNAN-01: Faithful: the /login page, the guard, 401 and sign-out as FM and the Step 0 and Step 1 plan give them; every value from mh or a token; every string DL's or marked †
+- BRENNAN-02: Safe and buildable: next can't redirect off-site, nothing secret is stored or logged, the mock's lockout and sessions match section 5, the owners and order in section 6, and LG-01 to LG-08 and LG-20 to LG-23 covering every section
+
+You may change only: docs/agent-dispatch/frontend/sprint-02/agent-brennan-login-uic-review-spec-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/login-uic-brennan-*.md.
+Everything else is read-only. Locked tests (locks.md) are never changed.
+
+Work by Part 6 of the task doc. Finish with Part 7: run every verification command,
+write docs/agent-dispatch/frontend/sprint-02/agent-brennan-login-uic-review-spec-completion.md, commit it, tell INT with scripts/tell.sh INT "..." (Part 7), and stop.
+Never push, rebase or force anything. If the task doc is missing something you need,
+don't guess: say so in your report.
+```
+
 ## agent-leah-shell-review-a11y-perf
 
 ```text

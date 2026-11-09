@@ -46,6 +46,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | [`agent-ghost-decisions-build`](agent-ghost-decisions-build.md) | GHOST | build | decisions | at once (no test dispatch in this module); after `agent-fantem-shell-kit-build`, `agent-ghost-clients-build` is merged into main |
 | [`agent-zero-system-review-frontend`](agent-zero-system-review-frontend.md) | ZERO | review-frontend | system | once `agent-leon-system-build` has its completion report, checked out at its result commit |
 | [`agent-zero-decisions-review-frontend`](agent-zero-decisions-review-frontend.md) | ZERO | review-frontend | decisions | once `agent-ghost-decisions-build` has its completion report, checked out at its result commit |
+| [`agent-brennan-login-uic-review-spec`](agent-brennan-login-uic-review-spec.md) | BRENNAN | review-spec | login-uic | at once |
 | [`agent-leah-shell-review-a11y-perf`](agent-leah-shell-review-a11y-perf.md) | LEAH | review-a11y-perf | shell | at once; after `agent-leon-system-build`, `agent-ghost-decisions-build` is merged into main |
 
 ## Territory map
@@ -69,6 +70,7 @@ Step 1 · lead ZERO · rendered by `scripts/render.py` from `plan.toml`.
 | `docs/agent-dispatch/frontend/sprint-02/findings/clients-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-02/findings/system-zero-*.md` | ZERO (findings) |
 | `docs/agent-dispatch/frontend/sprint-02/findings/decisions-zero-*.md` | ZERO (findings) |
+| `docs/agent-dispatch/frontend/sprint-02/findings/login-uic-brennan-*.md` | BRENNAN (findings) |
 | `docs/agent-dispatch/frontend/sprint-02/findings/shell-leah-*.md` | LEAH (findings) |
 
 ## Order

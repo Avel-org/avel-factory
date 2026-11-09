@@ -29,7 +29,8 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 11. `docs/ui-contracts/shell-layout.md`: sections 1, 2 (header behaviour), 4, 5 (Settings), 6 and 8
 12. `docs/ui-contracts/kit-v1.9.md`: section 3's last line: data-theme, and data-depth always glass, on <html>
 13. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: AU (preferences and the theme reveal), for Settings' switches
-14. `docs/agent-dispatch/frontend/sprint-02/agent-leon-system-build.md`: this task doc: follow it exactly
+14. `docs/ui-contracts/login.md`: section 4: Settings draws the Account section below Appearance; section 2: the guard already in __root
+15. `docs/agent-dispatch/frontend/sprint-02/agent-leon-system-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
@@ -51,6 +52,7 @@ The shell route and the system module: _shell, ShellLayout (nav from routes, pro
 - `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
 - `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
 - `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
+- `agent-brennan-login-uic-review-spec`: Review docs/ui-contracts/login.md, the one review before the build (procedures rule 2), against the Frontend Map, the Step 0 and Step 1 plan's Better Auth items and the design library v1.9.
 - `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, skip link, targets, and D16's focus order.
 
 ## 4. Tasks

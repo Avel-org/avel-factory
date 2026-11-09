@@ -225,3 +225,48 @@ Int: Settings isn't a design library.
 - **`kit-v1.9.md` section 3:** its last line now gives `data-theme` from `avel-theme`, and `data-depth` always `glass`.
 - **`plan.toml`:** Leon's system domain, its kit-v1.9 context line and task title, and Leah's a11y task title.
 - **Fenn's e2e block** names no depth, so it's still untouched.
+
+## 2026-11-08: Sign-in, before the shell (Int): login.md, escalation 04, and the plan
+
+Int: sign-in comes before the shell, in sprint-02, as its own small module in `system`. `docs/ui-contracts/login.md` is revision 1 (12856 bytes), for Brennan's one review.
+
+**What the contract decides:**
+- **The page:** `/login`, for the one operator, with email and password. It has no sign-up, "forgot password", "remember me" or passkey control (FM). The card is DL's step-up dialog `mh` drawn inline. Fields and the button are 44px at 760px and narrower.
+- **The wire:**
+  - Better Auth's email and password defaults (sign in, the session read, sign out), with `fetch` from `system`'s `api.ts`, and no `better-auth` package.
+  - 401 means a wrong email or password. 429 with `X-Retry-After` covers both the lockout and the rate limit.
+  - It's a stand-in until escalation 04 (to Axis, via INT) confirms it.
+- **The guard:**
+  - `__root`'s `beforeLoad` reads the session (`staleTime: Infinity`), and sends a signed-out visitor to `/login?next=`.
+  - A redirect target is kept only when it's a same-site path, so there's no open redirect.
+  - Any contract 401 goes to `/login?next=…&reason=expired`, through one subscription to the query and mutation caches in `system`, so `data/` and the approval page don't change. The expired notice uses DL's 401 copy.
+- **The copy:** wrong password `That email and password don't match.`, and lockout `Too many attempts. Try again after {HH:MM}.`. There's no countdown, because FM's shared clock isn't built.
+- **Sign-out:** an `Account` section on Settings, below Appearance, with `Signed in as {email}` and `Sign out`. It clears the `QueryClient`, then goes to `/login`. Leon's sign-in build exports the section, and his system build draws it. `shell-layout.md` is unchanged.
+- **The mock (Ghost):**
+  - `/api/auth/*`, with `fixtures.operator` (`operator@avel.test`, a mock-only password) and sessions by cookie;
+  - the lockout on the 11th failure in 15 minutes;
+  - `reset()` keeps sessions, because e2e workers share one dev server; `resetAuth()` drops them;
+  - passwords are redacted in `recorded()`;
+  - contract routes still don't check the session, so the shell's tests don't change.
+- **End to end:** LG-23 is a Playwright setup project that signs in once and saves `storageState` for the phone, 900 and desk projects. Without it, the guard would send the whole suite to `/login`.
+- **Left for later:** forwarding the cookie on every SSR contract call (`router.tsx`) waits for the real server, and CLI sessions wait for route 4.
+
+**The plan: only Brennan's `login-uic` review is live.** `scripts/render.py` allows one writer per path, and every sign-in writer shares paths with a shell dispatch:
+
+| Sign-in dispatch | Shares with |
+| --- | --- |
+| Fenn `login` test-unit (`apps/web/test/**`) | `shell-test-unit`, in flight |
+| Fenn `login` test-e2e (`e2e/**`, `playwright.config.ts`) | `shell-test-e2e`, in flight |
+| Ghost `auth-mock` build (`packages/contract-mock/**`) | `mock-build` (done, merging) |
+| Leon `login` build (`modules/system/**`, `routes/**`) | `system-build` (R4, not started) |
+
+- **Where the five dispatches are:** they're written in full in `plan.toml`, as a commented-out draft: the four above, plus Zero's `login` review.
+- **What I didn't touch:**
+  - the in-flight territories, because shell work in flight doesn't change;
+  - `render.py`, because it's the dispatch kit.
+- **Kept out of the sprint-level lines:** `login.md` and its goals stay out of the plan's sources, goals and done-when, so the running Fenn task docs render unchanged.
+- **INT's call, either of:**
+  1. **(recommended)** `render.py` allows two writers to share a path when one waits on the other through `after`, which the draft already orders: each sign-in writer comes after its shell twin, and `system-build` after `login-build`;
+  2. or I narrow the finished dispatches' territories once they merge.
+
+  Then I uncomment the draft, restore `system-build`'s `after` on `agent-leon-login-build`, re-render, and commit.
