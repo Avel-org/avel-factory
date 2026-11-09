@@ -1,6 +1,6 @@
 # UI contract: sign-in (frontend sprint-02)
 
-Zero, 2026-11-08. **Revision 1, for Brennan's one review.**
+Zero, 2026-11-08. **Revision 2, for Brennan's round 2:** login-uic-brennan-01 (section 2's 401), 02 (`next`) and 03 (no token in the cache).
 - **Scope:** sign-in for the one operator, the root guard, 401 handling and sign-out, built in `system` (FM: "`system`: Auth (sign-in, session) … `/login`, `/settings`").
 - **Sources:**
   - FM v0.6: the `/login` row, line 188's guard, Errors (401) and Security;
@@ -24,22 +24,32 @@ Zero, 2026-11-08. **Revision 1, for Brennan's one review.**
 | Session | `GET /api/auth/get-session` | 200 with `{ session: { id, userId, expiresAt }, user: { id, email, name } }`, or 200 with `null` when signed out |
 | Sign out | `POST /api/auth/sign-out`, JSON `{}` | 200 with `{ success: true }`, and the cookie cleared |
 
-- **The web reads only these fields.** Any other status is "something else went wrong" (section 3).
+- **`api.ts` returns only these fields (login-uic-brennan-03).** It builds each answer from the named fields and drops the rest (`token`, `ipAddress`, anything Better Auth adds). A raw body is never returned, cached, logged or dehydrated. Sign-in's and sign-out's bodies are read for their status only.
+- **Any other status** is "something else went wrong" (section 3).
 - **On the server,** `api.ts` forwards the incoming request's `cookie` header to `get-session`, at the request's origin (as `router.tsx` sets `baseUrl`), and nothing else.
-- **`sessionQueryOptions`** (system's `index.ts`): key `["auth", "session"]`, `staleTime: Infinity`. It's invalidated on sign-in and on a 401. Sign-out clears the whole `QueryClient`.
+- **`sessionQueryOptions`** (system's `index.ts`): key `["auth", "session"]`, `staleTime: Infinity`, with `api.ts`'s value. Sign-in refetches it (section 3). A contract 401 sets it to `null` (section 2). Sign-out clears the whole `QueryClient`.
 
 ## 2. The guard (`__root`, Leon's `routes/**`)
 
 - **`__root`'s `beforeLoad`** awaits `ensureQueryData(sessionQueryOptions)` and puts `{ session }` in the route context (FM, State: "Session · Route context from Better Auth").
 - **Signed out:** on any path but `/login`, it throws `redirect({ to: "/login", search: { next } })`. `next` is the path and search the visitor asked for, and is left out for `/`. On the server this is a redirect response, so the shell is never drawn signed out.
 - **Signed in on `/login`:** a redirect to `next`, or to `/`.
-- **`next` is safe or ignored.** `/login`'s `validateSearch` keeps it only if it starts with `/`, not with `//` or `/\`, and isn't `/login`. Otherwise it's dropped, and the target is `/`. No open redirect.
+- **`next` is safe or ignored (login-uic-brennan-02).** One function, `safeNext(raw, origin)` in system's `index.ts`, used by `/login`'s `validateSearch`, by the signed-in redirect and after sign-in. It keeps `next` only when all of these hold:
+  1. it's a string of at most 2,048 characters;
+  2. it has no control character (`\u0000` to `\u001f`, `\u007f`), which rules out tabs and newlines;
+  3. it starts with exactly one `/`;
+  4. `new URL(raw, origin)` has the app's `origin`;
+  5. its `pathname` isn't `/login`.
+
+  The target is the parsed URL's `pathname + search + hash`, never the raw string. Anything else is dropped, and the target is `/`.
 - **A failed session read** (network, 5xx) counts as signed out. `/login` then shows section 3's error on submit, not on load.
 - **A 401 from any contract route** (FM, Errors: "401 · Redirect to `/login?next=`"):
   - `system` subscribes to the `QueryClient`'s query and mutation caches once, in `__root`'s component.
-  - On a `signedOut` error (`data/errors.ts`), it invalidates the session and navigates to `/login?next={current path and search}&reason=expired`.
-  - It does this once per 401 burst, and never while it's already on `/login`.
-  - The approval page's own `SignedOutPanel` (AP) is unchanged, as the fallback if the navigation is slow.
+  - **On a `signedOut` error** (`data/errors.ts`), it sets the session's query data to `null`, then navigates to `/login?next={current path and search}&reason=expired` with `replace`. A contract 401 means the server no longer takes the session, and the web believes that until it signs in again (login-uic-brennan-01).
+  - **No bounce:** `/login`'s guard then reads `null` from the cache, so it draws the page with the expired notice, and makes no session request and no contract call. Nothing on `/login` can 401, so there's no loop.
+  - **Once:** a flag set until the navigation settles, and the check "not already on `/login`", keep it to one navigation per burst.
+  - **A fresh load** of `/login?reason=expired` reads the session again, and a session the server takes redirects as usual.
+  - The approval page's `SignedOutPanel` (AP) stays, as the fallback.
 - **No guard exemptions** but `/login`. There's no public page.
 
 ## 3. `/login` (`modules/system/screens/LoginScreen`, route `routes/login.tsx`)
@@ -69,7 +79,7 @@ Zero, 2026-11-08. **Revision 1, for Brennan's one review.**
 | Case | What the page does | Copy |
 | --- | --- | --- |
 | A field is empty | No request. Focus the first empty field; `aria-invalid` on it | `Enter your email and password.`† |
-| 200 | Set the session's query data from the answer, then navigate to `next` or `/` with `replace` | none |
+| 200 | `fetchQuery({ ...sessionQueryOptions, staleTime: 0 })`, then navigate to `safeNext` or `/` with `replace`. Nothing is taken from sign-in's body. If the refetch gives `null` or fails, it's the last row | none |
 | 401 | Clear Password and focus it; `aria-invalid` on both | `That email and password don't match.`† |
 | 429 with `X-Retry-After` | Keep both fields; the button stays enabled | `Too many attempts. Try again after {time}.`†, where `{time}` is now plus the header, as the operator's local `HH:MM` |
 | 429 without it | The same | `Too many attempts. Try again later.`† |
@@ -93,7 +103,7 @@ Zero, 2026-11-08. **Revision 1, for Brennan's one review.**
 - **Sign in, right password:** a new opaque token, kept in memory. `Set-Cookie: better-auth.session_token=<token>; Path=/; HttpOnly; SameSite=Lax`. The body is `{ redirect: false, token, user }`.
 - **Wrong email or password:** 401 with `{ code: "INVALID_EMAIL_OR_PASSWORD", message: "Invalid email or password" }`.
 - **The lockout:** after 10 failures for that email within 15 minutes of the mock's `now()`, every sign-in for it, right or wrong, gets 429 with `X-Retry-After: {seconds left}` and `{ code: "TOO_MANY_ATTEMPTS", message: "Too many attempts" }`, until 15 minutes after the 10th failure (test 7: the 11th is locked out). The 5-a-minute rate limit isn't simulated.
-- **`get-session`:** reads that cookie. A known token gives the session (`expiresAt` 12 hours after sign-in), and anything else gives `null`.
+- **`get-session`:** reads that cookie. A known token gives `{ session: { id, userId, expiresAt, token, ipAddress }, user }`, with `expiresAt` 12 hours after sign-in. This is Better Auth's raw shape (`auth_sessions`, DATABASE.md), so tests can see `api.ts` drop `token`. Anything else gives `null`.
 - **`sign-out`:** forgets the token and expires the cookie (`Max-Age=0`).
 - **Not served:** sign-up, or any other `/api/auth/*` path (404).
 - **Contract routes don't check the session.** Routes 8, 19 and 52 to 54 answer as now, so the shell work and its tests don't change. A 401 is tested with `failNext` (`{ status: 401, code: "UNAUTHORIZED" }`).
@@ -119,16 +129,16 @@ Tests are marked to fail until their build merges (procedures rule 1), with thei
 
 **Unit (jsdom, against the mock in process):**
 - **LG-01** `/login`'s markup: brand, `h1`, the two fields (label, `type`, `autoComplete`), the button, the title, and no link or other control.
-- **LG-02** A submit: no request with an empty field and its copy; `busy` while pending; a single request; on 200, the session's query data is set and the page goes to a safe `next` or to `/`.
-- **LG-03** `next`: `//evil`, `/\evil`, `https://x`, `/login` and none all go to `/`; `/missions?x=1` is kept.
+- **LG-02** A submit: no request with an empty field and its copy; `busy` while pending; a single request; on 200, the session is refetched, its cached value has exactly section 1's fields and no `token`, and the page goes to `safeNext` or `/`.
+- **LG-03** `safeNext`: `//evil`, `/\evil`, `https://x`, `/\t/evil.example`, `/\n/evil.example`, `/\r/evil`, `/login`, `/login?x=1`, a 2,049-character path and none all give `/`. `/missions?x=1#a` is kept as `/missions?x=1#a`.
 - **LG-04** 401's copy, Password cleared and focused, and `aria-invalid`. 429 with and without `X-Retry-After` (with a fixed `now`). A rejected fetch and a 500.
 - **LG-05** The guard: signed out on `/` and `/missions?x=1` goes to `/login` with the right `next`; signed in on `/login` goes to `next`; a failed session read counts as signed out.
-- **LG-06** A 401 on a query and on a mutation: one navigation to `/login?next=…&reason=expired`, and the expired notice's copy.
+- **LG-06** A 401 (`failNext`) on a query and on a mutation, with the mock's session still valid: the cached session becomes `null`, there's exactly one navigation to `/login?next=…&reason=expired`, the expired notice is drawn, and there's no second navigation or session request.
 - **LG-07** The Account section: the email, the button, `busy`, the cache cleared, `/login` on 200, and the error copy otherwise. Marked to fail until `system`'s build too.
-- **LG-08** The mock (test/data): the seeded operator, the cookie, `get-session` before and after, sign-out, 401's body, the 11th attempt's 429 and `X-Retry-After`, `reset()` keeping sessions and `resetAuth()` dropping them, and the redacted password.
+- **LG-08** The mock (test/data): the seeded operator, the cookie, `get-session` before and after, sign-out, 401's body, the raw `get-session` carrying `token`, the 11th attempt's 429 and `X-Retry-After`, `reset()` keeping sessions and `resetAuth()` dropping them, and the redacted password.
 
 **End to end (Playwright, `AVEL_API=mock`):**
-- **LG-20** Signed out, the server answers `/missions?x=1` with a redirect to `/login?next=%2Fmissions%3Fx%3D1`, and the page has no shell element. Sign in, land on `/missions?x=1`, and a reload stays signed in.
+- **LG-20** Signed out, the server answers `/missions?x=1` with a redirect to `/login?next=%2Fmissions%3Fx%3D1`, and the page has no shell element. Sign in, land on `/missions?x=1`, and a reload stays signed in. Neither page's HTML contains the session cookie's value (read from the browser context's cookies) or a `"token"` key.
 - **LG-21** At 390 and 1280: a wrong password's alert, then the right one. At 390, the fields and the button are 44px tall, with no sideways scroll.
 - **LG-22** Sign out from Settings lands on `/login`, and Back lands there too. Marked to fail until `system`'s build.
 - **LG-23** A `setup` project signs in once through the mock and saves `storageState`. Phone, 900 and desk use it, so every other spec runs signed in. The LG specs start from an empty state. Without it, the guard would send the whole suite to `/login`.

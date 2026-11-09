@@ -270,3 +270,26 @@ Int: sign-in comes before the shell, in sprint-02, as its own small module in `s
   2. or I narrow the finished dispatches' territories once they merge.
 
   Then I uncomment the draft, restore `system-build`'s `after` on `agent-leon-login-build`, re-render, and commit.
+
+## 2026-11-08: login.md revision 2 answers login-uic-brennan-01 to 03; territories by Int's option 1
+
+**Revision 2** (14,988 bytes) goes to Brennan for round 2, where only P0 and P1 block.
+- **01 (401 bounced off `/login`):**
+  - A contract 401 now sets the session's query data to `null` (not just invalidates it), then navigates with `replace`.
+  - `/login`'s guard reads that `null`, so it draws the page with the expired notice, with no session request and no contract call, and so no loop.
+  - "Once" now means until the navigation settles.
+  - LG-06 keeps the mock's session valid, and asserts the notice and that there's no second navigation.
+- **02 (`next` went off-site):** one `safeNext(raw, origin)`.
+  - **What it keeps:** a value of at most 2,048 characters, with no control characters, starting with exactly one `/`, whose parsed URL is on the app's origin and isn't `/login`.
+  - **Where it goes:** the parsed `pathname + search + hash`, never the raw string.
+  - **The test:** LG-03 adds the tab, newline and CR cases, `/login?x=1` and the length cap.
+- **03 (the token in the cache and the HTML):**
+  - `api.ts` builds answers from the named fields only, and drops `token` and everything else.
+  - After sign-in, the session is refetched with `staleTime: 0`. Nothing is taken from sign-in's body.
+  - The mock's `get-session` now returns Better Auth's raw shape, with `token` and `ipAddress`, so the tests can see the drop.
+  - LG-02 checks that the cached session has no `token`, and LG-20 that the SSR HTML has neither the cookie's value nor a `"token"` key.
+- **Brennan's eight P3s** are in `backlog.md`.
+
+**Territories, Int's call: option 1.** `render.py` will let a dispatch share a path with one it runs after. INT is making the change.
+- **Once it's on main,** I uncomment the five login dispatches in `plan.toml`, and restore `agent-leon-system-build`'s `after` on `agent-leon-login-build`.
+- **Until then** the draft stays commented out, so the plan renders as it does now.
