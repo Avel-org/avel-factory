@@ -57,7 +57,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-tes
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-26
+- FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-25
+- FENN-02: Review evidence: a screenshot and a video per page at three sizes
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

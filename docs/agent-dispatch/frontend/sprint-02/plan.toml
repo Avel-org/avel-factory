@@ -145,11 +145,11 @@ expected = "the run passes with the new tests as expected failures; only apps/we
 agent = "fenn"
 module = "shell"
 role = "test-e2e"
-domain = "The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept."
+domain = "The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), UC-32 taken in from sprint-01, UC-29 to UC-31 kept."
 territory = ["apps/web/e2e/**", "apps/web/playwright.config.ts"]
 after = ["agent-brennan-layout-uic-review-spec"]
 context = [
-  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 to 5 and 9 (SH-20 to SH-24, SH-26)" },
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 to 5 and 9 (SH-20 to SH-24)" },
   { path = "docs/ui-contracts/kit-v1.9.md", why = "section 4, SH-25 (D16)" },
   { path = "docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md", why = "your a7: UC-32 (5abf046 on frontend/sprint-01/agent-fenn-decisions-test-e2e-a7)" },
 ]
@@ -158,14 +158,24 @@ notes = [
   "e2e/** and playwright.config.ts are locked (decisions-e2e). INT's decision in this plan: change them with AVEL_LOCK_OVERRIDE=\"shell e2e a1: <what> (INT, shell-layout.md)\". Add a 900x1000 project beside phone and desk.",
   "Mark each new test test.fail() until its build lands (procedures rule 1). Retries 0, no fixed sleep. SH-24 waits for the AppShell element's data-hydrated.",
   "SH-25's harness is kit-v1.9.md section 4's. If it can't load the source files, stop and report it with another harness inside your territory.",
+  "Review evidence (INT, 2026-11-08): e2e/evidence.spec.ts walks each page in the nav (shell-layout.md section 5, and Decisions) at 1280, 900 and 390, and saves one full-page screenshot and one video per page and size. It asserts nothing, so it isn't a fail-first test and never marks main red.",
+  "It runs only when AVEL_EVIDENCE is set (playwright.config.ts: testIgnore evidence.spec.ts otherwise; video \"on\" and screenshot \"on\" only for that spec). The default suite and its speed are unchanged.",
+  "Output goes to $AVEL_EVIDENCE (a folder outside the repo, given per attempt), never into git: <page>-<size>.png and <page>-<size>.webm. Any build or review dispatch can run AVEL_EVIDENCE=<dir> pnpm --filter @avel/web exec playwright test evidence and list the files in its completion report.",
 ]
 
 [[dispatch.task]]
-title = "UC-32 in (5abf046), the 900 project, and SH-20 to SH-26"
+title = "UC-32 in (5abf046), the 900 project, and SH-20 to SH-25"
 priority = "P0"
 required = "Each test carries its ID and is marked to fail until its build; UC-29 to UC-31 unchanged and passing; retries 0"
 verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -25 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
 expected = "the suite passes with the new tests as expected failures; only apps/web/e2e and playwright.config.ts changed"
+
+[[dispatch.task]]
+title = "Review evidence: a screenshot and a video per page at three sizes"
+priority = "P1"
+required = "evidence.spec.ts covers every nav page at 1280, 900 and 390; skipped unless AVEL_EVIDENCE is set; writes only under $AVEL_EVIDENCE; the default run is unchanged"
+verify = "d=$(mktemp -d) && AVEL_EVIDENCE=$d pnpm --filter @avel/web exec playwright test evidence 2>&1 | tail -5; ls $d | head -20; pnpm --filter @avel/web exec playwright test --list 2>&1 | grep -c evidence"
+expected = "a .png and a .webm per page and size in the folder (from the stand-in server until the shell is built); the default --list shows no evidence tests"
 
 [[dispatch]]
 agent = "ghost"

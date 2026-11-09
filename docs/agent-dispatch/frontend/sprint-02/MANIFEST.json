@@ -2,14 +2,14 @@
   "renderer": "scripts/render.py (minimal, CR-16)",
   "team": "frontend",
   "sprint": "sprint-02",
-  "planSha256": "daec3e5719b6b78df2471ac2b28f4c7642cbba7c9477d7a7ea4ad615b0e0bf7a",
-  "packageSha256": "28acf670602ae8690739c9aafefa4697d22c9788ac15c4038e8c855e48724d5d",
+  "planSha256": "bb13d92876729d18a842883726e9b90690409d10d7d2da1f2927c5a592c4efff",
+  "packageSha256": "4ef1224a8c1c746eff2f9f3f9fdd15d12c55bb15bf3ec48fb8cfe0471dc47ec9",
   "files": [
     {
       "path": "DISPATCH-PROMPTS.md",
       "kind": "prompts_archive",
-      "sha256": "a42e8983bcb65fc5fe50e3c5ff24ada58dc2b48874b02a6fa6869870493bf7c2",
-      "bytes": 23919
+      "sha256": "603d056c127310ebb423b2629cf7332637173f0e7d3c7843fed240501f19582a",
+      "bytes": 23996
     },
     {
       "path": "DISPATCH.md",
@@ -20,97 +20,97 @@
     {
       "path": "agent-brennan-layout-uic-review-spec.md",
       "kind": "task_doc",
-      "sha256": "c7194cacd527517652233d90256b3f6cae4deecb6e8a801b87ec9d5533933fd9",
+      "sha256": "517181ee547e760289a85731ae5880fc002a4551b4f1cff078d1827c8f1c06db",
       "bytes": 14212
     },
     {
       "path": "agent-fantem-shell-kit-build.md",
       "kind": "task_doc",
-      "sha256": "5cfc25d8adc307398eca166d89572135caa4dddcbb1e04a6f6240f0003f41382",
+      "sha256": "5a61a88b66261e5ae957a62bb0773408214731da5c40ccc32580897b6226fd8a",
       "bytes": 13706
     },
     {
       "path": "agent-fenn-shell-test-e2e.md",
       "kind": "task_doc",
-      "sha256": "1ea70e9913845511bebc13a9d29d3a101b3a5dac061d87693e0ff5860ea3c3b2",
-      "bytes": 11843
+      "sha256": "d6ac75b6d811952169d0dac5abca0bfa09e03c1e93865035dabbbe866eb35e82",
+      "bytes": 13384
     },
     {
       "path": "agent-fenn-shell-test-unit.md",
       "kind": "task_doc",
-      "sha256": "b9c97d39d99a51ef8a77fd6613b2ee90298ac6b81bc71b1210fdf096644e61b1",
+      "sha256": "246406c25e86d72dbd673840c5ab487179105743ec408e420096fcac3fd32ace",
       "bytes": 12927
     },
     {
       "path": "agent-ghost-clients-build.md",
       "kind": "task_doc",
-      "sha256": "8e7fd91c3bb4b75b9cdaf1a72253cc964ad3751b6dbd98e9059bbee5a15ebff2",
+      "sha256": "059c12dc0357bec200215da3abbc348f74d0b5c626afc24fbea67cb066c47e11",
       "bytes": 11541
     },
     {
       "path": "agent-ghost-decisions-build.md",
       "kind": "task_doc",
-      "sha256": "8ac5706fc2a9290fbcb5ee6b6e6cedd6196d392cd9d9096cd7235c2839c28f37",
+      "sha256": "740f2bbbcd2314805e1ff1e774c1e6e6b185b97afff033165b955bb271554af0",
       "bytes": 12167
     },
     {
       "path": "agent-ghost-mock-build.md",
       "kind": "task_doc",
-      "sha256": "38e7443d9b4a3f83eecca90edea48395fbe5864e2e2e5a26e7b9c7604f5c712d",
+      "sha256": "051b60312d61d6ec4beba6dbf9645f3c7ba498c98fb3c6d03edd9b0d392c3a8e",
       "bytes": 11926
     },
     {
       "path": "agent-leah-shell-review-a11y-perf.md",
       "kind": "task_doc",
-      "sha256": "a0fdd563ecfce1761dd7b455fe38e37eecdb0eb4ed7b9808e9c32049b5915d52",
+      "sha256": "a8a89595ebd172cf6ff7543b0f4c7d0b48af2b32b74abae43f02ceaf555ed599",
       "bytes": 12254
     },
     {
       "path": "agent-leon-missions-build.md",
       "kind": "task_doc",
-      "sha256": "0bfbe1fd1f99c5afdd8e8a0bca9693012128b6d6bec6b45c465167841f69da0a",
+      "sha256": "3badf99ceaa5ecbd543a30747ed0bbad06a9e0b0bd1c205143e830c9068da586",
       "bytes": 11969
     },
     {
       "path": "agent-leon-system-build.md",
       "kind": "task_doc",
-      "sha256": "a6ec7123adefddffd39b0fd338123bd5b96ab3e69c1ee6fd8274a2807a74ac09",
+      "sha256": "13212027a328d4eb4f69bf5d6e3422397b3b237701424b0ec718d623cf4cc0e8",
       "bytes": 12708
     },
     {
       "path": "agent-nemi-shell-styles-build.md",
       "kind": "task_doc",
-      "sha256": "4d112a72f32a2735ab5b049f0ec40e3610b2f620ab7cd4270b14ad0d73e5559f",
+      "sha256": "f0bcf0dc1b74a19d5cbe71c3b2ab62620d6be68da9aa3627d692504587278fd5",
       "bytes": 12177
     },
     {
       "path": "agent-zero-clients-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "7adf5fd7faf24630553f93cefb6bbb83af9adfe7de3ce9d3fc8e0406d07e2d62",
+      "sha256": "5a46ace3aba6062b7deb295dc56681c179e2feaeaf9b12c956f91f9e6af1871c",
       "bytes": 10993
     },
     {
       "path": "agent-zero-decisions-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "c369fd02baf218bc6278f790eaa999f2f6cbf93a5ba02862c93bcdd16aae096a",
+      "sha256": "90f38122fc2a5739ce182d936fd9951ca298d4070ec282aa0ed2ab53f2877186",
       "bytes": 11451
     },
     {
       "path": "agent-zero-missions-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "0cab70295a680f71234207d999a2ef0fc309f3af294f797381f2e86ccb9a832e",
+      "sha256": "1bac04f0f4cf980c0bfd4ee3e1a1dcce8b1d0900dfc5c120706d64069df65ba0",
       "bytes": 11198
     },
     {
       "path": "agent-zero-shell-kit-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "cc24513dc988c518f9732b60e95cbb119463039dbd43c3ebca0cfa0f12f4ae1b",
+      "sha256": "789420096540414ea9ab27012e8df0d5b16100e6202f1c41b73b3dcc476ff593",
       "bytes": 11393
     },
     {
       "path": "agent-zero-system-review-frontend.md",
       "kind": "task_doc",
-      "sha256": "dd6ab2b67f9da6a3ecf97d1594fdc03a59bd3e1071ec42fe93268aa22855a90f",
+      "sha256": "101f79b341dd2db973a9fc687b9e9b794e987cf18c0ff5bf8c99c75fe2b551da",
       "bytes": 11378
     },
     {

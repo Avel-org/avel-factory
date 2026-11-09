@@ -26,14 +26,14 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 8. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
 9. `docs/agent-dispatch/avel/procedures.md`: this sprint's source
 10. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
-11. `docs/ui-contracts/shell-layout.md`: sections 1 to 5 and 9 (SH-20 to SH-24, SH-26)
+11. `docs/ui-contracts/shell-layout.md`: sections 1 to 5 and 9 (SH-20 to SH-24)
 12. `docs/ui-contracts/kit-v1.9.md`: section 4, SH-25 (D16)
 13. `docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md`: your a7: UC-32 (5abf046 on frontend/sprint-01/agent-fenn-decisions-test-e2e-a7)
 14. `docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-test-e2e.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
+The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
 
 **The rest of this sprint:**
 
@@ -57,11 +57,17 @@ The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-2
 
 Do them in order. Finish each one, verified, before the next.
 
-### FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-26 (P0)
+### FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-25 (P0)
 
 - **Required:** Each test carries its ID and is marked to fail until its build; UC-29 to UC-31 unchanged and passing; retries 0
 - **Verify:** `pnpm --filter @avel/web exec playwright test 2>&1 | tail -25 && git diff "$(git merge-base main HEAD)"..HEAD --stat`
 - **Expected:** the suite passes with the new tests as expected failures; only apps/web/e2e and playwright.config.ts changed
+
+### FENN-02: Review evidence: a screenshot and a video per page at three sizes (P1)
+
+- **Required:** evidence.spec.ts covers every nav page at 1280, 900 and 390; skipped unless AVEL_EVIDENCE is set; writes only under $AVEL_EVIDENCE; the default run is unchanged
+- **Verify:** `d=$(mktemp -d) && AVEL_EVIDENCE=$d pnpm --filter @avel/web exec playwright test evidence 2>&1 | tail -5; ls $d | head -20; pnpm --filter @avel/web exec playwright test --list 2>&1 | grep -c evidence`
+- **Expected:** a .png and a .webm per page and size in the folder (from the stand-in server until the shell is built); the default --list shows no evidence tests
 
 **Notes:**
 
@@ -69,6 +75,9 @@ Do them in order. Finish each one, verified, before the next.
 - e2e/** and playwright.config.ts are locked (decisions-e2e). INT's decision in this plan: change them with AVEL_LOCK_OVERRIDE="shell e2e a1: <what> (INT, shell-layout.md)". Add a 900x1000 project beside phone and desk.
 - Mark each new test test.fail() until its build lands (procedures rule 1). Retries 0, no fixed sleep. SH-24 waits for the AppShell element's data-hydrated.
 - SH-25's harness is kit-v1.9.md section 4's. If it can't load the source files, stop and report it with another harness inside your territory.
+- Review evidence (INT, 2026-11-08): e2e/evidence.spec.ts walks each page in the nav (shell-layout.md section 5, and Decisions) at 1280, 900 and 390, and saves one full-page screenshot and one video per page and size. It asserts nothing, so it isn't a fail-first test and never marks main red.
+- It runs only when AVEL_EVIDENCE is set (playwright.config.ts: testIgnore evidence.spec.ts otherwise; video "on" and screenshot "on" only for that spec). The default suite and its speed are unchanged.
+- Output goes to $AVEL_EVIDENCE (a folder outside the repo, given per attempt), never into git: <page>-<size>.png and <page>-<size>.webm. Any build or review dispatch can run AVEL_EVIDENCE=<dir> pnpm --filter @avel/web exec playwright test evidence and list the files in its completion report.
 
 ## 5. Territory
 
@@ -141,6 +150,7 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | FENN-01 | DONE / PARKED / BLOCKED | |
+| FENN-02 | DONE / PARKED / BLOCKED | |
 
 ## Tests
 Each test: its scenario ID, its file and name, and its failure line (or "pins existing behaviour: passes").
@@ -193,7 +203,8 @@ Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-tes
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-26
+- FENN-01: UC-32 in (5abf046), the 900 project, and SH-20 to SH-25
+- FENN-02: Review evidence: a screenshot and a video per page at three sizes
 
 You may change only: apps/web/e2e/**, apps/web/playwright.config.ts, docs/agent-dispatch/frontend/sprint-02/agent-fenn-shell-test-e2e-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
