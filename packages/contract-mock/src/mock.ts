@@ -1,14 +1,17 @@
 import {
+  type ClientDto,
   CONTRACT_VERSION_HEADER,
   contract,
   type ErrorBody,
   errorMap,
   IDEMPOTENCY_KEY_HEADER,
+  type MissionDto,
   type ProposalDto,
   REQUEST_ID_HEADER,
 } from "@avel/contract";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { implement, type ORPCError, ValidationError } from "@orpc/server";
+import { fixtures } from "#fixtures";
 import {
   decisionChoices,
   type FactorySeed,
@@ -20,7 +23,8 @@ import {
 } from "#rows";
 
 /**
- * The contract mock (UI contract section 2): m1's routes 52, 53 and 54 served through
+ * The contract mock (UI contract section 2): m1's routes 52, 53 and 54, and route 19
+ * (missions) and route 8 (clients) for the shell (shell-layout.md section 4), served through
  * `@avel/contract` by oRPC's OpenAPI handler, so paths, input validation, success statuses
  * and the error body are the contract's. Every error is m1's `ErrorBody`.
  */
@@ -28,7 +32,7 @@ import {
 /** The operator the mock records as `resolvedBy`: a fixed UUIDv7 (INT). */
 export const MOCK_OPERATOR_ID = "0193a000-0000-7000-8000-000000000001";
 
-export type MockRoute = 52 | 53 | 54;
+export type MockRoute = 8 | 19 | 52 | 53 | 54;
 
 export type MockFailure =
   | { status: number; code: string; data?: unknown; message?: string }
@@ -78,13 +82,18 @@ export interface Mock {
   reset(): void;
 }
 
-/** Route 52 serves this many rows when the request sends no `limit` (provisional: finding 25). */
+/**
+ * Routes 52, 19 and 8 serve this many rows when the request sends no `limit` (provisional:
+ * finding 25).
+ */
 const DEFAULT_LIMIT = 50;
 
 type Json = Record<string, unknown>;
 
 /** The route a request is for, by method and path; null for anything else. */
 function routeOf(method: string, path: string): MockRoute | null {
+  if (method === "GET" && path === "/api/clients") return 8;
+  if (method === "GET" && path === "/api/missions") return 19;
   if (method === "GET" && path === "/api/pending-decisions") return 52;
   if (method === "GET" && /^\/api\/proposals\/[^/]+$/.test(path)) return 53;
   if (method === "POST" && /^\/api\/proposals\/[^/]+\/decisions$/.test(path)) return 54;
@@ -165,8 +174,40 @@ function compareRows(a: [number, string], b: [number, string]): number {
   return a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0;
 }
 
-export function createMock(opts: { contractVersion: string; now?: () => Date }): Mock {
+/** Routes 19 and 8: one page of `rows`, oldest first by createdAt and then id. */
+function pageOf<T extends { id: string; createdAt: string }>(
+  rows: readonly T[],
+  input: { cursor?: string | undefined; limit?: number | undefined },
+  invalidCursor: () => Error,
+): { items: T[]; nextCursor: string | null } {
+  const limit = input.limit ?? DEFAULT_LIMIT;
+  const after = input.cursor === undefined ? null : decodeCursor(input.cursor);
+  if (input.cursor !== undefined && after === null) throw invalidCursor();
+  const listed = rows
+    .map((row) => ({ row, key: [Date.parse(row.createdAt), row.id] as [number, string] }))
+    .sort((a, b) => compareRows(a.key, b.key))
+    .filter((entry) => after === null || compareRows(entry.key, after) > 0);
+  const page = listed.slice(0, limit);
+  const last = page.at(-1);
+  const nextCursor =
+    listed.length > limit && last !== undefined
+      ? encodeCursor(last.row.createdAt, last.row.id)
+      : null;
+  return { items: page.map((entry) => structuredClone(entry.row)), nextCursor };
+}
+
+export function createMock(opts: {
+  contractVersion: string;
+  now?: () => Date;
+  /** Route 19's missions; `fixtures.step1Missions` by default, `[]` for none. */
+  missions?: MissionDto[];
+  /** Route 8's clients; `fixtures.step1Clients` by default, `[]` for none. */
+  clients?: ClientDto[];
+}): Mock {
   const now = opts.now ?? (() => new Date());
+  // Read only: no route in the mock writes a mission or a client, so reset keeps them.
+  const missions = structuredClone(opts.missions ?? fixtures.step1Missions);
+  const clients = structuredClone(opts.clients ?? fixtures.step1Clients);
   const proposals = new Map<string, StoredProposal>();
   let factoryChanges: FactorySeed[] = [];
   let injected: Json[] = [];
@@ -208,7 +249,30 @@ export function createMock(opts: { contractVersion: string; now?: () => Date }):
 
   const os = implement(contract);
 
+  const invalidCursor =
+    (errors: { BAD_REQUEST: (o: { message: string; data: unknown }) => Error }) => () =>
+      errors.BAD_REQUEST({
+        message: "invalid cursor",
+        data: { field: "cursor", issues: [{ field: "cursor", message: "invalid cursor" }] },
+      });
+
   const router = {
+    clients: {
+      list: os.clients.list.handler(({ input, errors }) =>
+        pageOf(clients, input, invalidCursor(errors)),
+      ),
+    },
+
+    missions: {
+      list: os.missions.list.handler(({ input, errors }) =>
+        pageOf(
+          input.kind === undefined ? missions : missions.filter((row) => row.kind === input.kind),
+          input,
+          invalidCursor(errors),
+        ),
+      ),
+    },
+
     decisions: {
       listPending: os.decisions.listPending.handler(({ input, errors }) => {
         const limit = input.limit ?? DEFAULT_LIMIT;
