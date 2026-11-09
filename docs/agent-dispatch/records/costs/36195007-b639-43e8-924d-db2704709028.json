@@ -1,0 +1,24 @@
+{
+ "session_id": "36195007-b639-43e8-924d-db2704709028",
+ "name": "ZERO",
+ "branch": "main",
+ "cwd": "/home/jt0629/projects/avel-factory",
+ "first_at": "2026-11-09T00:13:01.965Z",
+ "last_at": "2026-11-09T00:36:20.613Z",
+ "updated_at": "2026-11-09T00:36:24Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 174,
+   "output": 117381,
+   "cache_write_5m": 0,
+   "cache_write_1h": 320108,
+   "cache_read": 15449345,
+   "messages": 85
+  }
+ },
+ "cost_usd": 7.999,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 7.999
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

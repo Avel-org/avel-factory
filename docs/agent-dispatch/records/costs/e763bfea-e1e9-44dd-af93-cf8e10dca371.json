@@ -1,0 +1,24 @@
+{
+ "session_id": "e763bfea-e1e9-44dd-af93-cf8e10dca371",
+ "name": "BRENNAN layout-uic-review-spec a1",
+ "branch": "frontend/sprint-02/agent-brennan-layout-uic-review-spec-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-02-agent-brennan-layout-uic-review-spec-a1",
+ "first_at": "2026-11-09T04:28:52.303Z",
+ "last_at": "2026-11-09T04:37:49.760Z",
+ "updated_at": "2026-11-09T04:38:00Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 110,
+   "output": 45118,
+   "cache_write_5m": 0,
+   "cache_write_1h": 177604,
+   "cache_read": 5844394,
+   "messages": 55
+  }
+ },
+ "cost_usd": 3.4925,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 3.4925
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
