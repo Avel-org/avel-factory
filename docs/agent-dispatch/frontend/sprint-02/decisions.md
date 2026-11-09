@@ -144,3 +144,11 @@ Brennan's a1 (report fac0a54) failed revision 1 on one P1, five P2s and one P3. 
 | 05 | SH-25 |
 | 06 | SH-12 to SH-14 |
 | 07 | `/`'s title, Ghost named, focus mode's padding through `data-tabbar`, and SH-24's drawn elements |
+
+## 2026-11-08: INT confirms the shell layout's three open calls
+
+- **Sprint-02's scope:** the shell plus All projects, Progress, Clients and Settings. The other ten pages go to sprint-03, and the nav is built from routes.
+- **AP's two departures stay,** because route 54 refuses both: `stale` disables Reject too, and `notAllowed` draws no buttons (`kit-v1.9.md` section 1, as written).
+- **Watch the work (`…/live`)** goes to `factory`.
+
+The contracts and the plan already say this, so nothing is re-rendered. Next is Brennan's layout-uic review, on Int's word.
