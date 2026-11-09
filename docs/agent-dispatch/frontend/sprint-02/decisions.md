@@ -87,3 +87,60 @@ Brennan's a1 (report fac0a54) failed revision 1 on one P1, five P2s and one P3. 
   - SH-24 compares only drawn elements, listed per width.
 - **The plan:** Brennan's re-review is his shell-uic a2. Fenn's dispatches carry the new IDs, Fantem waits for both test dispatches, and Leah reads the 150/160 table. Nothing else in the order changes.
 - **INT stops here for now:** no dispatch until INT is back. Next is Brennan's re-review (shell-uic a2), then R1.
+
+## 2026-11-08: Shell layout from v1.9 (INT: the artifact wins; Int's brief; procedures d28e78c)
+
+`docs/ui-contracts/shell-layout.md` (14,999 bytes) and `kit-v1.9.md` replace `app-shell.md`, which is deleted and was never built. Brennan's shell-uic a2 is withdrawn. The new pair gets one first review (`layout-uic`, procedures rule 2).
+
+**The shell:**
+- **What it is:** v1.9's shell as the brief lays it out: the rounded canvas, the 264px sidebar with ⌘B collapse to 64px, Jump to and the ⌘K palette, the brief's five groups, project rows with their page tree, the header with Theme, Depth and Display, the tab bar and focus mode.
+- **Preferences** live in cookies: `avel-theme`, `avel-depth` (default glass, as in DL), `avel-rail` and `avel-project`. So the first paint is right and nothing moves at hydration.
+- **The rounded shell (S1):** DL declares `--canvas-inset` and `--radius-dialog` for "the app canvas" but draws no rule. At 1024px and wider, the page column is an inset, rounded canvas that scrolls. Below that, the window scrolls, as in DL.
+- **The highlight still glides (S4),** but only on client navigations. The server's HTML draws it on the current row.
+- **The nav is built from routes' `staticData`,** so a page appears in the sidebar and ⌘K once its route exists (the brief), and later modules add entries without touching `system`. This also replaces the stubs: there's no PlannedScreen and no "Not built yet".
+
+**What's open:**
+- **Gaps in DL and FM:**
+  - icons for the entries DL leaves planned (S5);
+  - "Gates and integration" is kept, because DL's label wins over the brief's "Gates";
+  - Progress sits at `/missions/$missionId`, as in DL, and not FM's index redirect (S13);
+  - FM names no owner for Watch the work (`…/live`), so it goes to `factory`, beside Dispatch. INT can move it.
+- **The live footer waits for W2 (S9).** Without a stream, "Live" would be false.
+- **Escalations 01 to 03:** waiting counts, project names and the onboarding step, with stand-ins: loaded rows with `+`, `Client · Package`, and no step.
+
+**Scope:**
+- **Sprint-02 builds** the shell, the mock (routes 19 and 8), missions (All projects, Progress), clients, system (Settings), and the approval page and kit on v1.9.
+- **Sprint-03 gets** the other ten pages, in rounds of 3: New project, Onboarding, Factory live, Business, Client knowledge, Library, Factory versions, Agent roster, Activity, and the project pages (Watch the work, Release, Dispatch, Plan, Gates and integration, Findings). Each copy table lives in that sprint's contract.
+- **Why sprint-02 can't take them:**
+  - at most 3 dispatches run at once, and reviews count against that;
+  - FM allows one module per dispatch;
+  - the sidebar's project rows need `missions` and `clients` before `system`, so `system` writes their route files this sprint.
+
+**v1.9 on the built work (kit-v1.9.md):**
+- **The kit:** `busy` and `reasonPlacement` on Button; DecisionTag's busy and reasons; ReasonDialog's tip and `ReasonField`; Dialog's exit and `DialogClose`; hover gating.
+- **The tokens:** the night `subtle`, `--av-d-exit`, `--av-ease-in`, and DL's two `--av-page-bg` blocks.
+- **`base.css`:** `a:hover` is gated.
+- **AP's API-driven departures stay,** because route 54 refuses what DL would allow: D8 keeps `stale` with both buttons disabled, and `notAllowed` with no buttons. INT can overrule.
+
+**The budget:** procedures rule 7's CI check replaces app-shell's 150/160 table and the thin-link cut.
+
+**Rounds:**
+- R0: Brennan's review.
+- R1: Fenn unit, Fenn e2e, and Ghost's mock.
+- R2: Fantem's kit and Nemi's styles.
+- R3: Leon's missions and Ghost's clients.
+- R4: Leon's system, then Ghost's decisions follow-up.
+- R5: Leah.
+- My reviews fill the free slots.
+
+**Brennan's app-shell a1 findings:**
+
+| Finding | Where it went |
+| --- | --- |
+| 01 | Section 0: the final cascade |
+| 02 | S3 and S5; `.lib-route` isn't drawn |
+| 03 | Section 6: who writes the route files; the nav from routes, with no stubs |
+| 04 | Rule 7 replaces the cut |
+| 05 | SH-25 |
+| 06 | SH-12 to SH-14 |
+| 07 | `/`'s title, Ghost named, focus mode's padding through `data-tabbar`, and SH-24's drawn elements |

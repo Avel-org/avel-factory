@@ -1,6 +1,6 @@
 # ZERO: shell-kit review-frontend
 
-Frontend sprint-02 · step 1 · The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it
+Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
 
 Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the plan and re-render.
 
@@ -18,40 +18,48 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 
 1. `.claude/agents/zero.md`: your role, your Read first list and your Learned rules
 2. `docs/agent-dispatch/frontend/sprint-02/codebase-analysis.md`: the stack, the layout and the commands
-3. `docs/ui-contracts/app-shell.md`: this sprint's source
-4. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
-5. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
-6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
-7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
-8. `docs/ui-contracts/app-shell.md`: sections 1, 2 and 6
-9. `docs/ui-contracts/decisions-approval-page.md`: section 4, D16 and K1
-10. `docs/agent-dispatch/frontend/sprint-02/agent-zero-shell-kit-review-frontend.md`: this task doc: follow it exactly
+3. `docs/ui-contracts/shell-layout.md`: this sprint's source
+4. `docs/ui-contracts/kit-v1.9.md`: this sprint's source
+5. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
+6. `docs/design/AVEL Shell Layout brief v1.9.md`: this sprint's source
+7. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: this sprint's source
+8. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
+9. `docs/agent-dispatch/avel/procedures.md`: this sprint's source
+10. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
+11. `docs/ui-contracts/shell-layout.md`: sections 0 to 3 and 7
+12. `docs/ui-contracts/kit-v1.9.md`: section 1
+13. `docs/agent-dispatch/frontend/sprint-02/agent-zero-shell-kit-review-frontend.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-Review Fantem's shell kit against app-shell.md sections 1 and 2 and the approval page's D16.
+Review Fantem's shell kit against shell-layout.md sections 1 to 3 and kit-v1.9.md section 1.
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
-- `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
-- `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
-- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
-- `agent-ghost-decisions-build`: The approval page on the shell: revision 15 (layout=desk, no viewport read), loadReasonDialog instead of the deep import, ScreenHeader, and the page's padding and stylesheets (app-shell.md section 4).
-- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against app-shell.md section 3.
-- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against app-shell.md section 4 and the approval page's revision 15.
-- `agent-leah-shell-review-a11y-perf`: The shell and / on main once everything in sprint-02 is merged: the 150 kB budget, layout shift by app-shell.md section 6, axe, the sheet, skip link and targets, and D16's focus order.
+- `agent-brennan-layout-uic-review-spec`: Review docs/ui-contracts/shell-layout.md and kit-v1.9.md, the one review before the build (procedures rule 2), against Int's brief, the design library v1.9 and the Frontend Map.
+- `agent-fenn-shell-test-unit`: The unit and screen tests for the shell, the v1.9 kit, the nav model, the four pages, the approval page on the shell and the styles (SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
+- `agent-ghost-mock-build`: The contract mock serves route 19 (GET /api/missions) and route 8 (GET /api/clients), with fixtures that match fixtures.step1's decision rows (shell-layout.md section 4).
+- `agent-fantem-shell-kit-build`: The kit's shell from v1.9: AppShell, ScreenHeader, JumpPalette (lazy), the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
+- `agent-nemi-shell-styles-build`: The styles on v1.9: tokens.css copied again, base.css's hover gate, the new chrome.css, and the size-matched font fallbacks (kit-v1.9.md section 3).
+- `agent-leon-missions-build`: The missions module's first cut: route 19's query options through index.ts, and the All projects and Progress screens through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-ghost-clients-build`: The clients module's first cut: route 8's query options through index.ts, and the Clients screen through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-zero-missions-review-frontend`: Review Leon's missions module against shell-layout.md sections 4 and 5.
+- `agent-zero-clients-review-frontend`: Review Ghost's clients module against shell-layout.md sections 4 and 5.
+- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, palette items, keys, cookies), Settings, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+- `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
+- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
+- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
+- `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, palette, skip link, targets, and D16's focus order.
 
 ## 4. Tasks
 
 Do them in order. Finish each one, verified, before the next.
 
-### ZERO-01: AppShell, ScreenHeader and D16: names, props, aria, the sheet's focus behaviour, every value traced to DL or a token, nothing read from the viewport in JavaScript; D16's check re-run, not taken from the report (P0)
+### ZERO-01: Names, props, ARIA, sheet and palette focus, every value traced to DL v1.9 or a token, nothing read from the viewport, the palette out of the first load; D16 re-run (P0)
 
-- **Verify:** `pnpm --filter @avel/web test && pnpm --filter "@avel/web..." build >/dev/null && git diff "$(git merge-base main HEAD)"..HEAD -- apps/web/src/kit/kit.css | head -400`
-- **Expected:** the tests pass; the build exits 0; the kit.css diff, each new value traced
+- **Verify:** `pnpm --filter @avel/web test && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js' && git diff "$(git merge-base main HEAD)"..HEAD -- apps/web/src/kit/kit.css | head -400`
+- **Expected:** the tests pass; the chunk list; the kit.css diff, each new value traced
 
 ## 5. Territory
 
@@ -65,11 +73,14 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/e2e/**` (FENN, locked tests)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/kit/**` (FANTEM)
+- `apps/web/src/modules/clients/**` (GHOST)
 - `apps/web/src/modules/decisions/**` (GHOST)
+- `apps/web/src/modules/missions/**` (LEON)
 - `apps/web/src/modules/system/**` (LEON)
 - `apps/web/src/routes/**` (LEON)
 - `apps/web/src/styles/**` (NEMI)
 - `apps/web/test/**` (FENN, locked tests)
+- `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
 - `packages/contract/**` (the other team)
@@ -166,14 +177,14 @@ Say the same in the session. The operator takes it from there.
 This is your first message. `/dispatch` and `scripts/dispatch.sh` send it; the factory's runner will too.
 
 ```text
-You are ZERO on avel-factory, frontend sprint-02 (step 1: The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it).
+You are ZERO on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
 Dispatch: agent-zero-shell-kit-review-frontend. Branch: frontend/sprint-02/agent-zero-shell-kit-review-frontend-a<attempt>, in your own worktree.
 
 Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-zero-shell-kit-review-frontend.md in full. It is your whole briefing.
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- ZERO-01: AppShell, ScreenHeader and D16: names, props, aria, the sheet's focus behaviour, every value traced to DL or a token, nothing read from the viewport in JavaScript; D16's check re-run, not taken from the report
+- ZERO-01: Names, props, ARIA, sheet and palette focus, every value traced to DL v1.9 or a token, nothing read from the viewport, the palette out of the first load; D16 re-run
 
 You may change only: docs/agent-dispatch/frontend/sprint-02/agent-zero-shell-kit-review-frontend-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/shell-kit-zero-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

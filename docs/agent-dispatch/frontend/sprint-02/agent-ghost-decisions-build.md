@@ -1,6 +1,6 @@
 # GHOST: decisions build
 
-Frontend sprint-02 · step 1 · The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it
+Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
 
 Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the plan and re-render.
 
@@ -10,7 +10,7 @@ Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the
 - **This dispatch:** `agent-ghost-decisions-build` (build), module `decisions`.
 - **Your branch:** `frontend/sprint-02/agent-ghost-decisions-build-a<attempt>`. Check with `git branch --show-current`. One session is one attempt: never switch branches, push, rebase or force anything.
 - **Your worktree:** `../avel-wt/frontend-sprint-02-agent-ghost-decisions-build-a<attempt>`, made by `scripts/agent.sh`.
-- **Starts:** at once (no test dispatch in this module); after `agent-fantem-shell-kit-build`, `agent-fenn-shell-test-unit`, `agent-fenn-shell-test-e2e` is merged into main.
+- **Starts:** at once (no test dispatch in this module); after `agent-fantem-shell-kit-build`, `agent-ghost-clients-build` is merged into main.
 
 ## 2. Context: read before you act
 
@@ -18,54 +18,56 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 
 1. `.claude/agents/ghost.md`: your role, your Read first list and your Learned rules
 2. `docs/agent-dispatch/frontend/sprint-02/codebase-analysis.md`: the stack, the layout and the commands
-3. `docs/ui-contracts/app-shell.md`: this sprint's source
-4. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
-5. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
-6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
-7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
-8. `docs/ui-contracts/app-shell.md`: section 4, the whole of this task
-9. `docs/ui-contracts/decisions-approval-page.md`: sections 4 (D16, R7), 5 ('Phone', the marker, 'Styles and loading') and 7 (UC-32)
-10. `docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md`: Leon's a3: how the marker waits for the final layout today, which must still hold
-11. `docs/agent-dispatch/frontend/sprint-02/agent-ghost-decisions-build.md`: this task doc: follow it exactly
+3. `docs/ui-contracts/shell-layout.md`: this sprint's source
+4. `docs/ui-contracts/kit-v1.9.md`: this sprint's source
+5. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
+6. `docs/design/AVEL Shell Layout brief v1.9.md`: this sprint's source
+7. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: this sprint's source
+8. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
+9. `docs/agent-dispatch/avel/procedures.md`: this sprint's source
+10. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
+11. `docs/ui-contracts/kit-v1.9.md`: section 2, the whole task
+12. `docs/ui-contracts/decisions-approval-page.md`: sections 4 (D16, R7), 5 ('Phone', the marker) and 7 (UC-32)
+13. `docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md`: Leon's a3: how the marker waits for the final layout
+14. `docs/agent-dispatch/frontend/sprint-02/agent-ghost-decisions-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The approval page on the shell: revision 15 (layout=desk, no viewport read), loadReasonDialog instead of the deep import, ScreenHeader, and the page's padding and stylesheets (app-shell.md section 4).
+The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
-- `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
-- `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
-- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
-- `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against app-shell.md sections 1 and 2 and the approval page's D16.
-- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against app-shell.md section 3.
-- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against app-shell.md section 4 and the approval page's revision 15.
-- `agent-leah-shell-review-a11y-perf`: The shell and / on main once everything in sprint-02 is merged: the 150 kB budget, layout shift by app-shell.md section 6, axe, the sheet, skip link and targets, and D16's focus order.
+- `agent-brennan-layout-uic-review-spec`: Review docs/ui-contracts/shell-layout.md and kit-v1.9.md, the one review before the build (procedures rule 2), against Int's brief, the design library v1.9 and the Frontend Map.
+- `agent-fenn-shell-test-unit`: The unit and screen tests for the shell, the v1.9 kit, the nav model, the four pages, the approval page on the shell and the styles (SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
+- `agent-ghost-mock-build`: The contract mock serves route 19 (GET /api/missions) and route 8 (GET /api/clients), with fixtures that match fixtures.step1's decision rows (shell-layout.md section 4).
+- `agent-fantem-shell-kit-build`: The kit's shell from v1.9: AppShell, ScreenHeader, JumpPalette (lazy), the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
+- `agent-nemi-shell-styles-build`: The styles on v1.9: tokens.css copied again, base.css's hover gate, the new chrome.css, and the size-matched font fallbacks (kit-v1.9.md section 3).
+- `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against shell-layout.md sections 1 to 3 and kit-v1.9.md section 1.
+- `agent-leon-missions-build`: The missions module's first cut: route 19's query options through index.ts, and the All projects and Progress screens through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-ghost-clients-build`: The clients module's first cut: route 8's query options through index.ts, and the Clients screen through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-zero-missions-review-frontend`: Review Leon's missions module against shell-layout.md sections 4 and 5.
+- `agent-zero-clients-review-frontend`: Review Ghost's clients module against shell-layout.md sections 4 and 5.
+- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, palette items, keys, cookies), Settings, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
+- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
+- `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, palette, skip link, targets, and D16's focus order.
 
 ## 4. Tasks
 
 Do them in order. Finish each one, verified, before the next.
 
-### GHOST-01: Every DecisionTag drawn with layout="desk"; no viewport read; ReasonDialog through loadReasonDialog with no import past kit/index.ts (P0)
+### GHOST-01: Every DecisionTag with layout="desk", no viewport read, loadReasonDialog, ScreenHeader, .dec-head rules and .dec-page padding gone, the stylesheet list the module's own (P0)
 
-- **Required:** No matchMedia, useIsPhone or kit/<File> import in the module; UC-32 passes; every locked decisions test passes
-- **Verify:** `! grep -rnE 'matchMedia|useIsPhone|kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web exec vitest run test/modules/decisions`
-- **Expected:** no line listed; the decisions tests pass
-
-### GHOST-02: The header as ScreenHeader (eyebrow Home, h1 Decisions, the lead); .dec-head, .dec-eyebrow, .dec-title and .dec-lead out of decisions.css; .dec-page without its padding; decisionsScreenStylesheets without kitStylesheetHref (P0)
-
-- **Required:** SH-12 and the page's header tests pass; UC-29 to UC-32 pass on the shell (scratch merge with Leon's branch if needed); / has kit.css and decisions.css linked exactly once each
-- **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && git diff "$(git merge-base main HEAD)"..HEAD --stat`
-- **Expected:** the tests pass; the end-to-end result, on main or on the scratch merge (say which); only apps/web/src/modules/decisions changed
+- **Required:** SH-12 passes; UC-29 to UC-32 pass on the shell (scratch merge if needed); every locked decisions test passes
+- **Verify:** `! grep -rnE 'matchMedia|useIsPhone|kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web test && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** no line listed; the tests pass; only apps/web/src/modules/decisions changed
 
 **Notes:**
 
-- INT names you as the builder for decisions here (FM allows another builder for a module), so the page and Leon's shell are built side by side. The module's history is Leon's: read his a3 report before you change the marker.
-- Start once Fantem's shell kit and Fenn's shell tests are merged. Your branch merges after Leon's system build: with it merged first, / would lose kit.css and its padding. Check your work on a scratch merge with Leon's branch if his isn't on main yet, and say so.
-- Report /'s first load from your build (app-shell.md section 6's one rule). Remove useIsPhone, PHONE_QUERY and every matchMedia read. Keep Leon's a3 marker rule (set in a commit after the final layout); with no switch it should hold by itself. Keep his mechanism or simplify it, and say which.
+- INT names you as this module's builder here. Read Leon's a3 report before you change the marker.
+- Your branch merges after Leon's system build (procedures rule 1: nothing merges until green on the merged tree). Check your work on a scratch merge with his branch, and say so.
+- Remove useIsPhone, PHONE_QUERY and every matchMedia read. Report /'s first load.
 
 ## 5. Territory
 
@@ -79,10 +81,13 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/e2e/**` (FENN, locked tests)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/kit/**` (FANTEM)
+- `apps/web/src/modules/clients/**` (GHOST)
+- `apps/web/src/modules/missions/**` (LEON)
 - `apps/web/src/modules/system/**` (LEON)
 - `apps/web/src/routes/**` (LEON)
 - `apps/web/src/styles/**` (NEMI)
 - `apps/web/test/**` (FENN, locked tests)
+- `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
 - `packages/contract/**` (the other team)
@@ -137,7 +142,6 @@ Each Part 2 file: read, or missing. The branch and its start commit. Each Part 7
 | Task | Status | Commit |
 | --- | --- | --- |
 | GHOST-01 | DONE / PARKED / BLOCKED | |
-| GHOST-02 | DONE / PARKED / BLOCKED | |
 
 ## Contract to files
 Each contract item, done-when test or task you covered, and the files that cover it.
@@ -177,15 +181,14 @@ Say the same in the session. The operator takes it from there.
 This is your first message. `/dispatch` and `scripts/dispatch.sh` send it; the factory's runner will too.
 
 ```text
-You are GHOST on avel-factory, frontend sprint-02 (step 1: The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it).
+You are GHOST on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
 Dispatch: agent-ghost-decisions-build. Branch: frontend/sprint-02/agent-ghost-decisions-build-a<attempt>, in your own worktree.
 
 Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-ghost-decisions-build.md in full. It is your whole briefing.
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- GHOST-01: Every DecisionTag drawn with layout="desk"; no viewport read; ReasonDialog through loadReasonDialog with no import past kit/index.ts
-- GHOST-02: The header as ScreenHeader (eyebrow Home, h1 Decisions, the lead); .dec-head, .dec-eyebrow, .dec-title and .dec-lead out of decisions.css; .dec-page without its padding; decisionsScreenStylesheets without kitStylesheetHref
+- GHOST-01: Every DecisionTag with layout="desk", no viewport read, loadReasonDialog, ScreenHeader, .dec-head rules and .dec-page padding gone, the stylesheet list the module's own
 
 You may change only: apps/web/src/modules/decisions/**, docs/agent-dispatch/frontend/sprint-02/agent-ghost-decisions-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

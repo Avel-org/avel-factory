@@ -1,6 +1,6 @@
 # FANTEM: shell-kit build
 
-Frontend sprint-02 · step 1 · The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it
+Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
 
 Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the plan and re-render.
 
@@ -18,63 +18,70 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 
 1. `.claude/agents/fantem.md`: your role, your Read first list and your Learned rules
 2. `docs/agent-dispatch/frontend/sprint-02/codebase-analysis.md`: the stack, the layout and the commands
-3. `docs/ui-contracts/app-shell.md`: this sprint's source
-4. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
-5. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
-6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
-7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
-8. `docs/ui-contracts/app-shell.md`: sections 0 (the cascade rule), 1 and 2, S1 to S8, SH-01 to SH-07, SH-14 and SH-25
-9. `docs/ui-contracts/decisions-approval-page.md`: section 4: D16 (revision 15) and K1
-10. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: the v1.6 layout layer: .lib-app, .lib-aside, .lib-rail, .lib-nav*, .lib-topbar, .lib-sheet*, .lib-tabbar, .lib-tab*, .lib-skip, .scr-head, focus mode; and the rail's markup (function BV) and the tab bar's ($me)
-11. `docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md`: D16: what moves today, rect by rect
-12. `docs/agent-dispatch/frontend/sprint-02/agent-fantem-shell-kit-build.md`: this task doc: follow it exactly
+3. `docs/ui-contracts/shell-layout.md`: this sprint's source
+4. `docs/ui-contracts/kit-v1.9.md`: this sprint's source
+5. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
+6. `docs/design/AVEL Shell Layout brief v1.9.md`: this sprint's source
+7. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: this sprint's source
+8. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
+9. `docs/agent-dispatch/avel/procedures.md`: this sprint's source
+10. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
+11. `docs/ui-contracts/shell-layout.md`: sections 0 to 3 and 7
+12. `docs/ui-contracts/kit-v1.9.md`: section 1
+13. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: the CSS for .lib-*, .scr-head and the palette, and the bundled functions QV (rail), _me (header), Fme (palette), jme (tab bar) and ea (screen header)
+14. `docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md`: D16: what moves today
+15. `docs/agent-dispatch/frontend/sprint-02/agent-fantem-shell-kit-build.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
+The kit's shell from v1.9: AppShell, ScreenHeader, JumpPalette (lazy), the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
-- `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
-- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
-- `agent-ghost-decisions-build`: The approval page on the shell: revision 15 (layout=desk, no viewport read), loadReasonDialog instead of the deep import, ScreenHeader, and the page's padding and stylesheets (app-shell.md section 4).
-- `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against app-shell.md sections 1 and 2 and the approval page's D16.
-- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against app-shell.md section 3.
-- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against app-shell.md section 4 and the approval page's revision 15.
-- `agent-leah-shell-review-a11y-perf`: The shell and / on main once everything in sprint-02 is merged: the 150 kB budget, layout shift by app-shell.md section 6, axe, the sheet, skip link and targets, and D16's focus order.
+- `agent-brennan-layout-uic-review-spec`: Review docs/ui-contracts/shell-layout.md and kit-v1.9.md, the one review before the build (procedures rule 2), against Int's brief, the design library v1.9 and the Frontend Map.
+- `agent-fenn-shell-test-unit`: The unit and screen tests for the shell, the v1.9 kit, the nav model, the four pages, the approval page on the shell and the styles (SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
+- `agent-ghost-mock-build`: The contract mock serves route 19 (GET /api/missions) and route 8 (GET /api/clients), with fixtures that match fixtures.step1's decision rows (shell-layout.md section 4).
+- `agent-nemi-shell-styles-build`: The styles on v1.9: tokens.css copied again, base.css's hover gate, the new chrome.css, and the size-matched font fallbacks (kit-v1.9.md section 3).
+- `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against shell-layout.md sections 1 to 3 and kit-v1.9.md section 1.
+- `agent-leon-missions-build`: The missions module's first cut: route 19's query options through index.ts, and the All projects and Progress screens through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-ghost-clients-build`: The clients module's first cut: route 8's query options through index.ts, and the Clients screen through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-zero-missions-review-frontend`: Review Leon's missions module against shell-layout.md sections 4 and 5.
+- `agent-zero-clients-review-frontend`: Review Ghost's clients module against shell-layout.md sections 4 and 5.
+- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, palette items, keys, cookies), Settings, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+- `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
+- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
+- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
+- `agent-leah-shell-review-a11y-perf`: The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, palette, skip link, targets, and D16's focus order.
 
 ## 4. Tasks
 
 Do them in order. Finish each one, verified, before the next.
 
-### FANTEM-01: AppShell: the frame, rail, nav, badge, top bar, sheet (inert, focus trap, Escape, scrim, return focus), tab bar with More, skip link, focus mode on the element, the shell's K1, and the chrome reset; exported with its types from kit/index.ts (P0)
+### FANTEM-01: AppShell (frame, canvas, rail with collapse and tooltip, nav with the highlight, header with Jump to, Theme, Depth and Display, sheet, tab bar, skip link, focus mode, marker) and ScreenHeader, exported with their types (P0)
 
-- **Required:** SH-01 to SH-06 and SH-14 pass unchanged; app-shell.md sections 1 and 2 exactly; no new literal without its DL source, and each the DL final value
+- **Required:** SH-01 to SH-07 and SH-14 pass with their test.fails flipped; shell-layout.md sections 1 to 3 exactly
 - **Verify:** `pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit`
 - **Expected:** typechecks; every kit test passes
 
-### FANTEM-02: ScreenHeader (DL's .scr-head, h1 title, one column under 760px) and Icon's menu (P0)
+### FANTEM-02: JumpPalette and loadJumpPalette; Icon's additions (P1)
 
-- **Required:** SH-07 passes unchanged
-- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit`
-- **Expected:** every kit test passes
+- **Required:** SH-08 passes; the palette is its own chunk
+- **Verify:** `pnpm --filter @avel/web exec vitest run test/kit && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js'`
+- **Expected:** the tests pass; the chunk list shows the palette apart
 
-### FANTEM-03: D16 (approval page contract revision 15): the desk layout draws the phone layout under @media (max-width: 899px) from kit.css alone, with the phone layout's own values; the DOM unchanged (P1)
+### FANTEM-03: kit-v1.9.md section 1: Button busy and reasonPlacement, DecisionTag's buttons, ReasonDialog's tip and ReasonField, Dialog's exit and DialogClose, hover gating, and D16 (P0)
 
-- **Required:** No new literal; DecisionTag's DOM unchanged; SH-25 passes; the locked kit tests pass unchanged
-- **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test -g SH-25 2>&1 | tail -6 && pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js' && git diff "$(git merge-base main HEAD)"..HEAD --stat`
-- **Expected:** the tests pass; SH-25 passes on phone and desk; the client chunks, and /'s first load, which you report; only apps/web/src/kit changed
+- **Required:** SH-09 and SH-25 pass; UC-08, UC-09 and UC-13 pass as Fenn changed them; DecisionTag's DOM unchanged but for section 1
+- **Verify:** `pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test -g 'SH-25|UC-3' 2>&1 | tail -6 && git diff "$(git merge-base main HEAD)"..HEAD --stat`
+- **Expected:** the tests pass; only apps/web/src/kit changed
 
 **Notes:**
 
-- Start once both of Fenn's shell test dispatches are merged and locked. Build to them: SH-25 is D16's test.
-- Every value is a --av-* token or DL's literal, with the DL class and layer it comes from in a comment. DL's final cascade is the value (app-shell.md section 0): the last DL rule for the element at that width wins, across the v1.6 layer, Mobile chrome, v1.7.1 and the v1.8 pass.
-- Nothing reads the viewport in JavaScript. The only client state is the sheet's open flag. No measured indicator (S3).
-- D16, as revision 15 gives it: under @media (max-width: 899px), [data-layout="desk"] gets every rule [data-layout="phone"] has, with the phone layout's own values, and DecisionTag's DOM doesn't change. SH-25 checks it.
-- Report /'s first load from your build (app-shell.md section 6). The kit's shell code isn't on / until Leon's shell lands, so give the kit chunk's size too.
+- Build to the locked tests, and flip their test.fails as each lands, in the same commit.
+- Every value is DL v1.9's final cascade or a token, with the DL class in a comment. Hovers go under (hover: hover) and (pointer: fine).
+- Nothing reads the viewport in JavaScript. The only things measured are the highlight's glide on a client navigation and the collapsed tooltip on hover or focus. JumpPalette loads only through loadJumpPalette.
+- Report /'s first load from your build and the kit chunk's size (procedures rule 7).
 
 ## 5. Territory
 
@@ -87,11 +94,14 @@ Do them in order. Finish each one, verified, before the next.
 
 - `apps/web/e2e/**` (FENN, locked tests)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
+- `apps/web/src/modules/clients/**` (GHOST)
 - `apps/web/src/modules/decisions/**` (GHOST)
+- `apps/web/src/modules/missions/**` (LEON)
 - `apps/web/src/modules/system/**` (LEON)
 - `apps/web/src/routes/**` (LEON)
 - `apps/web/src/styles/**` (NEMI)
 - `apps/web/test/**` (FENN, locked tests)
+- `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
 - `packages/contract/**` (the other team)
@@ -187,16 +197,16 @@ Say the same in the session. The operator takes it from there.
 This is your first message. `/dispatch` and `scripts/dispatch.sh` send it; the factory's runner will too.
 
 ```text
-You are FANTEM on avel-factory, frontend sprint-02 (step 1: The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it).
+You are FANTEM on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
 Dispatch: agent-fantem-shell-kit-build. Branch: frontend/sprint-02/agent-fantem-shell-kit-build-a<attempt>, in your own worktree.
 
 Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-fantem-shell-kit-build.md in full. It is your whole briefing.
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- FANTEM-01: AppShell: the frame, rail, nav, badge, top bar, sheet (inert, focus trap, Escape, scrim, return focus), tab bar with More, skip link, focus mode on the element, the shell's K1, and the chrome reset; exported with its types from kit/index.ts
-- FANTEM-02: ScreenHeader (DL's .scr-head, h1 title, one column under 760px) and Icon's menu
-- FANTEM-03: D16 (approval page contract revision 15): the desk layout draws the phone layout under @media (max-width: 899px) from kit.css alone, with the phone layout's own values; the DOM unchanged
+- FANTEM-01: AppShell (frame, canvas, rail with collapse and tooltip, nav with the highlight, header with Jump to, Theme, Depth and Display, sheet, tab bar, skip link, focus mode, marker) and ScreenHeader, exported with their types
+- FANTEM-02: JumpPalette and loadJumpPalette; Icon's additions
+- FANTEM-03: kit-v1.9.md section 1: Button busy and reasonPlacement, DecisionTag's buttons, ReasonDialog's tip and ReasonField, Dialog's exit and DialogClose, hover gating, and D16
 
 You may change only: apps/web/src/kit/**, docs/agent-dispatch/frontend/sprint-02/agent-fantem-shell-kit-build-completion.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.

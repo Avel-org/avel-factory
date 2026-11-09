@@ -8,18 +8,18 @@ A pnpm workspace in TypeScript (Biome, Vitest; tsconfig.base.json strict). apps/
 
 ## Layout
 
-- apps/web/src/routes: __root.tsx (Nemi's: theme cookie, font preloads, app.css); index.tsx renders the decisions screen, and moves under the new _shell layout this sprint
-- apps/web/src/modules/decisions: the approval page (api.ts, decisions.ts, screens/, index.ts, screens.ts, decisions.css); apps/web/src/modules/system: new this sprint, the shell's navigation and the stub screens
+- apps/web/src/routes: __root.tsx (theme cookie, font preloads, app.css) and index.tsx (the decisions screen), which moves under the new _shell layout this sprint
+- apps/web/src/modules/decisions: the approval page; new this sprint: modules/system (the shell's nav model and Settings), modules/missions (route 19, All projects, Progress), modules/clients (route 8, Clients)
 - apps/web/src/kit: Enclosure Grid components with data-ui names, and kit.css
 - apps/web/src/data and apps/web/src/lib: the data core (Ghost's); apps/web/src/styles: tokens, fonts and app.css (Nemi's)
-- apps/web/test and apps/web/e2e: Fenn's, locked before the builds (docs/agent-dispatch/frontend/sprint-01/locks.md holds sprint-01's locks)
+- apps/web/test and apps/web/e2e: Fenn's (docs/agent-dispatch/frontend/sprint-01/locks.md holds the locks)
 - packages/contract-mock: the contract mock (Ghost's); packages/contract: the backend's, read-only here
 
 ## Conventions
 
-- The UI contracts are the spec: docs/ui-contracts/app-shell.md for the shell, and docs/ui-contracts/decisions-approval-page.md (revision 15) for the page. Names, props, copy and states as they give them; a † string is the contract's own
-- Every colour, size, radius and duration is a --av-* token or the design library's own literal for that element, with its source in a comment; never invent a value
-- Nothing in the shell reads the viewport in JavaScript: every width is a CSS media query on the server's HTML (app-shell.md section 1)
+- The UI contracts are the spec: shell-layout.md and kit-v1.9.md, over the approval page contract. Names, props, copy and states as they give them; a † string is the contract's own
+- Every value is the design library v1.9's final cascade for that element, or a --av-*/shell token, with the DL class in a comment; never invent a value. DL v1.9 wins over anything earlier
+- Nothing reads the viewport in JavaScript, and nothing in the shell moves at hydration: widths are media queries, preferences are cookies the server reads
 - Screens never call fetch and never keep server data in state; a module imports the kit, the data core and other modules only through their index.ts (Frontend Map v0.6)
 - A file under a lock in locks.md changes only in a commit made with AVEL_LOCK_OVERRIDE set, and only when the task doc says so
 
@@ -32,6 +32,6 @@ A pnpm workspace in TypeScript (Biome, Vitest; tsconfig.base.json strict). apps/
 
 ## Notes
 
-- The contracts' scenario IDs (SH-01 to SH-14 and SH-20 to SH-25 here, UC-01 to UC-32 in the approval page contract) name every test. A dispatch that meets something the contract leaves open stops and reports it under Deviations.
-- packages/contract is the backend's: an API change you need is an escalation in docs/agent-dispatch/frontend/sprint-02/escalations/, written by Zero, never an edit.
-- /'s first load is 149.30 kB gzip on main before the shell: the target is 150 kB and the hard ceiling 160 kB (app-shell.md section 6). Every build whose diff changes JavaScript that / loads reports /'s first load from its own build, counted as the approval page contract's section 8 counts it.
+- Scenario IDs SH-01 to SH-14 and SH-20 to SH-26 (shell-layout.md section 9, kit-v1.9.md section 4) and UC-01 to UC-32 (the approval page contract) name every test. A dispatch that meets something the contracts leave open stops and reports it under Deviations.
+- packages/contract is the backend's. The API gaps are escalations 01 to 03 in docs/agent-dispatch/frontend/sprint-02/escalations/, with the stand-ins the contract gives; never edit the contract.
+- Procedures rule 1: main stays green. Fail-first tests land as test.fails until their build merges. Rule 7: / must pass the 150 KB size check. Every build that changes /'s JavaScript reports its figure.

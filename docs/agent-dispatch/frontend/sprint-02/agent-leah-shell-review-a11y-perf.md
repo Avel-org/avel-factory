@@ -1,6 +1,6 @@
 # LEAH: shell review-a11y-perf
 
-Frontend sprint-02 · step 1 · The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it
+Frontend sprint-02 · step 1 · The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9
 
 Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the plan and re-render.
 
@@ -10,7 +10,7 @@ Rendered by `scripts/render.py` from `plan.toml`. Don't edit it by hand: fix the
 - **This dispatch:** `agent-leah-shell-review-a11y-perf` (review), module `shell`.
 - **Your branch:** `frontend/sprint-02/agent-leah-shell-review-a11y-perf-a<attempt>`. Check with `git branch --show-current`. One session is one attempt: never switch branches, push, rebase or force anything.
 - **Your worktree:** `../avel-wt/frontend-sprint-02-agent-leah-shell-review-a11y-perf-a<attempt>`, made by `scripts/agent.sh`.
-- **Starts:** at once; after `agent-nemi-shell-fonts-build`, `agent-fantem-shell-kit-build`, `agent-leon-system-build`, `agent-ghost-decisions-build` is merged into main.
+- **Starts:** at once; after `agent-leon-system-build`, `agent-ghost-decisions-build` is merged into main.
 
 ## 2. Context: read before you act
 
@@ -18,54 +18,56 @@ Read these in order, properly, not from memory. If one is missing, stop and say 
 
 1. `.claude/agents/leah.md`: your role, your Read first list and your Learned rules
 2. `docs/agent-dispatch/frontend/sprint-02/codebase-analysis.md`: the stack, the layout and the commands
-3. `docs/ui-contracts/app-shell.md`: this sprint's source
-4. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
-5. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
-6. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
-7. `docs/design/AVEL Enclosure Grid · Design library v1.1.html`: this sprint's source
-8. `docs/ui-contracts/app-shell.md`: sections 1, 2, 6 and 8
-9. `docs/ui-contracts/decisions-approval-page.md`: section 6's measure (revision 15, your finding 05) and section 8's budget count
-10. `docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-completion.md`: your method and harness from cls-study a2
-11. `docs/agent-dispatch/frontend/sprint-02/agent-leah-shell-review-a11y-perf.md`: this task doc: follow it exactly
+3. `docs/ui-contracts/shell-layout.md`: this sprint's source
+4. `docs/ui-contracts/kit-v1.9.md`: this sprint's source
+5. `docs/ui-contracts/decisions-approval-page.md`: this sprint's source
+6. `docs/design/AVEL Shell Layout brief v1.9.md`: this sprint's source
+7. `docs/design/AVEL Enclosure Grid · Design library v1.9.html`: this sprint's source
+8. `docs/design/AVEL Web App — Frontend Map v0.6.md`: this sprint's source
+9. `docs/agent-dispatch/avel/procedures.md`: this sprint's source
+10. `docs/agent-dispatch/frontend/sprint-02/decisions.md`: this sprint's source
+11. `docs/ui-contracts/shell-layout.md`: sections 1 to 3 and 8
+12. `docs/agent-dispatch/avel/procedures.md`: rule 7: the size check is CI's; you report, not cut
+13. `docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-completion.md`: your method and harness
+14. `docs/agent-dispatch/frontend/sprint-02/agent-leah-shell-review-a11y-perf.md`: this task doc: follow it exactly
 
 ## 3. Domain
 
-The shell and / on main once everything in sprint-02 is merged: the 150 kB budget, layout shift by app-shell.md section 6, axe, the sheet, skip link and targets, and D16's focus order.
+The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, palette, skip link, targets, and D16's focus order.
 
 **The rest of this sprint:**
 
-- `agent-brennan-shell-uic-review-spec`: Review docs/ui-contracts/app-shell.md (revision 2 from a2; revision 1 in a1), and the approval page contract's revision 15, as at your start commit, against the Frontend Map v0.6 and the design library, before anything is built on them.
-- `agent-fenn-shell-test-unit`: The shell's unit and screen tests: AppShell and ScreenHeader in the kit, ShellLayout and PlannedScreen in system on the contract mock, and the approval page's header change (app-shell.md SH-01 to SH-14).
-- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), with UC-32 taken in from sprint-01 and UC-29 to UC-31 kept passing.
-- `agent-nemi-shell-fonts-build`: The size-matched font fallbacks, by one method for both files (app-shell.md section 5).
-- `agent-fantem-shell-kit-build`: The kit's shell: AppShell and ScreenHeader from the design library's v1.6 layout layer, the menu icon, and D16 (app-shell.md section 2).
-- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout, the nav, the badge, the stub screens and focus mode's stub; / moved under _shell (app-shell.md section 3).
-- `agent-ghost-decisions-build`: The approval page on the shell: revision 15 (layout=desk, no viewport read), loadReasonDialog instead of the deep import, ScreenHeader, and the page's padding and stylesheets (app-shell.md section 4).
-- `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against app-shell.md sections 1 and 2 and the approval page's D16.
-- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against app-shell.md section 3.
-- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against app-shell.md section 4 and the approval page's revision 15.
+- `agent-brennan-layout-uic-review-spec`: Review docs/ui-contracts/shell-layout.md and kit-v1.9.md, the one review before the build (procedures rule 2), against Int's brief, the design library v1.9 and the Frontend Map.
+- `agent-fenn-shell-test-unit`: The unit and screen tests for the shell, the v1.9 kit, the nav model, the four pages, the approval page on the shell and the styles (SH-01 to SH-14).
+- `agent-fenn-shell-test-e2e`: The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-26), UC-32 taken in from sprint-01, UC-29 to UC-31 kept.
+- `agent-ghost-mock-build`: The contract mock serves route 19 (GET /api/missions) and route 8 (GET /api/clients), with fixtures that match fixtures.step1's decision rows (shell-layout.md section 4).
+- `agent-fantem-shell-kit-build`: The kit's shell from v1.9: AppShell, ScreenHeader, JumpPalette (lazy), the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1).
+- `agent-nemi-shell-styles-build`: The styles on v1.9: tokens.css copied again, base.css's hover gate, the new chrome.css, and the size-matched font fallbacks (kit-v1.9.md section 3).
+- `agent-zero-shell-kit-review-frontend`: Review Fantem's shell kit against shell-layout.md sections 1 to 3 and kit-v1.9.md section 1.
+- `agent-leon-missions-build`: The missions module's first cut: route 19's query options through index.ts, and the All projects and Progress screens through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-ghost-clients-build`: The clients module's first cut: route 8's query options through index.ts, and the Clients screen through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them.
+- `agent-zero-missions-review-frontend`: Review Leon's missions module against shell-layout.md sections 4 and 5.
+- `agent-zero-clients-review-frontend`: Review Ghost's clients module against shell-layout.md sections 4 and 5.
+- `agent-leon-system-build`: The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, palette items, keys, cookies), Settings, __root's depth cookie, and the sprint's route files (shell-layout.md sections 4 to 6).
+- `agent-ghost-decisions-build`: The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2).
+- `agent-zero-system-review-frontend`: Review Leon's shell route and system module against shell-layout.md sections 4 to 6.
+- `agent-zero-decisions-review-frontend`: Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15.
 
 ## 4. Tasks
 
 Do them in order. Finish each one, verified, before the next.
 
-### LEAH-01: Performance: /'s first load (section 8's count) and layout shift by section 6's cases (/ at 390; /missions at 390 and 1280), production build, three runs each, with each shift's sources, FCP and hydration time (P0)
+### LEAH-01: Performance: /'s first load against rule 7, and layout shift by section 8 (production build, three runs each, with sources, FCP and hydration time) (P0)
 
-- **Required:** At or under 150 kB, or a finding by section 6's table; under 0.02 in every case, or a finding with the evidence
+- **Required:** At or under 150 kB, or a finding with the chunk breakdown; under 0.02 in every case, or a finding with the evidence
 - **Verify:** `pnpm --filter "@avel/web..." build 2>&1 | grep -E 'client/assets/.*js'`
 - **Expected:** the client chunks, and the first-load and CLS tables, which you report
 
-### LEAH-02: Accessibility: axe on every route at 1280 and 390; the sheet (dialog, inert, focus trap, return focus), the skip link, landmarks and nav names, the tab bar's and nav's 44px targets under 900px; and D16's focus order on a phone (Approve before Reject, Reject drawn left) under WCAG 2.4.3 and 1.3.2 (P0)
+### LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, the palette (combobox and listbox), the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3 (P0)
 
-- **Required:** No axe violation, or a finding per violation; a judgement on the focus order, with the evidence
+- **Required:** No axe violation, or a finding per violation; a judgement on the focus order, with evidence
 - **Verify:** `pnpm --filter @avel/web exec playwright test 2>&1 | tail -6`
 - **Expected:** the locked suite passes; your axe and keyboard results, which you report
-
-**Notes:**
-
-- Start once Nemi's fonts, Fantem's kit, Leon's shell and Ghost's page follow-up are all merged.
-- Read /'s first load against app-shell.md section 6's table: over 150 kB is a P2 finding with the chunk breakdown; over 160 kB breaks the hard ceiling and blocks the sprint's close. Either way the thin oRPC link follows as a revision. Don't build or prototype the cut.
-- Measure main as it is, fonts included: the fallbacks now ship (app-shell.md section 5). Name the local() face each run drew before the swap.
 
 ## 5. Territory
 
@@ -79,11 +81,14 @@ Do them in order. Finish each one, verified, before the next.
 - `apps/web/e2e/**` (FENN, locked tests)
 - `apps/web/playwright.config.ts` (FENN, locked tests)
 - `apps/web/src/kit/**` (FANTEM)
+- `apps/web/src/modules/clients/**` (GHOST)
 - `apps/web/src/modules/decisions/**` (GHOST)
+- `apps/web/src/modules/missions/**` (LEON)
 - `apps/web/src/modules/system/**` (LEON)
 - `apps/web/src/routes/**` (LEON)
 - `apps/web/src/styles/**` (NEMI)
 - `apps/web/test/**` (FENN, locked tests)
+- `packages/contract-mock/**` (GHOST)
 - `packages/server/**` (the other team)
 - `packages/db/**` (the other team)
 - `packages/contract/**` (the other team)
@@ -181,15 +186,15 @@ Say the same in the session. The operator takes it from there.
 This is your first message. `/dispatch` and `scripts/dispatch.sh` send it; the factory's runner will too.
 
 ```text
-You are LEAH on avel-factory, frontend sprint-02 (step 1: The app shell: rail, sheet, tab bar, screen header and focus mode, with every L1 screen in the nav, and the approval page on it).
+You are LEAH on avel-factory, frontend sprint-02 (step 1: The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar, Jump to; All projects, Progress, Clients and Settings; the approval page and kit on v1.9).
 Dispatch: agent-leah-shell-review-a11y-perf. Branch: frontend/sprint-02/agent-leah-shell-review-a11y-perf-a<attempt>, in your own worktree.
 
 Before you act, read docs/agent-dispatch/frontend/sprint-02/agent-leah-shell-review-a11y-perf.md in full. It is your whole briefing.
 Read every file in its Part 2, in order. If one is missing, stop and say which.
 
 Your tasks:
-- LEAH-01: Performance: /'s first load (section 8's count) and layout shift by section 6's cases (/ at 390; /missions at 390 and 1280), production build, three runs each, with each shift's sources, FCP and hydration time
-- LEAH-02: Accessibility: axe on every route at 1280 and 390; the sheet (dialog, inert, focus trap, return focus), the skip link, landmarks and nav names, the tab bar's and nav's 44px targets under 900px; and D16's focus order on a phone (Approve before Reject, Reject drawn left) under WCAG 2.4.3 and 1.3.2
+- LEAH-01: Performance: /'s first load against rule 7, and layout shift by section 8 (production build, three runs each, with sources, FCP and hydration time)
+- LEAH-02: Accessibility: axe on every built route at 1280 and 390; the sheet, the palette (combobox and listbox), the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3
 
 You may change only: docs/agent-dispatch/frontend/sprint-02/agent-leah-shell-review-a11y-perf-completion.md, docs/agent-dispatch/frontend/sprint-02/findings/shell-leah-*.md.
 Everything else is read-only. Locked tests (locks.md) are never changed.
