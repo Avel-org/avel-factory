@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "The contract mock: routes 52 to 54 served through @avel/contract with oRPC's OpenAPI handler, fixtures and test controls. Dev server and tests only, never a production build.",
+  "description": "The contract mock: routes 8, 19 and 52 to 54 served through @avel/contract with oRPC's OpenAPI handler, fixtures and test controls. Dev server and tests only, never a production build.",
   "exports": {
     ".": "./src/index.ts"
   },

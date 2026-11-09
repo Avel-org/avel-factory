@@ -1,3 +1,4 @@
+import type { ClientDto, MissionDto } from "@avel/contract";
 import type { SeedRow } from "#rows";
 
 /**
@@ -113,8 +114,119 @@ const many: SeedRow[] = Array.from({ length: 150 }, (_, i) => {
   };
 });
 
-export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] } = {
+/**
+ * Route 8's clients for `step1`: one per `clientName` in its decision rows (shell-layout.md
+ * section 4, "Project rows"), so every project row there has a client name.
+ */
+const step1Clients: ClientDto[] = [
+  {
+    id: uuid7("0193a7c2", 1),
+    name: "Northwind Dental",
+    contacts: {},
+    status: "active",
+    archivedAt: null,
+    kind: "client",
+    createdAt: at(-30 * DAY),
+    rowVersion: 1,
+    updatedAt: at(-30 * DAY),
+  },
+  {
+    id: uuid7("0193a7c2", 2),
+    name: "Harbor Logistics",
+    contacts: {},
+    status: "active",
+    archivedAt: null,
+    kind: "client",
+    createdAt: at(-21 * DAY),
+    rowVersion: 1,
+    updatedAt: at(-21 * DAY),
+  },
+];
+
+const [northwind, harbor] = step1Clients as [ClientDto, ClientDto];
+
+/** A building mission (state `running`): onboarding done, plan approved, rendered. */
+const building = (
+  missionId: string,
+  client: ClientDto,
+  packageKey: string,
+  createdAt: number,
+): MissionDto => ({
+  id: missionId,
+  clientId: client.id,
+  state: "running",
+  packageKey,
+  packageVersion: "1",
+  priceMicros: 2_500_000_000,
+  deadlineAt: at(createdAt + 21 * DAY),
+  budgetMicros: 150_000_000,
+  reservedMicros: 20_000_000,
+  spentMicros: 60_000_000,
+  planId: null,
+  planState: null,
+  repoConnectionId: null,
+  pinnedCommit: null,
+  branchHead: null,
+  factoryCommit: null,
+  rosterVersion: null,
+  kbRelease: null,
+  rulesVersion: null,
+  gate5Failures: 0,
+  onboardingStartedAt: at(createdAt),
+  approvedAt: at(createdAt + DAY),
+  renderedAt: at(createdAt + DAY + 30 * MINUTE),
+  deliveredAt: null,
+  closedAt: null,
+  cancelledAt: null,
+  kind: "client",
+  clientKind: client.kind,
+  designSystemSlug: null,
+  designSystemVersion: null,
+  createdAt: at(createdAt),
+  rowVersion: 3,
+  updatedAt: at(createdAt + DAY + 30 * MINUTE),
+  displayState: "running",
+});
+
+/**
+ * Route 19's missions for `step1`, oldest first: one building mission per distinct
+ * `missionId` in its decision rows, each with its row's client and a `packageKey`, then one
+ * mission in onboarding with no package yet (shell-layout.md section 4).
+ */
+const step1Missions: MissionDto[] = [
+  building(uuid7("0193a7c3", 101), northwind, "landing_page", -14 * DAY),
+  building(uuid7("0193a7c3", 102), harbor, "stabilize", -10 * DAY),
+  building(uuid7("0193a7c3", 103), northwind, "feature", -6 * DAY),
+  {
+    ...building(uuid7("0193a7c3", 104), harbor, "custom", -2 * DAY),
+    state: "onboarding",
+    packageKey: null,
+    packageVersion: null,
+    priceMicros: null,
+    deadlineAt: null,
+    budgetMicros: 0,
+    reservedMicros: 0,
+    spentMicros: 0,
+    approvedAt: null,
+    renderedAt: null,
+    rowVersion: 1,
+    updatedAt: at(-2 * DAY),
+    displayState: "onboarding",
+  },
+];
+
+export const fixtures: {
+  empty: SeedRow[];
+  step1: SeedRow[];
+  many: SeedRow[];
+  /** Route 19's missions that match `step1`; createMock serves them unless told otherwise. */
+  step1Missions: MissionDto[];
+  /** Route 8's clients that match `step1`; createMock serves them unless told otherwise. */
+  step1Clients: ClientDto[];
+} = {
   empty: [],
   step1,
   many,
+  step1Missions,
+  step1Clients,
 };
