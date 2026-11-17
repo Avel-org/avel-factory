@@ -10,7 +10,7 @@
  * major, `fix(contract)` the patch. `1.0.0` is the first released version: it carries CR-20,
  * CR-W2, CR-W5 and the web's CR-W1 to CR-W22 together.
  */
-export const CONTRACT_VERSION = "1.0.0";
+export const CONTRACT_VERSION = "1.0.1";
 
 /**
  * The session cookie names Better Auth writes (S1-10): the `__Secure-` one over https,

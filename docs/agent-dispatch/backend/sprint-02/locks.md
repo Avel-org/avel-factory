@@ -5,3 +5,4 @@ from the tests report. The build starts once its line is here (Build rules B2, B
 
 <!-- - T-B1: packages/server/test/health.test.ts @ abc1234 -->
 - T-B2: tools/repo-checks/test/dependencies.test.ts, tools/repo-checks/test/effect-check.test.ts, tools/repo-checks/test/fixtures/effect/** @ 0086b318bb55586b925091ed077656a6ea09f731
+- T-B6: packages/contract/test/defect-code.test.ts, packages/contract/test/no-money.test.ts @ 0712fa1b9614af10a20d38c721b6465c4bb61677
