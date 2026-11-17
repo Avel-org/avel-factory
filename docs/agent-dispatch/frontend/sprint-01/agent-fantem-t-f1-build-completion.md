@@ -1,16 +1,22 @@
 status: blocked
 ticket: T-F1
 
-Blocked on one thing: stale `vite preview` and `vite dev` processes (PIDs 1846, 1874, 8851, 8863) from my first Playwright run still hold the worktree's ports (28641 is the preview port). Killing them and starting a preview on another port were both denied by the sandbox. T-F1-11's two budget tests therefore can't start their preview. Once the ports are free, rerun `pnpm --filter @avel/web exec playwright test`.
+Re-run on head cbb8b45 after Zero's ruling (relayed by OSA). The ports were free. One failure remains, reported as it is: T-F1-11's first budget spec times out. I haven't worked around it.
 
-## Pre-flight
-- `pnpm install --frozen-lockfile --offline` and `pnpm --filter @avel/contract build` (node_modules and contract dist were missing; the shell needed node 24 on PATH). Nothing committed from these.
-- vitest run: 6 files, 23 tests pass.
-- playwright test (first run): 12 passed, 2 failed. The two failures are the budget specs, "Port 28641 is already in use". That run came before the contract-import change below, when the client JS was 150.89 kB gzipped. Not re-run since.
-- vite build: ok after the change. Client JS is 134.24 kB gzipped (vite's kB = 1000 B). That is under the 150 KB (1024 B) limit and over the 130 KB warning. No built file contains the mock operator id (grep finds none).
-- tsc -p tsconfig.json --noEmit: clean.
-- pnpm lint: clean.
-- pnpm typecheck: fails in tools/docs ("Cannot find module '@avel/db'"). `packages/db` has no dist here and is outside my territory. The other packages pass. Not caused by my files.
+## Pre-flight (re-run, in Zero's order)
+- `vitest run`: 6 files, 23 tests pass.
+- `playwright test` (all of it): 12 passed, 2 failed.
+  - Both failures are in e2e/budget.spec.ts.
+  - Spec 1 ("the JavaScript / loads is at most 150 KB gzipped") hit the 300 s test timeout. `vite build` ran and `vite preview` came up and listened on 28641, so the hang is after startup: in the request for `/`, the `networkidle` wait, or a script fetch.
+  - Spec 2 then failed with "Port 28641 is already in use". Spec 1's timeout left its preview running, and the spec's worker restart started a second one.
+  - Run alone with `-x`, the budget spec failed the same way (timeout, 5.1 m).
+  - I couldn't probe the preview myself: starting one and curling the leftover one were both denied, so I don't know why it hangs. First thing to check: whether `vite preview` serves the SSR response for `/` with this TanStack Start build.
+  - Zero's instruction was to report failures as they are, so I stopped here.
+- `vite build`: ok. Client JS is 134.24 kB gzipped. No built file contains the mock operator id (grep, run earlier).
+- `tsc -p tsconfig.json --noEmit`: clean.
+- `pnpm --filter @avel/db build`, then `pnpm typecheck`: clean. The db build is environment only and nothing from it is committed.
+- `pnpm lint`: clean.
+- Processes: I stopped the two vite preview servers my runs left behind. OSA's dev server on 5173 is still running and is not mine.
 
 ## What changed
 - src/data/client.ts: `createClient` (OpenAPILink over the contract's decisions routes) and the `ApiClient` type.
@@ -38,4 +44,5 @@ Blocked on one thing: stale `vite preview` and `vite dev` processes (PIDs 1846, 
 - I didn't take a fresh end-to-end screenshot; the Playwright run attaches them to test-results/.
 
 ## Messages received
-None.
+- OSA relaying Zero (within T-F1): re-run the verify commands in order, build @avel/db first (environment only), stop my own vite processes, update the report, status done only if all pass. Done as written. All passed except the budget spec, so the status stays blocked.
+- Zero accepted the four deviations (ApiClient mapped type, routes/decisions import, committed routeTree.gen.ts, typecheck failure as environment).
