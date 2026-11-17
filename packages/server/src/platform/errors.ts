@@ -8,6 +8,8 @@ import { Data } from "effect";
 export const errorTable = {
   NotFound: "NOT_FOUND",
   AlreadyExists: "ALREADY_EXISTS",
+  ConstraintViolation: "CONSTRAINT_VIOLATION",
+  DeleteRefused: "DELETE_REFUSED",
 } as const satisfies Record<string, ErrorCode>;
 
 export type ErrorTag = keyof typeof errorTable;
@@ -29,6 +31,18 @@ type ConstraintDetails = { readonly constraint: string };
 
 /** A unique violation (23505): 409 `ALREADY_EXISTS`. */
 export class AlreadyExists extends Data.TaggedError("AlreadyExists")<{
+  message: string;
+  details: ConstraintDetails;
+}> {}
+
+/** A CHECK violation (23514), or a foreign key whose parent is missing (23503): 422. */
+export class ConstraintViolation extends Data.TaggedError("ConstraintViolation")<{
+  message: string;
+  details: ConstraintDetails;
+}> {}
+
+/** A foreign key refusing the delete or update of a row still referenced (23503): 409. */
+export class DeleteRefused extends Data.TaggedError("DeleteRefused")<{
   message: string;
   details: ConstraintDetails;
 }> {}
