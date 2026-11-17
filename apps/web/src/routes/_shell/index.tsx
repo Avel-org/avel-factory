@@ -1,16 +1,17 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequestUrl } from "@tanstack/react-start/server";
-import { createClient } from "../data/client";
-import { HomeLoading, HomeView } from "../home/HomeView";
-import { loadHome } from "../home/load-home";
+import { createClient } from "../../data/client";
+import { HomeLoading, HomeView } from "../../home/HomeView";
+import { loadHome } from "../../home/load-home";
 
 /** Where /api is: the request's own origin on the server, the page's in the browser. */
 const origin = createIsomorphicFn()
   .server(() => getRequestUrl().origin)
   .client(() => window.location.origin);
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_shell/")({
+  staticData: { nav: { group: "Decide", order: 1, label: "Decisions", icon: "inbox" } },
   loader: () => loadHome(createClient({ baseUrl: origin() })),
   head: () => ({ meta: [{ title: "Decisions · AVEL" }] }),
   pendingComponent: HomeLoading,
