@@ -35,8 +35,16 @@ function filesUnder(dir: string): string[] {
   });
 }
 
-/** Resolves once `vite preview` prints its Local URL; rejects if it exits first. */
-function startPreview(): Promise<ChildProcess> {
+const STARTUP_MS = 60_000;
+// biome-ignore lint/suspicious/noControlCharactersInRegex: matching ANSI escape codes
+const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g;
+
+/**
+ * Starts `vite preview`. `onSpawn` gets the child at once, so the caller can kill it even if
+ * startup never resolves. Resolves once the port shows in the output (colour codes stripped);
+ * rejects if the child exits first or startup passes its own 60 s limit.
+ */
+function startPreview(onSpawn: (child: ChildProcess) => void): Promise<ChildProcess> {
   return new Promise((resolve, reject) => {
     const child = spawn(
       "pnpm",
@@ -50,18 +58,27 @@ function startPreview(): Promise<ChildProcess> {
         String(PREVIEW_PORT),
         "--strictPort",
       ],
-      { cwd: root, env: { ...process.env, AVEL_API: "" } },
+      { cwd: root, env: { ...process.env, AVEL_API: "", NO_COLOR: "1", FORCE_COLOR: "0" } },
     );
+    onSpawn(child);
     let seen = "";
+    const timer = setTimeout(() => {
+      child.kill();
+      reject(new Error(`vite preview did not start within ${STARTUP_MS} ms:\n${seen}`));
+    }, STARTUP_MS);
     const onData = (chunk: Buffer) => {
-      seen += chunk.toString();
-      if (seen.includes(`:${PREVIEW_PORT}`)) resolve(child);
+      seen += chunk.toString().replace(ANSI, "");
+      if (seen.includes(`:${PREVIEW_PORT}`)) {
+        clearTimeout(timer);
+        resolve(child);
+      }
     };
     child.stdout.on("data", onData);
-    child.stderr.on("data", (c: Buffer) => {
-      seen += c.toString();
+    child.stderr.on("data", onData);
+    child.on("exit", (code) => {
+      clearTimeout(timer);
+      reject(new Error(`vite preview exited (${code}):\n${seen}`));
     });
-    child.on("exit", (code) => reject(new Error(`vite preview exited (${code}):\n${seen}`)));
   });
 }
 
@@ -73,7 +90,15 @@ test.describe("T-F1-11: the production build", () => {
   const ensureBuilt = () => {
     ready ??= (async () => {
       await run(["vite", "build"]);
-      preview = await startPreview();
+      try {
+        await startPreview((child) => {
+          preview = child;
+        });
+      } catch (err) {
+        preview?.removeAllListeners("exit");
+        preview?.kill();
+        throw err;
+      }
     })();
     return ready;
   };
