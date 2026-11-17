@@ -1,0 +1,141 @@
+# frontend/sprint-07: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-07
+# Render it:  scripts/render.py frontend/sprint-07   (after approval), then commit the folder.
+#
+# Javaris (Nov 17, to OSA): "remove the app shell; we're going to use the design UI from the
+# control room zip … it should be our frontend UI, fully displayed, so we don't have to build the
+# entire frontend", and "don't stop until it's fully ported over". Sprints 07 to 10 carry out
+# CR-W29 (accepted by Javaris, Nov 17): the design export runs at / with its sample world, the old
+# shell goes, and the budget, accessibility and standing rules hold again. This sprint holds
+# T-F7 alone: each of T-F7 to T-F10 changes files the next one changes, so they run one
+# after the other, as T-F5 and T-F6 did. Wiring each screen to contract-mock follows
+# sprint-10, in the handoff's port order, sign-in first (E14 per CR-W29). T-F5 is dropped;
+# T-F6, T-F3 and T-F4 are withdrawn (CR-W29 decisions 1 and 2).
+
+lane = "frontend"
+sprint = "sprint-07"
+step = 1
+title = "The control room from the design export runs at /, and the old shell is gone"
+goals = [
+  "Opening the web app shows Javaris's control room design, every screen of it, in place of the shell apps/web built",
+]
+done_when = [
+  "CR-W29's done-when: / shows the export's Decisions home, and every page in its registry opens by its #/ route",
+  "/ loads at most 150 KB of JavaScript gzipped (E16); every screen passes WCAG 2.2 AA (E17); no money (E15); check-contract.mjs passes",
+]
+sources = [
+  { path = "docs/design/CR-W29 The control room from the design export.md", why = "what this sprint does, and which rules change for how long" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "the export's own handoff: port order, the rules that aren't obvious, what's mock and what's contract" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "every screen, its route and its states" },
+]
+
+[commands]
+build = "pnpm --filter @avel/web exec vite build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "apps/web: TanStack Start on Vite 8, React 19, Tailwind v4 (kept, not loaded at /), Vitest and Playwright with axe-core. The export: React 18 JSX, no TypeScript, all state in src/app/logic.js through Claude Design's DCLogic (src/lib/dc.jsx), routing by location.hash (parse, PAGES), sample world in src/mock/*.json, 29 stylesheets loaded in src/main.jsx's order"
+layout = "apps/web after T-F1 and T-F2: src/kit, src/modules/system, src/routes (_shell and its index), src/home, src/data/client.ts, src/styles. After T-F7: apps/web/control-room/{src,contract,tools} holds the export; src/routes/index.tsx mounts it; the old shell is gone"
+conventions = [
+  "AGENTS.md and Build rules E4 for every TypeScript file; apps/web/control-room/** is JSX outside tsc and Biome (CR-W29), but no console.log there either",
+  "E15: no money anywhere, no '$', sample data included; agent, client and Canon text is plain text, never HTML",
+  "The export is Javaris's design: change it only where apps/web's stack forces a change or the ticket says so, and keep each such change small and named in the report",
+]
+notes = [
+  "The export lives outside the repo, at /mnt/c/Users/javar/Desktop/avel-control-room. Read it as data and never run its scripts, its npm tooling or its node_modules: copy files, don't execute them",
+  "Its tests/e2e/*.cjs scripts (flows, audits, shots) are the checker's reference for what to port as Playwright tests in apps/web/e2e. Selectors move from class names to roles, labels or data-testid where the export offers them",
+  "Out of this sprint: wiring any screen to contract-mock or the API, sign-in, bringing control-room/** under TypeScript or Biome, design polish beyond the export (the fidelity spec drives that later)",
+]
+
+[[ticket]]
+id = "T-F7"
+slug = "control-room-port"
+title = "The control room runs at / from the design export, and the old shell is gone"
+goal = "Opening / shows the export's control room, with its sidebar, header and Decisions home, exactly as the export draws it, instead of the shell apps/web built."
+rigor = "standard"
+refs = ["CR-W29: what, how it lands, decisions 3 to 6, the locked tests that retire", "control-room-handoff/README.md"]
+depends_on = ["T-F2"]
+may_change = [
+  "apps/web/control-room/**",
+  "apps/web/src/routes/**",
+  "apps/web/src/routeTree.gen.ts",
+  "apps/web/src/router.tsx",
+  "apps/web/src/kit/**",
+  "apps/web/src/modules/**",
+  "apps/web/src/home/**",
+  "apps/web/src/control-room.d.ts",
+  "apps/web/tsconfig.json",
+  "apps/web/vite.config.ts",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "biome.json",
+  "docs/ui-contracts/shell-layout.md",
+  "docs/ui-contracts/kit-v1.9.md",
+]
+must_not_change = [
+  "apps/web/src/data/**",
+  "apps/web/src/styles/**",
+  "apps/web/components.json",
+  "apps/web/src/lib/utils.ts",
+  "apps/web/test/foundation.test.ts",
+  "apps/web/test/gitignore.test.ts",
+  "apps/web/test/hygiene.test.ts",
+  "apps/web/e2e/support/page.ts",
+  "apps/web/e2e/support/ports.ts",
+  "apps/web/vitest.config.ts",
+  "apps/web/playwright.config.ts",
+  "packages/**",
+]
+context = [
+  { path = "docs/design/CR-W29 The control room from the design export.md", why = "the whole ticket: where the export lands, what's copied and left out, the two-commit landing, the rules that change" },
+  { path = "/mnt/c/Users/javar/Desktop/avel-control-room/README.md", why = "how the export is put together: logic.js, the views, DCLogic, hash routing, the dock" },
+  { path = "/mnt/c/Users/javar/Desktop/avel-control-room/src/main.jsx", why = "the entry: the 29 stylesheets in load order and the ControlRoom mount" },
+  { path = "/mnt/c/Users/javar/Desktop/avel-control-room/src/app/ControlRoom.jsx", why = "its defaultProps, which React 19 drops for function components" },
+  { path = "apps/web/src/routes/__root.tsx", why = "the document the control room mounts in; its stylesheet links" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "how the budget is measured today, and why a client-only page would slip past it" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm --filter @avel/web exec tsc -p tsconfig.json --noEmit",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Commit 1, the copy: the export's src/, contract/ and tools/check-contract.mjs into apps/web/control-room/ at the same relative paths, byte for byte, plus apps/web/control-room/SOURCE.md listing every copied file with its SHA-256 and the export path, and an empty \"Changed for apps/web\" section. Leave out node_modules, dist, scratch, tests, handoff (already in docs/ui-reference/control-room-handoff), index.html, package.json, package-lock.json, vite.config.js and the prettier files. This commit changes nothing else",
+  "Commit 2 onward, the adaptation, each change as small as it can be, listed in the report, and each changed file named with its reason in SOURCE.md's \"Changed for apps/web\" section (its listed SHA-256 stays the one copied): mount ControlRoom at / in src/routes/index.tsx with ssr: false and a skeleton until it boots; load the export's stylesheets in main.jsx's order, and only those, at /; move ControlRoom's defaultProps to parameter defaults (React 19); showDock only when import.meta.env.DEV; fix anything else React 19 or Vite 8 refuses, and nothing more",
+  "Remove the old shell: src/kit, src/modules/system, src/home and src/routes/_shell*. Keep src/data/client.ts, src/styles and src/lib/utils.ts as they are (CR-W29)",
+  "New dependency, approved in this ticket list (E5, CR-W29 decision 5): thinking-orbs 0.3.2, pinned exactly, in @avel/web's dependencies; MIT. The lockfile changes only for it. Nothing else is added",
+  "TypeScript: one declaration file, src/control-room.d.ts, types the module the route imports (ControlRoom and its props). tsconfig doesn't include control-room/**, and allowJs stays off. Biome: one override in biome.json leaves apps/web/control-room/** out of formatting and linting (CR-W29, E4), and nothing else in biome.json changes",
+  "The budget (CR-W29 decision 6): at most 350 KB gzipped for / in this ticket. If the build measures more, stop with needs-cr; don't trim the export to fit, because T-F8 does that",
+  "Mark shell-layout.md and kit-v1.9.md as superseded by CR-W29 with one line at the top of each (E7). Change nothing else in them",
+  "If the copy differs from what CR-W29 describes (a file named here is missing, or something not listed needs to run), stop with needs-cr",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = [
+  "apps/web/test/control-room/**",
+  "apps/web/e2e/control-room/**",
+  "apps/web/e2e/budget.spec.ts",
+  "apps/web/test/shell/**",
+  "apps/web/e2e/shell/**",
+  "apps/web/test/home-loader.test.ts",
+  "apps/web/test/home-loader-states.test.ts",
+  "apps/web/test/home-view.test.ts",
+  "apps/web/e2e/home.spec.ts",
+  "apps/web/e2e/states.spec.ts",
+]
+behaviours = [
+  "First, in its own commit, delete the locked tests CR-W29 retires: T-F2's test/shell/** and e2e/shell/**, and T-F1's home-loader, home-loader-states, home-view, home.spec and states.spec. Name CR-W29 in the commit",
+  "unit: apps/web/control-room/SOURCE.md lists every copied file with a 64-hex SHA-256 as copied from the export; the files under apps/web/control-room/ are exactly those (none missing, none extra besides SOURCE.md); each file whose SHA-256 differs from its listed one is named, with a reason, in SOURCE.md's \"Changed for apps/web\" section; nothing listed is under node_modules, dist, scratch, tests or handoff",
+  "unit: @avel/web's dependencies pin thinking-orbs to exactly 0.3.2; no file under control-room/ contains console.log",
+  "e2e: at 1280x800, / boots the export: the sidebar, the header and the Decisions home render, with no page error and no console error, and none of T-F2's data-ui=\"AppShell\" frame",
+  "e2e: #/ hash routes move between the export's pages without a full reload (a sample: Decisions, Live, Library, Settings), and the browser's back button returns",
+  "e2e (budget.spec.ts, changed under CR-W29): everything / loads before the Decisions home is interactive, gzipped, is at most 350 KB, with a warning over 150 KB; scripts fetched after hydration count",
+  "e2e: in a production build, the Prototype dock and viewport preview don't render, and nothing of OSA shows without ?osa=1",
+]

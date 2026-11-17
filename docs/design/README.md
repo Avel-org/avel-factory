@@ -101,6 +101,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-W1 to CR-W22 | The web's contract changes | Decided Nov 12 and built in contract 1.0.0 |
 | CR-W23 | TanStack DB in the control room | Proposed (frontend) |
 | CR-W24 | The Learning screens | Proposed (frontend); reads CR-28 |
+| CR-W29 | The control room comes from the design export: Javaris's control room JSX runs at `/` in apps/web with its sample world; the old shell goes; T-F5 dropped, T-F6, T-F3 and T-F4 withdrawn; temporary exceptions to E2, E4, E14 and E16 | Accepted Nov 17 (`CR-W29 The control room from the design export.md`); built in frontend sprints 07 to 10 as T-F7 to T-F10; the setup.css question is open |
 
 ## Known drift in the frozen docs
 
