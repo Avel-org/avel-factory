@@ -158,6 +158,13 @@ export AVEL_SEAT="$name"
 # The turn limit for an interactive session (CR-37): scripts/hooks/turns.py reads these.
 export AVEL_TURN_LIMIT="$turns" AVEL_REPORT="$wt/$REPORT"
 
+# The session's identity and settings come from main, not from the ticket branch, which may predate a
+# kit change (scripts/agents/kit.py). --agents outranks the branch's .claude/agents; --settings adds
+# main's allowlist and hooks to the branch's (the project source stays on, or CLAUDE.md isn't loaded).
+kit="$state/kit/$lane-$sprint-$doc.a$n"
+python3 scripts/agents/kit.py "$AGENT" "$kit" || die "can't build the session's kit from main"
+kitargs=(--agents "$(cat "$kit/agents.json")" --settings "$kit/settings.json")
+
 cd "$wt"
 if [[ -f package.json ]]; then
   pnpm install --frozen-lockfile --prefer-offline >/dev/null 2>&1 || echo "warning: pnpm install failed in $wt; the session's first test run will show why"
@@ -165,7 +172,7 @@ fi
 echo "$name: $DOC_PATH on $( [[ $CHECKOUT == detached ]] && echo "a detached checkout of $BRANCH" || echo "$BRANCH" ), model $MODEL, at most $minutes minutes"
 if (( headless )); then
   log="$state/logs/$lane-$sprint-$doc.a$n.log"
-  timeout "${minutes}m" claude -p --agent "$AGENT" --model "$MODEL" --max-turns "$turns" "$ACTIVATION" >"$log" 2>&1 \
+  timeout "${minutes}m" claude -p "${kitargs[@]}" --agent "$AGENT" --model "$MODEL" --max-turns "$turns" "$ACTIVATION" >"$log" 2>&1 \
     || echo "the session ended with an error or hit its limit: $log"
 else
   # A finished session ends itself: the Stop hook (scripts/hooks/session.py) raises the flag once the
@@ -185,7 +192,7 @@ else
   ) &
   watcher=$!
   printf '\033]0;%s\007' "$name"
-  timeout --foreground "${minutes}m" claude --agent "$AGENT" --model "$MODEL" -n "$name" "/dispatch $lane/$sprint/$doc" \
+  timeout --foreground "${minutes}m" claude "${kitargs[@]}" --agent "$AGENT" --model "$MODEL" -n "$name" "/dispatch $lane/$sprint/$doc" \
     || echo "the session ended (or hit its $minutes-minute limit)"
   kill "$watcher" 2>/dev/null || true
   rm -f "$AVEL_DONE_FLAG"
