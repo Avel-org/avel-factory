@@ -63,4 +63,4 @@ S1 canvas → frame.spec, kit-css. S2 attributes → app-shell, frame.spec. S3, 
 None.
 
 ## Lock line
-- T-F2: apps/web/test/shell/**, apps/web/e2e/shell/** @ COMMIT
+- T-F2: apps/web/test/shell/**, apps/web/e2e/shell/** @ ce6fdcc (the commit that adds the tests; the report is in it, so the hash can't name itself, and no test changes after it)
