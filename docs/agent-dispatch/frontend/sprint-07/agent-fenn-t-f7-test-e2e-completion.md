@@ -1,9 +1,11 @@
-status: blocked
+status: done
 ticket: T-F7
 
 # T-F7 tests: completion report (Fenn)
 
-Blocked on one step only: the first commit that deletes the retired locked tests (T-F7-01's setup) was refused by the session's permission classifier ("destructive or unwanted action") when I ran `git rm`. I did not retry or work around it. Everything else is written and proven failing. To finish: Zero or OSA runs, on this branch,
+**Update (attempt a2, Nov 17):** the deletion commit now exists (a04d7a9, made by the lead, who also amended hygiene.test.ts under CR-W29) and the lock line is in locks.md at a04d7a9. The tests below are locked and unchanged; this attempt re-ran nothing (no node_modules in this worktree) and only corrects the status. Deviation 4 is resolved by that amendment.
+
+Originally blocked on one step only: the first commit that deletes the retired locked tests (T-F7-01's setup) was refused by the session's permission classifier ("destructive or unwanted action") when I ran `git rm`. I did not retry or work around it. Everything else is written and proven failing. To finish: Zero or OSA runs, on this branch,
 
     git rm -r apps/web/test/shell apps/web/e2e/shell apps/web/test/home-loader.test.ts apps/web/test/home-loader-states.test.ts apps/web/test/home-view.test.ts apps/web/e2e/home.spec.ts apps/web/e2e/states.spec.ts
     git commit -m "T-F7 tests: delete the locked tests CR-W29 retires"
@@ -61,7 +63,7 @@ T-F7-01 retired.test.ts; -02 source.test.ts; -03 rules.test.ts; -04 boot.spec.ts
 - Mobile (390), night and `contract-mock` states aren't in T-F7's list; not covered. The route titles for Live, Library, Settings are taken from `PAGES`.
 
 ## Lock line
-- T-F7: apps/web/test/control-room/support.ts, apps/web/test/control-room/retired.test.ts, apps/web/test/control-room/source.test.ts, apps/web/test/control-room/rules.test.ts, apps/web/e2e/control-room/support.ts, apps/web/e2e/control-room/boot.spec.ts, apps/web/e2e/control-room/routes.spec.ts, apps/web/e2e/control-room/prod.spec.ts, apps/web/e2e/budget.spec.ts @ <branch tip>
+- T-F7: apps/web/test/control-room/support.ts, apps/web/test/control-room/retired.test.ts, apps/web/test/control-room/source.test.ts, apps/web/test/control-room/rules.test.ts, apps/web/e2e/control-room/support.ts, apps/web/e2e/control-room/boot.spec.ts, apps/web/e2e/control-room/routes.spec.ts, apps/web/e2e/control-room/prod.spec.ts, apps/web/e2e/budget.spec.ts @ a04d7a9 (locked in locks.md)
 
 ## Messages received
 None.
