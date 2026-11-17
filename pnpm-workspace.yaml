@@ -2,3 +2,6 @@ packages:
   - apps/*
   - packages/*
   - tools/*
+
+overrides:
+  "@esbuild-kit/core-utils>esbuild": 0.25.12
