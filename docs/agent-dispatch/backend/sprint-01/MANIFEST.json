@@ -1,0 +1,18 @@
+{
+  "files": {
+    "DISPATCH-PROMPTS.md": "3f5c784954f63f0e0e05fcd24df31c5821d3b1ed94eb4ad7e8e17a52cd339e46",
+    "DISPATCH.md": "5f962c6f5db1f02f91df242cfa7b305cd3faf6d16df83bd09a2ca265a428caa9",
+    "agent-rigg-t-b0-review.md": "691b041b0964f17d057562db409997cfdbb3ad2672d0f39bb4a6498c227077c5",
+    "agent-rigg-t-b0-test-unit.md": "4c2498426e0b81d40b688e096373d209f29284fa60d742df0197a4921f548b11",
+    "agent-rigg-t-b1-review.md": "73996551d85076b5611f4f8939686128a00ef0848b7f816698e25df60a41923a",
+    "agent-rigg-t-b1-test-unit.md": "6f9f5a18743632df728b89ea2dea71b541ef089964b9fb32ecb6c4b52969b07d",
+    "agent-soap-t-b0-build.md": "90cc0a01d6ee6d122b245489245407988512c4b06e0c92288236998605b4c3e1",
+    "agent-soap-t-b1-build.md": "dda91e349fe4c498c24691145672ec68125aad1214a044399af0a773e945f9d6",
+    "codebase-analysis.md": "886f3bca5793bf100a57663c161c68f44a8e7c67a8064d8d911585cd52727b4f"
+  },
+  "lane": "backend",
+  "packageSha256": "834410c6b139915761e4a7863638389243e43c58d7d7ae70599beed40bbc70a6",
+  "plan_sha256": "047db65bcea50e63ebb6f7f58385aa59c08255e5d32fd6fd3b90ffba9fe9d639",
+  "renderer": "avel-render 1",
+  "sprint": "sprint-01"
+}

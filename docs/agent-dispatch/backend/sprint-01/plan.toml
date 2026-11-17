@@ -1,0 +1,187 @@
+# backend/sprint-01: the sprint's plan. Axis writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Rigg's tests, Soap's build, Rigg's review.
+# Check it:   scripts/render.py --check backend/sprint-01
+# Render it:  scripts/render.py backend/sprint-01   (after approval), then commit the folder.
+#
+# Javaris asked for a small, quick scaffold: three tickets across both lanes, one squash commit
+# each. This lane has two (T-B0, T-B1); the frontend's one is in Zero's sprint. render.py warns
+# that two is under B1's 3 to 6: that's his call, not a mistake.
+
+lane = "backend"
+sprint = "sprint-01"
+step = 1
+title = "Step 1, cycle 1: setup and dependencies, then the server shell with spike 1 folded in"
+goals = [
+  "Every dependency both scaffolds need is installed once, and CI refuses a builder who leaves the ticket's files or edits a locked test",
+  "The server answers GET /api/health, with X-Request-Id, X-Contract-Version and the contract's error body on every response",
+  "Spike 1's edge checks (CR-30 section 6, checks 1, 3 and 4) pass on Effect 4.1, oRPC 1.16.2 and Hono without patches",
+]
+done_when = [
+  "Step 0 and Step 1 plan, Step 1 test 1: CI is green; the contract builds and the OpenAPI document is generated from it",
+  "Step 0 and Step 1 plan, Step 1 test 3: a typed error returns { code, message, details?, requestId }, requestId matches X-Request-Id, and every response carries X-Contract-Version",
+  "Build rules H6: the lock check runs on every PR",
+]
+sources = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 item 1, middleware items 2.1, 2.3 and 2.9, and tests 1 and 3" },
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "spike 1 (section 6) and its pass and fail rules" },
+  { path = "docs/design/Build rules.md", why = "C4 (full-rigor areas), E5 (dependencies), H6 (the lock check)" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7, Biome, Vitest 5; Hono, oRPC 1.16.2 (implement(contract) through OpenAPIHandler under /api), Zod 4 (zod/mini in the contract), Effect 4 inside packages/server"
+layout = "packages/contract (the oRPC contract 1.0.0), packages/contract-mock, packages/db (schema, migrations), tools/docs (generated docs); new this sprint: tools/repo-checks (T-B0) and packages/server (manifest in T-B0, code in T-B1)"
+conventions = [
+  "AGENTS.md is the rulebook: API rules (errors, headers) and Writing Effect (rules 1 to 10)",
+  "packages/server layout: src/platform/** for the shell, middleware and Effect services; src/modules/<module>/** for the 20 modules of Backend modules and build plan. CODEOWNERS (T-B0) relies on it",
+  "Packages run TypeScript with node --experimental-strip-types, like tools/docs; tsconfig copies tools/docs/tsconfig.json",
+  "Exact versions only in package.json (no ^ or ~), as in every existing package",
+]
+notes = [
+  "Out of scope this cycle (next cycle): the Db service, database errors, idempotency, auth. So CR-30 spike 1 checks 2 (withTransaction, commitWithEvents) and 5 (the reaper under TestClock) move to the Db ticket",
+  "T-B1 depends on T-B0: it needs T-B0's packages/server/package.json and the installed dependencies",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B0"
+slug = "setup-deps"
+title = "Setup: CODEOWNERS, the CI lock check, and every scaffold dependency installed once"
+goal = "Every dependency the scaffolds need is installed in one lockfile change, and a PR whose builder leaves the ticket's files or edits a locked test fails CI."
+rigor = "standard"
+refs = ["Build rules H6, E5, B7, C4, G7 and section P", "Step 0 and Step 1 plan, Step 1 test 1"]
+may_change = [
+  ".github/CODEOWNERS",
+  ".github/workflows/locks.yml",
+  "tools/repo-checks/src/**",
+  "tools/repo-checks/package.json",
+  "tools/repo-checks/tsconfig.json",
+  "tools/repo-checks/vitest.config.ts",
+  "pnpm-workspace.yaml",
+  "pnpm-lock.yaml",
+  "packages/server/package.json",
+  "packages/server/tsconfig.json",
+  "packages/server/vitest.config.ts",
+  "apps/web/package.json",
+  "docs/design/Outside sources and what we took.md",
+]
+must_not_change = [
+  "packages/contract/**",
+  "packages/contract-mock/**",
+  "packages/db/**",
+  "packages/server/src/**",
+  ".github/workflows/ci.yml",
+  ".github/workflows/docs.yml",
+]
+context = [
+  { path = "docs/design/Build rules.md", why = "H6 (what the lock check enforces), C4 (the full-rigor areas CODEOWNERS covers), E5 (what each new package must state), G7" },
+  { path = "scripts/render.py", why = "the build task doc's Part 5 Territory list and the locks.md line format (- T-Bn: <paths> @ <sha>) the lock check parses; branch names t/<id>-<slug>; report paths" },
+  { path = "scripts/agents/roster.json", why = "the lanes, their ticket prefixes and the never lists" },
+  { path = "docs/agent-dispatch/avel/example-plan.toml", why = "render it into a scratch repo for test fixtures" },
+  { path = "docs/design/Backend modules and build plan.md", why = "the module names behind the C4 paths in CODEOWNERS" },
+  { path = ".github/workflows/ci.yml", why = "the pnpm and Node setup the new workflow copies" },
+  { path = "tools/docs/package.json", why = "the pattern for a tools/ package: scripts, strip-types, tsconfig" },
+  { path = "docs/design/Build roster and environment.md", why = "the GitHub section: CODEOWNERS with 'require review from code owners'" },
+]
+verify = [
+  "pnpm install --frozen-lockfile",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+  "pnpm --filter @avel/repo-checks test",
+  "pnpm --filter @avel/db exec drizzle-kit check",
+  "pnpm --filter @avel/docs generate && git diff --exit-code docs/generated",
+  "pnpm why esbuild",
+]
+notes = [
+  "Dependencies, Javaris approves these in this ticket list (E5). Exact versions, each published on or before Nov 2, 2026. Backend, all MIT: hono 4.13.16 (1.3 MB unpacked; the HTTP server and router AGENTS.md fixes; nothing in the repo serves HTTP) · @hono/node-server 2.1.5 (138 KB; runs Hono on Node for the dev server) · effect 4.1.1 (56.5 MB unpacked with sources and maps, no dependencies; CR-30) · dev: @effect/vitest 4.1.1 (345 KB; TestClock and layers in Vitest, Writing Effect rule 8) · dev: @effect/language-service 0.87.5 (19.9 MB; Writing Effect rule 9). Already in the lockfile, so not new: @orpc/server 1.16.2, @orpc/openapi 1.16.2, zod 4.6.7, @avel/contract (workspace:*)",
+  "Frontend list, from Zero (Nov 16), for a new apps/web/package.json: name @avel/web, private, type module, exact pins, and the scripts and sideEffects in the next note. dependencies: @avel/contract workspace:* · @tanstack/react-start 1.169.4 (MIT, 103 KB) · @tanstack/react-router 1.170.46 (MIT, 1 MB; the version react-start pins) · react 19.3.1 and react-dom 19.3.1 (MIT, 174 KB and 7.9 MB) · @orpc/client 1.16.2 and @orpc/openapi-client 1.16.2 (MIT, 138 KB and 47 KB; AGE EXCEPTION: published Nov 6, kept to match oRPC 1.16.2, already in the lockfile) · clsx 2.1.1 (MIT, 8 KB) · tailwind-merge 3.7.0 (MIT, 1 MB). devDependencies: @avel/contract-mock workspace:* · vite 8.3.8 (MIT, 2.3 MB; AGE EXCEPTION: published Nov 11, but it's the copy vitest 5.1.0 already locks; the fallback 8.3.5 adds a second vite) · @vitejs/plugin-react 6.1.2 (MIT, 45 KB) · tailwindcss 4.3.3 and @tailwindcss/vite 4.3.3 (MIT, 755 KB and 13 KB) · @types/react 19.3.0 and @types/react-dom 19.3.0 (MIT) · @playwright/test 1.64.1 (Apache-2.0; browsers install separately) · @axe-core/playwright 4.14.0 (MPL-2.0, dev only, never shipped). Javaris approves both exceptions and the MPL-2.0 licence by name",
+  "apps/web/package.json is final after this ticket (T-F1 can't touch it): the dependencies above, \"sideEffects\": [\"**/*.css\"], and exactly these scripts, from Zero: dev (vite dev), preview (vite preview), test (vitest run), e2e (playwright test). No build or typecheck script on purpose: with no vite.config.ts, tsconfig.json or src yet, root pnpm build and pnpm typecheck would fail; they arrive in the next cycle's dependency ticket. Javaris approved the roster.json exception that lets the backend lane write this one file (Nov 16), and the three age and licence exceptions named above",
+  "The override: add to pnpm-workspace.yaml `overrides: { \"@esbuild-kit/core-utils>esbuild\": \"0.25.12\" }`, which lifts drizzle-kit's esbuild 0.18.20 (GHSA-67mh-4wv8-2f99) to the 0.25.12 already in the lockfile. drizzle-kit check and the docs generate must still pass",
+  "packages/server/package.json is final after this ticket (T-B1 can't touch it): name @avel/server, private, type module, the dependencies above plus @avel/contract, @orpc/server, @orpc/openapi and zod; scripts typecheck (tsc -p tsconfig.json --noEmit), test (vitest run --passWithNoTests) and dev (node --experimental-strip-types src/main.ts). No build script: the server runs from source. tsconfig.json and vitest.config.ts are final too, and vitest.config.ts is the tsconfig's input until T-B1 adds src",
+  "CODEOWNERS: every path is owned by @Avel-org/operator (Javaris makes that team with himself in it, with write access). It covers the C4 areas as paths: packages/server/src/platform/{auth,db,jobs}/** and packages/server/src/modules/{events,integrator,runner,harness,compute,metering,gate,delivery}/**; and the rule files: .github/**, scripts/agents/**, scripts/render.py, scripts/dispatch.sh, scripts/agent.sh, .agents/**, .claude/**, docs/design/Build rules.md",
+  "The lock check (tools/repo-checks, run by .github/workflows/locks.yml on pull_request with full history): a PR from t/<B|F><n>-<slug> finds ticket T-<B|F><n>'s rendered build task doc and its locks.md line. The builder's commits are the commits after the lock line's SHA; each file they touch must match a Territory glob in the build doc's Part 5 (or be the build's own report), and none may be a locked path. It also runs python3 scripts/render.py --verify on the ticket's sprint. A branch not named t/* passes with a note. Glob matching follows render.py's glob_regex",
+  "Branch protection and the required checks are GitHub settings Javaris turns on when the repo exists (H1, H7); they're not in this ticket",
+  "If @effect/language-service can't run against TypeScript 7, stop with needs-cr. Don't pin an older TypeScript",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["tools/repo-checks/test/**"]
+behaviours = [
+  "lock check: a builder commit inside the build doc's Territory passes",
+  "lock check: a builder commit touching a file outside the Territory fails and names the file",
+  "lock check: a builder commit touching a path in the ticket's locks.md line fails, even when the path also matches the Territory",
+  "lock check: commits at or before the lock SHA (the checker's tests) aren't held to the builder's Territory",
+  "lock check: a t/* branch with no rendered build doc or no locks.md line fails with a reason",
+  "lock check: a branch not named t/* passes and says it isn't a ticket PR",
+  "CODEOWNERS: every C4 area path and every rule file listed in the ticket is owned by @Avel-org/operator",
+  "dependencies: packages/server/package.json and apps/web/package.json pin the approved packages at exact versions (no ^ or ~)",
+  "dependencies: apps/web/package.json has exactly the scripts dev, preview, test and e2e, no build or typecheck script, and sideEffects [\"**/*.css\"]",
+  "dependencies: pnpm-lock.yaml holds no esbuild below 0.25",
+  "workflow: .github/workflows/locks.yml runs the lock check on pull_request with fetch-depth 0",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B1"
+slug = "server-shell"
+title = "Server shell with spike 1: health, X-Request-Id, X-Contract-Version, the error body through effectHandler"
+goal = "GET /api/health answers 200, every response carries X-Request-Id and X-Contract-Version, and a tagged Effect failure comes back as the contract's error body with its requestId."
+rigor = "standard"
+refs = [
+  "Step 0 and Step 1 plan, Step 1 item 1, items 2.1, 2.3 and 2.9, tests 1 and 3",
+  "CR-30, section 6, spike 1 checks 1, 3 and 4",
+  "API routes.md, route 6",
+]
+depends_on = ["T-B0"]
+may_change = ["packages/server/src/**"]
+must_not_change = [
+  "packages/server/package.json",
+  "packages/server/tsconfig.json",
+  "packages/server/vitest.config.ts",
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
+  "packages/contract/**",
+  "packages/db/**",
+]
+context = [
+  { path = "AGENTS.md", why = "API rules (the error body, the two headers) and Writing Effect rules 1 to 4 and 8" },
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 2 (what Effect is used for), section 6 spike 1 and its pass and fail rules" },
+  { path = "packages/contract/src/errors.ts", why = "errorMap, ErrorBody, REQUEST_ID_HEADER and CONTRACT_VERSION_HEADER: the table the tagged errors map to" },
+  { path = "packages/contract/src/version.ts", why = "CONTRACT_VERSION, the X-Contract-Version value" },
+  { path = "packages/contract/src/routes/health.ts", why = "route 6, GET /api/health, and HealthDto" },
+  { path = "packages/contract-mock/src/mock.ts", why = "how this repo already serves the contract through OpenAPIHandler" },
+  { path = "docs/design/Port inventory.md", why = "the clock, ids and logger port 'with changes' as Effect services (CR-30)" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "the middleware order in item 2; only 2.1, 2.2, 2.3, 2.7 and 2.9 are in this ticket" },
+]
+verify = [
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server test",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Spike 1, folded in (Javaris, Nov 16; recorded in CR-30): checks 1, 3 and 4 here. The completion report gives pass or fail for each of checks 1, 3 and 4, with its evidence, so Javaris can decide on Effect; checks 2 and 5 need the Db service and move to next cycle's Db ticket. If any of 1, 3 or 4 needs a beta package, a fork or a patch, stop with needs-cr: CR-30 says Javaris then decides whether Effect stays inside modules or goes, and the next tickets are re-planned (Build rules, 'The first cycle')",
+  "Only route 6 is implemented. Every other contract route answers through the same error path; no other procedure, no sample route (CR-31)",
+  "Out of scope: the Db service, database errors, idempotency, auth, rate limits",
+  "Request IDs come from an Ids service (UUIDv7) and time from Clock, never crypto.randomUUID() or Date.now() in server code (Writing Effect rule 4). Programs run only in the effectHandler adapter and the dev entry point (rule 2)",
+  "The contract's catalog has no 500 code; CR-38 (proposed) adds one next cycle. Until then a defect's body keeps ErrorBody's shape with oRPC's INTERNAL_SERVER_ERROR as the code, and the test checks the status, shape and requestId, not the code. Don't add a code to the contract",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/**"]
+behaviours = [
+  "GET /api/health returns 200 with a body that parses as HealthDto",
+  "every response, success or error, carries X-Contract-Version equal to the contract's CONTRACT_VERSION",
+  "a valid incoming X-Request-Id is echoed; a missing or malformed one is replaced by a new UUIDv7 from the Ids service",
+  "an unknown /api route returns 404 with the contract's ErrorBody, whose requestId equals the X-Request-Id header",
+  "spike 1.1: a procedure served through effectHandler that fails with a tagged error returns that error's contract code and status, as ErrorBody with the requestId",
+  "spike 1.1: a tagged error with no entry in the error table fails to compile (a type-level test)",
+  "an unexpected defect returns 500 as ErrorBody with the requestId, never shows the defect's message, and is logged with the requestId",
+  "spike 1.3: a request aborted mid-program interrupts it and runs its finalizers (a fake reservation from acquireRelease is released)",
+  "spike 1.4: the logger writes one JSON line per log call carrying the request ID, through Effect's logger slot",
+]

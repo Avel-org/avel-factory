@@ -125,7 +125,7 @@ The full walkthrough is in the doc "AVEL Backend System Explained".
 
 ## How the factory itself is built
 
-Five roles: you as operator, Axis as backend lead, Zero as frontend lead, two builders, and a review team (Brennan and Zane). Work runs in cycles of plan, build, check, review and merge, one ticket per fresh session, with at most two review rounds and only P0 and P1 findings blocking. The full guide is `claude/AVEL agent system.md`.
+You are the operator. OSA runs the cycle for you: it prepares, you decide, and it may merge only clear and clean PRs (CR-36). Axis leads backend and Zero leads frontend, each with a builder and a checker: Soap and Rigg, Fantem and Fenn. Zane is an optional security reviewer for full-rigor PRs. The checker writes each ticket's acceptance tests first, and they must fail on `main`; the builder makes them pass; the checker reviews. Work runs in cycles of plan, tests, build, check, review and merge, one dispatch per fresh session, with at most two review rounds and only P0 and P1 findings blocking. Full-rigor PRs get three reviews and you merge them. The rules are `Build rules.md` (version 3, which replaces the team in `AVEL agent system.md`), with `Agents, identities and system prompts.md` and `Build roster and environment.md`.
 
 ## What's next
 

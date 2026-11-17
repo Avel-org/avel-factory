@@ -2,7 +2,7 @@
 
 Nov 13, 2026 · @javaris · touches the stack in Design v0.6 Main, the Step 1 plan, Jobs and workers and the Port inventory
 
-**Status, Nov 13, 2026:** decisions 1 and 2 accepted (Effect 4 for the server, gated by spike 1; the DBOS test before the jobs engine). Decision 3 declined: spans stay "later", as the design says, so section 4 is kept for when they're turned on. Decisions 4 and 5 are open. **Nov 14:** spike 2 and the Step 1 jobs test gain check 8, the crash between a side effect and its save. Nothing here changes the contract, the web or the CLI.
+**Status, Nov 13, 2026:** decisions 1 and 2 accepted (Effect 4 for the server, gated by spike 1; the DBOS test before the jobs engine). Decision 3 declined: spans stay "later", as the design says, so section 4 is kept for when they're turned on. Decisions 4 and 5 are open. **Nov 14:** spike 2 and the Step 1 jobs test gain check 8, the crash between a side effect and its save. **Nov 16 (Javaris, I4):** spike 1 is folded into the first build cycle instead of a throwaway branch. Checks 1, 3 and 4 run in ticket T-B1 (backend sprint-01, the server shell) and land on `main` with it. Checks 2 and 5 need the `Db` service and run in next cycle's `Db` ticket. Each ticket's completion report gives pass or fail for every spike check it covers, with its evidence, and Javaris decides on Effect from those (decision 1). A failed check still stops the work with `needs-cr`. Nothing here changes the contract, the web or the CLI.
 
 ## In short
 

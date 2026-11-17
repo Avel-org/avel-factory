@@ -163,7 +163,7 @@ Rules for tickets:
 
 **One ticket per session, started fresh, with hard limits.**
 
-- **Headless and capped.** Each session runs non-interactively (`claude -p`) with a limit on turns and cost, the same idea as the factory's $4 and 60-minute cap per attempt.
+- **Capped by turns and time, headless or interactive** (CR-37). A session runs headless (`claude -p`) or interactively, so OSA can message it, with a limit on turns, time and cost, the same idea as the factory's $4 and 60-minute cap per attempt. Interactive sessions get their turn cap from CR-37's hook; until it lands, time caps them.
 - **No resuming.** When a session ends, it leaves a report. If the ticket isn't done, the next attempt starts fresh from that report, not by reopening the old conversation.
 - **Startup routine.** Every session begins the same way: confirm the folder, read the progress file and task list, read the git log, run the tests. Only then does it start work.
 - **Agents may tick, not rewrite.** An agent can mark a task as passing in the task list, but it can't edit or delete tasks. Anthropic stores its task list as JSON because models tend to rewrite Markdown.
@@ -256,7 +256,7 @@ Every change adopted for version 2, grouped by area. Tick each one as it is put 
 - [ ] 4. Helper agents only read.
 
 ### Sessions
-- [ ] 5. One ticket per session, headless, capped; no resuming.
+- [ ] 5. One ticket per session, capped by turns and time (CR-37); no resuming.
 - [ ] 6. Memory in files: task list (JSON), progress file, git log; agents may only tick tasks.
 - [ ] 7. Tickets sized to one session; done means the tests pass.
 - [ ] 8. One short AGENTS.md per package; no long specs.

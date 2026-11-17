@@ -7,7 +7,8 @@
       "checker": "rigg",
       "prefix": "T-B",
       "test_roles": ["test-unit"],
-      "never": ["apps/web/**"]
+      "_never_note": "Everything in apps/web except apps/web/package.json, which the backend's dependency ticket may write (Javaris, Nov 16: one lockfile change per cycle, E5 and B7).",
+      "never": ["apps/web/*/**", "apps/web/.*", "apps/web/*.{ts,tsx,js,mjs,cjs,css,html,md,yaml,yml,toml}", "apps/web/{tsconfig,components,biome}.json"]
     },
     "frontend": {
       "lead": "zero",

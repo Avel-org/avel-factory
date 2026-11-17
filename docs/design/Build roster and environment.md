@@ -10,7 +10,7 @@ Your five seats are OSA, the two leads and the two building tabs, plus a sixth t
 
 | Tab | Who | Runs as | Model | Works in | Key file | Holds | Never |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 OSA | Operator agent | OSA, always on | DeepSeek V4.1 Flash, Kimi K2.6 for briefs (MIOSA AI, CR-29) | The checkout, read only | `osa.env` | Its MIOSA key; a GitHub token that files issues and reads PRs | Pushes, merges, approves, writes code |
+| 1 OSA | Operator agent | OSA, always on | DeepSeek V4.1 Flash, Kimi K2.6 for briefs (MIOSA AI, CR-29) | The checkout, read only | `osa.env` | Its MIOSA key; a GitHub token that files issues, reads PRs and merges clear and clean PRs (CR-36) | Pushes, merges anything CR-36 doesn't allow, approves, writes code |
 | 2 Axis | Backend lead | Claude Code, interactive | Opus | Its own worktree, `../avel-factory-wt/axis` | `leads.env` | The leads' GitHub token (can merge standard PRs) | Reviews or merges its own work |
 | 3 Zero | Frontend lead | Claude Code, interactive | Opus | `../avel-factory-wt/zero` | `leads.env` | The same | The same |
 | 4 Backend | Soap, builder (left); Rigg, checker (right) | One dispatch per session: the lane loop opens each ready task doc in the agent's pane with `claude --agent <name>` and `/dispatch` | Sonnet; Opus on full-rigor tickets | The ticket's worktree | `agents.env` | The agents' GitHub token (push `t/*` branches, open PRs) | Merges; the builder never edits the checker's tests |
@@ -94,7 +94,7 @@ WezTerm runs on Windows, and the repo and every session run in WSL (Ubuntu).
 | --- | --- | --- | --- |
 | **Claude Code sign-in** | Axis, Zero, the builders and checkers | Either your Claude plan's login (nothing to store), or `ANTHROPIC_API_KEY` from the **avel-build** Console workspace with a monthly spend limit | `leads.env`, `agents.env` (only if you use the key) |
 | **`MIOSA_API_KEY` for OSA** | OSA's models | A service-account key (`miosa service-account new osa`, then `miosa service-account key new`), with a gateway budget set to CR-29 decision 4 ($30 a month recommended) | `osa.env`, wherever OSA's provider setting reads it |
-| **GitHub token: OSA** | Filing tickets, reading PRs and CI | Fine-grained, the `avel-factory` repo only: Issues read and write; Pull requests, Actions, Contents and Metadata read. **No Contents write**, so it can't push or merge (rule A1). | `osa.env` as `GH_TOKEN` |
+| **GitHub token: OSA** | Filing tickets, reading PRs and CI | Fine-grained, the `avel-factory` repo only: Issues read and write; Actions and Metadata read; Pull requests and Contents write, for CR-36 merges only. **Give it Contents write only once branch protection is on** (required checks, linear history, code-owner review on full-rigor paths, no direct pushes for anyone), so a squash merge of a clear and clean PR is the only way it reaches `main` (A1). | `osa.env` as `GH_TOKEN` |
 | **GitHub token: agents** | None (Nov 16). Builders and checkers commit on their ticket branch in their worktree and never push (Build rules A, H7). Javaris pushes each ticket branch; OSA commits only with his approval | No token | — |
 | **GitHub token: leads** | Merging standard PRs | `avel-bot`, fine-grained, that repo only: Contents and Pull requests read and write; Issues and Metadata read. Branch protection keeps it off `main` except through a PR. Full-rigor merges are held for you by CODEOWNERS: you own those paths, and "require review from code owners" is on. | `leads.env` as `GH_TOKEN` |
 

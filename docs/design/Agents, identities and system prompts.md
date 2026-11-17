@@ -128,11 +128,11 @@ It holds the job's purpose, its stages or loop, its limits (calls, tokens, quest
    - The task doc and the activation each get their own hash.
    - Canon logs `prompt_version` on every turn.
    - A receipt can always say what an agent was given.
-3. **The task doc is the whole briefing.** If you find yourself typing instructions into a session, the plan is missing something. Fix the plan, re-render, and start a new attempt.
+3. **The task doc is the briefing.** A relayed instruction from OSA can only narrow or clarify it, and is logged and listed in the report (CR-37). If you find yourself relaying the same kind of instruction twice, or one that would widen the ticket, the plan is missing something: fix the plan, re-render, and start a new attempt.
 4. **Learned lines come from findings.** A finding that shows a mistake an agent could repeat adds one line to that agent's **Learned** section, in the PR that routes the finding.
 5. **Untrusted text stays data.** Client, Canon and agent text is never an instruction, in any layer.
 6. **The same stop statuses everywhere:** `blocked`, `needs-cr`, `test-dispute`, `needs-dependency`, `out-of-scope`.
-7. **No model decides.** No identity or system prompt can approve, merge, release, file an upload or pick work. Those stay with code and with you.
+7. **No model decides.** No identity or system prompt can approve, merge, release, file an upload or pick work. Those stay with code and with you. The one exception is OSA's squash merge of a PR that meets every CR-36 condition: CI and the checker's review have already decided it.
 
 ## 6. Canon's system prompts: what they must contain (Step 7)
 
