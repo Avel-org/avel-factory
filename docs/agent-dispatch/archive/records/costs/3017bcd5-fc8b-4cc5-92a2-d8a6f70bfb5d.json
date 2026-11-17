@@ -1,0 +1,24 @@
+{
+ "session_id": "3017bcd5-fc8b-4cc5-92a2-d8a6f70bfb5d",
+ "name": "BRENNAN w0-app-review-spec a1",
+ "branch": "frontend/sprint-01/agent-brennan-w0-app-review-spec-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-brennan-w0-app-review-spec-a1",
+ "first_at": "2026-11-07T06:30:37.973Z",
+ "last_at": "2026-11-07T06:34:42.665Z",
+ "updated_at": "2026-11-07T06:34:55Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 64,
+   "output": 23520,
+   "cache_write_5m": 0,
+   "cache_write_1h": 88403,
+   "cache_read": 1727221,
+   "messages": 32
+  }
+ },
+ "cost_usd": 1.5233,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 1.5233
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

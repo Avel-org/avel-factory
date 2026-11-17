@@ -1,0 +1,116 @@
+# An example sprint plan: Build rules' first-cycle draft for the backend, written out in full.
+# Axis replaces it: copy what's useful into docs/agent-dispatch/backend/sprint-01/plan.toml
+# (scripts/render.py --new backend/sprint-01 writes a blank one). The paths are guesses until
+# spike 1 settles the server's layout. scripts/test_render.py renders this file as its fixture.
+
+lane = "backend"
+sprint = "sprint-01"
+step = 1
+title = "Step 1, cycle 1: spike 1, the server shell, the Db service, idempotency"
+goals = [
+  "Spike 1 decides CR-30's Effect question before anything is built on it",
+  "The server answers health checks with the contract's headers and error body",
+]
+done_when = [
+  "Step 0 and Step 1 plan, Step 1 tests 1, 4 and 6 pass against real Postgres",
+]
+sources = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1's tests" },
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "spike 1 and the Effect rules" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/server test"
+
+[analysis]
+stack = "Node 22, Hono, oRPC 1.16, Zod 4, Drizzle on node-postgres, Postgres 17, Effect 4 inside packages/server"
+layout = "packages/contract (the oRPC contract), packages/contract-mock, packages/db (schema, migrations), packages/server (new), apps/web"
+conventions = [
+  "AGENTS.md: DTO mappers, the contract's error body, Idempotency-Key, real Postgres in tests",
+  "Effect services for Clock, Ids and Random; never Date.now() or Math.random() in server code",
+]
+notes = ["packages/server doesn't exist yet: T-B1 creates its skeleton"]
+
+[[ticket]]
+id = "T-B1"
+slug = "effect-spike"
+title = "Spike 1: Effect at the edge, the adapter and its error table"
+goal = "One oRPC route runs through an Effect handler, and each Effect failure maps to the contract's error body."
+refs = ["CR-30, spike 1"]
+may_change = ["packages/server/src/spike/**", "packages/server/package.json", "packages/server/tsconfig.json"]
+context = [{ path = "packages/contract/src/errors.ts", why = "the error catalog the table maps to" }]
+verify = ["pnpm --filter @avel/server test -- spike"]
+notes = ["If the spike fails its pass conditions, stop with needs-cr: T-B2 to T-B4 are re-planned"]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/spike.test.ts"]
+behaviours = [
+  "an Effect handler's success comes back as the route's DTO",
+  "each tagged Effect failure maps to its contract error code and status",
+  "an unexpected defect is a 500 with the contract's error body and a requestId",
+]
+
+[[ticket]]
+id = "T-B2"
+slug = "server-shell"
+title = "Server shell: health, X-Request-Id, X-Contract-Version, the error body"
+goal = "GET /api/health answers 200, and every response carries X-Request-Id and X-Contract-Version."
+refs = ["Step 0 and Step 1 plan, Step 1 test 1"]
+depends_on = ["T-B1"]
+may_change = ["packages/server/src/http/**", "packages/server/src/main.ts"]
+verify = ["pnpm --filter @avel/server test -- shell"]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/shell.test.ts"]
+behaviours = [
+  "GET /api/health returns 200",
+  "every response has X-Request-Id, echoing a valid incoming one",
+  "every response has X-Contract-Version equal to the contract's version",
+  "an unknown route returns the contract's error body with its requestId",
+]
+
+[[ticket]]
+id = "T-B3"
+slug = "db-service"
+title = "The Db service and database errors to 409 and 422"
+goal = "Writes run in withTransaction with commitWithEvents, and a broken database rule comes back as 409 or 422, never a 500."
+rigor = "full"
+refs = ["Step 0 and Step 1 plan, Step 1 test 6"]
+depends_on = ["T-B1"]
+may_change = ["packages/server/src/platform/db/**"]
+verify = ["pnpm --filter @avel/server test -- db"]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/db.test.ts"]
+behaviours = [
+  "a unique violation is 409",
+  "a CHECK violation is 422",
+  "a stale rowVersion is 409",
+  "commitWithEvents gives events a gap-free seq in commit order",
+]
+
+[[ticket]]
+id = "T-B4"
+slug = "idempotency"
+title = "Idempotency-Key on writes"
+goal = "A replayed write with the same key and body returns the stored response; a different body is 409."
+refs = ["Step 0 and Step 1 plan, Step 1 test 4"]
+depends_on = ["T-B2", "T-B3"]
+may_change = ["packages/server/src/idempotency/**"]
+verify = ["pnpm --filter @avel/server test -- idempotency"]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/idempotency.test.ts"]
+behaviours = [
+  "a write without Idempotency-Key is 400 with the contract's error body",
+  "the same key and body replays the stored response",
+  "the same key with a different body is 409",
+  "a response carrying a secret or token is never stored",
+]

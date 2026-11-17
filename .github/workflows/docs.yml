@@ -1,0 +1,51 @@
+# The generated docs (Step 0 item 4): DATABASE.md is checked against the Drizzle schema,
+# and the committed ERD and OpenAPI document must match a fresh generate. A stale
+# DATABASE.md or a stale docs/generated/ fails the build (DATABASE.md, Source of truth).
+# No Postgres: the generators read the Drizzle objects and the contract, not a database.
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    name: drift check, generated docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reads the pnpm version from package.json's packageManager field.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # @avel/docs reads @avel/db and @avel/contract through their built dist/.
+      - run: pnpm build
+
+      - name: DATABASE.md matches the schema
+        run: pnpm --filter @avel/docs drift
+
+      - name: docs/generated matches a fresh generate
+        run: |
+          pnpm --filter @avel/docs generate
+          git add --intent-to-add docs/generated
+          git diff --exit-code -- docs/generated
+
+      - name: The docs tests
+        run: pnpm --filter @avel/docs test

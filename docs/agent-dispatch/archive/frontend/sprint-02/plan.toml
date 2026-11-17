@@ -1,0 +1,635 @@
+# The plan for frontend sprint-02 (W1 continued: the shell layout). Zero writes it; scripts/render.py turns it
+# into the dispatch package. Never edit the rendered files: fix this and re-render.
+#
+# 2026-11-08, reworked for Int's v1.9 brief and procedures.md (d28e78c): docs/ui-contracts/shell-layout.md and
+# kit-v1.9.md replace app-shell.md. One spec review, then small rounds, at most 3 dispatches at once
+# (dispatch.sh's 3 slots; reviews count). Merge order follows `after`:
+#   R0 Brennan reviews both contracts
+#   R1 Fenn unit, Fenn e2e, Ghost's mock (routes 19 and 8)
+#   R2 Fantem's kit and Nemi's styles; Zero reviews the kit
+#   R3 Leon's missions and Ghost's clients (screens only: system writes their routes); Zero reviews each
+#   R4 Leon's system (the shell, routes, nav, Settings) and Ghost's decisions follow-up (merged after system);
+#      Zero reviews each
+#   R5 Leah on main
+# The other ten pages (shell-layout.md section 4, marked 03) are sprint-03.
+team = "frontend"
+sprint = "sprint-02"
+lead = "zero"
+step = "1"
+title = "The shell layout from the design library v1.9: rounded canvas, sidebar with groups, projects and collapse, header, tab bar; All projects, Progress, Clients and Settings; the approval page and kit on v1.9"
+goals = [
+  "Every screen sits in v1.9's shell: the rounded canvas and 264px sidebar at 1024px and wider (64px collapsed, remembered), the sheet below, the phone tab bar at 760px and narrower, focus mode (shell-layout.md sections 1 to 3)",
+  "The nav is built from the routes that exist, in the brief's groups, with the projects from route 19 and their waiting counts from route 52 (section 4)",
+  "All projects, Progress, Clients and Settings are real pages: ScreenHeader, content, and an empty state where there can be nothing to show (section 5)",
+  "The kit, the approval page and the styles follow v1.9 (kit-v1.9.md)",
+]
+done_when = [
+  "SH-01 to SH-14 pass (unit, no SH-08), and SH-20 to SH-25 pass on the phone, 900 and desk projects.",
+  "UC-29 to UC-32 pass on the shell, and the locked tests pass.",
+  "Nothing moves at hydration (SH-24), and layout shift is under 0.02 by shell-layout.md section 8.",
+  "/ passes procedures rule 7's size check, and axe finds nothing on any built route at 1280 and 390.",
+]
+sources = [
+  "docs/ui-contracts/shell-layout.md",
+  "docs/ui-contracts/kit-v1.9.md",
+  "docs/ui-contracts/decisions-approval-page.md",
+  "docs/design/AVEL Shell Layout brief v1.9.md",
+  "docs/design/AVEL Enclosure Grid · Design library v1.9.html",
+  "docs/design/AVEL Web App — Frontend Map v0.6.md",
+  "docs/agent-dispatch/avel/procedures.md",
+  "docs/agent-dispatch/frontend/sprint-02/decisions.md",
+]
+
+[commands]
+build = 'pnpm --filter "@avel/web..." build'
+typecheck = 'pnpm --filter "@avel/web..." --filter @avel/contract-mock typecheck'
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web test"
+
+[analysis]
+stack = "A pnpm workspace in TypeScript (Biome, Vitest; tsconfig.base.json strict). apps/web is TanStack Start (React 19 with the React Compiler, Vite, file routes, selective SSR), TanStack Query through oRPC's TanStack Query utils over @avel/contract (zod/mini), Tailwind v4 over the design library's tokens, lucide-react icons one by one. Tests: Vitest with Testing Library and jsdom, Playwright end to end, all against packages/contract-mock (Frontend Map v0.6)."
+layout = [
+  "apps/web/src/routes: __root.tsx (theme cookie, font preloads, app.css) and index.tsx (the decisions screen), which moves under the new _shell layout this sprint",
+  "apps/web/src/modules/decisions: the approval page; new this sprint: modules/system (the shell's nav model and Settings), modules/missions (route 19, All projects, Progress), modules/clients (route 8, Clients)",
+  "apps/web/src/kit: Enclosure Grid components with data-ui names, and kit.css",
+  "apps/web/src/data and apps/web/src/lib: the data core (Ghost's); apps/web/src/styles: tokens, fonts and app.css (Nemi's)",
+  "apps/web/test and apps/web/e2e: Fenn's (docs/agent-dispatch/frontend/sprint-01/locks.md holds the locks)",
+  "packages/contract-mock: the contract mock (Ghost's); packages/contract: the backend's, read-only here",
+]
+conventions = [
+  "The UI contracts are the spec: shell-layout.md and kit-v1.9.md, over the approval page contract. Names, props, copy and states as they give them; a † string is the contract's own",
+  "Every value is the design library v1.9's final cascade for that element, or a --av-*/shell token, with the DL class in a comment; never invent a value. DL v1.9 wins over anything earlier",
+  "Nothing reads the viewport in JavaScript, and nothing in the shell moves at hydration: widths are media queries, preferences are cookies the server reads",
+  "Screens never call fetch and never keep server data in state; a module imports the kit, the data core and other modules only through their index.ts (Frontend Map v0.6)",
+  "A file under a lock in locks.md changes only in a commit made with AVEL_LOCK_OVERRIDE set, and only when the task doc says so",
+]
+notes = [
+  "Scenario IDs SH-01 to SH-14 and SH-20 to SH-25, with no SH-08 (shell-layout.md section 9, kit-v1.9.md section 4) and UC-01 to UC-32 (the approval page contract) name every test. A dispatch that meets something the contracts leave open stops and reports it under Deviations.",
+  "packages/contract is the backend's. The API gaps are escalations 01 to 03 in docs/agent-dispatch/frontend/sprint-02/escalations/, with the stand-ins the contract gives; never edit the contract.",
+  "Procedures rule 1: main stays green. Fail-first tests land as test.fails until their build merges. Rule 7: / must pass the 150 KB size check. Every build that changes /'s JavaScript reports its figure.",
+]
+
+# ------------------------------------------------------------------ R0: the spec review, Brennan
+[[dispatch]]
+agent = "brennan"
+module = "layout-uic"
+role = "review-spec"
+domain = "Review docs/ui-contracts/shell-layout.md and kit-v1.9.md, the one review before the build (procedures rule 2), against Int's brief, the design library v1.9 and the Frontend Map."
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "under review, whole" },
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "under review, whole (revision 16 of the approval page)" },
+  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "Int's brief: what the shell must be" },
+  { path = "docs/agent-dispatch/frontend/sprint-02/decisions.md", why = "'Shell layout from v1.9': the choices the contracts make, and where your app-shell findings 01 to 07 went" },
+  { path = "docs/agent-dispatch/frontend/sprint-02/escalations", why = "the three API stand-ins the contract relies on" },
+  { path = "docs/agent-dispatch/avel/procedures.md", why = "rules 2, 3 and 7: severity, the 15 KB budget and the size check" },
+]
+notes = [
+  "This is a first review of a new spec. app-shell.md is gone. Your a1 findings on it (shell-uic-brennan-01 to 07) are answered in decisions.md. Check that the answers carried into the new contract hold, and raise any that don't as new findings here.",
+  "Raise only what would make the build or its tests wrong (procedures rule 2). P3s go to docs/agent-dispatch/frontend/sprint-02/backlog.md, not as findings.",
+  "Every value, string and markup claim given as DL's is checked against v1.9's bundled source: grep the HTML for the class or the function (QV, _me, Nme, jme, AU, ea, the Dw screen tree). Int's calls S14 and S15 (no palette, no header switches, product labels) are not findings.",
+]
+
+[[dispatch.task]]
+title = "Design: shell-layout.md's frame, sidebar, header, tab bar, Settings' groups and nav table are DL v1.9's (final cascade, DL's functions' markup and copy), and each departure is S1 to S15 or marked †"
+priority = "P0"
+verify = "grep -c 'lib-rail-head\\|lib-tabbar\\|lib-seg\\|lib-rail-tip' 'docs/design/AVEL Enclosure Grid · Design library v1.9.html' && wc -c docs/ui-contracts/shell-layout.md docs/ui-contracts/kit-v1.9.md"
+expected = "a non-zero count, from which you checked sections 1 to 4; both files' sizes (shell-layout.md under 15 KB)"
+
+[[dispatch.task]]
+title = "v1.9's changes: kit-v1.9.md lists every change v1.9 makes to the built kit, the approval page and the tokens, and keeps AP's API-driven departures (D8) with their reasons"
+priority = "P0"
+verify = "git show d936a50~1:'docs/design/AVEL Enclosure Grid · Design library v1.1.html' | awk '/^<style>/{f=1;next}/^<\\/style>/{f=0}f' | grep -v 'src: url(data:' > /tmp/v11.css; awk '/^<style>/{f=1;next}/^<\\/style>/{f=0}f' 'docs/design/AVEL Enclosure Grid · Design library v1.9.html' | grep -v 'src: url(data:' | diff /tmp/v11.css - | grep -c '^[<>]'"
+expected = "the style diff's line count, which you read against kit-v1.9.md sections 1 and 3"
+
+[[dispatch.task]]
+title = "Buildable and testable: the nav from staticData, the route files and their owners, the dispatch order (missions and clients before system), and SH-01 to SH-14 and SH-20 to SH-25 covering every section"
+priority = "P1"
+verify = "grep -n '^- \\*\\*SH-' docs/ui-contracts/shell-layout.md docs/ui-contracts/kit-v1.9.md | wc -l"
+expected = "each SH ID traced to the section it tests"
+
+# ------------------------------------------------------------------ R1: tests and the mock
+[[dispatch]]
+agent = "fenn"
+module = "shell"
+role = "test-unit"
+domain = "The unit and screen tests for the shell, the v1.9 kit, the nav model, the four pages, the approval page on the shell and the styles (SH-01 to SH-14)."
+territory = ["apps/web/test/**"]
+after = ["agent-brennan-layout-uic-review-spec"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 to 6 and 9" },
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "sections 1 to 4 (SH-09, SH-12, SH-13)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/locks.md", why = "the locked paths you change under the override" },
+]
+notes = [
+  "New files go in apps/web/test/kit/, test/modules/system/, test/modules/missions/ and test/modules/clients/, plus route 19 and route 8 tests in test/data/. jsdom applies no media queries: check breakpoints and the canvas by reading kit.css as text (SH-06).",
+  "test/kit/**, test/data/** and test/modules/decisions/** are locked. INT's decision in this plan: add your files there, and change UC-08, UC-09 and UC-13 only where kit-v1.9.md section 1 changes them, each commit with AVEL_LOCK_OVERRIDE=\"shell tests a1: <what> (INT, shell-layout.md)\".",
+  "Procedures rule 1: commit the new tests marked test.fails (and nothing in the suite red), so main stays green until each build lands. Name each test with its SH ID.",
+  "SH-10 builds a router with stand-in route files in the test (staticData only), to check that entries appear only for routes that exist.",
+]
+
+[[dispatch.task]]
+title = "SH-01 to SH-07, SH-09 and SH-14: AppShell, ScreenHeader, SegmentedControl, kit.css as text, and kit-v1.9.md section 1's component changes"
+priority = "P0"
+required = "Each test carries its SH ID, renders the kit with plain props and a test renderLink, and is marked test.fails until the kit lands"
+verify = "pnpm --filter @avel/web exec vitest run test/kit 2>&1 | tail -15"
+expected = "the run passes, with the new tests counted as expected failures"
+
+[[dispatch.task]]
+title = "SH-10 to SH-13: ShellLayout on the mock (nav from routes, project rows, counts, tabs, crumbs, title), the four pages, the approval page on the shell, and the styles as text"
+priority = "P0"
+required = "Against packages/contract-mock, with routes 19 and 8 as the mock dispatch serves them (shell-layout.md section 4); test.fails until each build lands"
+verify = "pnpm --filter @avel/web test 2>&1 | tail -15 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the run passes with the new tests as expected failures; only apps/web/test changed"
+
+[[dispatch]]
+agent = "fenn"
+module = "shell"
+role = "test-e2e"
+domain = "The shell end to end with Playwright on AVEL_API=mock at 1280, 900 and 390 (SH-20 to SH-25), UC-32 taken in from sprint-01, UC-29 to UC-31 kept."
+territory = ["apps/web/e2e/**", "apps/web/playwright.config.ts"]
+after = ["agent-brennan-layout-uic-review-spec"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 to 5 and 9 (SH-20 to SH-24)" },
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 4, SH-25 (D16)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/agent-fenn-decisions-test-e2e-completion.md", why = "your a7: UC-32 (5abf046 on frontend/sprint-01/agent-fenn-decisions-test-e2e-a7)" },
+]
+notes = [
+  "First commit: cherry-pick 5abf046 (UC-32) unchanged.",
+  "e2e/** and playwright.config.ts are locked (decisions-e2e). INT's decision in this plan: change them with AVEL_LOCK_OVERRIDE=\"shell e2e a1: <what> (INT, shell-layout.md)\". Add a 900x1000 project beside phone and desk.",
+  "Mark each new test test.fail() until its build lands (procedures rule 1). Retries 0, no fixed sleep. SH-24 waits for the AppShell element's data-hydrated.",
+  "SH-25's harness is kit-v1.9.md section 4's. If it can't load the source files, stop and report it with another harness inside your territory.",
+  "Review evidence (INT, 2026-11-08): e2e/evidence.spec.ts walks each page in the nav (shell-layout.md section 5, and Decisions) at 1280, 900 and 390, and saves one full-page screenshot and one video per page and size. It asserts nothing, so it isn't a fail-first test and never marks main red.",
+  "It runs only when AVEL_EVIDENCE is set (playwright.config.ts: testIgnore evidence.spec.ts otherwise; video \"on\" and screenshot \"on\" only for that spec). The default suite and its speed are unchanged.",
+  "Output goes to $AVEL_EVIDENCE (a folder outside the repo, given per attempt), never into git: <page>-<size>.png and <page>-<size>.webm. Any build or review dispatch can run AVEL_EVIDENCE=<dir> pnpm --filter @avel/web exec playwright test evidence and list the files in its completion report.",
+]
+
+[[dispatch.task]]
+title = "UC-32 in (5abf046), the 900 project, and SH-20 to SH-25"
+priority = "P0"
+required = "Each test carries its ID and is marked to fail until its build; UC-29 to UC-31 unchanged and passing; retries 0"
+verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -25 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the suite passes with the new tests as expected failures; only apps/web/e2e and playwright.config.ts changed"
+
+[[dispatch.task]]
+title = "Review evidence: a screenshot and a video per page at three sizes"
+priority = "P1"
+required = "evidence.spec.ts covers every nav page at 1280, 900 and 390; skipped unless AVEL_EVIDENCE is set; writes only under $AVEL_EVIDENCE; the default run is unchanged"
+verify = "d=$(mktemp -d) && AVEL_EVIDENCE=$d pnpm --filter @avel/web exec playwright test evidence 2>&1 | tail -5; ls $d | head -20; pnpm --filter @avel/web exec playwright test --list 2>&1 | grep -c evidence"
+expected = "a .png and a .webm per page and size in the folder (from the stand-in server until the shell is built); the default --list shows no evidence tests"
+
+[[dispatch]]
+agent = "ghost"
+module = "mock"
+role = "build"
+domain = "The contract mock serves route 19 (GET /api/missions) and route 8 (GET /api/clients), with fixtures that match fixtures.step1's decision rows (shell-layout.md section 4)."
+territory = ["packages/contract-mock/**"]
+after = ["agent-brennan-layout-uic-review-spec"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "section 4: project rows, labels and counts" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 2: how the mock serves routes 52 to 54, which 19 and 8 follow" },
+]
+notes = [
+  "Serve both through @avel/contract's routes and oRPC's OpenAPI handler, as for 52 to 54, with the same paging, request IDs and failNext. Extend MockRoute to 8 | 19 | 52 | 53 | 54.",
+  "fixtures.step1 gains: one client per clientName in its decision rows; one building mission (state running) per distinct missionId, with a packageKey; one onboarding mission (state onboarding, packageKey null). createMock accepts missions and clients, so a test can seed none.",
+  "Fenn's route 19 and route 8 tests in test/data/ are yours to make pass.",
+]
+
+[[dispatch.task]]
+title = "Routes 19 and 8 on the mock, with fixtures and createMock options"
+priority = "P0"
+required = "Valid against MissionDto and ClientDto (parsed in a test); failNext works on 19 and 8; routes 52 to 54 unchanged"
+verify = "pnpm --filter @avel/contract-mock typecheck && pnpm --filter @avel/web exec vitest run test/data 2>&1 | tail -10 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "typechecks; the data tests pass; only packages/contract-mock changed"
+
+# ------------------------------------------------------------------ R2: kit and styles
+[[dispatch]]
+agent = "fantem"
+module = "shell-kit"
+role = "build"
+domain = "The kit's shell from v1.9: AppShell, ScreenHeader, SegmentedControl, the new icons, the canvas, and v1.9's changes to Button, DecisionTag, ReasonDialog and Dialog, plus D16 (shell-layout.md sections 1 to 3; kit-v1.9.md section 1)."
+territory = ["apps/web/src/kit/**"]
+after = ["agent-fenn-shell-test-unit", "agent-fenn-shell-test-e2e"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 0 to 3 and 7" },
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 1" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the CSS for .lib-*, .scr-head and .lib-seg, and the bundled functions QV (rail), _me (header), Nme (radio group), jme (tab bar) and ea (screen header)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-01-desk-to-phone-switch-at-hydration.md", why = "D16: what moves today" },
+]
+notes = [
+  "Build to the locked tests, and flip their test.fails as each lands, in the same commit.",
+  "Every value is DL v1.9's final cascade or a token, with the DL class in a comment. Hovers go under (hover: hover) and (pointer: fine).",
+  "Nothing reads the viewport in JavaScript. The only things measured are the highlight's glide on a client navigation and the collapsed tooltip on hover or focus.",
+  "Report /'s first load from your build and the kit chunk's size (procedures rule 7).",
+]
+
+[[dispatch.task]]
+title = "AppShell (frame, canvas, rail with collapse and tooltip, nav with the highlight, header with the menu button, crumbs and progress line only, sheet, tab bar, skip link, focus mode, marker) and ScreenHeader, exported with their types"
+priority = "P0"
+required = "SH-01 to SH-07 and SH-14 pass with their test.fails flipped; shell-layout.md sections 1 to 3 exactly"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/kit"
+expected = "typechecks; every kit test passes"
+
+[[dispatch.task]]
+title = "SegmentedControl (DL's Nme) and Icon's additions"
+priority = "P1"
+required = "SH-07's SegmentedControl cases pass; no palette, Jump to or header switch anywhere in the kit (S14)"
+verify = "pnpm --filter @avel/web exec vitest run test/kit && ! grep -rnE 'JumpPalette|Jump to|lib-palette|lib-jump|lib-display' apps/web/src/kit"
+expected = "the tests pass; no line listed"
+
+[[dispatch.task]]
+title = "kit-v1.9.md section 1: Button busy and reasonPlacement, DecisionTag's buttons, ReasonDialog's tip and ReasonField, Dialog's exit and DialogClose, hover gating, and D16"
+priority = "P0"
+required = "SH-09 and SH-25 pass; UC-08, UC-09 and UC-13 pass as Fenn changed them; DecisionTag's DOM unchanged but for section 1"
+verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test -g 'SH-25|UC-3' 2>&1 | tail -6 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "the tests pass; only apps/web/src/kit changed"
+
+[[dispatch]]
+agent = "nemi"
+module = "shell-styles"
+role = "build"
+domain = "The styles on v1.9: tokens.css copied again, base.css's hover gate, the new chrome.css, and the size-matched font fallbacks (kit-v1.9.md section 3)."
+territory = ["apps/web/src/styles/**"]
+after = ["agent-fenn-shell-test-unit"]
+context = [
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 3, the whole task" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the token section, the two --av-page-bg blocks, library chrome's document rules, the v1.6 chrome reset and the theme crossfade" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/findings/cls-study-leah-04-one-method-fallbacks-and-recommendation.md", why = "the fallback values" },
+]
+notes = [
+  "tokens.css: copy v1.9's token section again under the same rule as before, plus the two --av-page-bg blocks, and name v1.9 in its header comment.",
+  "Fonts: cherry-pick your ac820a7 (frontend/sprint-01/agent-nemi-w0-fonts-build-a2), then set the sans rule to kit-v1.9.md's values. Report which local() face Chromium drew before the swap.",
+  "Flip SH-13's test.fails in the same commit that makes it pass.",
+]
+
+[[dispatch.task]]
+title = "tokens.css on v1.9, base.css's hover gate, chrome.css (imported after base.css), and font-fallbacks.css (imported last)"
+priority = "P0"
+required = "SH-13 passes; only apps/web/src/styles changed; the build passes"
+verify = "pnpm --filter @avel/web exec vitest run -t SH-13 && pnpm --filter \"@avel/web...\" build >/dev/null && cat apps/web/src/styles/app.css && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "SH-13 passes; the build exits 0; app.css imports chrome.css after base.css and font-fallbacks.css last"
+
+[[dispatch]]
+agent = "zero"
+module = "shell-kit"
+role = "review-frontend"
+domain = "Review Fantem's shell kit against shell-layout.md sections 1 to 3 and kit-v1.9.md section 1."
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 0 to 3 and 7" },
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 1" },
+]
+
+[[dispatch.task]]
+title = "Names, props, ARIA, sheet focus, every value traced to DL v1.9 or a token, nothing read from the viewport, no palette or header switch (S14); D16 re-run"
+priority = "P0"
+verify = "pnpm --filter @avel/web test && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js' && git diff \"$(git merge-base main HEAD)\"..HEAD -- apps/web/src/kit/kit.css | head -400"
+expected = "the tests pass; the chunk list; the kit.css diff, each new value traced"
+
+# ------------------------------------------------------------------ R3: missions and clients
+[[dispatch]]
+agent = "leon"
+module = "missions"
+role = "build"
+domain = "The missions module's first cut: route 19's query options through index.ts, and the All projects and Progress screens through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them."
+territory = ["apps/web/src/modules/missions/**"]
+after = ["agent-fantem-shell-kit-build", "agent-ghost-mock-build"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 4 (project rows, labels, links) and 5 (the two pages)" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "What every module looks like; Data layer" },
+  { path = "docs/agent-dispatch/frontend/sprint-02/escalations/02-project-names.md", why = "the label's stand-in" },
+]
+notes = [
+  "index.ts exports, by name: missionsListOptions(api) for route 19's first page, and projectLabel(mission, clientsById) with the label rule. system's ShellLayout imports both, and Clients' names come from the clients module's index, passed in.",
+  "Screens take what they need through query options; no fetch, no server data in state.",
+]
+
+[[dispatch.task]]
+title = "api.ts (route 19), index.ts (missionsListOptions, projectLabel), screens/ All projects and Progress, screens.ts"
+priority = "P0"
+required = "SH-11's All projects and Progress cases pass with their test.fails flipped; module boundaries through index.ts"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/missions && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "typechecks; the missions tests pass; only apps/web/src/modules/missions changed"
+
+[[dispatch]]
+agent = "ghost"
+module = "clients"
+role = "build"
+domain = "The clients module's first cut: route 8's query options through index.ts, and the Clients screen through screens.ts (shell-layout.md sections 4 and 5). No route files: system writes them."
+territory = ["apps/web/src/modules/clients/**"]
+after = ["agent-fantem-shell-kit-build", "agent-ghost-mock-build"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 4 (client names for labels) and 5 (Clients)" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "What every module looks like" },
+]
+notes = [
+  "INT names you as this module's builder (FM allows another builder). index.ts exports clientsListOptions(api) for route 8's first page, by name.",
+]
+
+[[dispatch.task]]
+title = "api.ts (route 8), index.ts (clientsListOptions), screens/ Clients, screens.ts"
+priority = "P0"
+required = "SH-11's Clients cases pass with their test.fails flipped"
+verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web exec vitest run test/modules/clients && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "typechecks; the clients tests pass; only apps/web/src/modules/clients changed"
+
+[[dispatch]]
+agent = "zero"
+module = "missions"
+role = "review-frontend"
+domain = "Review Leon's missions module against shell-layout.md sections 4 and 5."
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 4 and 5" },
+]
+
+[[dispatch.task]]
+title = "Route 19's options, the label rule, both screens' header, content and empty state as section 5 gives them; boundaries through index.ts"
+priority = "P0"
+verify = "pnpm --filter @avel/web exec vitest run test/modules/missions && ! grep -rnE \"from ['\\\"]\\.\\./\\.\\./(kit|data)/[a-z]\" apps/web/src/modules/missions"
+expected = "the tests pass; no deep import"
+
+[[dispatch]]
+agent = "zero"
+module = "clients"
+role = "review-frontend"
+domain = "Review Ghost's clients module against shell-layout.md sections 4 and 5."
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 4 and 5" },
+]
+
+[[dispatch.task]]
+title = "Route 8's options and the Clients screen as section 5 gives it; boundaries through index.ts"
+priority = "P0"
+verify = "pnpm --filter @avel/web exec vitest run test/modules/clients"
+expected = "the tests pass"
+
+# ------------------------------------------------------------------ R4: the shell and the page
+[[dispatch]]
+agent = "leon"
+module = "system"
+role = "build"
+domain = "The shell route and the system module: _shell, ShellLayout (nav from routes, project rows, counts, tabs, crumbs, titles, cookies), Settings' Appearance section (the theme only), __root's theme cookie and fixed glass depth, and the sprint's route files (shell-layout.md sections 4 to 6)."
+territory = ["apps/web/src/modules/system/**", "apps/web/src/routes/**"]
+after = ["agent-leon-missions-build", "agent-ghost-clients-build", "agent-nemi-shell-styles-build"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1, 2 (header behaviour), 4, 5 (Settings), 6 and 8" },
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 3's last line: data-theme, and data-depth always glass, on <html>" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "AU (preferences and the theme reveal), for Settings' switches" },
+  { path = "docs/ui-contracts/login.md", why = "section 4: Settings draws the Account section below Appearance; section 2: the guard already in __root" },
+]
+notes = [
+  "routes/index.tsx moves to routes/_shell/index.tsx with its loader and ssr unchanged; its head gains Decisions · AVEL. Don't touch modules/decisions: Ghost's follow-up merges after you.",
+  "The badge reads decisions' index.ts; the project rows read missions' and clients' index.ts. _shell's loader swallows each failure.",
+  "Flip SH-10, SH-11 (Settings) and the end-to-end tests' fail markers as they pass. Report /'s first load from your build.",
+]
+
+[[dispatch.task]]
+title = "_shell.tsx, ShellLayout, the nav from staticData, project rows and counts, tabs, crumbs and titles; / moved under it; __root's data-theme and fixed data-depth=\"glass\""
+priority = "P0"
+required = "SH-10 and SH-14 pass; SH-20 to SH-24 pass end to end; UC-29 to UC-32 pass on the shell; no viewport read"
+verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20"
+expected = "every unit and end-to-end test passes on every project it runs on"
+
+[[dispatch.task]]
+title = "The route files of section 6 (All projects, Progress, Clients, Settings), and Settings' screen"
+priority = "P0"
+required = "SH-11 passes; each route file sets staticData as section 4 gives it, ssr true, and renders only its module's screen"
+verify = "pnpm --filter @avel/web exec vitest run test/modules/system && pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js'"
+expected = "the tests pass; the chunk list and /'s first load, which you report"
+
+[[dispatch]]
+agent = "ghost"
+module = "decisions"
+role = "build"
+domain = "The approval page on the shell and on v1.9: layout=desk with no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets (kit-v1.9.md section 2)."
+territory = ["apps/web/src/modules/decisions/**"]
+after = ["agent-fantem-shell-kit-build", "agent-ghost-clients-build"]
+context = [
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "section 2, the whole task" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 4 (D16, R7), 5 ('Phone', the marker) and 7 (UC-32)" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/agent-leon-decisions-build-completion.md", why = "Leon's a3: how the marker waits for the final layout" },
+]
+notes = [
+  "INT names you as this module's builder here. Read Leon's a3 report before you change the marker.",
+  "Your branch merges after Leon's system build (procedures rule 1: nothing merges until green on the merged tree). Check your work on a scratch merge with his branch, and say so.",
+  "Remove useIsPhone, PHONE_QUERY and every matchMedia read. Report /'s first load.",
+]
+
+[[dispatch.task]]
+title = "Every DecisionTag with layout=\"desk\", no viewport read, loadReasonDialog, ScreenHeader, .dec-head rules and .dec-page padding gone, the stylesheet list the module's own"
+priority = "P0"
+required = "SH-12 passes; UC-29 to UC-32 pass on the shell (scratch merge if needed); every locked decisions test passes"
+verify = "! grep -rnE 'matchMedia|useIsPhone|kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web test && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+expected = "no line listed; the tests pass; only apps/web/src/modules/decisions changed"
+
+[[dispatch]]
+agent = "zero"
+module = "system"
+role = "review-frontend"
+domain = "Review Leon's shell route and system module against shell-layout.md sections 4 to 6."
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 and 4 to 8" },
+]
+
+[[dispatch.task]]
+title = "The nav from staticData, project rows, counts, tabs, crumbs, titles, cookies and the ⌘B key as section 4 gives them, and no other shortcut; route files as section 6; boundaries through index.ts; SH-24 re-run"
+priority = "P0"
+verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20 && ! grep -rnE 'modules/(decisions|missions|clients)/(api|screens)' apps/web/src/modules/system"
+expected = "the tests pass; no deep import into another module"
+
+[[dispatch]]
+agent = "zero"
+module = "decisions"
+role = "review-frontend"
+domain = "Review Ghost's approval page follow-up against kit-v1.9.md section 2 and the approval page's revision 15."
+context = [
+  { path = "docs/ui-contracts/kit-v1.9.md", why = "sections 1 and 2" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "sections 4, 5 and 7" },
+]
+
+[[dispatch.task]]
+title = "layout=desk everywhere, no viewport read, loadReasonDialog, ScreenHeader, padding and stylesheets; the marker rule still holds (own probe at 390x844, 10 fresh loads)"
+priority = "P0"
+verify = "! grep -rnE 'matchMedia|useIsPhone|kit/[A-Z]' apps/web/src/modules/decisions && pnpm --filter @avel/web test && for i in $(seq 1 10); do pnpm --filter @avel/web exec playwright test -g UC-32 2>&1 | grep -E 'passed|failed|flaky'; done"
+expected = "no line listed; the tests pass; 10 green runs"
+
+# ------------------------------------------------------------------ Sign-in (login.md, INT 2026-11-08): before system's shell build
+#   L0 Brennan reviews login.md once; L1 Fenn unit, Fenn e2e (after their shell dispatches) and Ghost's auth mock (after his mock);
+#   L2 Leon's login build after the shell kit, then Zero reviews it; Leon's system build follows it.
+#   Only L0 is live: L1 and L2 are a draft below until INT settles the shared territories.
+[[dispatch]]
+agent = "brennan"
+module = "login-uic"
+role = "review-spec"
+domain = "Review docs/ui-contracts/login.md, the one review before the build (procedures rule 2), against the Frontend Map, the Step 0 and Step 1 plan's Better Auth items and the design library v1.9."
+context = [
+  { path = "docs/ui-contracts/login.md", why = "under review, whole" },
+  { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "the /login and system rows, the root guard (line 188), Errors (401, 429), State (Session) and Security" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "item 5 (Better Auth: one operator, no sign-up, the lockout), Rate limits, and test 7" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "mh (the step-up dialog) for the card, fields and alert, and the 401 panel copy" },
+  { path = "docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md", why = "the stand-in wire the contract builds on" },
+  { path = "docs/agent-dispatch/avel/procedures.md", why = "rules 2 and 3: severity and the 15 KB budget" },
+]
+notes = [
+  "Raise only what would make the build or its tests wrong (procedures rule 2). P3s go under Issues for other agents, for Zero to copy to backlog.md.",
+  "The wire is a stand-in (escalation 04): judge whether the web reads only what section 1 names, not whether Better Auth will answer so.",
+]
+
+[[dispatch.task]]
+title = "Faithful: the /login page, the guard, 401 and sign-out as FM and the Step 0 and Step 1 plan give them; every value from mh or a token; every string DL's or marked †"
+priority = "P0"
+verify = "grep -c 'av-stepup-pw\\|Your session ended' 'docs/design/AVEL Enclosure Grid · Design library v1.9.html' && wc -c docs/ui-contracts/login.md"
+expected = "a non-zero count, from which you checked sections 0 to 4; the file's size (under 15 KB)"
+
+[[dispatch.task]]
+title = "Safe and buildable: next can't redirect off-site, nothing secret is stored or logged, the mock's lockout and sessions match section 5, the owners and order in section 6, and LG-01 to LG-08 and LG-20 to LG-23 covering every section"
+priority = "P1"
+verify = "grep -n '^- \\*\\*LG-' docs/ui-contracts/login.md | wc -l"
+expected = "12, each traced to the section it tests"
+
+# DRAFT, not rendered (decisions.md, 2026-11-08 'Sign-in'): render.py allows one writer per path, and these five
+# share paths with shell-test-unit, shell-test-e2e (in flight), mock-build and system-build. Uncomment once INT decides.
+# [[dispatch]]
+# agent = "fenn"
+# module = "login"
+# role = "test-unit"
+# domain = "The unit tests for sign-in: /login, next, the copy table, the guard, 401, the Account section, and the mock's /api/auth/* (login.md section 7, LG-01 to LG-08)."
+# territory = ["apps/web/test/**"]
+# after = ["agent-brennan-login-uic-review-spec", "agent-fenn-shell-test-unit"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 1 to 5 and 7" },
+#   { path = "docs/agent-dispatch/frontend/sprint-01/locks.md", why = "the locked paths you change under the override" },
+# ]
+# notes = [
+#   "New files go in test/modules/system/ and, for LG-08, test/data/. If you touch a locked path, commit with AVEL_LOCK_OVERRIDE=\"login tests a1: <what> (INT, login.md)\".",
+#   "Procedures rule 1: the new tests land marked test.fails, and nothing in the suite goes red. LG-07 stays marked until system's build too.",
+#   "LG-04 and LG-08 fix the mock's now(). Use resetAuth() between unit tests.",
+# ]
+#
+# [[dispatch.task]]
+# title = "LG-01 to LG-08, each with its ID, against the mock in process"
+# priority = "P0"
+# required = "Each test carries its LG ID and is marked to fail until its build lands; no test reads a real password or the cookie's value"
+# verify = "pnpm --filter @avel/web test 2>&1 | tail -15 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+# expected = "the run passes with the new tests as expected failures; only apps/web/test changed"
+#
+# [[dispatch]]
+# agent = "fenn"
+# module = "login"
+# role = "test-e2e"
+# domain = "Sign-in end to end with Playwright on AVEL_API=mock (LG-20 to LG-23), and the signed-in setup every other spec runs under."
+# territory = ["apps/web/e2e/**", "apps/web/playwright.config.ts"]
+# after = ["agent-brennan-login-uic-review-spec", "agent-fenn-shell-test-e2e", "agent-ghost-auth-mock-build"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 2 to 5 and 7" },
+# ]
+# notes = [
+#   "e2e/** and playwright.config.ts are locked. INT's decision in this plan: change them with AVEL_LOCK_OVERRIDE=\"login e2e a1: <what> (INT, login.md)\".",
+#   "LG-23 first: a setup project that signs in as fixtures.operator through the dev server and saves storageState (outside git, under test-results). Phone, 900 and desk depend on it. The LG specs start from an empty storageState. The setup isn't a fail-first test: it passes on Ghost's auth mock, which merges before you.",
+#   "Mark LG-20 to LG-22 test.fail() until Leon's login build (LG-22 until system's too). Retries 0, no fixed sleep.",
+#   "Add /login, signed out, to evidence.spec.ts's pages.",
+# ]
+#
+# [[dispatch.task]]
+# title = "LG-23's signed-in setup, then LG-20 to LG-22"
+# priority = "P0"
+# required = "Every existing spec passes, unchanged, under the setup; the LG tests carry their IDs and are marked to fail until their build"
+# verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -25 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+# expected = "the suite passes with the new tests as expected failures; only apps/web/e2e and playwright.config.ts changed"
+#
+# [[dispatch]]
+# agent = "ghost"
+# module = "auth-mock"
+# role = "build"
+# domain = "The contract mock serves sign-in, the session read and sign-out under /api/auth/*, with a seeded operator, sessions by cookie and the lockout (login.md section 5)."
+# territory = ["packages/contract-mock/**"]
+# after = ["agent-brennan-login-uic-review-spec", "agent-ghost-mock-build"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 1 and 5" },
+#   { path = "docs/agent-dispatch/frontend/sprint-02/escalations/04-sign-in-wire.md", why = "the stand-in wire" },
+# ]
+# notes = [
+#   "Contract routes keep answering without a session: nothing about 8, 19 or 52 to 54 changes.",
+#   "reset() keeps sessions (e2e workers share one dev server), and resetAuth() drops them. The vite plugin's /__mock/reset needs no change.",
+#   "Fenn's LG-08 tests in test/data/ are yours to make pass.",
+# ]
+#
+# [[dispatch.task]]
+# title = "/api/auth/sign-in/email, get-session and sign-out on the mock; fixtures.operator; the lockout on now(); reset and resetAuth; the redacted password in recorded()"
+# priority = "P0"
+# required = "LG-08 passes with its test.fails flipped; every existing mock and decisions test passes unchanged"
+# verify = "pnpm --filter @avel/contract-mock typecheck && pnpm --filter @avel/web test 2>&1 | tail -8 && git diff \"$(git merge-base main HEAD)\"..HEAD --stat"
+# expected = "typechecks; the tests pass; only packages/contract-mock changed"
+#
+# [[dispatch]]
+# agent = "leon"
+# module = "login"
+# role = "build"
+# domain = "Sign-in in the system module: api.ts for /api/auth/*, sessionQueryOptions, /login, the root guard, 401 handling and the Account section (login.md sections 1 to 4)."
+# territory = ["apps/web/src/modules/system/**", "apps/web/src/routes/**"]
+# after = ["agent-fantem-shell-kit-build", "agent-ghost-auth-mock-build", "agent-fenn-login-test-unit", "agent-fenn-login-test-e2e"]
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "the contract, whole" },
+#   { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "mh: the card, label, input and alert values, and the 401 panel copy" },
+#   { path = "docs/design/AVEL Web App — Frontend Map v0.6.md", why = "the guard (line 188), Errors and Security" },
+# ]
+# notes = [
+#   "No better-auth package: api.ts calls the three endpoints with fetch. Never log, store or put in a URL the password or the token.",
+#   "The Account section is a component system's index.ts exports. Settings doesn't exist yet: your system build draws it below Appearance.",
+#   "Flip LG-01 to LG-06, LG-20 and LG-21 as they pass. Report /'s first load from your build (procedures rule 7).",
+# ]
+#
+# [[dispatch.task]]
+# title = "api.ts, sessionQueryOptions, routes/login.tsx and LoginScreen with login.css; __root's guard and the 401 subscription"
+# priority = "P0"
+# required = "LG-01 to LG-06, LG-20 and LG-21 pass; every other test passes under LG-23's setup; next is never followed off-site"
+# verify = "pnpm --filter @avel/web typecheck && pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test 2>&1 | tail -20"
+# expected = "typechecks; every unit and end-to-end test passes on every project"
+#
+# [[dispatch.task]]
+# title = "The Account section (sign-out), exported for Settings"
+# priority = "P1"
+# required = "LG-07's cases that don't need Settings pass with a test harness; nothing in modules/system imports past another module's index.ts"
+# verify = "pnpm --filter @avel/web exec vitest run test/modules/system && ! grep -rnE 'modules/(decisions|missions|clients)/(api|screens)' apps/web/src/modules/system"
+# expected = "the tests pass; no deep import"
+#
+# [[dispatch]]
+# agent = "zero"
+# module = "login"
+# role = "review-frontend"
+# domain = "Review Leon's sign-in build against login.md sections 0 to 4."
+# context = [
+#   { path = "docs/ui-contracts/login.md", why = "sections 0 to 4 and 7" },
+# ]
+#
+# [[dispatch.task]]
+# title = "The wire as section 1, the guard and next as section 2 (try //, /\\ and an absolute URL by hand), the page and its copy table as section 3, the Account section as section 4; nothing secret stored or logged"
+# priority = "P0"
+# verify = "pnpm --filter @avel/web test && pnpm --filter @avel/web exec playwright test -g 'LG-' 2>&1 | tail -10 && ! grep -rnE 'localStorage|sessionStorage|console\\.' apps/web/src/modules/system"
+# expected = "the tests pass; no line listed"
+
+
+# ------------------------------------------------------------------ R5: Leah on main
+[[dispatch]]
+agent = "leah"
+module = "shell"
+role = "review-a11y-perf"
+domain = "The shell and its pages on main once sprint-02 is merged: rule 7's size check, layout shift by shell-layout.md section 8, axe, the sheet, skip link, targets, and D16's focus order."
+after = ["agent-leon-system-build", "agent-ghost-decisions-build"]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 to 3 and 8" },
+  { path = "docs/agent-dispatch/avel/procedures.md", why = "rule 7: the size check is CI's; you report, not cut" },
+  { path = "docs/agent-dispatch/frontend/sprint-01/agent-leah-cls-study-review-a11y-perf-completion.md", why = "your method and harness" },
+]
+
+[[dispatch.task]]
+title = "Performance: /'s first load against rule 7, and layout shift by section 8 (production build, three runs each, with sources, FCP and hydration time)"
+priority = "P0"
+required = "At or under 150 kB, or a finding with the chunk breakdown; under 0.02 in every case, or a finding with the evidence"
+verify = "pnpm --filter \"@avel/web...\" build 2>&1 | grep -E 'client/assets/.*js'"
+expected = "the client chunks, and the first-load and CLS tables, which you report"
+
+[[dispatch.task]]
+title = "Accessibility: axe on every built route at 1280 and 390; the sheet, Settings' theme switch, the collapsed tooltips, the skip link, landmarks, 44px targets under 900px; D16's focus order under WCAG 2.4.3"
+priority = "P0"
+required = "No axe violation, or a finding per violation; a judgement on the focus order, with evidence"
+verify = "pnpm --filter @avel/web exec playwright test 2>&1 | tail -6"
+expected = "the locked suite passes; your axe and keyboard results, which you report"

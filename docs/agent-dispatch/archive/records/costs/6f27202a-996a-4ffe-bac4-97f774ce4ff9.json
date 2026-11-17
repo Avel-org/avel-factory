@@ -1,0 +1,24 @@
+{
+ "session_id": "6f27202a-996a-4ffe-bac4-97f774ce4ff9",
+ "name": "ZERO decisions-review-frontend a2",
+ "branch": "frontend/sprint-01/agent-zero-decisions-review-frontend-a2",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-zero-decisions-review-frontend-a2",
+ "first_at": "2026-11-08T04:45:51.109Z",
+ "last_at": "2026-11-08T04:52:55.407Z",
+ "updated_at": "2026-11-08T04:53:05Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 58,
+   "output": 18656,
+   "cache_write_5m": 0,
+   "cache_write_1h": 71605,
+   "cache_read": 1342311,
+   "messages": 29
+  }
+ },
+ "cost_usd": 1.2147,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 1.2147
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

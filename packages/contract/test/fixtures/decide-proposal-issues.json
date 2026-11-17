@@ -1,0 +1,188 @@
+{
+  "route": 54,
+  "schema": "DecideProposalInput",
+  "cases": [
+    {
+      "name": "empty object",
+      "input": {},
+      "success": false,
+      "issues": [
+        {
+          "path": "proposalId",
+          "code": "invalid_type",
+          "message": "Invalid input: expected string, received undefined"
+        },
+        {
+          "path": "version",
+          "code": "invalid_type",
+          "message": "Invalid input: expected number, received undefined"
+        },
+        {
+          "path": "choice",
+          "code": "invalid_type",
+          "message": "Invalid input: expected string, received undefined"
+        },
+        {
+          "path": "reason",
+          "code": "invalid_type",
+          "message": "Invalid input: expected string, received undefined"
+        }
+      ]
+    },
+    {
+      "name": "not an object (null)",
+      "input": null,
+      "success": false,
+      "issues": [
+        {
+          "path": "",
+          "code": "invalid_type",
+          "message": "Invalid input: expected object, received null"
+        }
+      ]
+    },
+    {
+      "name": "proposalId is not a UUID",
+      "input": {
+        "proposalId": "not-a-uuid",
+        "version": 1,
+        "choice": "approve",
+        "reason": "ok"
+      },
+      "success": false,
+      "issues": [
+        {
+          "path": "proposalId",
+          "code": "invalid_format",
+          "message": "Invalid UUID"
+        }
+      ]
+    },
+    {
+      "name": "proposalId is a v4 UUID, not v7",
+      "input": {
+        "proposalId": "3b241101-e2bb-4255-8caf-4136c566a962",
+        "version": 1,
+        "choice": "approve",
+        "reason": "ok"
+      },
+      "success": false,
+      "issues": [
+        {
+          "path": "proposalId",
+          "code": "invalid_format",
+          "message": "Invalid UUID"
+        }
+      ]
+    },
+    {
+      "name": "version 0, empty choice, blank reason",
+      "input": {
+        "proposalId": "0190a5e0-7b3c-7d2e-8a4f-1b2c3d4e5f60",
+        "version": 0,
+        "choice": "",
+        "reason": "   "
+      },
+      "success": false,
+      "issues": [
+        {
+          "path": "version",
+          "code": "too_small",
+          "message": "Too small: expected number to be >=1"
+        },
+        {
+          "path": "choice",
+          "code": "too_small",
+          "message": "Too small: expected string to have >=1 characters"
+        },
+        {
+          "path": "reason",
+          "code": "too_small",
+          "message": "Too small: expected string to have >=1 characters"
+        }
+      ]
+    },
+    {
+      "name": "version is not an integer",
+      "input": {
+        "proposalId": "0190a5e0-7b3c-7d2e-8a4f-1b2c3d4e5f60",
+        "version": 1.5,
+        "choice": "approve",
+        "reason": "ok"
+      },
+      "success": false,
+      "issues": [
+        {
+          "path": "version",
+          "code": "invalid_type",
+          "message": "Invalid input: expected int, received number"
+        }
+      ]
+    },
+    {
+      "name": "wrong types everywhere",
+      "input": {
+        "proposalId": 123,
+        "version": "1",
+        "choice": 5,
+        "reason": null
+      },
+      "success": false,
+      "issues": [
+        {
+          "path": "proposalId",
+          "code": "invalid_type",
+          "message": "Invalid input: expected string, received number"
+        },
+        {
+          "path": "version",
+          "code": "invalid_type",
+          "message": "Invalid input: expected number, received string"
+        },
+        {
+          "path": "choice",
+          "code": "invalid_type",
+          "message": "Invalid input: expected string, received number"
+        },
+        {
+          "path": "reason",
+          "code": "invalid_type",
+          "message": "Invalid input: expected string, received null"
+        }
+      ]
+    },
+    {
+      "name": "good input with a padded reason (reason is trimmed)",
+      "input": {
+        "proposalId": "0190a5e0-7b3c-7d2e-8a4f-1b2c3d4e5f60",
+        "version": 3,
+        "choice": "approve",
+        "reason": "  because it is right  "
+      },
+      "success": true,
+      "data": {
+        "proposalId": "0190a5e0-7b3c-7d2e-8a4f-1b2c3d4e5f60",
+        "version": 3,
+        "choice": "approve",
+        "reason": "because it is right"
+      }
+    },
+    {
+      "name": "good input with an extra key (stripped)",
+      "input": {
+        "proposalId": "0190a5e0-7b3c-7d2e-8a4f-1b2c3d4e5f60",
+        "version": 1,
+        "choice": "reject",
+        "reason": "no",
+        "extra": true
+      },
+      "success": true,
+      "data": {
+        "proposalId": "0190a5e0-7b3c-7d2e-8a4f-1b2c3d4e5f60",
+        "version": 1,
+        "choice": "reject",
+        "reason": "no"
+      }
+    }
+  ]
+}

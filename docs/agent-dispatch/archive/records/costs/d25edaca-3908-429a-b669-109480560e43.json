@@ -1,0 +1,24 @@
+{
+ "session_id": "d25edaca-3908-429a-b669-109480560e43",
+ "name": "BRENNAN m1-contract-review-spec a1",
+ "branch": "backend/sprint-00/agent-brennan-m1-contract-review-spec-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/backend-sprint-00-agent-brennan-m1-contract-review-spec-a1",
+ "first_at": "2026-11-07T01:23:09.822Z",
+ "last_at": "2026-11-07T01:34:36.706Z",
+ "updated_at": "2026-11-07T01:34:41Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 106,
+   "output": 40561,
+   "cache_write_5m": 0,
+   "cache_write_1h": 183788,
+   "cache_read": 5954301,
+   "messages": 52
+  }
+ },
+ "cost_usd": 3.4728,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 3.4728
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

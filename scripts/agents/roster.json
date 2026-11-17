@@ -1,0 +1,43 @@
+{
+  "_note": "The build team's seats, read by scripts/render.py. Renaming an agent means renaming its .claude/agents/<name>.md and the agents option in tools/wezterm/avel.lua in the same PR.",
+  "lanes": {
+    "backend": {
+      "lead": "axis",
+      "builder": "soap",
+      "checker": "rigg",
+      "prefix": "T-B",
+      "test_roles": ["test-unit"],
+      "never": ["apps/web/**"]
+    },
+    "frontend": {
+      "lead": "zero",
+      "builder": "fantem",
+      "checker": "fenn",
+      "prefix": "T-F",
+      "test_roles": ["test-unit", "test-e2e"],
+      "never": ["packages/**"]
+    }
+  },
+  "never": [
+    ".claude/**",
+    ".agents/**",
+    "docs/agent-dispatch/**",
+    "scripts/agents/**",
+    "scripts/render.py",
+    "scripts/dispatch.sh",
+    "scripts/agent.sh",
+    "scripts/test_render.py",
+    ".env",
+    ".env.*"
+  ],
+  "contract_paths": {
+    "packages/contract/**": "contract",
+    "packages/contract-mock/**": "contract",
+    "packages/db/**": "schema"
+  },
+  "full_rigor_words": [
+    "auth", "sign-in", "signin", "step-up", "stepup", "session", "secret", "kms", "token",
+    "job", "claim", "reaper", "event", "seq", "integrator", "mission branch", "gate", "receipt",
+    "budget", "reservation", "proxy", "money", "room"
+  ]
+}

@@ -1,0 +1,295 @@
+# Frontend sprint-02: decisions
+
+Zero's record of the choices behind the shell contract (`docs/ui-contracts/app-shell.md`) and this plan, and of INT's decisions. Newest last.
+
+## 2026-11-07: The shell contract, revision 1, and the plan (Zero; INT's brief)
+
+INT's brief: the shell with the sidebar, so every later module drops a screen into it; lean, with one contract up front, few rounds and no studies unless a bar fails; Brennan reviews the contract before anything is built. Int may send his own scope docs for the shell layout, navigation and pages later. If he does, they come in as a revision.
+
+- **The shell is DL's v1.6 layout layer, with three widths:**
+  - the rail at 1024px and over;
+  - the navigation sheet from a top-bar menu button between 761px and 1023px;
+  - the phone tab bar at 760px and under.
+
+  These are DL's own breakpoints for the frame. The approval page's 899px stays the page's content breakpoint, and the two hold at once.
+- **What's in sprint-02, and what waits** (contract section 0):
+  - **In:** the rail (brand, sections, items, the Decisions badge), the top bar's crumb and menu button, the sheet, the tab bar, the screen header, focus mode and the skip link.
+  - **Waits for its wave:** collapse, Jump to, the rail foot, theme and depth controls, the project page tree, per-project entries, the Release tab, the mission badge, and the auth shell.
+  - **Never:** DL's "Screens / Library" switch and its planned entries. They belong to the library viewer.
+- **Nothing moves at hydration,** by construction:
+  - every width is a CSS media query;
+  - focus mode is an attribute in the server's HTML (S2);
+  - the nav indicator isn't measured (S3);
+  - the badge is fetched by the `_shell` loader, so it's in the server's HTML.
+
+  This applies cls-study-leah-01's lesson to the shell from the start, instead of finding it again in a study.
+- **The nav is complete from day one:** DL's screen tree, minus what waits. Each entry is a real route with a stub screen (`WidgetState` `empty`, "Not built yet"†, and the wave it comes with). Icons follow DL's own fallback: `circle` where DL's screen list has none (S7). So the shell adds one icon (`menu`), which helps the budget.
+- **The tab bar** is Decisions, `Projects`† (to `/missions`) and More. DL's Release tab needs an open project, so it comes with W1's Release (S8).
+- **Who owns what:**
+  - the kit's `AppShell` and `ScreenHeader` are Fantem's, with plain props and a `renderLink`, so the kit stays router-free;
+  - the `system` module and the routes are Leon's: the `_shell` pathless layout, the nav model, the badge read through `decisions`'s `index.ts`, and the stubs;
+  - the approval page's follow-up (revision 15, the dialog loader, `ScreenHeader`, padding and stylesheet links) goes to **Ghost**, so it builds side by side with Leon's shell instead of a round after it. FM allows naming another builder for a module. It merges after Leon's.
+- **What moved here from sprint-01:**
+  - **Revision 15 of the approval page contract applies, as written:** D16 is Fantem's; `layout="desk"`, no viewport read and the marker are Ghost's; UC-32 (5abf046) is cherry-picked by Fenn; and the 4x measure is Leah's.
+  - **Leon's deep import of `kit/ReasonDialog`:** it goes, in Ghost's follow-up.
+  - **The font fallbacks ship** (INT: decide in the contract). They use Leah's one-method values: sans 107.50%, 90.12%, 22.44% and 0.00%; mono unchanged. They take the swap shift to about 0 where Arial or Liberation resolves, and cost two `@font-face` rules. Nemi builds them from his ac820a7. This retires decisions-leah-07 and cls-study-leah-02 to 04 once it's merged.
+  - **w0-split-zane-01 closes, accepted:** the guard's `apps/web/src` scope is by design, and no package defines a server function.
+- **The budget stays 150 kB** for `/`'s first load. `/` is at 149.30 kB, so the shell has about 0.7 kB of room, and will likely exceed it.
+  - It's built lean, and every build reports the number.
+  - If Leah's final measure fails, the cut is the thin oRPC link, measured at −7.7 kB in sprint-01 and parked for W2. It comes as a revision and one Ghost dispatch, and isn't built unless the bar fails. That's INT's rule: no study unless a bar fails.
+  - **INT may prefer to set the budget for the shell era now:** for example, plan the thin link up front, or move the number. That's his call, and it changes section 6 only.
+- **The auth shell waits:** the session is Better Auth's, outside the contract, and the mock has none. It comes with W5's `/login` and W6.
+- **Rounds:**
+  - R0: Brennan's review.
+  - R1: Fenn's unit tests, Fenn's end-to-end tests and Nemi's fonts, side by side.
+  - R2: Fantem's kit.
+  - R3: Leon's shell and Ghost's page, side by side, with the shell merged first.
+  - My reviews follow each build, and Leah's check comes last.
+  - No Zane dispatch: there's no new dependency or credential path.
+- **Locks:** Fenn's two test dispatches change sprint-01-locked paths (`test/kit/**`, `test/modules/decisions/**`, `e2e/**`, `playwright.config.ts`) by INT's decision in this plan, each commit under `AVEL_LOCK_OVERRIDE`. INT moves the lines after the merges, and adds one for `test/modules/system/**`.
+
+## 2026-11-08: INT confirms the budget and the builder
+
+- **The budget stays 150 kB** for `/`'s first load. The thin oRPC link is built only if Leah's final measure fails (app-shell.md section 6, unchanged).
+- **Ghost builds the decisions follow-up** (app-shell.md section 4), beside Leon's shell, as planned.
+- Brennan's shell-uic review a1 is open at 04fac4b.
+
+## 2026-11-08: Revision 2 of the shell contract (Brennan's shell-uic a1, FAIL; INT's decisions on 01 and 04)
+
+Brennan's a1 (report fac0a54) failed revision 1 on one P1, five P2s and one P3. Revision 2 answers all seven (app-shell.md, Appendix A).
+
+- **01, the cascade (INT):** DL's final cascade is the value. That's the v1.6 layer, then Mobile chrome, then v1.7.1, then the v1.8 pass, and the last DL rule for the element wins. There's no S9 exception.
+  - **What changes:** `main`'s top padding is 24px (16px under 760px). `ScreenHeader` takes v1.7.1's values: the title `clamp(24px, 2.6vw, 28px)` (24px on a phone), the lead 16px/24px (15px/22px), row gap 4px, and the eyebrow at 12.5px on a phone.
+  - **Mobile chrome's** 44px icon buttons under 760px are DL's own, so S6 now covers only what DL leaves at desk size.
+  - **On `/`:** the header gets smaller than sprint-01's (28px from 32px, and 16px from 17px). That's accepted with the rule.
+- **04, the budget (INT):** 150 kB is the target, and 160 kB the hard ceiling, for `/`'s first load on Leah's final measure.
+  - **The rule:** over 150 kB is a P2 finding, and the sprint may close. Over 160 kB blocks the close.
+  - **The thin oRPC link** is the cut either way. It comes as a revision, with one dispatch per FM row: Ghost on `data/**`, the decisions builder on `modules/decisions/**`, Leon on `modules/system/**` only if the badge's call changes, and Fenn only if a locked test reads oRPC's keys. It departs from FM line 30 and line 192, which INT approves with the revision. The figure is −7.7 kB alone on the 174.35 kB baseline, and −8.6 kB on the stub, not measured on today's main.
+  - **One reporting rule:** every build whose diff changes JavaScript that `/` loads reports `/`'s first load from its own build. In sprint-02 that's Fantem, Leon and Ghost.
+- **02, as Brennan's report says:**
+  - S7 is reworded: DL's planned entries become real links with `circle`, as the contract's own choice.
+  - DL's `Phone`/`Preview` area is never drawn: it's the library viewer's.
+  - `.lib-route`'s enter animation waits for W2, on client navigations only.
+- **03, as Brennan's report says:**
+  - Section 3 names each route file (`missions/index.tsx`, so `/missions` isn't the parent of `/missions/new`; `library/$kind.tsx`; onboarding with no `$missionId` layout until W2).
+  - The stubs are recorded as a departure from FM's route ownership.
+  - The handover rule: the owning module's dispatch takes over its file in its wave and drops `PlannedScreen`.
+- **05, as Brennan's report says:** SH-25 tests D16, with a harness inside Fenn's end-to-end territory: `renderToStaticMarkup` of a desk and a phone tag from their source files. Fantem's scratch-page check is replaced by it, so Fantem now also waits for Fenn's end-to-end tests.
+- **06, as Brennan's report says:**
+  - SH-12 covers the page on the shell, SH-13 the fonts, and SH-14 the shell's marker.
+  - SH-01, SH-03, SH-04 and SH-06 are extended.
+  - The chrome reset's scope and section 6's numbers are named as review checks.
+- **07, as Brennan's report says:**
+  - `/`'s head gains `Decisions · AVEL`.
+  - Section 4 names Ghost.
+  - The onboarding stub draws `circle`.
+  - The 120px bottom padding applies only while the tab bar is drawn (`data-tabbar`, as DL keys it).
+  - SH-24 compares only drawn elements, listed per width.
+- **The plan:** Brennan's re-review is his shell-uic a2. Fenn's dispatches carry the new IDs, Fantem waits for both test dispatches, and Leah reads the 150/160 table. Nothing else in the order changes.
+- **INT stops here for now:** no dispatch until INT is back. Next is Brennan's re-review (shell-uic a2), then R1.
+
+## 2026-11-08: Shell layout from v1.9 (INT: the artifact wins; Int's brief; procedures d28e78c)
+
+`docs/ui-contracts/shell-layout.md` (14,999 bytes) and `kit-v1.9.md` replace `app-shell.md`, which is deleted and was never built. Brennan's shell-uic a2 is withdrawn. The new pair gets one first review (`layout-uic`, procedures rule 2).
+
+**The shell:**
+- **What it is:** v1.9's shell as the brief lays it out: the rounded canvas, the 264px sidebar with ⌘B collapse to 64px, Jump to and the ⌘K palette, the brief's five groups, project rows with their page tree, the header with Theme, Depth and Display, the tab bar and focus mode.
+- **Preferences** live in cookies: `avel-theme`, `avel-depth` (default glass, as in DL), `avel-rail` and `avel-project`. So the first paint is right and nothing moves at hydration.
+- **The rounded shell (S1):** DL declares `--canvas-inset` and `--radius-dialog` for "the app canvas" but draws no rule. At 1024px and wider, the page column is an inset, rounded canvas that scrolls. Below that, the window scrolls, as in DL.
+- **The highlight still glides (S4),** but only on client navigations. The server's HTML draws it on the current row.
+- **The nav is built from routes' `staticData`,** so a page appears in the sidebar and ⌘K once its route exists (the brief), and later modules add entries without touching `system`. This also replaces the stubs: there's no PlannedScreen and no "Not built yet".
+
+**What's open:**
+- **Gaps in DL and FM:**
+  - icons for the entries DL leaves planned (S5);
+  - "Gates and integration" is kept, because DL's label wins over the brief's "Gates";
+  - Progress sits at `/missions/$missionId`, as in DL, and not FM's index redirect (S13);
+  - FM names no owner for Watch the work (`…/live`), so it goes to `factory`, beside Dispatch. INT can move it.
+- **The live footer waits for W2 (S9).** Without a stream, "Live" would be false.
+- **Escalations 01 to 03:** waiting counts, project names and the onboarding step, with stand-ins: loaded rows with `+`, `Client · Package`, and no step.
+
+**Scope:**
+- **Sprint-02 builds** the shell, the mock (routes 19 and 8), missions (All projects, Progress), clients, system (Settings), and the approval page and kit on v1.9.
+- **Sprint-03 gets** the other ten pages, in rounds of 3: New project, Onboarding, Factory live, Business, Client knowledge, Library, Factory versions, Agent roster, Activity, and the project pages (Watch the work, Release, Dispatch, Plan, Gates and integration, Findings). Each copy table lives in that sprint's contract.
+- **Why sprint-02 can't take them:**
+  - at most 3 dispatches run at once, and reviews count against that;
+  - FM allows one module per dispatch;
+  - the sidebar's project rows need `missions` and `clients` before `system`, so `system` writes their route files this sprint.
+
+**v1.9 on the built work (kit-v1.9.md):**
+- **The kit:** `busy` and `reasonPlacement` on Button; DecisionTag's busy and reasons; ReasonDialog's tip and `ReasonField`; Dialog's exit and `DialogClose`; hover gating.
+- **The tokens:** the night `subtle`, `--av-d-exit`, `--av-ease-in`, and DL's two `--av-page-bg` blocks.
+- **`base.css`:** `a:hover` is gated.
+- **AP's API-driven departures stay,** because route 54 refuses what DL would allow: D8 keeps `stale` with both buttons disabled, and `notAllowed` with no buttons. INT can overrule.
+
+**The budget:** procedures rule 7's CI check replaces app-shell's 150/160 table and the thin-link cut.
+
+**Rounds:**
+- R0: Brennan's review.
+- R1: Fenn unit, Fenn e2e, and Ghost's mock.
+- R2: Fantem's kit and Nemi's styles.
+- R3: Leon's missions and Ghost's clients.
+- R4: Leon's system, then Ghost's decisions follow-up.
+- R5: Leah.
+- My reviews fill the free slots.
+
+**Brennan's app-shell a1 findings:**
+
+| Finding | Where it went |
+| --- | --- |
+| 01 | Section 0: the final cascade |
+| 02 | S3 and S5; `.lib-route` isn't drawn |
+| 03 | Section 6: who writes the route files; the nav from routes, with no stubs |
+| 04 | Rule 7 replaces the cut |
+| 05 | SH-25 |
+| 06 | SH-12 to SH-14 |
+| 07 | `/`'s title, Ghost named, focus mode's padding through `data-tabbar`, and SH-24's drawn elements |
+
+## 2026-11-08: INT confirms the shell layout's three open calls
+
+- **Sprint-02's scope:** the shell plus All projects, Progress, Clients and Settings. The other ten pages go to sprint-03, and the nav is built from routes.
+- **AP's two departures stay,** because route 54 refuses both: `stale` disables Reject too, and `notAllowed` draws no buttons (`kit-v1.9.md` section 1, as written).
+- **Watch the work (`…/live`)** goes to `factory`.
+
+The contracts and the plan already say this, so nothing is re-rendered. Next is Brennan's layout-uic review, on Int's word.
+
+## 2026-11-08: Int's calls on the shell, before Brennan's review: a product, not a design library
+
+Int: the shell should read as a professional app. `shell-layout.md` is now revision 2 (14,749 bytes, down from 14,999).
+
+**1. No command palette (S14).**
+- **What goes:** `JumpPalette` (DL's `Fme`), `loadJumpPalette`, the sidebar's `Jump to ⌘K` field, the ⌘K, Ctrl+K and `/` keys, the palette's groups and actions (with the `T` and `D` keys), SH-08 and SH-26.
+- **What stays:** ⌘B and Ctrl+B collapse the sidebar.
+- **Icons:** `search` and `corner-down-left` go, because they served only the palette and Jump to.
+
+**2. The header's right side (S14).**
+- **What goes:** Jump to, the Light/Night and Flat/Glass switches, and the phone Display button and panel. The header is now the menu button, the crumbs and the progress line, at every width. On phone it has no search.
+- **Theme and Depth are on Settings only.** They use a new kit part, `SegmentedControl`: DL's `Nme`, the radio group `_me` drew. It keeps the same reveal and the same cookies. `AppShell` loses `theme`, `depth`, `onTheme`, `onDepth` and `onJump`.
+- **Scenarios:** SH-07 covers `SegmentedControl`. SH-11 covers Settings' groups and a header with only the menu button. SH-22 loses the Display panel. SH-23 sets Theme and Depth from Settings.
+
+**3. The wording audit (S15).** I made these changes in `shell-layout.md`. Int can overrule any of them:
+
+| Where | DL's wording | Now | Why |
+| --- | --- | --- | --- |
+| Sidebar nav's `aria-label` | `Screens` | `Main` | "Screens" is how the library names its contents. `Main` matches DL's tab bar. The two are never exposed together (the tab bar shows only where the sidebar is a modal sheet). |
+| All projects' lead | `Every mission, filter by state, client, package` | `Every project, with its client and state.` | "Mission" is internal, and there are no filters this sprint. |
+| Clients' lead | `Clients and repo connections, step-up for credentials` | `The clients you build for.` | It promises repo connections and step-up, which aren't built, in jargon. |
+| Settings' lead | `Theme, CLI sessions, health` | `Theme, depth and your CLI sessions.` | There's no health panel. Depth is now here. |
+
+**Left as they are, for Int to decide:**
+- **`Depth` with `Flat` and `Glass`,** and **`Night`** (most apps say `Dark`). They're DL's words and Int named Theme and Depth. Plain options: `Dark`, and `Surfaces` with `Solid` and `Translucent`.
+- **The DL class names** (`lib-*`) in `kit.css`. Users never see them, and they keep each value traceable to DL.
+- **`kit-v1.9.md`:** the audit found no library wording in its labels or copy. Its "library chrome" lines name DL's source sections, not text the product shows. Unchanged.
+- **Already out by S3:** the version line, mode switch, planned rows, Preview, simulator and back-to-top.
+
+**Fenn's shell-test-e2e block in `plan.toml` is not touched,** because INT is drafting its change (a screenshot and video per page). It still names SH-26 in its domain, context and task title. Please drop it in that change. Everything else in the plan follows S14: Brennan's review, Fenn unit, Fantem's kit, Leon's system and Leah's a11y task.
+
+## 2026-11-08: Brennan's layout-uic a1 (FAIL, two P2s) answered in section 5; no second round (Int)
+
+**Int's call:** layout-uic gets no round 2. Procedures rule 2 reviews a spec once, so anything left goes to the build's review: Zero's system review (Settings) and Leah's a11y pass. R1 (Fenn unit, Fenn e2e, Ghost's mock) opens on this commit.
+
+**`shell-layout.md` section 5 changed, and nothing else in the contract.** The file is 15,069 bytes, under the 15 KB aim.
+- **layout-uic-brennan-01 (CLI sessions with no source): option (a), the row is dropped.**
+  - Settings has no empty state: its two groups always show.
+  - The lead is now `Theme and depth.`†.
+  - CLI sessions come with route 4's slice, so there's no mock route, no `key-round` icon and no SH-11 rows for Settings.
+- **layout-uic-brennan-02 (the segmented controls on phone): labels, and 44px targets under 760px.**
+  - **Labels:** each group has a visible `span` (`Theme`, `Depth`) above it, as in DL's Display pop, and keeps its `aria-label`.
+  - **At 760px and narrower:** Settings takes the Display pop's rules. The option labels stay shown, and each button is `height: 44px; min-width: 44px; padding: 0 12px`. The 44px replaces the pop's 36px (†), to meet the sprint's target size.
+  - **Wider than 760px:** DL's `.lib-seg` cascade is unchanged.
+  - **Where:** the rules live in `modules/system/settings.css`, scoped to the page, which is Leon's territory, so the kit's `.lib-seg` is untouched. SH-11 reads that sheet as text. Leah's 44px check now has a defined target.
+- **The finding files stay as Brennan wrote them.** Zero's system review checks the build against both.
+- **The plan:** one goal line now says an empty state "where there can be nothing to show", because Settings has none.
+
+**Brennan's six P3s** are copied to `backlog.md`.
+
+## 2026-11-08: Int's call on Settings: no Depth, Light and Dark, one Appearance section (S16)
+
+Int: Settings isn't a design library.
+- **No Depth setting:**
+  - no Flat or Glass control, and no `avel-depth` cookie;
+  - `__root` always writes `data-depth="glass"`, so DL's glass rules keep applying;
+  - `SegmentedControl` is still the kit part, and the `square` and `layers` icons go.
+- **Theme reads `Light` and `Dark`.** The stored value stays `night` (`avel-theme`, `data-theme`), because DL's night tokens are keyed on it. Users never see that value.
+- **Settings is one plain `Appearance` section:** an `h2` `Appearance`, then the visible `Theme` label and its switch. The page has no lead. Its eyebrow stays `Factory`, its nav group.
+- **What carries over:** the phone rules from layout-uic-brennan-02 (option labels kept, 44px under 760px, in `modules/system/settings.css`), and the reveal and cookie behaviour.
+
+**What changed in `shell-layout.md`** (15,088 bytes, under the 15 KB aim):
+- section 3's icon list;
+- section 4's `__root` line;
+- section 5's Settings row and the Appearance section;
+- section 7: S14 now says "Theme is on Settings only", and S16 is new;
+- section 9: SH-11 (the Appearance section) and SH-23 (the theme cookie, `data-depth="glass"` in the server's HTML, and no `avel-depth` cookie).
+
+**Elsewhere:**
+- **`kit-v1.9.md` section 3:** its last line now gives `data-theme` from `avel-theme`, and `data-depth` always `glass`.
+- **`plan.toml`:** Leon's system domain, its kit-v1.9 context line and task title, and Leah's a11y task title.
+- **Fenn's e2e block** names no depth, so it's still untouched.
+
+## 2026-11-08: Sign-in, before the shell (Int): login.md, escalation 04, and the plan
+
+Int: sign-in comes before the shell, in sprint-02, as its own small module in `system`. `docs/ui-contracts/login.md` is revision 1 (12856 bytes), for Brennan's one review.
+
+**What the contract decides:**
+- **The page:** `/login`, for the one operator, with email and password. It has no sign-up, "forgot password", "remember me" or passkey control (FM). The card is DL's step-up dialog `mh` drawn inline. Fields and the button are 44px at 760px and narrower.
+- **The wire:**
+  - Better Auth's email and password defaults (sign in, the session read, sign out), with `fetch` from `system`'s `api.ts`, and no `better-auth` package.
+  - 401 means a wrong email or password. 429 with `X-Retry-After` covers both the lockout and the rate limit.
+  - It's a stand-in until escalation 04 (to Axis, via INT) confirms it.
+- **The guard:**
+  - `__root`'s `beforeLoad` reads the session (`staleTime: Infinity`), and sends a signed-out visitor to `/login?next=`.
+  - A redirect target is kept only when it's a same-site path, so there's no open redirect.
+  - Any contract 401 goes to `/login?next=…&reason=expired`, through one subscription to the query and mutation caches in `system`, so `data/` and the approval page don't change. The expired notice uses DL's 401 copy.
+- **The copy:** wrong password `That email and password don't match.`, and lockout `Too many attempts. Try again after {HH:MM}.`. There's no countdown, because FM's shared clock isn't built.
+- **Sign-out:** an `Account` section on Settings, below Appearance, with `Signed in as {email}` and `Sign out`. It clears the `QueryClient`, then goes to `/login`. Leon's sign-in build exports the section, and his system build draws it. `shell-layout.md` is unchanged.
+- **The mock (Ghost):**
+  - `/api/auth/*`, with `fixtures.operator` (`operator@avel.test`, a mock-only password) and sessions by cookie;
+  - the lockout on the 11th failure in 15 minutes;
+  - `reset()` keeps sessions, because e2e workers share one dev server; `resetAuth()` drops them;
+  - passwords are redacted in `recorded()`;
+  - contract routes still don't check the session, so the shell's tests don't change.
+- **End to end:** LG-23 is a Playwright setup project that signs in once and saves `storageState` for the phone, 900 and desk projects. Without it, the guard would send the whole suite to `/login`.
+- **Left for later:** forwarding the cookie on every SSR contract call (`router.tsx`) waits for the real server, and CLI sessions wait for route 4.
+
+**The plan: only Brennan's `login-uic` review is live.** `scripts/render.py` allows one writer per path, and every sign-in writer shares paths with a shell dispatch:
+
+| Sign-in dispatch | Shares with |
+| --- | --- |
+| Fenn `login` test-unit (`apps/web/test/**`) | `shell-test-unit`, in flight |
+| Fenn `login` test-e2e (`e2e/**`, `playwright.config.ts`) | `shell-test-e2e`, in flight |
+| Ghost `auth-mock` build (`packages/contract-mock/**`) | `mock-build` (done, merging) |
+| Leon `login` build (`modules/system/**`, `routes/**`) | `system-build` (R4, not started) |
+
+- **Where the five dispatches are:** they're written in full in `plan.toml`, as a commented-out draft: the four above, plus Zero's `login` review.
+- **What I didn't touch:**
+  - the in-flight territories, because shell work in flight doesn't change;
+  - `render.py`, because it's the dispatch kit.
+- **Kept out of the sprint-level lines:** `login.md` and its goals stay out of the plan's sources, goals and done-when, so the running Fenn task docs render unchanged.
+- **INT's call, either of:**
+  1. **(recommended)** `render.py` allows two writers to share a path when one waits on the other through `after`, which the draft already orders: each sign-in writer comes after its shell twin, and `system-build` after `login-build`;
+  2. or I narrow the finished dispatches' territories once they merge.
+
+  Then I uncomment the draft, restore `system-build`'s `after` on `agent-leon-login-build`, re-render, and commit.
+
+## 2026-11-08: login.md revision 2 answers login-uic-brennan-01 to 03; territories by Int's option 1
+
+**Revision 2** (14,988 bytes) goes to Brennan for round 2, where only P0 and P1 block.
+- **01 (401 bounced off `/login`):**
+  - A contract 401 now sets the session's query data to `null` (not just invalidates it), then navigates with `replace`.
+  - `/login`'s guard reads that `null`, so it draws the page with the expired notice, with no session request and no contract call, and so no loop.
+  - "Once" now means until the navigation settles.
+  - LG-06 keeps the mock's session valid, and asserts the notice and that there's no second navigation.
+- **02 (`next` went off-site):** one `safeNext(raw, origin)`.
+  - **What it keeps:** a value of at most 2,048 characters, with no control characters, starting with exactly one `/`, whose parsed URL is on the app's origin and isn't `/login`.
+  - **Where it goes:** the parsed `pathname + search + hash`, never the raw string.
+  - **The test:** LG-03 adds the tab, newline and CR cases, `/login?x=1` and the length cap.
+- **03 (the token in the cache and the HTML):**
+  - `api.ts` builds answers from the named fields only, and drops `token` and everything else.
+  - After sign-in, the session is refetched with `staleTime: 0`. Nothing is taken from sign-in's body.
+  - The mock's `get-session` now returns Better Auth's raw shape, with `token` and `ipAddress`, so the tests can see the drop.
+  - LG-02 checks that the cached session has no `token`, and LG-20 that the SSR HTML has neither the cookie's value nor a `"token"` key.
+- **Brennan's eight P3s** are in `backlog.md`.
+
+**Territories, Int's call: option 1.** `render.py` will let a dispatch share a path with one it runs after. INT is making the change.
+- **Once it's on main,** I uncomment the five login dispatches in `plan.toml`, and restore `agent-leon-system-build`'s `after` on `agent-leon-login-build`.
+- **Until then** the draft stays commented out, so the plan renders as it does now.

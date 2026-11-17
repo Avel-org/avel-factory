@@ -1,0 +1,162 @@
+# The plan for backend sprint-01 (Step 1). The lead writes it; scripts/render.py turns it into
+# the dispatch package. Every task doc and prompt comes from here: never edit
+# the rendered files, fix this and re-render. Format: docs/agent-dispatch/avel/dispatch-kit.md
+#
+# 2026-11-07: S1-6 (zod/mini) comes forward on its own (INT), ahead of the rest of the Step 1
+# slice, after Leah's perf review failed the decisions page (finding decisions-leah-01).
+# Only its module is in this plan for now. The slice's modules, and Step 1's 15 done-when
+# tests, are added here when the slice is written. S1-6 in decisions.md is this module's
+# contract: no route, DTO, error or event changes, so there's no contract.md section for it.
+team = "backend"
+sprint = "sprint-01"
+lead = "axis"
+step = "1"
+title = "Step 1, first module: @avel/contract on zod/mini (S1-6)"
+goals = [
+  "@avel/contract's schemas are built with zod/mini (and zod/v4/core), with no import of classic zod anywhere in packages/contract/src, so the web stops bundling classic zod once its own side moves too (S1-6)",
+  "Nothing a consumer sees changes: the wire, every z.input and z.output type, the OpenAPI document byte for byte, S1-3's BAD_REQUEST issues, and the package version (no bump: S1-6, INT)",
+  "Biome refuses a classic zod import in packages/contract/**, and a locked test refuses it too",
+]
+# decisions.md, S1-6 "Done when", with the size measure moved to the joint landing (S1-6, amended after the spike).
+done_when = [
+  "Build, typecheck and lint pass.",
+  "The 44 locked contract tests pass unchanged, and so do the new zod-mini tests: no classic zod import in packages/contract/src, every exported schema's z.input and z.output type unchanged against the pre-move snapshot, and route 54's bad-input issues unchanged.",
+  "The OpenAPI document is unchanged: after `pnpm --filter @avel/docs generate`, `git diff --exit-code docs/generated/openapi.json` exits 0.",
+  "The first-load size: the spike measured 173.53 to 156.28 kB gzip with both packages on zod/mini (decisions.md, S1-6). The real number is Leah's, on the frontend side, once Ghost's web change and this module are both on main.",
+]
+sources = [
+  "docs/agent-dispatch/backend/sprint-01/decisions.md",
+  "docs/design/Step 0 and Step 1 plan.md",
+  "docs/agent-dispatch/backend/sprint-00/contract.md",
+  "docs/agent-dispatch/backend/sprint-00/decisions.md",
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "A TypeScript monorepo on pnpm workspaces (pnpm 10). Biome 2.6.5 for lint and format, Vitest for tests, Drizzle on Postgres, and oRPC 1.16.2 contract definitions with Zod 4.6.7 schemas. Step 0 is merged: packages/contract (102 routes, value lists, DTOs, the error map, the event-owner map), packages/db (the schema and migrations), tools/docs (the ERD, the OpenAPI document and the DATABASE.md drift check). The web (apps/web, frontend territory) imports @avel/contract through its subpath exports (D58)."
+layout = [
+  "packages/contract/src: value-lists.ts (no zod), dto/*.ts (the DTOs and inputs), errors.ts (the error map and ErrorBody), routes/*.ts (oRPC route definitions over base.ts), events.ts, completion-report.ts; built with tsc into dist/",
+  "packages/contract/test: the 44 locked done-when tests (5, 6, 7) and their helpers and fixtures",
+  "tools/docs/src/openapi.ts: the OpenAPI generator (oRPC's OpenAPIGenerator with @orpc/zod's zod 4 converter); output in docs/generated/openapi.json",
+  "biome.json: the root lint config",
+]
+conventions = [
+  "Schemas in packages/contract/src import zod as `import * as z from \"zod/mini\"`; zod/v4/core only where a type or class must cover classic and mini alike",
+  "zod/mini has no chained modifiers: x.nullable() is z.nullable(x), x.optional() is z.optional(x), x.array() is z.array(x), S.extend(shape) is z.extend(S, shape), S.pick(mask) is z.pick(S, mask); checks go through .check(...): z.minLength, z.minimum, z.maximum, z.trim, z.regex, z.refine",
+  "Every name, field, comment and export stays where it is: the move changes how a schema is built, never what it is",
+  "Package names are @avel/contract and @avel/docs; @avel/contract's package.json doesn't change (no version bump, S1-6; packaging rule, S1-2 and D58)",
+]
+notes = [
+  "decisions.md S1-6 is this module's contract, including the spike's results (2026-11-07). S1-3 (the BAD_REQUEST details) and S1-2 (the version rule) are the other entries it leans on.",
+]
+
+# ------------------------------------------------------------------ zod-mini: the contract on zod/mini (S1-6)
+[[dispatch]]
+agent = "rigg"
+module = "zod-mini"
+role = "test-unit"
+domain = "The zod-mini regression tests, written against the classic contract on main and locked before the move: no classic zod import in packages/contract/src; every exported schema's z.input and z.output type unchanged against a snapshot taken now; route 54's bad-input issues unchanged (S1-6, S1-3)."
+territory = ["packages/contract/test/**"]
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-01/decisions.md", why = "S1-6 (the move, its tests and the spike's check 5) and S1-3 (the BAD_REQUEST issues: path joined with '.', message)" },
+  { path = "packages/contract/test/helpers/contract.ts", why = "how the locked tests load the contract and run tsc (done-when 7's type test): match it" },
+  { path = "packages/contract/src/index.ts", why = "the public entry: every exported schema the snapshot covers" },
+  { path = "packages/contract/src/dto/decisions.ts", why = "DecideProposalInput, route 54's input" },
+]
+notes = [
+  "The contract on main is classic zod when you start, and stays so until your tests are locked: Axis's move waits on your lock. Take the type snapshot from it.",
+  "The 44 locked tests in packages/contract/test (sprint-00 lock 6a61fb2) stay as they are. Add new files beside them; don't edit a locked file.",
+  "Two of your three tests pin behaviour that already exists, so they pass on classic and say so in their names (Part 6's rule). Only RIGG-01 fails first.",
+]
+
+[[dispatch.task]]
+title = "No classic zod (S1-6): a test that reads every .ts file under packages/contract/src and fails, naming the file and line, on any import or re-export from \"zod\", \"zod/v4\" or any zod specifier other than \"zod/mini\" and \"zod/v4/core\""
+priority = "P0"
+current = "Every DTO file, errors.ts and completion-report.ts import { z } from \"zod\""
+required = "Static imports, type-only imports, export-from and dynamic import() all count. It fails with an assertion on today's classic contract, listing the files, the same way 3 runs in a row"
+verify = "pnpm --filter @avel/contract test -- zod-mini"
+expected = "fails with an assertion that lists the classic imports"
+
+[[dispatch.task]]
+title = "Types unchanged (S1-6): a snapshot of z.input and z.output for every schema the contract's entry exports, taken from the classic contract now, and a test that the current types equal it"
+priority = "P0"
+required = "The snapshot is committed under test/fixtures and generated by a script in test/ that you commit too (so a later deliberate change regenerates it). Comparison is type equality, both directions, not text: a test that only compares printed strings would fail on cosmetic differences between classic and mini. It covers every exported zod schema (DTOs, inputs, error details, ErrorBody, the completion report), not a sample, and the count is in its name or output. It runs inside `pnpm --filter @avel/contract test`, as done-when 7's type test does. It passes on classic, and fails with a type error naming the schema if one field's type is changed by hand (show that once, then revert, and put the output in your report)"
+verify = "pnpm --filter @avel/contract test -- zod-mini"
+expected = "passes on the classic contract, with the schema count"
+
+[[dispatch.task]]
+title = "Issues unchanged (S1-6 check 5, S1-3): route 54's bad inputs give the same issues, recorded from classic as a fixture"
+priority = "P2"
+required = "DecideProposalInput.safeParse on at least: {}, a non-UUID proposalId, version 0 with empty choice and a blank reason, wrong types, and a padded reason. The fixture holds each case's issues as (path joined with '.', code, message), in order, plus the parsed data for the good case (the trimmed reason). Passes on classic"
+verify = "pnpm --filter @avel/contract test -- zod-mini"
+expected = "passes on the classic contract"
+
+[[dispatch]]
+agent = "axis"
+module = "zod-mini"
+role = "api-contract"
+domain = "packages/contract/src moved from classic zod to zod/mini, as S1-6 describes, with no change a consumer can see; the OpenAPI generator's DTO check moved to zod/v4/core's $ZodType; Biome's ban on classic zod in packages/contract/**."
+territory = [
+  "packages/contract/src/**",
+  "tools/docs/src/openapi.ts",
+  "biome.json",
+]
+after = ["agent-rigg-zod-mini-test-unit"]
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-01/decisions.md", why = "S1-6 in full: what changes, what doesn't, the spike's five checks and its findings for openapi.ts and the Page constraint; S1-8 (why shared schemas must stay one object)" },
+  { path = "packages/contract/src/dto/common.ts", why = "the shared pieces every DTO uses: Uuid, IsoTime, Json, Placeholder, Page, PageQuery (coerce), Reason (trim)" },
+  { path = "tools/docs/src/openapi.ts", why = "line 27's classic instanceof check, the only change outside the contract" },
+  { path = "docs/generated/openapi.json", why = "must come out byte for byte the same" },
+]
+notes = [
+  "Start only after Rigg's zod-mini tests are merged and the operator has added their line to locks.md: the type snapshot must come from the classic contract.",
+  "Keep every shared schema one object (S1-8). Placeholder, and every DTO that's an alias of it, must stay the same object, or the OpenAPI document changes.",
+  "If a schema has no zod/mini form that keeps both its types and its OpenAPI output, stop and report it under Deviations. Don't approximate it.",
+  "The size measure isn't yours to rerun: you don't build apps/web. Quote the spike's 173.53 to 156.28 kB in your report and say it's the spike's.",
+]
+
+[[dispatch.task]]
+title = "Rewrite every schema in packages/contract/src in zod/mini: about 377 chained calls (S1-6's counts: .nullable 167, .min 79, .int 54, .optional 50, .array 49, .extend 15, .trim 11, .refine 2, .pick 2, .meta 1)"
+priority = "P0"
+current = "Every DTO file, errors.ts and completion-report.ts import { z } from \"zod\" and chain methods"
+required = "Only \"zod/mini\" and \"zod/v4/core\" are imported. Names, exports, comments and order stay as they are. The `.meta` call keeps its metadata in the OpenAPI output. `Page<T>`'s constraint becomes core.$ZodType, so classic schemas can still be paged (S1-6, Consumers). No change to package.json"
+verify = "pnpm --filter @avel/contract build && pnpm --filter @avel/contract test"
+expected = "builds; the 44 locked tests and Rigg's zod-mini tests all pass"
+
+[[dispatch.task]]
+title = "tools/docs/src/openapi.ts: find DTOs with zod/v4/core's $ZodType instead of classic z.ZodType (spike check 2)"
+priority = "P0"
+required = "Only that check and its import change. The generated document is byte for byte main's"
+verify = "pnpm --filter @avel/docs generate && git diff --exit-code docs/generated/openapi.json && echo OPENAPI-UNCHANGED"
+expected = "OPENAPI-UNCHANGED"
+
+[[dispatch.task]]
+title = "biome.json: an overrides entry for packages/contract/** with style/noRestrictedImports banning \"zod\" and \"zod/v4\", each with a message pointing at zod/mini"
+priority = "P1"
+required = "pnpm lint passes on the moved contract, and fails on a planted `import { z } from \"zod\"` in a packages/contract/src file (show it once in your report, then remove it). No other lint rule changes"
+verify = "pnpm lint"
+expected = "exits 0"
+
+[[dispatch]]
+agent = "brennan"
+module = "zod-mini"
+role = "review-spec"
+domain = "Review the zod-mini diff against decisions.md S1-6 (and S1-2, S1-3, S1-8): nothing a consumer can see changes, and no classic zod is left in packages/contract."
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-01/decisions.md", why = "S1-6 in full (the move, the spike's five checks, what the module changes), S1-2 (the version rule: no bump), S1-3 (BAD_REQUEST issues), S1-8" },
+  { path = "docs/agent-dispatch/backend/sprint-00/contract.md", why = "the contract the moved schemas still have to say, field for field" },
+]
+notes = [
+  "The point of the move is that nothing changes on the outside. Check the wire, the types, the OpenAPI document and the version, and that territory stayed to packages/contract/src, tools/docs/src/openapi.ts and biome.json. A changed .min bound, a lost .trim or a nullable that became optional is a finding even when the tests pass.",
+]
+
+[[dispatch.task]]
+title = "Review the zod-mini diff: no classic zod import left, no schema changed in meaning, the OpenAPI document byte for byte main's, package.json and its version untouched, Biome bans classic zod in packages/contract/**"
+priority = "P0"
+verify = "pnpm build && pnpm typecheck && pnpm lint && pnpm --filter @avel/contract test && pnpm --filter @avel/docs generate && git diff --exit-code docs/generated/openapi.json && ! grep -rnE \"from ['\\\"]zod(/v4)?['\\\"]\" packages/contract/src && git diff --exit-code \"${AVEL_BASE:-$(git merge-base main HEAD)}\" HEAD -- packages/contract/package.json && echo ZOD-MINI-OK"
+expected = "ZOD-MINI-OK"

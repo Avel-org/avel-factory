@@ -1,0 +1,24 @@
+{
+ "session_id": "833c9298-f396-47bf-b383-d299768e125a",
+ "name": "ZERO w0-fonts-review-frontend a1",
+ "branch": "frontend/sprint-01/agent-zero-w0-fonts-review-frontend-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-zero-w0-fonts-review-frontend-a1",
+ "first_at": "2026-11-07T06:54:43.399Z",
+ "last_at": "2026-11-07T06:56:33.439Z",
+ "updated_at": "2026-11-07T06:56:46Z",
+ "tokens": {
+  "claude-opus-5-5": {
+   "input": 34,
+   "output": 8209,
+   "cache_write_5m": 0,
+   "cache_write_1h": 37879,
+   "cache_read": 456737,
+   "messages": 17
+  }
+ },
+ "cost_usd": 0.5587,
+ "cost_usd_by_model": {
+  "claude-opus-5-5": 0.5587
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

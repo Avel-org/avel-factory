@@ -1,0 +1,24 @@
+{
+ "session_id": "08e5bd6b-c993-4d5d-95cb-ff2c76c7cca0",
+ "name": "LEAH decisions-review-a11y-perf a1",
+ "branch": "frontend/sprint-01/agent-leah-decisions-review-a11y-perf-a1",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-leah-decisions-review-a11y-perf-a1",
+ "first_at": "2026-11-07T22:49:58.228Z",
+ "last_at": "2026-11-07T22:59:26.652Z",
+ "updated_at": "2026-11-07T22:59:34Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 70,
+   "output": 27667,
+   "cache_write_5m": 0,
+   "cache_write_1h": 121789,
+   "cache_read": 2650452,
+   "messages": 34
+  }
+ },
+ "cost_usd": 1.2941,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 1.2941
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

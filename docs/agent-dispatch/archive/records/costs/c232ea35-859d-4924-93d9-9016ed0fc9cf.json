@@ -1,0 +1,24 @@
+{
+ "session_id": "c232ea35-859d-4924-93d9-9016ed0fc9cf",
+ "name": "BRENNAN login-uic-review-spec a2",
+ "branch": "frontend/sprint-02/agent-brennan-login-uic-review-spec-a2",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-02-agent-brennan-login-uic-review-spec-a2",
+ "first_at": "2026-11-09T05:09:08.655Z",
+ "last_at": "2026-11-09T05:23:32.002Z",
+ "updated_at": "2026-11-09T05:23:34Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 22,
+   "output": 5721,
+   "cache_write_5m": 0,
+   "cache_write_1h": 30764,
+   "cache_read": 178474,
+   "messages": 9
+  }
+ },
+ "cost_usd": 0.216,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.216
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

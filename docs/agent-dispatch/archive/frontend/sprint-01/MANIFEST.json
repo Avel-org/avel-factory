@@ -1,0 +1,189 @@
+{
+  "renderer": "scripts/render.py (minimal, CR-16)",
+  "team": "frontend",
+  "sprint": "sprint-01",
+  "planSha256": "8ada3f2aa236451f4f638afc46eacfd83ca5a3cb8fea6be8934799786c05a0b6",
+  "packageSha256": "59984124f82e1f30aebd05468acefe72c314a01c860ffb75fd4e5bd293267e86",
+  "files": [
+    {
+      "path": "DISPATCH-PROMPTS.md",
+      "kind": "prompts_archive",
+      "sha256": "4216e778d9486e511f271df9ffaa449b4ed77d0d9d0ae9965475d215e7f30f0d",
+      "bytes": 48609
+    },
+    {
+      "path": "DISPATCH.md",
+      "kind": "dispatch_md",
+      "sha256": "ccac5ce269222c13085092455868433e3b76b91e20f4b3b418be8c972c9b143d",
+      "bytes": 12110
+    },
+    {
+      "path": "agent-brennan-approvals-uic-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "6a981aee9486da928834320c7e4a55ff9c62f70b7b3b1651f86618e0b7823581",
+      "bytes": 16606
+    },
+    {
+      "path": "agent-brennan-decisions-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "1c42b8be281b4800edb441c58211907fd474fc7598c7f008450950b41940f782",
+      "bytes": 12841
+    },
+    {
+      "path": "agent-brennan-w0-app-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "fff8ba7e384a6b8cdbd30f5fdc2bb3d4bf970489f86f4552c7d3a734a4cce992",
+      "bytes": 13089
+    },
+    {
+      "path": "agent-brennan-w0-data-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "ccadc8ac14e362dd20c8adfe014ae4b10f449537dd8b231aabe44419c7bb8855",
+      "bytes": 12845
+    },
+    {
+      "path": "agent-brennan-w0-kit-review-spec.md",
+      "kind": "task_doc",
+      "sha256": "7cf9d5c617d26286179eb83a9e69371f9bfad8d6c5364254040ce14af2f8804d",
+      "bytes": 12538
+    },
+    {
+      "path": "agent-fantem-w0-kit-build.md",
+      "kind": "task_doc",
+      "sha256": "caec6c58ba6618ac675915785c3529481d91417a3962bf18f3ef143c16219f89",
+      "bytes": 26656
+    },
+    {
+      "path": "agent-fenn-decisions-test-e2e.md",
+      "kind": "task_doc",
+      "sha256": "fa0b9d33ac6479466c569ce8e56a7531f08cea8795327e8092da6d1def1590a7",
+      "bytes": 22158
+    },
+    {
+      "path": "agent-fenn-decisions-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "747fdf43ea4e5e4d1bbcfc0f59c1096d75359e0c923657adbc71ba520d535810",
+      "bytes": 12963
+    },
+    {
+      "path": "agent-fenn-w0-data-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "b6bb1f593ebeaa17fa3cccb0850e13210b754ab294bc2b926ee3c154e2a2d1fb",
+      "bytes": 13831
+    },
+    {
+      "path": "agent-fenn-w0-kit-test-unit.md",
+      "kind": "task_doc",
+      "sha256": "a4a84f5ad866337952de508cedf560d65a98594c890cc6acf43af6c72db6feff",
+      "bytes": 19171
+    },
+    {
+      "path": "agent-ghost-w0-data-build.md",
+      "kind": "task_doc",
+      "sha256": "45151d0b583710e3b0e5718e167cca035fc986fdb1070f468b8df93ad315b3c6",
+      "bytes": 22464
+    },
+    {
+      "path": "agent-leah-cls-study-review-a11y-perf.md",
+      "kind": "task_doc",
+      "sha256": "e93c633fb36bd074d481b3e7e4ef885e043f8c00ab3f8734c373fc1a5d99cb92",
+      "bytes": 18502
+    },
+    {
+      "path": "agent-leah-decisions-review-a11y-perf.md",
+      "kind": "task_doc",
+      "sha256": "a9fd3f26db39e4c0085b349e2739a7b1a420a06554f25379951dda10c7fbe073",
+      "bytes": 15356
+    },
+    {
+      "path": "agent-leah-size-study-review-a11y-perf.md",
+      "kind": "task_doc",
+      "sha256": "7011f3c65c50a999d56d0f8051147badc3c38e34ffe547292d135b0e71e732f3",
+      "bytes": 19251
+    },
+    {
+      "path": "agent-leon-decisions-build.md",
+      "kind": "task_doc",
+      "sha256": "ed348d83616059b67c73e28f7fad1ede4f559d4b301f389277b31a147ba44d87",
+      "bytes": 26038
+    },
+    {
+      "path": "agent-nemi-w0-app-build.md",
+      "kind": "task_doc",
+      "sha256": "40a4c27c258deb0b6b081c7da102745b9513108323cd0aa01ab76bd87ec965ea",
+      "bytes": 16393
+    },
+    {
+      "path": "agent-nemi-w0-fonts-build.md",
+      "kind": "task_doc",
+      "sha256": "a29a9e2857d16db87f3bcb398f5e520511c8395dec32a5e1ec06b6ac001dd285",
+      "bytes": 18141
+    },
+    {
+      "path": "agent-nemi-w0-split-build.md",
+      "kind": "task_doc",
+      "sha256": "35d8317781a1efde651f6d11b7b508c2382c67510de60be7a997745d6ce669ee",
+      "bytes": 18404
+    },
+    {
+      "path": "agent-zane-w0-app-review-security.md",
+      "kind": "task_doc",
+      "sha256": "a218534cca16b5750315ec843b15c8f2606f37a6249589b5110ad22c55ffce1d",
+      "bytes": 12734
+    },
+    {
+      "path": "agent-zane-w0-data-review-security.md",
+      "kind": "task_doc",
+      "sha256": "0248326b8ad46920ad3b33d18d93acc19019558e4d2a9ec547a5c44188871867",
+      "bytes": 13476
+    },
+    {
+      "path": "agent-zane-w0-split-review-security.md",
+      "kind": "task_doc",
+      "sha256": "5d217171da0a25e65a408f29f96ba0a3b212ef47f8dfd3ef82b17a9d1174de84",
+      "bytes": 13110
+    },
+    {
+      "path": "agent-zero-decisions-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "a1ecc09ca6f80abee7c505e4919de8e7a2c4434c925747a7d4d34647b4b98a6c",
+      "bytes": 14970
+    },
+    {
+      "path": "agent-zero-w0-app-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "731abaaddfe33d251d6e776aff72bd5b0f04f7dfa278b9df0e029da90c86d365",
+      "bytes": 13366
+    },
+    {
+      "path": "agent-zero-w0-data-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "7a5cee04d9a027b9e89d8f52c5e4849ad96d581386332852d890896f6fde5382",
+      "bytes": 13553
+    },
+    {
+      "path": "agent-zero-w0-fonts-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "efcc3563468c5fc76054ec541dc6d5a0bd5265155865675880ff60d104fe6228",
+      "bytes": 14024
+    },
+    {
+      "path": "agent-zero-w0-kit-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "a05b19cba84e1138553fef1a487402563032cdb2d34da03d7cde848987781307",
+      "bytes": 16381
+    },
+    {
+      "path": "agent-zero-w0-split-review-frontend.md",
+      "kind": "task_doc",
+      "sha256": "f06fbc48b2dc9eb11c2d114cbf95f3973a1a1a679ce4701443ff990c824a049a",
+      "bytes": 13997
+    },
+    {
+      "path": "codebase-analysis.md",
+      "kind": "codebase_analysis",
+      "sha256": "de8c4edea98fbcf0e15944a1cf3acc81f77702b993f2ea378e7ef755fbcd08ae",
+      "bytes": 2808
+    }
+  ]
+}

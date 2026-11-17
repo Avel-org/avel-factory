@@ -1,0 +1,413 @@
+-- ~/.wezterm.lua  (put this at C:\Users\javar\.wezterm.lua on Windows)
+-- Your own settings. The AVEL team part is loaded from the repo in section 6.
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+local act = wezterm.action
+
+-- ============================================================
+-- 1. DEFAULT TO WSL  (so opening WezTerm drops you into Ubuntu)
+-- ============================================================
+config.default_domain = "WSL:Ubuntu"
+
+-- ============================================================
+-- 2. FONT  (multiple names so it can't miss)
+-- ============================================================
+-- Only fonts that are installed: a missing font in this list makes WezTerm
+-- open a "Configuration Error" window on every start. Cascadia Mono ships
+-- with Windows. To use a Nerd Font, install it first, then put it above.
+-- The two fallbacks ship inside WezTerm itself, so they can't be missing:
+-- they cover Nerd Font icons and emoji that Cascadia Mono doesn't have.
+config.font = wezterm.font_with_fallback({
+  "Cascadia Mono",
+  "Symbols Nerd Font Mono",
+  "Noto Color Emoji",
+})
+config.font_size = 12.0
+config.line_height = 1.05
+config.harfbuzz_features = { "calt=1", "liga=1" } -- ligatures on
+
+-- ============================================================
+-- 3. THEME / APPEARANCE
+-- ============================================================
+-- "Rinnegan": a custom palette built around pain.jpg (grayscale ink on black).
+-- Ink-black base, silver text, a violet accent and a red accent.
+local P = {
+  bg       = "#0b0b0e", -- ink black (matches the image's black)
+  surface  = "#16161b", -- tab bar, panels
+  overlay  = "#2a2a33", -- borders, inactive bits
+  muted    = "#6e6e7a", -- comments, dim text
+  fg       = "#c9c9d1", -- silver
+  bright   = "#f2f2f5", -- highlights
+  violet   = "#b3a6e0", -- main accent: cursor, active tab
+  red      = "#e0555e", -- second accent: leader, errors
+}
+
+config.colors = {
+  foreground    = P.fg,
+  background    = P.bg,
+  cursor_bg     = P.violet,
+  cursor_fg     = P.bg,
+  cursor_border = P.violet,
+  selection_bg  = "#3a3452",
+  selection_fg  = P.bright,
+  scrollbar_thumb = P.overlay,
+  split         = P.overlay,
+  compose_cursor = P.red,
+  copy_mode_active_highlight_bg   = { Color = P.violet },
+  copy_mode_active_highlight_fg   = { Color = P.bg },
+  copy_mode_inactive_highlight_bg = { Color = "#3a3452" },
+  copy_mode_inactive_highlight_fg = { Color = P.bright },
+  quick_select_label_bg = { Color = P.red },
+  quick_select_label_fg = { Color = P.bright },
+  quick_select_match_bg = { Color = P.overlay },
+  quick_select_match_fg = { Color = P.bright },
+  ansi = {
+    "#1c1c22", -- black
+    "#d4505a", -- red
+    "#8fae8b", -- green (muted sage)
+    "#d6b56d", -- yellow
+    "#7f93b8", -- blue (steel)
+    "#a99bd1", -- magenta (violet)
+    "#8fb3b8", -- cyan
+    "#c9c9d1", -- white
+  },
+  brights = {
+    "#4a4a55", "#ef6b73", "#a9c8a4", "#e8cb85",
+    "#9cb0d4", "#c4b8ea", "#a9cdd2", "#f2f2f5",
+  },
+  tab_bar = {
+    background = P.bg,
+    inactive_tab_edge = P.overlay,
+    active_tab   = { bg_color = P.violet, fg_color = P.bg, intensity = "Bold" },
+    inactive_tab = { bg_color = P.surface, fg_color = P.muted },
+    inactive_tab_hover = { bg_color = P.overlay, fg_color = P.fg },
+    new_tab      = { bg_color = P.surface, fg_color = P.muted },
+    new_tab_hover = { bg_color = P.overlay, fg_color = P.fg },
+  },
+}
+
+-- Fancy tab bar frame, in the same palette
+config.window_frame = {
+  font = wezterm.font({ family = "Cascadia Mono", weight = "Bold" }),
+  font_size = 10.5,
+  active_titlebar_bg   = P.bg,
+  inactive_titlebar_bg = P.bg,
+}
+
+-- ----- Background image -----
+-- The image is small (298x124) with the figure on the right, so it's fitted
+-- to the window width (Contain) and right-aligned instead of cropped (Cover).
+-- Its black background blends into the ink-black base layer.
+config.background = {
+  -- Layer 1: solid base, fills the space around the image
+  { source = { Color = P.bg }, width = "100%", height = "100%" },
+  -- Layer 2: your image
+  {
+    source = { File = "C:/Users/javar/Pictures/pain.jpg" },
+    hsb = { brightness = 0.40, saturation = 0.0 }, -- dim the image (0 = black, 1 = full)
+    horizontal_align = "Right",
+    vertical_align = "Middle",
+    width = "Contain",
+    height = "Contain",
+    repeat_x = "NoRepeat",
+    repeat_y = "NoRepeat",
+  },
+  -- Layer 3: tint on top, so terminal text is always legible
+  {
+    source = { Color = P.bg },
+    width = "100%",
+    height = "100%",
+    opacity = 0.80, -- lower = more image, higher = more hidden
+  },
+}
+
+config.window_decorations = "RESIZE"      -- slim title bar
+config.window_padding = { left = 12, right = 12, top = 10, bottom = 8 }
+config.window_close_confirmation = "NeverPrompt"
+
+-- Tab bar
+config.use_fancy_tab_bar = true
+config.hide_tab_bar_if_only_one_tab = true
+config.tab_bar_at_bottom = false
+config.show_new_tab_button_in_tab_bar = false
+
+-- Dim the panes you're not in, so the active agent in a team tab stands out
+config.inactive_pane_hsb = { saturation = 0.8, brightness = 0.6 }
+
+-- Cursor
+config.default_cursor_style = "BlinkingBar"
+config.cursor_blink_rate = 500
+config.cursor_blink_ease_in = "Constant"
+config.cursor_blink_ease_out = "Constant"
+
+-- ============================================================
+-- 3b. QUALITY OF LIFE
+-- ============================================================
+-- Long agent sessions scroll a lot: keep plenty of history
+config.scrollback_lines = 50000
+config.enable_scroll_bar = false
+
+-- No beep. A quick violet flash instead, so a session that rings the bell
+-- (e.g. Claude Code finishing) is noticeable without being loud.
+config.audible_bell = "Disabled"
+config.visual_bell = {
+  fade_in_duration_ms = 75,
+  fade_out_duration_ms = 150,
+  target = "CursorColor",
+}
+
+-- Smoother redraws while agents stream output
+config.max_fps = 120
+config.animation_fps = 60
+
+-- Pasted Windows text (CRLF) arrives as plain newlines in WSL, and the
+-- window keeps its size when you change the font size (Ctrl+= / Ctrl+-)
+config.canonicalize_pasted_newlines = "CarriageReturn"
+config.adjust_window_size_when_changing_font_size = false
+
+-- Ctrl+click opens links; a plain click only selects text
+config.mouse_bindings = {
+  { event = { Up = { streak = 1, button = "Left" } }, mods = "NONE",
+    action = act.CompleteSelection("ClipboardAndPrimarySelection") },
+  { event = { Up = { streak = 1, button = "Left" } }, mods = "CTRL",
+    action = act.OpenLinkAtMouseCursor },
+  { event = { Down = { streak = 1, button = "Left" } }, mods = "CTRL", action = act.Nop },
+  -- Triple-click selects one command's whole output (shell integration zones)
+  { event = { Down = { streak = 3, button = "Left" } }, mods = "NONE",
+    action = act.SelectTextAtMouseCursor("SemanticZone") },
+}
+
+-- ============================================================
+-- 4. KEYBINDINGS  (leader = Ctrl+a, tmux-style)
+-- ============================================================
+config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 2000 }
+
+config.keys = {
+  -- Ctrl+a twice sends a real Ctrl+a (start of line in bash, readline)
+  { key = "a", mods = "LEADER|CTRL", action = act.SendKey({ key = "a", mods = "CTRL" }) },
+
+  -- Copy mode (vim keys, v to select, y to copy): leader then [
+  { key = "[", mods = "LEADER", action = act.ActivateCopyMode },
+  -- Search the scrollback: leader then /
+  { key = "/", mods = "LEADER", action = act.Search({ CaseInSensitiveString = "" }) },
+  -- Quick select: label every URL, path and commit SHA on screen, type the
+  -- label to copy it (useful for the builder's SHA a review asks for): leader then Space
+  { key = "Space", mods = "LEADER", action = act.QuickSelect },
+  -- Same, but opens the URL in your browser: leader then o
+  { key = "o", mods = "LEADER", action = act.QuickSelectArgs({
+      label = "open url",
+      patterns = { "https?://\\S+" },
+      action = wezterm.action_callback(function(window, pane)
+        local url = window:get_selection_text_for_pane(pane)
+        wezterm.open_with(url)
+      end),
+  }) },
+  -- Pick a pane by letter (handy in the two-seat team tabs): leader then q
+  { key = "q", mods = "LEADER", action = act.PaneSelect({ alphabet = "asdfjkl;" }) },
+  -- Swap the current pane with one you pick: leader then m
+  { key = "m", mods = "LEADER", action = act.PaneSelect({ mode = "SwapWithActive", alphabet = "asdfjkl;" }) },
+  -- Back to the last tab you were on: leader then Tab
+  { key = "Tab", mods = "LEADER", action = act.ActivateLastTab },
+  -- Clear the scrollback and screen: leader then Backspace
+  { key = "Backspace", mods = "LEADER", action = act.Multiple({
+      act.ClearScrollback("ScrollbackAndViewport"),
+      act.SendKey({ key = "l", mods = "CTRL" }),
+  }) },
+  -- Jump to the previous / next shell prompt in the scrollback: leader then u / d
+  -- (uses the shell integration at the end of ~/.bashrc)
+  { key = "u", mods = "LEADER", action = act.ScrollToPrompt(-1) },
+  { key = "d", mods = "LEADER", action = act.ScrollToPrompt(1) },
+
+  -- Panes: leader then \ (vertical divider), leader then - (horizontal divider)
+  { key = "\\", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+  { key = "-",  mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+
+  -- Move between panes: leader then h/j/k/l
+  { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
+  { key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
+  { key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
+  { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
+
+  -- Close pane: leader then x
+  { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = false }) },
+
+  -- New tab: leader then c   |  next/prev: leader then n/p
+  { key = "c", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
+  { key = "n", mods = "LEADER", action = act.ActivateTabRelative(1) },
+  { key = "p", mods = "LEADER", action = act.ActivateTabRelative(-1) },
+
+  -- Jump to tab by number: leader then 1..5
+  { key = "1", mods = "LEADER", action = act.ActivateTab(0) },
+  { key = "2", mods = "LEADER", action = act.ActivateTab(1) },
+  { key = "3", mods = "LEADER", action = act.ActivateTab(2) },
+  { key = "4", mods = "LEADER", action = act.ActivateTab(3) },
+  { key = "5", mods = "LEADER", action = act.ActivateTab(4) },
+
+  -- Workspaces (like tmux sessions): leader then w
+  { key = "w", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
+
+  -- Resize panes: leader then arrows
+  { key = "LeftArrow",  mods = "LEADER", action = act.AdjustPaneSize({ "Left", 5 }) },
+  { key = "RightArrow", mods = "LEADER", action = act.AdjustPaneSize({ "Right", 5 }) },
+  { key = "UpArrow",    mods = "LEADER", action = act.AdjustPaneSize({ "Up", 5 }) },
+  { key = "DownArrow",  mods = "LEADER", action = act.AdjustPaneSize({ "Down", 5 }) },
+
+  -- Reload config: leader then r
+  { key = "r", mods = "LEADER", action = act.ReloadConfiguration },
+
+  -- Zoom the current pane to the full tab, and back: leader then z
+  { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
+  -- Pick a tab from a list: leader then t
+  { key = "t", mods = "LEADER", action = act.ShowTabNavigator },
+  -- Rename the current tab: leader then ,
+  { key = ",", mods = "LEADER", action = act.PromptInputLine({
+      description = "Tab title (start with the agent's name, e.g. SOAP T-B3-build a1)",
+      action = wezterm.action_callback(function(win, _, line)
+        if line and line ~= "" then win:active_tab():set_title(line) end
+      end),
+  }) },
+  -- Tabs 6 to 9 (the rest: leader then t lists every tab)
+  { key = "6", mods = "LEADER", action = act.ActivateTab(5) },
+  { key = "7", mods = "LEADER", action = act.ActivateTab(6) },
+  { key = "8", mods = "LEADER", action = act.ActivateTab(7) },
+  { key = "9", mods = "LEADER", action = act.ActivateTab(8) },
+}
+
+-- ============================================================
+-- 5. STATUS BAR  (shows LEADER indicator + current workspace)
+-- ============================================================
+-- Left: a red LEADER badge while the leader is armed (or the active key table,
+-- e.g. copy_mode / search_mode). Right: workspace, then time.
+config.status_update_interval = 1000
+-- Filled in by section 6 below: toasts and tab badges from the session hooks.
+local avel_attention = function(_) end
+wezterm.on("update-status", function(window, _)
+  local ok, err = pcall(avel_attention, window)
+  if not ok then wezterm.log_error("avel attention: " .. tostring(err)) end
+  local mode = window:active_key_table()
+  if window:leader_is_active() then mode = "LEADER" end
+  if mode then
+    window:set_left_status(wezterm.format({
+      { Background = { Color = P.red } }, { Foreground = { Color = P.bg } },
+      { Attribute = { Intensity = "Bold" } }, { Text = " " .. mode:upper() .. " " },
+    }))
+  else
+    window:set_left_status("")
+  end
+  window:set_right_status(wezterm.format({
+    { Foreground = { Color = P.violet } }, { Text = "  " .. window:active_workspace() .. "  " },
+    { Foreground = { Color = P.muted } }, { Text = wezterm.strftime("%H:%M") .. "  " },
+  }))
+end)
+
+-- ============================================================
+-- 6. AVEL CONTROL ROOM  (leader then v, or leader then Shift+A)
+-- ============================================================
+-- The team part lives in the repo, tools/wezterm/avel.lua, so the roster changes in a
+-- reviewed PR and nothing above ever has to. It's read over \\wsl.localhost, and if WSL
+-- isn't running or the repo isn't cloned yet, WezTerm still starts and leader then v
+-- tells you why.
+--   Tabs:  1 OSA · 2 AXIS · 3 ZERO · 4 BACKEND (SOAP | RIGG) · 5 FRONTEND (FANTEM | FENN) · 6 OPS
+--   Keys:  leader v  open the control room   leader s  open a task doc by hand
+--          leader a  every seat and its status   leader z  zoom a seat, and back
+local AVEL_REPO = "/home/jt0629/projects/avel-factory"
+local AVEL_DISTRO = "Ubuntu"
+
+-- Every new WSL shell starts in the repo, not in ~. Entering the repo fires
+-- __avel_auto (~/.bashrc), which opens the control room. Other projects: just cd out.
+do
+  local domains = wezterm.default_wsl_domains()
+  for _, d in ipairs(domains) do
+    if d.name == "WSL:" .. AVEL_DISTRO then d.default_cwd = AVEL_REPO end
+  end
+  config.wsl_domains = domains
+end
+
+local avel_file = "\\\\wsl.localhost\\" .. AVEL_DISTRO .. (AVEL_REPO:gsub("/", "\\")) .. "\\tools\\wezterm\\avel.lua"
+local avel_ok, avel = pcall(dofile, avel_file)
+if avel_ok and type(avel) == "table" then
+  wezterm.add_to_config_reload_watch_list(avel_file)
+  avel.apply(config, {
+    repo = AVEL_REPO,
+    domain = "WSL:" .. AVEL_DISTRO,
+    osa_cmd = "osa", -- however you start OSA in WSL, with .agents/system/osa.md as its system prompt
+    colors = P,
+  })
+  avel_attention = avel.attention
+else
+  wezterm.log_warn("avel: control room not loaded: " .. tostring(avel))
+  local why = "The control room isn't loaded. Is WSL running, and is the repo cloned at " .. AVEL_REPO .. "?"
+  for _, k in ipairs({ { key = "v", mods = "LEADER" }, { key = "A", mods = "LEADER|SHIFT" } }) do
+    k.action = wezterm.action_callback(function(window) window:toast_notification("avel", why, nil, 8000) end)
+    table.insert(config.keys, k)
+  end
+end
+
+-- ============================================================
+-- 7. THEME TOGGLE  (leader then e)
+-- ============================================================
+-- Enclosure Grid is the product's own design system (the design library's
+-- dark tokens): app background, its text, the accent blue, and the gate
+-- colors as the terminal's green, yellow and red, so test output reads like
+-- the product. IBM Plex Mono when it's installed, otherwise Cascadia Mono.
+local function avel_has_plex()
+  local paths = { "C:/Windows/Fonts/IBMPlexMono-Regular.ttf" }
+  local localapp = os.getenv("LOCALAPPDATA")
+  if localapp then table.insert(paths, localapp .. "/Microsoft/Windows/Fonts/IBMPlexMono-Regular.ttf") end
+  for _, p in ipairs(paths) do
+    local f = io.open(p, "r")
+    if f then f:close(); return true end
+  end
+  return false
+end
+
+local EG = {
+  canvas = "#121315", bg = "#141517", panel = "#1b1c1f", raised = "#27282c",
+  text = "#ededef", muted = "#a5a6ad", subtle = "#8f9098",
+  accent = "#74b8fc", accent_text = "#8cc4fd",
+  pass = "#68d3a0", warn = "#f2c662", block = "#f6958b", pending = "#b9bac1",
+}
+local function avel_enclosure_overrides()
+  local family = avel_has_plex() and "IBM Plex Mono" or "Cascadia Mono"
+  return {
+    font = wezterm.font_with_fallback({ family, "Symbols Nerd Font Mono", "Noto Color Emoji" }),
+    window_frame = {
+      font = wezterm.font({ family = family, weight = "Medium" }),
+      font_size = 10.5, active_titlebar_bg = EG.canvas, inactive_titlebar_bg = EG.canvas,
+    },
+    background = { { source = { Color = EG.bg }, width = "100%", height = "100%" } },
+    inactive_pane_hsb = { saturation = 0.9, brightness = 0.7 },
+    colors = {
+      foreground = EG.text, background = EG.bg,
+      cursor_bg = EG.accent, cursor_fg = EG.bg, cursor_border = EG.accent,
+      selection_bg = "#2a4560", selection_fg = EG.text,
+      split = EG.raised, scrollbar_thumb = EG.raised,
+      ansi = { EG.panel, EG.block, EG.pass, EG.warn, EG.accent, "#c3a6f2", "#7fd4d4", EG.muted },
+      brights = { EG.subtle, "#ffb4ab", "#8fe3bb", "#f7d98c", EG.accent_text, "#d8c4f8", "#a3e3e3", EG.text },
+      tab_bar = {
+        background = EG.canvas,
+        active_tab = { bg_color = EG.accent, fg_color = EG.canvas, intensity = "Bold" },
+        inactive_tab = { bg_color = EG.panel, fg_color = EG.subtle },
+        inactive_tab_hover = { bg_color = EG.raised, fg_color = EG.text },
+        new_tab = { bg_color = EG.panel, fg_color = EG.subtle },
+        new_tab_hover = { bg_color = EG.raised, fg_color = EG.text },
+      },
+      quick_select_label_bg = { Color = EG.accent }, quick_select_label_fg = { Color = EG.canvas },
+    },
+  }
+end
+
+local function avel_toggle_theme(window, _)
+  local o = window:get_config_overrides() or {}
+  if o.colors then
+    window:set_config_overrides({})
+    window:toast_notification("theme", "Rinnegan", nil, 2500)
+  else
+    window:set_config_overrides(avel_enclosure_overrides())
+    window:toast_notification("theme", "Enclosure Grid" .. (avel_has_plex() and "" or " (Cascadia Mono: IBM Plex Mono isn't installed)"), nil, 3500)
+  end
+end
+
+table.insert(config.keys, { key = "e", mods = "LEADER", action = wezterm.action_callback(avel_toggle_theme) })
+
+return config

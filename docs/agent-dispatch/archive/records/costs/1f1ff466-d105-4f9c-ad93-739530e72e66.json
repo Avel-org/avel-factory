@@ -1,0 +1,24 @@
+{
+ "session_id": "1f1ff466-d105-4f9c-ad93-739530e72e66",
+ "name": "ZANE w0-data-review-security a3",
+ "branch": "frontend/sprint-01/agent-zane-w0-data-review-security-a3",
+ "cwd": "/home/jt0629/projects/avel-wt/frontend-sprint-01-agent-zane-w0-data-review-security-a3",
+ "first_at": "2026-11-08T01:53:42.407Z",
+ "last_at": "2026-11-08T01:55:38.658Z",
+ "updated_at": "2026-11-08T01:55:44Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 14,
+   "output": 3637,
+   "cache_write_5m": 0,
+   "cache_write_1h": 24461,
+   "cache_read": 109450,
+   "messages": 7
+  }
+ },
+ "cost_usd": 0.1561,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.1561
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

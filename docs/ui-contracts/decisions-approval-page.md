@@ -1,0 +1,765 @@
+# UI contract: the approval page (frontend sprint-01, Step 1)
+
+**Sprint-01 ships revision 14. Revision 15 applies from sprint-02. Section 6's size-matched fallbacks are dropped for sprint-01** (INT; Decisions, "Sprint-01 closes with option (c)"). **From sprint-02, DL is the v1.9 file, and `docs/ui-contracts/kit-v1.9.md` is revision 16: it changes D7, D8 and D10 to v1.9's `busy` and reasons, replaces section 6's fallback formula and "Held" paragraph, and says how this page sits in the shell (`shell-layout.md`).**
+
+Zero, 2026-11-06. Status: **revision 15**. Revision 5 passed Brennan's a5. Revision 6 records what the merged w0-data build settled (Decisions, "Revision 6"): Brennan's w0-data finding 01 (the client is built over the `{ decisions }` route group) and Ghost's deviations 1 to 5. Revision 7 records Leon's decisions build deviations 1 to 4 and the page's styles and budget for the fix round (Decisions, "Revision 7"). Revision 8 adds D12's stamp animation to section 4's "What stays inline" (Fantem's w0-kit a2 deviation 1; Decisions, "Revision 8"). Revision 9 answers Leah's decisions a11y-perf a1 (findings decisions-leah-01 to 04) with INT's decisions: the kit's phone targets and input size, the dialog's description, the hydration marker the end-to-end tests wait for, the route split, and S1-6's rule that the web imports no classic `zod` (Decisions, "Revision 9"). Revision 10 takes INT's decisions on Leah's size study and Leon's decisions a2: the 150 kB budget and when it starts, the server-function stub and the React Compiler (Nemi), D11 as a `kit.css` rule so the server's HTML is right on a phone, the kit's `loadReasonDialog`, and the Mono 400 preload (Decisions, "Revision 10"). Revision 11 adds D15, the facts list drawn only with a fact (Brennan's decisions-brennan-01 and Zero's decisions-zero-02), and the size-matched font fallbacks for Leah's CLS (decisions-leah-07) (Decisions, "Revision 11"). Revision 12 rewords the server-function stub's alarm to what Start's import graph allows (Nemi's w0-split a2, deviation 1), and records `ApiError.bodyMessage` and which message each `UiError` kind carries (Brennan's w0-data-brennan-02) (Decisions, "Revision 12"). Revision 13 takes INT's decisions on the w0-kit a4 review and Nemi's w0-fonts a2: the kit's index exports only `loadReasonDialog` for the dialog (R7, w0-kit-zero-03), UC-31 measures the dialog once it has settled (w0-kit-zero-04), and the size-matched fallbacks wait on Leah's CLS re-measure (Decisions, "Revision 13"). Revision 14 rewords R7's split rule so `/`'s route chunk may hold the loader's own call, and none of the dialog's code (INT, w0-kit-zero-05; Decisions, "Revision 14"). Revision 15 removes the layout switch at hydration: the kit draws the phone look from CSS on the desk layout under 900px (D16), the page draws every tag with `layout="desk"`, the hydration marker waits for the final layout, section 6's measure adds a 4x CPU throttle, and UC-32 checks that nothing moves at hydration (INT; cls-study-leah-01 and 05, decisions-fenn-01; Decisions, "Revision 15"). Revision 1 (a138cd6) failed review a1 with 14 findings. Revision 2 (ad6d8bf) failed a2: 12 of them closed, and 04, 12 and the new 15 to 21 were open. Revision 3 (c836c29) failed a3 (report 44a3e08): 16 is open (narrowed), and 22 to 25 are new. Revision 4 also folds in Axis's S1-3 (Decisions, "Axis's S1-3"): errors are decoded at the link, and `BAD_REQUEST` details carry `issues`. It then takes in Axis's S1-5 (D48): path parameters win, and check 1 is the schema check only. Revision 4 (f323450) failed a4 (report 033ff65) on three P3s, 26 to 28, which revision 5 answers and changes nothing else. Appendix A lists where each finding is answered. Nothing is built against this contract until a review of it is merged.
+
+This is the one document the sprint's builders and test writer work from:
+- Nemi: the app and tokens.
+- Ghost: the data core and the contract mock.
+- Fantem: the kit.
+- Leon: the `decisions` module.
+- Fenn: the tests.
+
+Each scenario has an ID (`UC-NN`, section 7), and a test carries it in its name. **Copy marked † is not the design library's.** It's written here, and each string is listed in Decisions, 2026-11-06, "Revision 2", "Revision 3" and "Revision 4".
+
+## 0. Scope and sources
+
+**What it is:** Step 1 item 13's minimal approval page at `/`. It lists what's waiting (route 52), and approves or rejects a proposal with a reason (route 54). It runs on the contract mock (`packages/contract-mock`) until backend Step 1 lands the routes.
+
+**Sources**, quoted by short name:
+
+| Short name | Where |
+| --- | --- |
+| CR-W2 | `docs/design/CR-W2 Pending decisions.md` (accepted Nov 6; D37) |
+| FM | `docs/design/AVEL Web App — Frontend Map v0.6.md` |
+| DL | `docs/design/AVEL Enclosure Grid · Design library v1.1.html` |
+| | **Components:** `DecisionTag` (`function n$`), `ReasonDialog` (`Go`), `ErrorPanel` (`y8`, copy `AV_ERROR_COPY` = `v8`), `WidgetState` (`ly`), `Icon` (`te`), `Tag` (`Ze`), `HashChip` (`dt`), `StatusGlyph` (`ne`), `Button` (`ee`), `avAgo` (`jr`) |
+| | **The Decisions screen:** the card `eD`, its `.pd` CSS, the screen `Mme` |
+| | **The token stylesheet** |
+| m1 | `packages/contract` at e36737f (backend sprint-00 m1): routes 52 to 54, `route()`, `DecideProposalInput`, `ProposalDto`, the error map, `PageQuery`, `Page`, `REQUEST_ID_HEADER`, `CONTRACT_VERSION_HEADER`, `IDEMPOTENCY_KEY_HEADER` |
+| Plan | `docs/design/Step 0 and Step 1 plan.md`: item 13 and test 14 |
+| Decisions | `docs/agent-dispatch/frontend/sprint-01/decisions.md` |
+
+**Not in sprint-01.** Each is recorded in Decisions, 2026-11-06, "The UI contract":
+- `/decisions/$ref`. It needs route 53's `ProposalViewDto` (CR-W2 section 4), which isn't in m1. It arrives with the Step 1 contract.
+- The live stream, the event registry and the shared clock (W2). The page refetches instead.
+- `/login` and the auth guard (W5, `system`).
+- Showing cost: CR-W2 never sends `costImpact` in Step 1.
+- A server-sent waiting count. The count is the client's count of what it has drawn until CR-W5 sends one (section 5; Decisions).
+- The 6-second Undo hold, the J/K/A keys, the "new" pulse, the per-kind decision registries (W1), and the global app banner (section 5.5 puts sprint-01's one banner on the page).
+- Parts of DL's Decisions screen (`Mme`) that section 5 lists under "Not drawn": the desk inbox with its detail pane, the lead's mission-health sentence, "Just decided", the project filter, "New project" and the projects section.
+
+**The value rule.** Every colour, size, radius and duration is a `--av-*` token from `apps/web/src/styles`, **or the literal DL's own source uses for that same element** (for example the hole fill's `160ms`, or `.pd-actions`' `10px` gap). Nothing else, and never a value DL doesn't have. **One exception (revision 11):** the size-matched font fallbacks' four metrics in section 6 aren't DL's or tokens. They're computed from the font files by section 6's formula, and each one's inputs are written beside it, so none is chosen by hand.
+
+## 1. The data: route 52 until the Step 1 contract lands
+
+In m1, route 52 returns `Page(Placeholder)` (D30). The Step 1 slice makes it CR-W2's union (CR-W2 section 8, item 5). Until then:
+
+- **The data core holds CR-W2's row as a Zod schema** (in `zod/mini` from Ghost's w0-data a2, section 3): `apps/web/src/data/pending-decisions.ts`, transcribed from CR-W2 sections 2.1 to 2.3, field for field. That gives `PendingDecisionRow`, `DecisionChoice` and `CostImpact`. It is the only copy on the web side. The mock's tests check the mock's rows against it.
+- **Each item route 52 returns** is parsed with it, one page at a time (`parsePendingPage`), inside the route's infinite query `select` (`selectPendingPages`), which joins the loaded pages (section 3).
+  - Rows that parse are listed.
+  - A row that doesn't parse is counted in `unreadable` and not drawn. The page shows the unreadable band (UC-24).
+- **When the Step 1 contract exports `PendingDecisionDto`,** a later dispatch deletes the local schema and imports the contract's.
+- **Route 54's input is m1's `DecideProposalInput`,** unchanged by CR-W2: `{ proposalId, version, choice, reason }`.
+  - **On the wire,** `proposalId` is only in the path. m1's route uses oRPC's default `compact` input structure, and `OpenAPILink` 1.16.2 removes every path parameter from the body. So the web sends `POST /api/proposals/{proposalId}/decisions` with the body `{ version, choice, reason }` (finding 22).
+- **Route 54's output** is m1's `ProposalDto` (`ProposalViewDto` in Step 1). The page reads **one field from it: `resolvedAt`**, for the approved line (section 4, change 5; FM line 134: the logged time is the server's).
+- **The page never reads `options`** and never derives a title, evidence or consequence (FM line 134).
+
+## 2. The contract mock (Ghost, `packages/contract-mock`, package `@avel/contract-mock`)
+
+**It implements m1's routes 52, 53 and 54 through `@avel/contract`** (oRPC's OpenAPI handler on the contract), so paths, input validation, success statuses and the error body are the contract's (FM, In short, item 3).
+- **Success statuses:** route 52 and 53 answer 200, and route 54 (a POST) answers **201**: m1's `route()` sets `successStatus` 201 on every POST (D26).
+- **Other paths:** any other `/api/*` path answers `NOT_FOUND`.
+- **Every response** carries `X-Request-Id`, echoing the request's or a new UUID, and `X-Contract-Version: <contractVersion>` (m1's `REQUEST_ID_HEADER`, `CONTRACT_VERSION_HEADER`).
+- **Every error is m1's `ErrorBody`:** `{ code, message, details?, requestId }`, with the code's HTTP status. That covers the mock's own errors and `failNext`'s, and it's the same body the server's error mapper writes (Plan, Step 1 item 2.9).
+  - The mock converts the OpenAPI handler's errors into it, so oRPC's own error JSON (`{ defined, code, status, message, data }`) never reaches the wire.
+  - **An input-validation failure** (route 54's check 1, or `PageQuery`) is `BAD_REQUEST` with `details: { field, issues: [{ field, message }] }` (Axis, S1-3):
+    - `issues` lists every failing path, in the validator's order. Each `field` is the issue's path joined with `.`, for example `"version"` or `"limit"`, and each `message` is the validator's message as it is.
+    - `details.field` is the first issue's `field`, and `ErrorBody.message` is the first issue's `message`.
+    - Path, query and body fields share one namespace (S1-3).
+
+**Its public surface.** Fenn's tests are written against these names before the mock exists, so they're fixed:
+
+```ts
+export function createMock(opts: { contractVersion: string; now?: () => Date }): Mock;
+
+export interface Mock {
+  /**
+   * Serves /api/* like the server. When a network failure is set, it rejects with a TypeError
+   * instead. Extra arguments are ignored, so it can be passed as createApiClient's `fetch`.
+   */
+  fetch(request: Request): Promise<Response>;
+  /** Replaces the store with these rows. */
+  seed(rows: SeedRow[]): void;
+  /** Another tab or agent changed the proposal: version + 1. Returns the new version. */
+  bumpVersion(proposalId: string): number;
+  /** Decided elsewhere: state 'resolved', with choice, resolvedBy and resolvedAt set. */
+  resolve(proposalId: string): void;
+  /** Expired: expiresAt moves into the past. */
+  expire(proposalId: string): void;
+  /** Deleted: the row is no longer in the store (route 54 then answers NOT_FOUND). */
+  remove(proposalId: string): void;
+  /**
+   * The next `times` requests to that route (default 1) fail, before any check. Each call
+   * replaces any failure still pending for that route. An error failure is written raw, past
+   * the contract's error schemas, as ErrorBody: status, then
+   * { code, message: message ?? code, details: data, requestId }, with the usual headers.
+   * Use it for what m1's schemas can't express (for example Step 1's INVALID_TRANSITION.state).
+   */
+  failNext(
+    route: 52 | 53 | 54,
+    failure: { status: number; code: string; data?: unknown; message?: string } | { network: true },
+    opts?: { times?: number },
+  ): void;
+  /** Route 52's next response carries this item as it is, after the store's rows (UC-24). */
+  injectRawItem(item: Record<string, unknown>): void;
+  /**
+   * Every request the mock received, oldest first: also those failNext failed, a network
+   * failure included, each with its requestId, idempotencyKey and body.
+   */
+  requests(): RecordedRequest[];
+  reset(): void;
+}
+
+export interface RecordedRequest {
+  route: 52 | 53 | 54 | null;
+  method: string;
+  path: string;
+  requestId: string | null;
+  idempotencyKey: string | null;
+  body: unknown;                     // the JSON body as received, before the handler; null when there's none
+}
+
+export const MOCK_OPERATOR_ID = "0193a000-0000-7000-8000-000000000001"; // a fixed UUIDv7
+
+export type SeedRow =
+  | {
+      kind: "proposal";
+      id: string;                    // UUIDv7
+      missionId: string;
+      clientName: string | null;
+      proposalKind: ProposalKind;    // from @avel/contract
+      subjectKey: string;
+      title: string;
+      evidence: string;
+      version: number;
+      options: unknown;              // stored raw, like proposals.options (CR-W2 3.2)
+      createdAt: string;
+      expiresAt: string;
+      state?: "open" | "resolved" | "expired";   // default "open"
+      moduleRunId?: string | null;
+    }
+  | {
+      kind: "factory_change";
+      prNumber: number;
+      title: string;
+      headSha: string;               // 40 hex
+      url: string;
+      createdAt: string;
+    };
+
+export const fixtures: { empty: SeedRow[]; step1: SeedRow[]; many: SeedRow[] };
+```
+
+**Fixtures:**
+- **`fixtures.step1`** has:
+  - two decidable proposals, with different `clientName`s, one of them `budget_increase`;
+  - one proposal whose `options` doesn't parse;
+  - one factory PR.
+- **`fixtures.many`** has 150 decidable proposals.
+
+**Development-only paths**, for the end-to-end tests:
+- `POST /__mock/bump/{proposalId}` runs `bumpVersion` and answers 200 `{ "version": n }` (UC-30).
+- `POST /__mock/reset` runs `reset` and seeds `fixtures.step1` again, and answers 204. Each end-to-end test starts with it, because one mock instance serves every test (section 6).
+- They're served only by the dev server under `AVEL_API=mock`. They're never contract routes, and never in a production build (section 6).
+
+**Route 52** (CR-W2 sections 2 and 6.7):
+- **What it lists:** open proposals with `expiresAt > now`, and every factory PR.
+- **Order:** oldest first, by `createdAt` and then `ref`.
+- **Paging:** `limit` must be 1 to 100. m1's `PageQuery` refuses anything else with `BAD_REQUEST`; there's no clamping (D23). `nextCursor` is opaque.
+  - **A `cursor` the mock can't decode** gives `BAD_REQUEST`, `{ field: "cursor", issues: [{ field: "cursor", message: "invalid cursor" }] }`, in S1-3's shape. The message is the mock's, **provisional**. The page never shows it.
+  - **With no `limit`, the mock serves 50.** This is **provisional**: m1's `PageQuery` has no default, and no source gives one (finding 25; Decisions, "Revision 4"). Axis confirms or changes it in the Step 1 slice. The page always sends `limit` 50 (section 5), and no scenario relies on the default.
+- **Each item is the CR-W2 row:**
+  - `ref` is `proposal:<id>` or `factory_change:<prNumber>`;
+  - `approve` and `reject` are built from the `ProposalOptions` entries whose `effect` is `approve` and `reject`, and are absent when `options` doesn't parse (CR-W2 3.2);
+  - `costImpact` is never sent.
+- **The `ProposalOptions` rule:** at least 2 choices, and exactly one `approve` and one `reject`.
+
+**Route 54** (CR-W2 section 5):
+- **No `Idempotency-Key` header:** `BAD_REQUEST`, `details: { field: "Idempotency-Key", issues: [{ field: "Idempotency-Key", message: "required" }] }`, and `message` `"required"` (Axis, S1-1 and S1-3).
+- **The idempotency rules:**
+  - The same key with the same path and body replays the first response, status and body.
+  - The same key with a different path or body gets `IDEMPOTENCY_KEY_REUSED`.
+- **The body the web sends is `{ version, choice, reason }`;** `proposalId` comes from the path (section 1). **The path wins** (Axis, S1-5; D48): oRPC's OpenAPI handler merges `{ ...body, ...params }`, and a `proposalId` in the body is ignored, never compared or refused. The mock does the same and doesn't read the raw body.
+- **Then the checks, in CR-W2's order:**
+  1. `BAD_REQUEST`, `{ field, issues }`: the schema check only, with the failing paths as above (CR-W2 section 5 as edited by D48).
+  2. `NOT_FOUND`.
+  3. `INVALID_TRANSITION`, `{ allowed: [] }` through m1's schema, with no `state` (UC-17 uses `failNext` for Step 1's `state`).
+  4. `STALE_VERSION`, `{ field: "version", currentVersion }`.
+  5. `BAD_REQUEST`, `{ field: "choice" }`.
+- **On success**, the proposal resolves as CR-W2 section 5 writes it: `state: "resolved"`, `choice`, `choiceReason` (the reason), `resolvedBy: MOCK_OPERATOR_ID`, `resolvedAt` (now), and `rowVersion + 1`. The answer is **201** with m1's `ProposalDto`.
+
+**Route 53** returns m1's `ProposalDto` for any seeded proposal. The page doesn't call it in sprint-01; it's there so the mock matches the contract.
+
+## 3. The data core (Ghost, `apps/web/src/data/**`, `apps/web/src/lib/**`, `apps/web/src/router.tsx`)
+
+| Export | From | What |
+| --- | --- | --- |
+| `createApiClient(opts?: ApiOptions)`, with `ApiOptions = { fetch?: (request: Request, init?: RequestInit) => Promise<Response>; baseUrl?: string; contractVersion?: string; requestId?: string }` | `data/client.ts` | `createORPCClient` with `OpenAPILink` over **the contract's route groups the web calls**, imported from `@avel/contract`'s subpath exports (backend D58): `webContract = { decisions }` (`@avel/contract/routes/decisions`) in sprint-01 (FM, Data layer). A module that calls another group adds that group to `webContract`. Nothing under `apps/web/src` imports the root `@avel/contract` at runtime, so the first load stays inside the budget (section 8). `fetch` takes a `Request`, so both `globalThis.fetch` and the mock's `fetch` fit (section 2). The link's `url` is `baseUrl`: by default `window.location.origin` in the browser, and required on the server. Its `fetch` is the wrapper below, and its `customErrorResponseBodyDecoder` is `decodeErrorBody` ("Reading an error") |
+| | | **The fetch wrapper** is the only place the client sets headers. On every request it sets `X-Request-Id` to `requestId` when given, else to a new UUID. On a write it sets `Idempotency-Key` from the call's client context (`{ context: { idempotencyKey } }`; the link passes the context to `fetch`). Then it calls `opts.fetch ?? globalThis.fetch` |
+| | | **If that fetch rejects,** the wrapper throws `NetworkError` carrying the ID it sent. **If a response has no `X-Request-Id`,** the wrapper returns it with the sent ID in that header. So every response the link reads carries a request ID (finding 23) |
+| | | **The contract check, in the browser only:** the wrapper compares each response's `X-Contract-Version` with `contractVersion` (default `BUILT_CONTRACT_VERSION`). When the header is present and differs, it sets the mismatch store. When it's absent, nothing happens. On the server the check is skipped: the store is a module store, which the server would share across requests |
+| `createApi(opts?: ApiOptions): Api` | `data/client.ts` | `Api = { client, orpc }`: `createApiClient(opts)`, and `createTanstackQueryUtils` over it |
+| `bindApi(queryClient: QueryClient, api: Api): void`; `apiFor(queryClient: QueryClient): Api`; `useApi(): Api` | `data/client.ts` | Pairs one `Api` with one `QueryClient` (a `WeakMap`). `apiFor` throws when none is bound. `useApi()` is `apiFor(useQueryClient())`. A loader reaches the API with `apiFor(context.queryClient)`, so the router context stays `{ queryClient }`. There's no module-level client: each `QueryClient` has its own `Api` (finding 24) |
+| `BUILT_CONTRACT_VERSION` | `data/contract-version.ts` | The `@avel/contract` version this web was built with: the build-time constant `__AVEL_CONTRACT_VERSION__`. Nemi's `vite.config.ts` and Fenn's `vitest.config.ts` define it from `packages/contract/package.json`'s `version`, until `@avel/contract` exports a version itself (escalation 02) |
+| `useContractMismatch(): { serverVersion: string } \| null` | `data/contract-version.ts` | Reads the mismatch store (`useSyncExternalStore`). Null until the first mismatch, then fixed until reload |
+| `newIdempotencyKey(): string` | `data/idempotency.ts` | `crypto.randomUUID()`, made once per user intent (FM 206) |
+| `toUiError(e: unknown): UiError` | `data/errors.ts` | The only error mapper (FM, Errors by code), below |
+| (the data core's entry) | `data/index.ts` | Named exports only. Modules import the data core only through it (FM, What every module looks like). `lib/time.ts` is imported directly |
+| `decodeErrorBody`, `ApiError`, `NetworkError` | `data/errors.ts` | Below, "Reading an error" |
+| `createQueryClient(opts?: { retryDelay?: number }): QueryClient` | `data/query.ts` | **Queries:** `staleTime` 30s (FM's freshness table, "reconnecting or down", because sprint-01 has no stream); refetch on focus and on reconnect; retry up to 3 times, only on `network` and `server` |
+| | | **The retry delay:** TanStack's default unless `retryDelay` is given (in ms). Screen tests pass `0`; the page never does |
+| | | **Mutations:** never retried automatically |
+| `PendingDecisionRow`, `DecisionChoice`, `CostImpact` | `data/pending-decisions.ts` | Zod schemas, CR-W2 sections 2.1 to 2.3 (section 1 above) |
+| `parsePendingPage(page): { rows: PendingDecisionRow[]; unreadable: number; nextCursor: string \| null }` | `data/pending-decisions.ts` | Parses **one** route 52 page |
+| `selectPendingPages(data: InfiniteData<Page>): { rows: PendingDecisionRow[]; unreadable: number; nextCursor: string \| null }` | `data/pending-decisions.ts` | Route 52's infinite query `select` (TanStack Query passes it every loaded page). It runs `parsePendingPage` on each of `data.pages`: `rows` are concatenated in page order (the server's order), `unreadable` is summed over the loaded pages, and `nextCursor` is the last page's |
+| `formatAgo(ms: number \| null): string` | `lib/time.ts` | DL's `avAgo`, word for word: null or not finite gives `—`; under 60s gives `Ns`; under 60m gives `Nm`; otherwise `Nh Mm` |
+| `formatClock(iso: string): string` | `lib/time.ts` | Local `HH:MM`, zero-padded, as DL's approved stamp shows it (`14:06`) |
+| `getRouter()` | `router.tsx` | Called per request on the server and once in the browser. It makes a new `QueryClient` (`createQueryClient()`) and a new `Api` bound to it (`bindApi`), passes `{ queryClient }` as the router context, and wires Router and Query with `setupRouterSsrQueryIntegration`, which provides the `QueryClient` to the app (FM, Rendering and SSR) |
+| | | **In the browser:** `createApi()`: same origin, a new `X-Request-Id` per request |
+| | | **On the server:** `createApi({ baseUrl: <the incoming request's origin>, requestId: <its X-Request-Id, when it has one> })`. The loader's client forwards the incoming request ID (FM line 141). The incoming request is read with TanStack Start's server request accessor, inside `createIsomorphicFn().server(…)`, so it stays out of the client bundle. If `getRouter()` can't reach the incoming request, Ghost stops and reports under Deviations. **The forwarded ID is checked first** (revision 9; Zane's w0-data 03): `getRouter()` passes it only if it's a UUID or matches `^[A-Za-z0-9-]{1,64}$`. Otherwise it passes no `requestId`, and the wrapper makes a new one, so a forged or oversized value never reaches a log or a response |
+| | | **Cookies aren't forwarded** in sprint-01: there are no sessions until W5 (Decisions, "Revision 4"). W5 adds the cookie beside the request ID |
+
+**One data path for each environment** (finding 24):
+- **Unit and screen tests (Vitest):** one mock per test. The test makes `createApi({ fetch: mock.fetch, baseUrl: "http://avel.test" })` and binds it to its `QueryClient` with `bindApi`.
+- **Development and end to end (`AVEL_API=mock`):** **one mock instance**, held by the dev server (section 6). The browser's client fetches `/api/*` on its own origin. The SSR loader's client fetches the same origin over HTTP (`baseUrl` = the incoming request's origin). Both reach that one instance, so a decision, a bump or a reset is seen by the first paint and the hydrated page alike.
+- **A production build has no mock.** Nothing under `apps/web/src` imports `@avel/contract-mock`: only the dev server's plugin in `vite.config.ts` and the tests do. Sprint-01 has no API server, so the production build is built and checked (section 8, Zane), not served against an API.
+
+**Reading an error.** The wire body is m1's `ErrorBody`, not oRPC's error JSON (Axis, S1-3). Left alone, oRPC's client guesses the code from the status, so a 409 `STALE_VERSION` would arrive as `CONFLICT`. So the body is decoded **once, at the link** (Decisions, "Revision 4"; it replaces revision 3's reading of `e.data.body` in `toUiError`):
+- **`decodeErrorBody(body: unknown, response: { status: number }): ApiError | null`** is the link's `customErrorResponseBodyDecoder`.
+  - `@orpc/openapi-client` 1.16.2 calls it with the deserialized body and the response before its own error decoding, and throws what it returns (`dist/shared/openapi-client.DgkI_tTF.mjs`, `#decodeResponse`). If the installed version differs, Ghost stops and reports under Deviations.
+  - If `ErrorBody.safeParse(body)` succeeds (`ErrorBody` from `@avel/contract/errors`), it returns `new ApiError(body, response.status)`. Otherwise it returns null, and oRPC throws its own `ORPCError`, with a code guessed from the status and `e.data = { status, headers, body }`.
+  - When the Step 1 contract exports `parseErrorBody(status, body)` (S1-3), it replaces the `safeParse` here, and nothing else changes.
+- **`ApiError`** extends `ORPCError`: `code` = `body.code`, `status` = the HTTP status, `message` = oRPC's message, and `data = { details: body.details, requestId: body.requestId }`. oRPC's message is `body.message`, or oRPC's fallback when that's `""` (the code's common message, else the code: `fallbackORPCErrorMessage` in `@orpc/client`). **`bodyMessage: string`** is `body.message` as sent, `""` included (revision 12; w0-data-brennan-02).
+  - **Which message each `UiError` kind carries:** `stale.message` is `bodyMessage`, so it can be `""`, and 5.3's null-version stale row has its own copy for that case. `forbidden`, `conflict` and `unprocessable` carry `e.message`, oRPC's, so an empty server message never gives a blank panel body.
+- **`NetworkError`** extends `TypeError`, with `requestId: string` (the ID sent) and `cause` (what `fetch` threw). Only the fetch wrapper throws it.
+
+`toUiError(e)` works in this order:
+1. **`ApiError`:** `code`, `details` and `requestId` come from `e.code` and `e.data`, the status is `e.status`, and the kind comes from the table below.
+2. **Any other `ORPCError`** (the body isn't an `ErrorBody`): the kind comes from `e.status` alone, and `code` is null. `requestId` is `e.data.headers["x-request-id"]`: the server's echo, or the ID sent, which the wrapper puts there when there's no echo. 409 maps to `conflict` here, never `stale`.
+3. **`NetworkError`:** `network`, with `requestId` = `e.requestId`.
+4. **Anything else** (the link couldn't read or decode the response body at all): `network`, with `requestId` null. This is the one error with no request ID, because nothing that carries the ID reaches the mapper (Decisions, "Revision 4").
+
+**`UiError`.** Every member carries `code: string | null` and `requestId: string | null`, read as above.
+
+| `kind` | When | Extra fields |
+| --- | --- | --- |
+| `stale` | 409 `STALE_VERSION` | `field: string \| null`, `currentVersion: number \| string \| null` (null when `details` isn't D21's shape), `message: string` (the `ErrorBody`'s `message`, or `""` when the body isn't an `ErrorBody`; revision 9, Ghost's w0-data a2) |
+| `notAllowedNow` | 422 `INVALID_TRANSITION` | `state?: 'resolved' \| 'expired'` (when `details.state` is sent) |
+| `notFound` | 404 (any code) | |
+| `badRequest` | 400, and any 4xx not named in this table (405, 410, 413, …), so it's never retried | `field?: string` (from `details.field`, when it's a string) |
+| `signedOut` | 401 | |
+| `forbidden` | 403 (any code) | `message` |
+| `rateLimited` | 429 | `retryAfterMs: number \| null` (from `details.retryAfterMs`; null when it isn't sent, for example a 429 that isn't an `ErrorBody`) |
+| `idempotencyConflict` | 409 `IDEMPOTENCY_KEY_REUSED` | |
+| `inProgress` | 409 `IDEMPOTENCY_IN_PROGRESS` | |
+| `conflict` | 409, any other code (`CONFLICT`, `ALREADY_EXISTS`, …) | `message` |
+| `unprocessable` | 422, any other code | `message` |
+| `server` | 5xx | `status` |
+| `network` | the fetch rejected | |
+
+`stale` is keyed on the code `STALE_VERSION` alone, never on the status 409 (Decisions, 2026-11-06).
+
+**Which zod the web may import** (revision 9; S1-6; Decisions, "after S1-6" and "Revision 9"):
+- `apps/web/src` gets its schemas only from `@avel/contract`'s exports, or writes them with `zod/mini`.
+- **It never imports `"zod"` or `"zod/v4"` (classic zod)** at runtime. Classic zod's methods sit on shared classes, so one classic schema brings all of it into the first load (section 8).
+- Type-only imports (`import type`) don't reach the bundle, but they come from `zod/mini` too, so there's one source.
+- **Where it applies today:** `data/pending-decisions.ts` (section 1's interim row schema) is written in `zod/mini`, with the same fields, the same parse results and the same issue paths. `client.ts`'s type import moves to `zod/mini`. `decodeErrorBody` keeps `ErrorBody` from `@avel/contract/errors`, which S1-6 rewrites in `zod/mini`.
+- **When:** Ghost's w0-data a2, after Axis's S1-6 is merged. The two land together, because either package left on classic zod brings all of it back (backend sprint-01, S1-6). Until then, `pending-decisions.ts` stays on classic zod, inside sprint-01's 160 kB.
+- **The check:** `grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src` lists nothing.
+- `packages/contract-mock` and the tests aren't in the browser's bundle, so the rule doesn't cover them.
+
+## 4. The kit (Fantem, `apps/web/src/kit/**`)
+
+These are DL's components, ported with their `data-ui` names, values and copy. They take plain props and know nothing about oRPC or routes (FM, Layers).
+- **Each table row lists the subset of DL's props** the kit ports. The props left out are named, so they come back with a later screen.
+- **"Changes"** are the only differences from DL.
+
+| Component | `data-ui` | Props ported | Left out of DL's | Changes |
+| --- | --- | --- | --- | --- |
+| `Button` | `Button` (with a reason: `ButtonWithReason`) | `variant`, `size`, `block`, `disabled`, `disabledReason`, `icon`, `iconRight`, `onClick`, `children` | `holdToConfirm`, `onConfirm`, `pressed`, `type`, `title`, `ariaLabel`, `style` | Its phone height: K1, below |
+| `Tag` | `Tag` | `tone`, `size`, `icon`, `title`, `children` | `glyph`, `style` | none |
+| `Icon` | `Icon` (DL: `data-ui="Icon"`, `data-icon={name}`) | `name`, `size` (16), `strokeWidth` (1.75), `title` (gives `role="img"`) | `style` | Per-icon imports from `lucide-react` instead of DL's registry |
+| `StatusGlyph` | `StatusGlyph` | `status`, `size` | `onColor` | none |
+| `HashChip` | `HashChip` | `value`, `kind`, `length`, `prefix`, `strike`, `copy` | `verified`, `href`, `title` | DL's copy button is kept: `aria-label` `Copy {value}`. Its phone tap area: K1, below |
+| `ReasonDialog` | `ReasonDialog` | `open`, `onClose`, `onConfirm(reason)`, `title`, `description`, `confirmLabel`, `destructive`, `placeholder`, `minLength` (3) | none | R1 to R6, below |
+| `ErrorPanel` | `ErrorPanel` | `code`, `title`, `body`, `actionLabel`, `onAction`, `requestId`, `compact` | none | E1, below |
+| `WidgetState` | `WidgetState` | `state` (`loading`, `empty`, `error` or `staleVersion`), `title`, `message`, `icon`, `actionLabel`, `onAction`, `lastGoodAge`, `children` | `needs`, `height`, `lines`, `compact`; the states `notConfigured` and `populated` | W1, below |
+| `DecisionTag` | `DecisionTag` | below | `compact`, `hideActions`, `onOpen` and the "Open" link button | D1 to D16, below |
+
+**The kit's styles** (revision 7, Decisions):
+- **Where they live:** one static stylesheet, `apps/web/src/kit/kit.css`, holds the kit's style rules as class and `[data-ui]` rules, with DL's values unchanged (section 0's value rule). That covers what `KitStyles.tsx` carries today, and the style objects written in the components.
+- **How it's loaded:** `kit/index.ts` exports its URL as `kitStylesheetHref` (a `?url` import). The page links it (section 5), so it's loaded once and cached, and it's out of the JavaScript.
+- **No CSS in JavaScript:** no CSS as JS strings, and no `<style>` element rendered into the HTML. `KitStyles.tsx` goes.
+- **What stays inline:** a component keeps an inline `style` only for a value that changes per render, and for the values the locked kit tests read from the element: D6's stale strike (inline `text-decoration`, or an `<s>` element), and D12's stamp animation (the one declaration `animation: av-stamp-land var(--av-d-punch) var(--av-ease) 80ms both`, because UC-08 reads `--av-d-punch` from the card's HTML; the stamp's other values are in `kit.css`) (revision 8, Decisions). **D11's grid left this list in revision 10.** It's a `kit.css` rule (D11), and UC-08 checks it there, a locked-test change made by Fenn under the override (Decisions, "Revision 10").
+- **K1. Touch sizes on a phone** (revision 9; Leah's finding 02; DL v1.8: "Every target 44px minimum"). DL gets these from `[data-density="phone"]`, which nothing in sprint-01 sets, and `ReasonDialog` draws in a portal on `body`, outside any page element. So `kit.css` holds them under `@media (max-width: 899px)` (the page's phone width, section 5), with DL's tokens and no new values:
+  - every `Button` is at least `var(--av-touch-min)` (44px) tall. That covers Approve and Reject in D11's grid, D9's `Open on GitHub` link button, and the dialog's Cancel and confirm;
+  - the tap area of `HashChip`'s copy button and of the dialog's Close button is at least `var(--av-touch-min)` in both directions. The drawn chip and icon keep DL's size: the larger area is a transparent hit area (for example an absolutely placed `::after`), so a row doesn't get taller;
+  - `ReasonDialog`'s textarea is `font-size: var(--av-phone-body)` (16px), so iOS doesn't zoom on focus.
+  - At 900px and over, nothing changes.
+
+**The request ID, everywhere it's shown,** is DL's `ErrorPanel` chip: `HashChip` with `kind: "hash"`, `length: 12`, `prefix: "req"` and DL's copy button (`aria-label` `Copy {requestId}`), so the full ID is always one tap away (FM, Errors by code). Tests find it by that `aria-label`.
+
+**`ReasonDialog`:**
+- **R1. `error?: string`** shows under the textarea with `role="alert"`.
+- **R2. `defaultReason?: string`.** On open, the text is set to `defaultReason ?? ""`. DL clears it to `""` on every open, so this replaces that. It lets the page reopen the dialog with the reason it sent (5.3, reason 400).
+- **R3. `onConfirm` doesn't close the dialog.** DL's calls `onClose` after `onConfirm`. Here the caller closes it.
+- **R4. `requestId?: string`** draws the request ID chip under `error` (finding 16).
+- **R5. The description is the dialog's accessible description** (revision 9; Leah's finding 02). When `description` is given, the dialog element (`role="dialog"`) carries `aria-describedby` with the description paragraph's ID, beside its `aria-labelledby`. With no description there's no `aria-describedby`. The change is in the kit's `Dialog` frame, which `ReasonDialog` draws in.
+- **R6. The textarea is 16px on a phone:** K1, above.
+- **R7. `loadReasonDialog(): Promise<{ ReasonDialog: typeof ReasonDialog }>`**, exported by name from `kit/index.ts` (revision 10; Leon's decisions a2, deviation 1). It's `() => import("./ReasonDialog")`, so a module can load the dialog lazily through the kit's index, never by a deep import.
+  - **Revision 13 (INT, option (c) of w0-kit-zero-03): `index.ts` exports no `ReasonDialog` value.** Its only way to the dialog is `loadReasonDialog`. It may keep `export type { ReasonDialogProps }`, since a type export ships no code. The revision 10 rule that kept the static export goes: with it, the build put the dialog back in `/`'s route chunk (+0.90 kB gzip, w0-kit-zero-03), and Rolldown left a 0.07 kB re-export stub as the lazy chunk.
+  - The locked UC-09 gets the component through `await loadReasonDialog()` (Fenn, under the override).
+  - **The build must split:** with the page on `loadReasonDialog`, `ReasonDialog` and `Dialog` are in a chunk of their own, outside `/`'s first load. `/`'s route chunk holds none of the dialog's code. It grows by at most the loader's own call, under 0.05 kB gzip (revision 14; INT's ruling on w0-kit-zero-05, which measured +16 B raw and +8 B gzip with the page on the loader over 1ed1a93). Section 8's budget still covers the first load as a whole.
+
+**`ErrorPanel`:**
+- **E1. No action unless `onAction` is given.** DL always draws its button. Here the button (`actionLabel ?? DL's action copy`) is drawn only when `onAction` is set.
+- (Revision 2's E2 is withdrawn: DL already draws the request ID as a copyable `HashChip`, and that's kept.)
+- **Callers always pass `body`.** DL's 403 and 404 bodies are specimen text for other screens, and the page never uses them (5.3, 5.4).
+
+**`WidgetState`:**
+- **W1. `requestId?: string`** draws the request ID chip under the `error` state's message.
+
+**`DecisionTag`** (DL's `n$` and its specimen states, with the changes below):
+
+```ts
+type DecisionTagProps = {
+  layout: "desk" | "phone";
+  variant: DecisionVariant;          // DL's AV_DECISION_VARIANTS keys; unknown → "Decision", circle
+  idLabel?: string;                  // a HashChip kind "id"; absent → no chip
+  title: string;
+  clientName?: string | null;
+  age?: string;                      // "Waiting 6m"
+  binds?: { label: string; value: string; kind: "version" | "sha" };
+  evidence?: string;
+  consequence?: string;
+  state: "seen" | "approving" | "rejecting" | "approved" | "rejected" | "stale" | "notAllowed";
+  staleNote?: string;
+  staleAction?: string;
+  notAllowedReason?: string;
+  approvedAt?: string;               // "14:06"
+  approveLabel?: string;             // absent → no Approve button
+  rejectLabel?: string;              // absent → no Reject button
+  link?: { label: string; href: string };
+  actionsDisabledReason?: string;
+  inlineError?: React.ReactNode;
+  requestId?: string;                // the chip under the stale note, the Locked reason or the countdown
+  onApprove?: () => void;
+  onReject?: () => void;
+  onReview?: () => void;
+  onRefresh?: () => void;
+};
+```
+
+| # | Change from DL's `DecisionTag` | Why |
+| --- | --- | --- |
+| D1 | **Flat props** instead of DL's `decision` object. `variant`, `title`, `binds`, `evidence`, `consequence`, `staleNote`, `staleAction`, `notAllowedReason` and `approvedAt` keep DL's meaning | Kit props are plain values (FM, Layers) |
+| D2 | **`idLabel` is optional.** With no id the chip isn't drawn, and the `aria-label` is `{kind}: {title}` instead of `{kind} {id}: {title}` | A UUIDv7's leading characters are its timestamp, so a short form doesn't tell rows apart (Decisions) |
+| D3 | **`clientName`** is drawn after the kind label, as DL's Decisions card (`eD`) draws the project. Null or absent draws nothing | CR-W2 2.1; INT |
+| D4 | **Approve and Reject only call back.** DL's inline reject textarea goes, and the page opens `ReasonDialog` for both | Route 54 needs a reason for both (CR-W2 section 5) |
+| D5 | **Approved line:** `Approved by you at {approvedAt}. Logged with {binds.label}.` DL has "Logged with" plus the SHA's first 7; here it's the binding's label. **Rejected line:** DL's, unchanged | A version, not a SHA, is bound |
+| D6 | **`binds.kind: "version"`** draws `Binds to {label}` (for example `Binds to Version 4`) as text, struck through in `stale`. `kind: "sha"` is DL's `HashChip` with `prefix` = `label` | As D5 |
+| D7 | **New state `rejecting`:** the Reject button reads `Rejecting…`†, and both buttons are disabled | The pair to DL's `approving` |
+| D8 | **Buttons by state:** | Deciding a version you haven't reviewed is refused (409); a `notAllowed` decision gets 422 or 404 either way |
+| | `seen`: both enabled | |
+| | `approving` and `rejecting`: both disabled | |
+| | `stale`: both disabled (DL disables only Approve) | |
+| | `notAllowed`: **no buttons**, even with labels (DL disables Approve and leaves Reject) | |
+| | `approved` and `rejected`: no buttons (DL) | |
+| | With no labels: no buttons | |
+| D9 | **The "Open" link button and `onOpen` go.** `link`, when given, is drawn instead: the same link-style `Button` with DL's `arrow-up-right` icon, opening `href` in a new tab with `rel="noopener noreferrer"` | There's no detail page in sprint-01; a factory PR opens on GitHub |
+| D10 | **New props:** `actionsDisabledReason` disables both buttons; the Approve button carries it as DL's `Button` `disabledReason` (shown beside it, and `aria-describedby`). `inlineError` is drawn above the actions. `onRefresh` adds `Refresh list`† in `notAllowed` | 5.3's error states |
+| D11 | **Phone actions:** DL's Decisions card on a phone, `.pd[data-phone] .pd-actions`: a two-column grid (`minmax(0, 1fr) minmax(0, 1.4fr)`, gap `10px`), Reject left and Approve right, both filling their column. **Revision 10: it's a `kit.css` rule, not an inline style.** When a tag has both Approve and Reject, they sit in one container with the class `av-dt-pair`, in either layout. `kit.css` draws that container as D11's grid in two cases: always with `layout="phone"`, and with `layout="desk"` under `@media (max-width: 899px)`. The server can't know the viewport, so it renders the desk layout, and the media rule makes that HTML D11 on a phone before hydration (UC-31). At 900px and over, the desk container lays out as DL's desk row does, for example with `display: contents`. The DOM order stays each layout's own: desk is Approve then Reject, phone is Reject then Approve. In the desk DOM at phone width, the grid places Reject in the left column | DL's `DecisionTag` makes only Approve full width; the Decisions screen's card is the phone design. The page picks `layout` in JavaScript, so a value only the client knows can't style the server's HTML (Leon's decisions a2, deviation 2; INT) |
+| D12 | **Reduced motion:** the stamp uses `--av-d-punch`, which DL's reduced-motion block sets to 0. The hole fill keeps DL's `av-hole-fill 160ms var(--av-ease)` and is **not animated under `prefers-reduced-motion`**: it appears filled | DL's 160ms is a literal that its reduced-motion block doesn't cover |
+| D13 | **`rejectLabel`** is new (DL's Reject is the fixed text `Reject…`). The button reads `{rejectLabel}…`, keeping DL's ellipsis because it opens a dialog; for `Reject` that's DL's `Reject…`. Absent → no Reject button. The Approve button reads `approveLabel` as DL's does | CR-W2 2.2 gives each row its own labels |
+| D14 | **`requestId`** draws the request ID chip under the stale note (`stale`), the Locked reason (`notAllowed`), or the countdown (`actionsDisabledReason` from a 429) | FM: the request ID is always shown (finding 16) |
+| D15 | **The facts list is drawn only with a fact** (revision 11). DL always draws its `dl`, with its top rule and `padding-top: 10px`, and draws each `dt`/`dd` pair only when it's given. Here the `.av-dt-facts` element is drawn only when `evidence` or `consequence` is given. With neither, there's no `dl`, and the footer's own rule is the card's only rule above `Open on GitHub`. With one or both, it's DL's | Section 5.1's `factory_change` row has neither (CR-W2 2.1), so DL's `dl` drew an empty 11px strip between two rules. Every DL specimen has evidence, so DL never shows this case (decisions-brennan-01; decisions-zero-02; INT) |
+| D16 | **On a phone, the desk layout draws the phone layout** (revision 15). With `layout="desk"`, `kit.css` draws, under `@media (max-width: 899px)`, every difference `layout="phone"` makes, with the phone layout's own values and no new ones: the body's padding; the head's gap and wrap; the facts list's one column and its `dt` margins; the actions as one column, 10px apart, with the link after the buttons (the desk row's spacer draws nothing); Approve and Reject at `Button`'s `lg` size and `block` width, as the phone layout draws them, alone or in D11's grid; and D11's grid, already there. **The desk DOM doesn't change, and no JavaScript reads the viewport.** `layout="phone"` is unchanged. **The check:** at 390px, a desk tag and a phone tag with the same props draw the article, its head, title, facts list, footer, and each button and link at the same rect, within 1px. At 900px and over, nothing changes. **Focus order:** on a phone it's the desk DOM's, Approve then Reject, while Reject is drawn on the left, as D11 already drew the server's HTML from revision 10 | The server can't know the viewport, so the server's HTML has to be right on a phone through CSS alone. Switching to `layout="phone"` in JavaScript after hydration was a 0.13 layout shift at 390x844 (cls-study-leah-01). It also moved the buttons under a tap, so an early Approve opened Reject (decisions-fenn-01). INT, option (a) |
+
+The state tag stays DL's:
+- "Needs you" for `seen`, `approving` and `rejecting`;
+- "Approved", "Rejected" and "Changed" (stale);
+- "Locked" for `notAllowed`.
+
+## 5. The page (Leon, `apps/web/src/modules/decisions/**`, `apps/web/src/routes/index.tsx`)
+
+**Route:** `/`, `ssr: true` (FM, Rendering).
+- The loader runs `ensureInfiniteQueryData` on route 52's `infiniteOptions` (`limit` 50, always sent), from `apiFor(context.queryClient)`, through `loadDecisionsScreen` (below).
+- **The loader doesn't throw.** It catches the prefetch's rejection. The error stays in the query cache, and the screen draws 5.4's state for it, instead of the router's error page.
+- The component reads the same options with `useSuspenseInfiniteQuery`.
+
+**The module** has `api.ts` (route 52's query options and route 54's mutation, each built from an `Api`: the loader passes `apiFor(context.queryClient)`, and the screen uses `useApi()`), `decisions.ts` (the proposal and factory PR renderers), `screens/DecisionsScreen.tsx`, `index.ts` (named exports only) and `screens.ts`, which exports `DecisionsScreen` (a named export, from `screens/DecisionsScreen.tsx`) and `loadDecisionsScreen(queryClient)`, the loader's prefetch (`api.ts`'s `ensurePendingDecisions`). `routes/index.tsx` imports only `screens.ts` (FM, What every module looks like).
+
+**Layout**, from DL's Decisions screen (`Mme`):
+- The root carries `data-ui="DecisionsPage"`†. DL's screen root has no `data-ui`; this one exists so tests and reviews can find the page.
+- The eyebrow is `Home`, and the `h1` is `Decisions`.
+- **The lead line:** DL's first sentence only: `{n} thing needs you.` or `{n} things need you.`, or `Nothing needs you right now.` when no row is drawn.
+- **The heading:** `h2` `Waiting for you` (DL), then the count.
+- **The list:** a `<ul aria-label="Waiting for you">` with one `<li>` per row.
+
+**Not drawn from `Mme`** (Decisions, "Revision 3"): this is Step 1's minimal page, one list.
+- **No desk inbox.** Both layouts are a flat list of `DecisionTag`s, with no detail pane and no `listbox`/`option` semantics. The detail pane belongs to `/decisions/$ref`, which waits for Step 1.
+- **The lead is the count sentence only.** The mission-health sentence needs CR-W5.
+- **Not drawn:** "Just decided", the project filter, "New project" and the projects section.
+
+**The count** is the number of rows drawn, counted on the client, because route 52 sends no total until CR-W5 (Decisions). While `nextCursor` isn't null, `+` follows it, and a `Load more`† button (`Button`, secondary) sits under the list.
+
+**Styles and loading** (revision 7, Decisions):
+- **The module's styles** live in `apps/web/src/modules/decisions/decisions.css`, a static stylesheet with no CSS in JS strings.
+- **How they're linked:** `screens.ts` exports `decisionsScreenStylesheets`, the kit's `kitStylesheetHref` and the module's own `?url`. Route `/`'s `head` links both. They move to the shell when a second page uses the kit (W2).
+- **`ReasonDialog` isn't in the first load.** The module loads it with `React.lazy` over the kit's `loadReasonDialog` (R7; revision 10, so there's no deep import of `kit/ReasonDialog`), and starts fetching it once the list has rendered, so the first tap doesn't wait on the network. 5.2's 100ms rule for `Approving…` is unchanged.
+- **Linked from the first paint** (revision 9; Leah's findings 02 and 04): route `/`'s `head` links both sheets, so the server's HTML carries them and the first paint is styled. With `kit.css` linked, `HashChip` draws in IBM Plex Mono 500 on the first paint, and the font `__root.tsx` preloads is used.
+- **The route split** (revision 9; INT; FM line 285, "Automatic code splitting per route"). TanStack Start always runs the router's code splitter: `autoCodeSplitting` isn't an option in Start's config, so `vite.config.ts` doesn't change. The route's `component` goes to its own chunk. The loader stays in the route file.
+  - **What keeps it split:** `@avel/web`'s `package.json` declares `"sideEffects": ["**/*.css"]` (section 6). Without it, the loader's import of `screens.ts` brings `DecisionsScreen` and the kit into the entry chunk, and the component's chunk is a 0.07 kB re-export (Zero's measurement on Leon's a1, Decisions, "Revision 9").
+  - On `/`, the route's chunk is part of the first load (section 8). The split keeps every later route's screens out of `/`, and `ReasonDialog` stays out of both.
+
+**The hydration marker** (revision 9; INT; Leah's finding 03): the `data-ui="DecisionsPage"` root carries `data-hydrated="true"` once React has hydrated it.
+- The server's HTML doesn't have it, and nor does the hydration render, so hydration doesn't mismatch. The client render that follows adds it.
+- **It's set only once every tag has its final layout** (revision 15; decisions-fenn-01). After it, nothing on the page re-lays out except in answer to the user, the data, or a real change of viewport, so a click from then on lands where it's aimed. It's set in a React commit, never after a timer. Revision 9's mechanism (`useSyncExternalStore`, server snapshot `false`, client snapshot `true`) set it 15 to 30 ms before the list's phone layout. How the page meets this rule is the page's choice.
+- It's for tests and nothing is styled on it. The end-to-end tests wait for it before their first click (section 7).
+
+**Phone** is `max-width: 899px` (DL's Decisions screen). **The page draws every tag with `layout="desk"`, on a phone too** (revision 15; INT, option (a) of decisions-fenn-01). The kit draws the phone look under 900px from CSS (section 4, D16), so the server's HTML is already right on a phone, and nothing switches after hydration. The page reads no viewport: no `matchMedia` and no `useIsPhone`. Until revision 14, the page switched to `layout="phone"` after hydration, which was cls-study-leah-01's 0.13 layout shift.
+
+### 5.1 How each row is drawn
+
+| Row | `DecisionTag` props |
+| --- | --- |
+| **`proposal` with `approve` and `reject`** | `variant` from `proposalKind`: parked→`parked`, contract_change→`contract`, quarantine→`quarantine`, budget_increase→`budget`, test_change→`testChange`, gate5→`finding`, repin→`repin`; the other six → the generic `Decision` |
+| | no `idLabel`; `title`; `clientName`; `age` = `Waiting {formatAgo(now − createdAt)}` (DL `eD`) |
+| | `binds = { kind: "version", label: "Version {version}"†, value: String(version) }` |
+| | `evidence`; `consequence` = `approve.consequence`; `approveLabel` = `approve.label`; `rejectLabel` = `reject.label` |
+| **`proposal` without `approve` or `reject`** | as above, without the labels; `state: "notAllowed"`; `notAllowedReason`: `This decision's options can't be read, so it can't be decided here.`† |
+| **`factory_change`** | `variant: "factoryPr"`; `idLabel: "#{prNumber}"`; `title`; `age`; `binds = { kind: "sha", label: "Commit", value: headSha }` (DL's R-7 specimen labels a commit binding `Commit`) |
+| | `link = { label: "Open on GitHub"†, href: url }`; no labels; `state: "seen"` |
+
+- **`now`** is the time of the latest successful route 52 fetch. Ages don't tick on their own in sprint-01: there's no shared clock until W2.
+- **No row shows cost** (`costImpact` is absent in Step 1).
+
+### 5.2 Deciding
+
+1. **Tap Approve or Reject.** `ReasonDialog` opens:
+
+   | | Approve | Reject |
+   | --- | --- | --- |
+   | `title` | `Approve this decision?`† when the label is `Approve`, else `{label}?` | `Reject this decision?` (DL) when the label is `Reject`, else `{label}?` (DL) |
+   | `description` | `{title}. {approve.consequence} Your reason goes on the record.`†, adapted from DL's reject copy | `{title}. {reject.consequence} Your reason goes on the record and is shown to whoever picks it up next.` (DL) |
+   | `confirmLabel` | the label | the label |
+   | `destructive` | false | false |
+
+   `minLength` is 3 (DL's default; the contract accepts 1 or more, so this is stricter, never looser).
+2. **Confirm.** The page:
+   - closes the dialog;
+   - makes a new key with `newIdempotencyKey()`;
+   - sets the row to `approving` or `rejecting` within 100ms (FM 207);
+   - calls route 54 with the input `{ proposalId, version: row.version, choice: approve.choice | reject.choice, reason }` (the reason trimmed) and the key. **On the wire** that's `POST /api/proposals/{proposalId}/decisions` with the body `{ version, choice, reason }` (section 1).
+
+   **The body comes from the row as it was drawn,** never from a refetch (FM 205).
+3. **2xx:**
+   - `approve` gives `approved`, with the punch and `approvedAt = formatClock(response.resolvedAt)`;
+   - `reject` gives `rejected`;
+   - after `--av-d-punch`, route 52 is invalidated, and the row leaves when the refetch lands (CR-W2 6: a decided proposal is gone from route 52).
+4. **Retry** re-sends **the same body with the same key.** It applies after `network`, `server` or `inProgress`. A new key is made only for a new confirm.
+5. **Offline** (`navigator.onLine` is false): every row has `actionsDisabledReason: "You're offline."`†, and nothing is queued (FM 208).
+
+### 5.3 Errors on route 54, by `UiError.kind`
+
+**After an `inlineError` panel** (400, 403, `conflict`, `unprocessable`, `idempotencyConflict`), the row's buttons stay enabled: a new tap is a new intent with a new key. **Refresh list and Review** set the row back to `seen` only when the refetch succeeds. If it fails, the row keeps its state, and the list shows 5.4's refetch-failed band.
+
+Every error on the page shows its request ID chip (section 4). Where:
+- an `ErrorPanel`'s `requestId`;
+- `DecisionTag`'s `requestId` (D14) for `stale`, `notAllowedNow`, `notFound` and `rateLimited`;
+- `ReasonDialog`'s `requestId` (R4) for a reason 400;
+- the `network` and `server` band;
+- `inProgress` ends as `network`.
+
+The one exception is section 3's fourth branch (a response body the link can't read), which has no ID to show.
+
+| `kind` | What the row does | Action |
+| --- | --- | --- |
+| `stale` with `currentVersion` null | As `conflict` below, with `body` = the server's message, read from `UiError.stale.message` once Ghost's w0-data a2 adds it (revision 9; until then, from the error as Leon's a1 built it): without the version there's nothing to review. m1's `STALE_VERSION` always sends it (D21), so only a malformed answer gets here | as `conflict` |
+| `stale` | `state: "stale"`; binding struck; `staleNote: "Version {currentVersion} arrived while you were reading."`; `staleAction: "Review version {currentVersion}"` (DL's B-2 specimen copy) | **Review** refetches route 52, and the row comes back with the new version in `seen`. **Nothing is re-sent, ever** (FM, In short, item 5). If the row is gone after the refetch, the list shows `That decision was settled elsewhere.`† (`role="status"`), which stays until the page reloads |
+| `notAllowedNow` | `state: "notAllowed"`, with `notAllowedReason` set by `state`: | `onRefresh`: `Refresh list`† refetches route 52. A row the refetch still lists comes back from the server in `seen`, as `stale`'s does: the page keeps no state the server doesn't send |
+| | `state` resolved: `This decision was already made.`† | |
+| | `state` expired: `This decision expired.`† | |
+| | no `state`: `This can't be decided now.`† | |
+| `notFound` | as `notAllowedNow`, with `This decision no longer exists.`† | as above |
+| `badRequest`, `field: "reason"` | The row goes back to `seen`, and the dialog reopens with `defaultReason` = the reason sent and `error: "The server didn't accept this reason. Write a few more words."`† | Confirm sends again with a **new** key (a new body is a new intent) |
+| `badRequest`, other | `inlineError`: `ErrorPanel` compact, code 400, DL's 400 title and body | `Reload` (DL) reloads the page |
+| `signedOut` | A page-level `ErrorPanel` code 401, DL's title and body (DL's 401 body is generic: "Your session ended…") | none: there's no `/login` in sprint-01 (E1) |
+| `forbidden` | `inlineError`: `ErrorPanel` compact, code 403, title `Not allowed` (DL), `body` = `message` | none (E1) |
+| `rateLimited` with `retryAfterMs` null | As `server`: there's no time to count down | as `server` |
+| `rateLimited` | Back to `seen`; `actionsDisabledReason: "Retry in {s}s"` (DL 429 copy), counting down each second from `retryAfterMs`; at 0 the buttons come back | Nothing is re-sent automatically |
+| `idempotencyConflict` | `inlineError`: `ErrorPanel` compact, code 400, DL's 400 title and body (FM: "a bug report, not a user message") | `Reload` (DL) reloads the page |
+| `inProgress` | Stay `approving` or `rejecting`; re-send with the same key after 500ms, 1s and 2s; then as `network`, with the last request's ID | — |
+| `conflict` | `inlineError`: `ErrorPanel` compact, code 409, title `This couldn't be recorded.`†, body = `message`. **Never DL's 409 copy, and never the stale state** | `Refresh list`† refetches route 52 |
+| `unprocessable` | `inlineError`: `ErrorPanel` compact, code 422, title `Not allowed now` (FM line 220), body = `message`. **Never DL's 422 copy** | `Refresh list`† |
+| `network`, `server` | Back to `seen`; `inlineError`: `Couldn't reach the server.`† and the request ID chip | `Retry` (DL's `WidgetState` label): step 4 |
+
+### 5.4 The list's own states (route 52)
+
+| State | Shown | Action |
+| --- | --- | --- |
+| Loading (client navigation only; SSR renders with data) | `WidgetState` `loading` | — |
+| Empty: no rows and `nextCursor` is null | DL's empty card: `StatusGlyph` done, **`Nothing needs you.`**, then `A decision appears here the moment the factory needs one.` | — |
+| Error with no data | `signedOut`: as in 5.3 | |
+| | `network` or `server`: DL's `WidgetState` `error` as it is: `Couldn't load`, then `The server did not answer. Nothing was changed.`, with the request ID chip (W1) | `Retry` (DL) refetches |
+| | anything else: `ErrorPanel` with the status as `code`; the title is DL's for 400, 403 and 404, 5.3's for 409 and 422, and DL's `ErrorPanel` title for that code for any other status (for example 429); **`body` = the server's `message`**, never DL's specimen body | none |
+| Error with data on screen (a refetch failed) | The rows stay, under `WidgetState` `error` with `lastGoodAge` (DL: `Stale, last good value {age} old`) and the failed request's ID as `requestId` (W1) | `Retry` refetches |
+| Some rows unreadable (`unreadable > 0`) | Above the list, `role="alert"`: `{n} decision couldn't be shown. Reload the page; if it keeps happening, report it.`† (`decisions` when n > 1). No request ID: a successful page doesn't give one to the screen | — |
+| `Load more` fails | The rows stay; the button reads `Retry loading more`†, with the failed request's ID chip (section 4) beside it | It loads the next page again |
+
+### 5.5 The contract version banner
+
+When `useContractMismatch()` isn't null, the page shows `WidgetState` `staleVersion` above the header, with:
+- message `AVEL was updated. Reload to use the new version.`†;
+- action `Reload` (DL), which reloads the page.
+
+It's the page's because sprint-01 has one page. It moves to the shell with W2 (FM line 226).
+
+## 6. Tokens and the app (Nemi)
+
+- **The package is `@avel/web`** at `apps/web`, on TanStack Start with React and Vite (FM, Rendering).
+- **The dependencies** this sprint needs, and nothing else:
+  - `@avel/contract` (workspace);
+  - `@avel/contract-mock` (workspace), as a **dev dependency**: only `vite.config.ts`'s dev server and the tests import it (section 3);
+  - `@orpc/client`, `@orpc/openapi-client` and `@orpc/tanstack-query`, at the exact version `@avel/contract` pins for `@orpc/contract`;
+  - `@tanstack/react-start`, `@tanstack/react-router` and `@tanstack/react-query`;
+  - `react` and `react-dom`;
+  - `zod`, at the contract's exact version. `apps/web/src` imports only its `zod/mini` subpath, never classic `zod` (section 3, revision 9), and `zod` ships `zod/mini`, so the dependency doesn't change;
+  - `lucide-react`;
+  - Tailwind CSS v4 and its Vite plugin;
+  - for the build (revision 10, the React Compiler): `@rolldown/plugin-babel`, `@babel/core` and `babel-plugin-react-compiler`, as dev dependencies, pinned exact;
+  - for tests: `vitest` (the workspace's version), `@testing-library/react`, `@testing-library/user-event`, `jsdom` and `@playwright/test`.
+- **`package.json` declares `"sideEffects": ["**/*.css"]`** (revision 9). Only CSS files run for their effect on import (`__root.tsx`'s token and base sheets). Everything else in `@avel/web` is free to drop when unused, so the route split holds (section 5, "The route split").
+- **`apps/web/src/styles/tokens.css`** carries DL's token stylesheet: every custom property between DL's `Theme-independent AVEL tokens` and `Base element defaults` comments, with the same value under the same selectors.
+  - The check in Nemi's task compares 533 name and value pairs.
+  - `--av-stall-after: 8m` is copied as it is (FM's follow-up changes DL's source).
+- **`apps/web/src/styles/base.css`** carries DL's `Base element defaults` block word for word: every rule from that comment up to the `AVEL field anatomy` comment (`html` and `body` background `var(--av-floor)`, `body` ink `var(--av-ink)` and type, links, focus rings, selection, and form and code inheritance). It loads after `tokens.css` (INT, 2026-11-07; Decisions).
+- **`apps/web/src/routes/__root.tsx`** is the shell:
+  - `<html>` gets `data-theme` from the `avel-theme` cookie (`light` or `night`, default `light`), read on the server before first paint;
+  - it loads Inter Variable and IBM Plex Mono;
+  - it preloads the font files the first paint of `/` uses (FM line 289): Inter Variable, and **IBM Plex Mono 400**, the weight of DL's `HashChip` value (the factory PR's commit chip and the request ID). DL's `dt` sets no weight on the chip, so its value is Mono 400. Its 500 is on the prefix span, which is in Inter. **Revision 10 corrects the Mono 500 from the 2026-11-07 "Fonts" decision:** that preload was never used on the first paint (Leah's finding 04; Leon's decisions a2). Mono 500 isn't preloaded. **The size-matched fallback (FM line 289) is in, from revision 11** (Leah's decisions-leah-07: CLS 0.13 on `/` from the font swap; INT). It replaces the "Fonts" decision's "not in sprint-01". See "The size-matched fallbacks" below;
+  - **The size-matched fallbacks** (revision 11; Nemi's w0-fonts a2):
+    - **Where:** a new `apps/web/src/styles/font-fallbacks.css`, imported last in `app.css` (after `base.css`). `tokens.css` stays DL's copy, character for character.
+    - **Two `@font-face` rules,** with `font-display: swap` like the real faces:
+      - `"Inter Variable Fallback"`: `src: local("Arial"), local("Liberation Sans")`;
+      - `"IBM Plex Mono Fallback"`: `src: local("Courier New"), local("Liberation Mono")`.
+      Each pair is metric-compatible (Liberation is drawn to Arial's and Courier New's metrics), so one set of overrides fits both faces in a rule. The Linux Chromium the tests run in has Liberation, not Arial.
+    - **Each rule's four descriptors, by formula**, from the real face's file in `apps/web/src/styles/fonts/` (Inter: `inter-variable.woff2`; Mono: `ibm-plex-mono-400.woff2`) and the fallback's own file. `UPM` is `head.unitsPerEm`, and the ascender, descender and line gap are `hhea`'s:
+      - `size-adjust` = (the real face's average width ÷ its UPM) ÷ (the fallback's average width ÷ its UPM). The average width is `OS/2.xAvgCharWidth`. For the mono pair, it's the advance width of `0`, since every glyph has that advance;
+      - `ascent-override` = (the real ascender ÷ UPM) ÷ `size-adjust`;
+      - `descent-override` = (|the real descender| ÷ UPM) ÷ `size-adjust`;
+      - `line-gap-override` = (the real line gap ÷ UPM) ÷ `size-adjust`.
+      Each is a percentage to two decimals. A comment above each rule gives the inputs: both files, UPM, the average width or advance, and the three hhea values. A value tuned by hand to pass the measure isn't allowed. If the formula's values don't meet it, that's a report, not a tweak.
+    - **The stacks:** the same `:root` in `font-fallbacks.css` sets `--av-font-sans`, `--av-font-mono`, `--font-sans` and `--font-mono` to DL's stacks, with the fallback family inserted second: right after `"Inter Variable"`, and right after `"IBM Plex Mono"`. Nothing else in the stacks changes. This is the one change to DL's tokens, made by override, so a fresh copy of DL's token section still drops in.
+    - **Held (revision 13; INT).** Nemi's w0-fonts a2 built these to the formula, and CLS was 0.172. He also found the 0.13 shift happens with every `woff2` aborted, so the fonts may not cause it. His NEMI-03 isn't merged. Leah re-measures CLS on main, where D11 is now in `kit.css`, and this section is decided from her numbers: kept, changed (for example to one `xAvgCharWidth` method for both files), or dropped.
+    - **The measure** (revision 15 adds the throttle; cls-study-leah-05): layout shift on `/` under 0.02 at 390x844 (`isMobile`, `hasTouch`) on a production build, using Leah's method from decisions-leah-07.
+      - **How it's counted:** a `layout-shift` `PerformanceObserver` registered before navigation, summed over 3 s after `data-hydrated`. Every entry counts, including those flagged `hadRecentInput`: under touch emulation Chromium flags the hydration shift although no input was sent.
+      - **The four cases:** three runs each, with fonts normal and with each `woff2` delayed 1.2 s, each unthrottled and at 4x CPU throttle (CDP `Emulation.setCPUThrottlingRate`, rate 4). With fonts delayed and no throttle, first paint can come after hydration, so a shift before hydration is never painted and the measure passes by luck (cls-study-leah-05). The throttle makes first paint come first, as on a phone.
+      - **Each run records** its first contentful paint and the time `data-hydrated` is set, so a pass that came from late paint shows.
+      - The run also names the fallback face each family drew in before the swap (CDP's `CSS.getPlatformFontsForNode`), so it's the fallback rule that was measured, not a system font;
+  - its route context is `{ queryClient: QueryClient }` (`createRootRouteWithContext`). `getRouter()` fills it and provides the `QueryClient` (section 3), so the shell adds no provider of its own;
+  - no auth guard.
+- **`vite.config.ts`:**
+  - It defines `__AVEL_CONTRACT_VERSION__` from `packages/contract/package.json`'s `version`, read with `fs` at config time (escalation 02).
+  - In development, `AVEL_API=mock` adds a plugin with `apply: "serve"` that makes **one** `createMock({ contractVersion })`, seeds it with `fixtures.step1`, and serves `/api/*` and `/__mock/*` from it as dev-server middleware. The browser's requests and the SSR loader's requests both reach this instance (section 3). It's the only place `apps/web` imports `@avel/contract-mock` outside the tests.
+  - The route tree is generated to `src/routeTree.gen.ts`, which is git-ignored and generated before `typecheck` and `build`.
+  - **The server-function stub** (revision 10; Leah's size study, finding 04; INT). TanStack Start's client always carries the client half of `createServerFn`: `client-rpc/serverFnFetcher.js`, `client-rpc/createClientRpc.js` and `client-rpc/frame-decoder.js` in `@tanstack/start-client-core`, and through them all of `seroval`. The web has no server function. FM line 30: every call goes through the oRPC client. So a plugin resolves those three modules, when `start-client-core` imports them in the **client** environment, to stubs that throw if called. The server build is untouched.
+    - **The guard:** the build fails if `createServerFn` appears anywhere under `apps/web/src`. A server function needs the stub off, and that's a decision for the contract.
+    - **The alarm** (revision 12, Nemi's w0-split a2, deviation 1): a client build fails if no stub was used, or if any real module under `start-client-core`'s `client-rpc/`, or `seroval` or `seroval-plugins`, has rendered code in a client chunk. In other words, it fails when the stub no longer keeps those modules out of the client. A Start upgrade that renames them, or reaches them by a new path, would otherwise bring the 11 kB back without a sign. It doesn't require each stub to be used: in `start-client-core` 1.170.39 the client reaches `serverFnFetcher.js` and `frame-decoder.js` only through `createClientRpc.js`, so once that's stubbed the other two never load. All three stubs stay, for a version that imports them directly.
+    - The plugin sits in `vite.config.ts`, before `tanstackStart()`.
+  - **The React Compiler is on** (revision 10; FM line 299; INT). `babel({ presets: [reactCompilerPreset()] })` from `@rolldown/plugin-babel`, after `react()`, as Leah's study measured it (+2.44 kB gzip; size study, finding 05). It compiles `apps/web/src` only, never `node_modules`. The Vitest config doesn't run it: it's Fenn's, and the tests test behaviour, not the compiled output.
+
+## 7. Scenarios (Fenn's test IDs)
+
+**Data core and mock** (`apps/web/test/data/`, Vitest):
+
+| ID | Scenario |
+| --- | --- |
+| UC-01 | `fixtures.step1`'s rows parse with `PendingDecisionRow`. A row missing `ref` fails. The unparseable-options proposal parses, without `approve` and `reject` |
+| UC-02 | Route 52: order (`createdAt`, then `ref`); `limit` 0 and 101 give `BAD_REQUEST`; `limit` 100 serves at most 100 items; `nextCursor` pages through `fixtures.many`, with no row repeated or lost |
+| UC-03 | Route 54: each check in CR-W2 section 5's order gives its code and `details` as an `ErrorBody`. Check 1: a missing `version` gives `details.field` `"version"`, `issues[0].field` `"version"`, and `ErrorBody.message` equal to `issues[0].message`; a body with no `proposalId` passes check 1, and a body whose `proposalId` differs from the path's is ignored: the checks and the decision apply to the path's proposal (S1-5). No key gives 400 `{ field: "Idempotency-Key", issues: [{ field: "Idempotency-Key", message: "required" }] }`. The same key, path and body replays. The same key with a different body gives `IDEMPOTENCY_KEY_REUSED`. Success is **201**, with `state: "resolved"`, `choice`, `choiceReason`, `resolvedBy: MOCK_OPERATOR_ID`, `resolvedAt` and `rowVersion + 1` |
+| UC-04 | `toUiError`: one case per row of section 3's table; `STALE_VERSION` gives `stale` with `currentVersion`; `CONFLICT` gives `conflict`, not `stale` |
+| | **Each branch of "Reading an error", with its request ID:** an `ErrorBody` comes out as `ApiError` with `e.code` = the body's code, and `requestId` from the body; a non-`ErrorBody` 409 gives `conflict` with `code` null, and `requestId` from the response's `X-Request-Id`, or the ID sent when the response has none; `failNext(54, { network: true })` gives `network`, with `requestId` equal to the one `mock.requests()` recorded; any other thrown value gives `network` with `requestId` null |
+| | **Round trip:** a mock `STALE_VERSION` through `createApiClient` (route 54 after `bumpVersion`) comes out of `toUiError` as `stale` with the mock's `requestId`, **not `conflict`**. The same for `IDEMPOTENCY_KEY_REUSED`, which gives `idempotencyConflict` |
+| UC-05 | The client sends `X-Request-Id` on every request (`requestId` when given, else a new one each time), and `Idempotency-Key` from the context on route 54; the mock answers with both headers. Route 54 is recorded with the path `/api/proposals/{proposalId}/decisions` and the body `{ version, choice, reason }`. A request failed with `{ network: true }` is still recorded, with its `requestId`, key and body |
+| UC-06 | `formatAgo` matches DL's `avAgo` at 0s, 59s, 60s, 59m, 61m, null and `Infinity`; `formatClock` gives local `HH:MM` |
+| UC-07 | **Contract version:** a response whose `X-Contract-Version` differs sets `useContractMismatch()`; an equal one doesn't, and an absent one doesn't |
+
+**Kit** (`apps/web/test/kit/`):
+
+| ID | Scenario |
+| --- | --- |
+| UC-08 | `DecisionTag`, one test per state with D8's buttons (seen, approving, rejecting, approved with the stamp and D5's line, rejected, stale with the struck binding, note and action, notAllowed with labels and no buttons); the buttons read `approveLabel` and `{rejectLabel}…` (`Reject…` for `Reject`, D13); no buttons without labels; `link` (D9); no id chip and D2's `aria-label` without `idLabel`; `actionsDisabledReason` shown and both buttons disabled (D10); `requestId` gives `Copy {id}` (D14); phone layout (D11); no `.av-dt-facts` with neither `evidence` nor `consequence`, and one with either (D15) |
+| UC-09 | `ReasonDialog`: confirm disabled under 3 trimmed characters; `error` shows and the dialog stays open; `defaultReason` fills the text on open; Cmd/Ctrl+Enter confirms; `onConfirm` doesn't close it; `requestId` gives `Copy {id}` (R4). The component comes from `await loadReasonDialog()`, and the kit index has no `ReasonDialog` value (R7, revision 13) |
+| UC-10 | `ErrorPanel`: no button without `onAction`; with it, `actionLabel` or DL's copy; `body` drawn as given; the request ID chip with `Copy {requestId}`. `WidgetState` `error` with `requestId` draws the chip too (W1) |
+
+**The page** (`apps/web/test/modules/decisions/`, on the mock). Screen tests build the page's client with `createQueryClient({ retryDelay: 0 })`: the page's retry count, without the wait. "The request ID" means its chip, found by `Copy {requestId}`, with the ID `mock.requests()` recorded.
+
+| ID | Scenario |
+| --- | --- |
+| UC-11 | `fixtures.empty`: the empty card and `Nothing needs you right now.` |
+| UC-12 | `fixtures.step1`: four rows in server order (decidable ones full, the unreadable-options row Locked with its reason, the factory PR with `#N`, its commit chip, `Open on GitHub` to `url` and no buttons); the lead and count say 4 |
+| UC-13 | **Approve:** the dialog has 5.2's copy; confirming records exactly one route 54 request, with the path `/api/proposals/{proposalId}/decisions`, the body `{ version, choice: approve.choice, reason }` and one key; `Approving…`; 201 → `Approved by you at {formatClock(resolvedAt)}`; the row then leaves the list |
+| UC-14 | **Reject:** the same path, with the body `{ version, choice: reject.choice, reason }`, `Rejecting…` and the rejected line |
+| UC-15 | **Stale:** `bumpVersion` before confirming → the stale state with `Version {n+1} arrived…` and the request ID; **exactly one request to route 54**; Review → `Version {n+1}`, and deciding it then gets 201 |
+| UC-16 | **Stale, then gone:** after the 409, `resolve` the proposal; Review → the row is gone, and `That decision was settled elsewhere.` |
+| UC-17 | **422 and 404:** `resolve` → `This can't be decided now.`; `resolve`, then `failNext(54, { status: 422, code: "INVALID_TRANSITION", data: { state: "resolved", allowed: [] } })` → `This decision was already made.`; `expire`, then the same with `"expired"` → `This decision expired.`; `remove` → `This decision no longer exists.`. Each case shows the request ID, and in each, Refresh list drops the row (the store was changed in every case). **Still listed:** `failNext` 422 alone, with the store left open → Refresh list brings the row back in `seen` |
+| UC-18 | **429:** `failNext(54, { status: 429, code: "TOO_MANY_REQUESTS", data: { retryAfterMs: 3000 } })` → buttons disabled with `Retry in 3s` and the request ID, counting down to enabled; no request re-sent |
+| UC-19 | **Network and 5xx:** `failNext(54, { network: true })`, and then `failNext(54, { status: 500, code: "INTERNAL", data: {} })` → `Couldn't reach the server.` with the request ID; Retry sends the same `Idempotency-Key`, path and body as the recorded failed request |
+| UC-20 | **`IDEMPOTENCY_IN_PROGRESS`**, with fake timers: once → re-sent with the same key after 500ms, then 201. **Running out:** `failNext(54, { status: 409, code: "IDEMPOTENCY_IN_PROGRESS" }, { times: 4 })` → three re-sends with the same key, 500ms, 1s and 2s apart, the row `Approving…` throughout; then `Couldn't reach the server.` with the fourth request's ID, and no fifth request |
+| UC-21 | **Reason 400:** `failNext(54, { status: 400, code: "BAD_REQUEST", data: { field: "reason" } })` → the dialog reopens with the reason, the error and the request ID; confirming sends a new key |
+| UC-22 | **Panels:** 400 other, 403, `IDEMPOTENCY_KEY_REUSED`, `CONFLICT` and `UNPROCESSABLE_CONTENT` each show their compact `ErrorPanel` with 5.3's title, action (or none) and the request ID. `CONFLICT` is never the stale state |
+| UC-23 | **401**, on each route: `failNext(54, { status: 401, code: "UNAUTHORIZED" })`, then confirming; and `failNext(52, { status: 401, code: "UNAUTHORIZED" })` on the first load, without prefetched data. Each → the page-level `Signed out` panel, with the request ID and no button |
+| UC-24 | **Unreadable:** `injectRawItem({ kind: "proposal" })` → the alert band with `1 decision couldn't be shown…`; the other rows show |
+| UC-25 | **Offline:** with `navigator.onLine` false, buttons disabled with `You're offline.` |
+| UC-26 | **Paging:** `fixtures.many` → 50 rows and `50+`; Load more → 100 and `100+`; then 150 and `150`, and the button is gone. `failNext(52, { network: true }, { times: 4 })` on Load more → `Retry loading more` with the request ID, which then loads. **Across pages:** `injectRawItem({ kind: "proposal" })` before the first Load more → the band reads `1 decision couldn't be shown…` and still reads it after the next Load more (summed over loaded pages, section 3) |
+| UC-27 | **List states:** rendered without prefetched data → `WidgetState` loading. `failNext(52, { network: true }, { times: 4 })` on the first load → exactly `Couldn't load` and `The server did not answer. Nothing was changed.`, the request ID, and Retry, which then loads. `failNext(52, { status: 403, code: "FORBIDDEN", message: "No." })` → `Not allowed` with body `No.`, the request ID and no button. A refetch failing 4 times with rows on screen → `Stale, last good value …`, the request ID and Retry |
+| UC-28 | **Contract version:** a mock whose `contractVersion` differs from the client's → the `staleVersion` banner with `Reload` |
+
+**End to end** (`apps/web/e2e/`, Playwright, `AVEL_API=mock`, phone 390×844 and desk 1280×800). Playwright starts the dev server, so every test talks to its one mock instance (section 3). Each test first calls `POST /__mock/reset`, and the tests run one at a time (`workers: 1`). **After its SSR checks and before its first click, each test waits for `[data-ui="DecisionsPage"][data-hydrated="true"]`** (section 5, the hydration marker; revision 9). A click on the server's HTML before React has hydrated is lost, and that was Leah's finding 03:
+
+| ID | Flow |
+| --- | --- |
+| UC-29 | Open `/`: the SSR HTML already holds the rows, served by the dev server's mock, with no loading state on first paint; approve the first decidable proposal with a reason; the punch; the row leaves; the lead counts one fewer |
+| UC-30 | Stale: with the page open, `POST /__mock/bump/{proposalId}` → approving gets the stale state (the page's mock is the bumped one) → Review → approve |
+| UC-31 | Phone: the actions are D11's two-column grid, at least 44px tall (DL v1.8 touch rule); the reason dialog's input is 16px and usable at 390px. The dialog's sizes are read once its open animation has finished (`Promise.all(dialog.getAnimations().map(a => a.finished))`), because `av-dialog-in`'s scale makes `boundingBox()` read under 44px while it runs (revision 13, w0-kit-zero-04). The 44px bar doesn't change, and the test doesn't turn motion off |
+| UC-32 | Phone: nothing moves at hydration (revision 15; cls-study-leah-01, decisions-fenn-01). At 390x844, the first decidable tag's article, title, facts list (when it has one), and its Approve and Reject buttons have the same rect, within 1px, in two cases: the server's HTML read in a context with JavaScript off, and the page after `data-hydrated` with JavaScript on. The desk project skips it, as it skips UC-31 |
+
+## 8. What reviewers check
+
+- **Zero (`review-frontend`):** each module against sections 1 to 6: names, props, copy (DL's or †), states and values. Nothing invented, and nothing outside its territory.
+- **Brennan (`review-spec`):** this contract against CR-W2, FM, DL and m1, then each module against this contract.
+- **Zane:** the new dependencies (section 6), how keys and request IDs are handled (section 3's fetch wrapper; the SSR client forwards only the request ID), and that `/__mock` and the mock stay out of production builds: nothing under `apps/web/src` imports `@avel/contract-mock`, and the build's output holds neither `__mock` nor `MOCK_OPERATOR_ID`'s value.
+- **Leah:** the page's accessibility on a phone (UC-31, K1, R5, focus, labels), and that the first load of `/` is at most **160 kB gzip** of JavaScript, sprint-01's budget (Decisions, 2026-11-07). **The budget counts JavaScript only** (FM's "Initial JavaScript" row). Linked stylesheets don't count, but CSS written in JS strings does, because it ships in the JavaScript.
+  - **The first load is every JavaScript file `/` loads before it can be used:** the entry chunk, and every chunk the server's HTML loads or preloads for `/`, including the route's own chunk (section 5, "The route split"). Summed, gzipped (revision 9).
+  - A chunk fetched after first paint (the lazy `ReasonDialog`) isn't initial.
+  - **The budget is 150 kB gzip (FM's) once three things are merged** (revision 10; INT's decision on Leah's size study): both halves of S1-6 (Axis's `@avel/contract` on `zod/mini`, and Ghost's w0-data a2, section 3), and Nemi's w0-split a2 (the server-function stub, with the React Compiler on, section 6). From then, over 150 kB is a finding. Until then, it's 160 kB. Leah's study projects 147.8 kB with all three, so the margin is about 2 kB.
+- **Leah:** layout shift on `/` under **0.02**, measured as section 6's "The measure" gives it (revision 11; decisions-leah-07). Her cls-study a2 measured 0.13 on main: the desk-to-phone switch at hydration (cls-study-leah-01). Revision 15's D16 is the fix, and she re-measures after it, with the throttle.
+- **Zero and Zane, from Ghost's w0-data a2:** `grep -rnE "from ['\"]zod(/v4)?['\"]" apps/web/src` lists nothing (section 3).
+
+## Appendix A: Brennan's a1 findings and where each is answered
+
+| Finding | Severity | Answered in |
+| --- | --- | --- |
+| 01 Route 54's status | P1 | Section 2: route 54 answers **201** (m1 `route()`, D26). The "isn't a create" claim is gone (INT) |
+| 02 The reason dialog flow | P1 | R2 and R3, 5.2 step 2, 5.3 reason 400, UC-09, UC-21: option (b), the dialog closes on confirm and reopens with `defaultReason` |
+| 03 ErrorPanel copy and actions | P1 | E1; 5.3's `conflict` and `unprocessable` titles (never DL's 409 or 422 copy); an Action column in 5.3 and 5.4 |
+| 04 DecisionTag's unlisted changes | P1 | D1 to D14 (D8: buttons per state; D11: phone, from DL's `.pd[data-phone]`); UC-08 |
+| 05 Scenario coverage | P1 | UC-16, UC-21 to UC-23, UC-26 and UC-27 added; request IDs asserted in UC-19 and UC-22; UCs renumbered (end to end is now UC-29 to UC-31) |
+| 06 UC-02's limit cap | P2 | Section 2 route 52 and UC-02: over 100 gives `BAD_REQUEST`, with no clamping |
+| 07 UC-14 and UC-15 against the mock | P2 | `failNext`'s single signature, written raw; `remove`; UC-17 and UC-18 written in that form, each with its expected reason |
+| 08 The unreadable band's request ID | P2 | 5.4: dropped from the band and its copy |
+| 09 `approvedAt` from the client's clock | P2 | Section 1 and 5.2 step 3: `formatClock(response.resolvedAt)` |
+| 10 The hole fill isn't a token | P2 | The value rule (section 0) and D12 |
+| 11 Unmarked copy and `data-ui` | P2 | † marks, and Decisions, "Revision 2", lists each one |
+| 12 Kit props not exact | P3 | Section 4's "props ported / left out" columns; `Icon`'s `data-ui`; `formatAgo(ms: number \| null)` |
+| 13 Route 54's mock, unsourced | P3 | Section 2: the missing key is provisional (Decisions; Axis to confirm); success adds `state` and `resolvedBy` (`MOCK_OPERATOR_ID`) (INT). Revision 4: Axis confirmed the missing key (S1-1) |
+| 14 FM items not addressed | P3 | The count: section 0 and section 5, client-counted until CR-W5 (Decisions). `X-Contract-Version`: built (sections 3, 5.5 and 6, UC-07, UC-28), with escalation 02 for the version value (INT) |
+
+**Review a2's findings (revision 3):**
+
+| Finding | Severity | Answered in |
+| --- | --- | --- |
+| 04 `rejectLabel` | P2 | D13; UC-08 asserts `Reject…` |
+| 12 Button's and StatusGlyph's props | P3 | Section 4's table: Button ports `disabledReason` (used by D10) and leaves out the other seven; StatusGlyph leaves out `onColor` |
+| 15 Decoding the error body | P1 | Section 3, "Reading an error" (`e.data.body`, Decisions); section 2: every error is an `ErrorBody`, and check 1's `{ field }` is provisional; UC-03 and UC-04's round trip. Revision 4: decoded at the link instead, and check 1's details are S1-3's `{ field, issues }` |
+| 16 Where the request ID goes | P2 | D14, R4, W1; 5.3's list of places; UC-15, UC-17, UC-18, UC-21 and UC-27 assert it |
+| 17 ErrorPanel specimen copy | P2 | 5.4: no-data network errors use DL's `WidgetState` error copy; the other panels pass the server's `message` as `body`; section 4 says callers always pass `body` |
+| 18 E2 is no change | P3 | E2 withdrawn; DL's chip is kept, and tests find it by `Copy {requestId}` |
+| 19 Query retries and `failNext` | P2 | `failNext`'s `times`; `createQueryClient({ retryDelay })`; UC-26 and UC-27 use both |
+| 20 The plan note's UC range | P3 | `plan.toml` `[analysis]` notes: UC-01 to UC-31, re-rendered |
+| 21 `Mme`'s layout | P3 | Section 5, "Not drawn from `Mme`", and section 0 |
+
+**Review a3's findings (revision 4):**
+
+| Finding | Severity | Answered in |
+| --- | --- | --- |
+| 16 Where the request ID goes (narrowed) | P3 | UC-23 asserts it. 5.4: the refetch-failed band carries it (W1), and `Load more` shows the chip beside `Retry loading more`; UC-26 and UC-27 assert both, and UC-27's 403 too. 5.3 names its one exception, section 3's fourth branch |
+| 22 Route 54's wire body | P2 | Section 1 and 5.2 step 2: the input is `{ proposalId, version, choice, reason }`, and the wire body is `{ version, choice, reason }`. Section 2: the path wins and a body `proposalId` is ignored (Axis, S1-5; D48), so check 1 is the schema check only. UC-03, UC-05, UC-13, UC-14 and UC-19; `plan.toml`'s done-when line |
+| 23 The sent request ID | P2 | Section 3: the fetch wrapper carries it (`NetworkError.requestId`; a response with no echo gets the sent ID), and `toUiError`'s four branches say where each reads it. Section 2: `requests()` records failed requests too. UC-04 and UC-05 |
+| 24 One data path for dev and SSR | P2 | Section 3: `createApi`, `bindApi`, `apiFor` and `useApi`; `getRouter()` per request, with the server's `baseUrl` and the forwarded request ID (FM line 141; cookies wait for W5); "One data path for each environment". Section 6: the dev server's one instance, and the mock as a dev dependency. Section 2: `POST /__mock/reset`. UC-29 and UC-30; section 8 (Zane) |
+| 25 The default `limit` | P3 | Section 2: the mock's 50 is provisional (Decisions), and the page always sends `limit` |
+
+**Folded in from Axis's S1-3** (Decisions, "Axis's S1-3" and "Revision 4"): section 2's `BAD_REQUEST` details `{ field, issues }` and the missing key's `"required"`; section 3's decoding at the link (`decodeErrorBody` as `customErrorResponseBodyDecoder`, `ApiError`); UC-03 and UC-04.
+
+**Review a4's findings (revision 5):**
+
+| Finding | Severity | Answered in |
+| --- | --- | --- |
+| 26 Route 52's infinite `select` | P3 | Sections 1 and 3: `parsePendingPage` parses one page; `selectPendingPages` joins the loaded pages (rows in page order, `unreadable` summed, the last page's `nextCursor`). UC-26 asserts the sum across pages |
+| 27 Scenario gaps | P3 | UC-20: `IDEMPOTENCY_IN_PROGRESS` running out, with fake timers (5.3 names the last request's ID). UC-23: a 401 on route 54 and on route 52's first load |
+| 28 UC-17's Refresh list | P3 | UC-17: the `failNext` cases `resolve` or `expire` first, so every case drops the row; a `failNext` alone shows the row back in `seen`. 5.3's `notAllowedNow` (and so `notFound`) says a row still listed comes back in `seen` |
+
+**Revision 6: what the merged w0-data settled** (Decisions, "Revision 6"):
+
+| Source | Answered in |
+| --- | --- |
+| Brennan's w0-data finding 01 (P3): the client over `{ decisions }` | Section 3, `createApiClient` |
+| Ghost's deviation 1: `ApiOptions.fetch` takes a `Request` | Section 3, `createApiClient` |
+| Ghost's deviation 2: `data/index.ts` | Section 3's table |
+| Ghost's deviation 3: nullable `stale` and `rateLimited` fields | Section 3's `UiError` table; 5.3's two rows for a null value |
+| Ghost's deviation 4: other 4xx are `badRequest` | Section 3's `UiError` table |
+| Ghost's deviation 5: an undecodable cursor | Section 2, route 52 |
+
+**Revision 7: Leon's decisions build deviations, and the page's styles** (Decisions, "Revision 7"):
+
+| Source | Answered in |
+| --- | --- |
+| Leon's deviation 1: `loadDecisionsScreen` from `screens.ts` | Section 5, the module and route lines |
+| Leon's deviation 2: the loader catches the prefetch | Section 5, the route lines |
+| Leon's deviation 3: a null-version `stale` shown as `conflict` with the server's message | 5.3, that row |
+| Leon's deviation 4: four choices where the contract was silent | 5.3, buttons after a panel and Refresh/Review; the settled-elsewhere note; 5.4, the title for other statuses |
+| INT's build split (~23 kB of the page is CSS in JS) | Section 4, "The kit's styles"; section 5, "Styles and loading"; section 8, the budget counts JavaScript only |
+
+**Revision 9: Leah's decisions a11y-perf a1 (report 3d3ccfc) and INT's decisions**
+
+| Finding | Severity | Where it's answered |
+| --- | --- | --- |
+| decisions-leah-01 First load 173.5 kB over 160 kB | P1 | Section 3, which zod the web may import (Ghost's w0-data a2, with Axis's S1-6); section 5, the route split; section 6, `sideEffects`; section 8, what the first load counts and when 150 kB returns |
+| decisions-leah-02 Targets under 44px, a 14px input, sheets not linked | P1 | Section 5, linked from the first paint (Leon); section 4, K1 and R5 (Fantem) |
+| decisions-leah-03 End-to-end clicks before hydration | P2 | Section 5, the hydration marker (Leon); section 7, each test waits for it (Fenn, a locked-test change) |
+| decisions-leah-04 Mono 500 preloaded, unused on first paint | P2 | Section 5, linked from the first paint |
+
+**Revision 10: Leah's size study (report 1e07129), Leon's decisions a2 (d480f0e) and INT's decisions**
+
+| Source | Where it's answered |
+| --- | --- |
+| Size study 04: Start's server-function RPC and seroval, -11.03 kB | Section 6, the server-function stub, its guard and its alarm (Nemi's w0-split a2) |
+| Size study 05: the React Compiler isn't on, +2.44 kB | Section 6, the React Compiler and its dev dependencies (Nemi's w0-split a2) |
+| Size study, the budget | Section 8: 150 kB once S1-6's two halves and Nemi's w0-split a2 are merged, 160 until then |
+| Leon a2, deviation 1: the deep import of `kit/ReasonDialog` | Section 4, R7 `loadReasonDialog`; section 5, "Styles and loading" |
+| Leon a2, deviation 2: UC-31 measures D11 on the server's desk layout | Section 4, D11 as a `kit.css` rule with `av-dt-pair` and the phone media rule; D11 leaves "What stays inline" |
+| Leon a2, HashChip at Mono 400; decisions-leah-04 | Section 6: the Mono 400 preload, not 500 (Nemi's w0-fonts a2) |
+
+**Revision 11: the decisions a2 reviews (Brennan, Zero, Leah) and INT's decisions**
+
+| Source | Where it's answered |
+| --- | --- |
+| decisions-brennan-01 and decisions-zero-02: the Factory PR card's empty facts list | Section 4, D15 (Fantem's w0-kit a4); section 7, UC-08 (Fenn's w0-kit tests a4) |
+| decisions-leah-07: CLS 0.13 from the font swap | Section 6, the size-matched fallbacks (Nemi's w0-fonts a2); section 0, the value rule's exception; section 8, Leah's CLS check |
+
+**Revision 12: Nemi's w0-split a2 (report 6311fab) and Brennan's w0-data a2 review**
+
+| Source | Where it's answered |
+| --- | --- |
+| Nemi w0-split a2, deviation 1: "each stub used" fails every build | Section 6, the alarm, reworded to what the client's output holds; all three stubs stay |
+| w0-data-brennan-02: `ApiError.message` isn't always `body.message` | Section 3, `ApiError`: `message` is oRPC's, `bodyMessage` is the body's as sent, and which one each `UiError` kind carries |
+
+**Revision 13: Zero's w0-kit a4 review, Nemi's w0-fonts a2 (report 708acc6) and INT's decisions**
+
+| Source | Where it's answered |
+| --- | --- |
+| w0-kit-zero-03: R7's split fails while the static export stays | Section 4, R7: the index exports only `loadReasonDialog` (option (c)); section 7, UC-09 (Fenn, under the override) |
+| w0-kit-zero-04: UC-31 reads the confirm button mid-animation | Section 7, UC-31: sizes read after the open animation finishes (Fenn, under the override) |
+| Nemi w0-fonts a2: CLS 0.172 with the fallbacks; 0.13 with fonts aborted | Section 6, the fallbacks held until Leah's CLS study on main; section 8 |
+
+**Revision 15: Leah's cls-study a2 (report 726b606), Fenn's decisions-e2e a5 (report 73e235e) and INT's decisions**
+
+| Source | Where it's answered |
+| --- | --- |
+| cls-study-leah-01: the 0.13 is the desk-to-phone switch at hydration | Section 4, D16; section 5, "Phone"; section 7, UC-32 |
+| cls-study-leah-05: the measure passes when first paint comes after hydration | Section 6, "The measure": the 4x throttle, flagged entries counted, FCP and hydration recorded |
+| decisions-fenn-01: `data-hydrated` is set before the phone layout | Section 5, the hydration marker waits for the final layout; D16 removes the switch |
+| cls-study-leah-02 to 04: the fallback formula | Not decided (INT); section 6's fallbacks stay held |

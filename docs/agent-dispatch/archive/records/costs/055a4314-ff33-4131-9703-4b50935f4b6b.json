@@ -1,0 +1,24 @@
+{
+ "session_id": "055a4314-ff33-4131-9703-4b50935f4b6b",
+ "name": "FENN",
+ "branch": "main",
+ "cwd": "/home/jt0629/projects/avel-factory",
+ "first_at": "2026-11-07T09:54:02.462Z",
+ "last_at": "2026-11-07T09:56:36.757Z",
+ "updated_at": "2026-11-07T09:58:06Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 16,
+   "output": 2750,
+   "cache_write_5m": 0,
+   "cache_write_1h": 13170,
+   "cache_read": 91988,
+   "messages": 8
+  }
+ },
+ "cost_usd": 0.0986,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.0986
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}

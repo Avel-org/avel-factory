@@ -1,0 +1,24 @@
+{
+ "session_id": "827435b2-bb88-407b-9147-d682f34b4920",
+ "name": "FENN",
+ "branch": "crew/fenn",
+ "cwd": "/home/jt0629/projects/avel-wt/crew-fenn",
+ "first_at": "2026-11-07T08:56:55.754Z",
+ "last_at": "2026-11-07T08:59:07.086Z",
+ "updated_at": "2026-11-07T08:59:14Z",
+ "tokens": {
+  "claude-sonnet-5-5": {
+   "input": 44,
+   "output": 8873,
+   "cache_write_5m": 0,
+   "cache_write_1h": 39080,
+   "cache_read": 538832,
+   "messages": 22
+  }
+ },
+ "cost_usd": 0.3529,
+ "cost_usd_by_model": {
+  "claude-sonnet-5-5": 0.3529
+ },
+ "priced_with": "scripts/lib/prices.json (API-equivalent, not a subscription bill)"
+}
