@@ -39,18 +39,19 @@ describe("T-F2-04: navFromRoutes", () => {
     expect(none.tabs).toEqual([]);
   });
 
-  it("with T-F2's route tree gives the Decide group with Decisions at / and inbox, and nothing else", () => {
+  it("with T-F2's route tree, Decide holds Decisions at / with inbox, and Decisions is a tab", () => {
     const router = getRouter();
     const real = navFromRoutes(Object.values(router.routesById) as never);
-    expect(real.groups).toHaveLength(1);
-    expect(real.groups[0]?.label).toBe("Decide");
-    expect(real.groups[0]?.items).toHaveLength(1);
-    expect(real.groups[0]?.items[0]).toMatchObject({
-      label: "Decisions",
+    const decide = real.groups.find((g) => g.label === "Decide");
+    expect(decide, "a Decide group").toBeDefined();
+    expect(decide?.items.find((i) => i.label === "Decisions")).toMatchObject({
       href: "/",
       icon: "inbox",
     });
-    expect(real.tabs).toHaveLength(1);
-    expect(real.tabs[0]).toMatchObject({ label: "Decisions", href: "/", icon: "inbox" });
+    expect(real.groups.every((g) => g.items.length > 0)).toBe(true);
+    expect(real.tabs.find((t) => t.label === "Decisions")).toMatchObject({
+      href: "/",
+      icon: "inbox",
+    });
   });
 });

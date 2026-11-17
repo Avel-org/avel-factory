@@ -61,10 +61,6 @@ describe("T-F2-02: AppShell's server markup", () => {
     expect(tag).toMatch(/\sdata-tabbar(=|\s|>)/);
     expect(html).not.toContain("data-hydrated");
   });
-  it("has no data-rail and no data-focus yet (they come with T-F3)", () => {
-    expect(html).not.toContain("data-rail");
-    expect(html).not.toContain("data-focus");
-  });
   it("draws the progress line at 0", () => {
     expect(html).toMatch(
       /class="[^"]*lib-progress[^"]*"[^>]*scaleX\(0\)|scaleX\(0\)[^>]*lib-progress/,

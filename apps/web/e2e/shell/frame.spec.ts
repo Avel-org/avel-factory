@@ -8,7 +8,6 @@ import {
   hydrated,
   NARROW,
   PHONE,
-  SHELL,
 } from "./support";
 
 const waiting = `${WORLD_COUNT} waiting`;
@@ -56,7 +55,6 @@ test.describe("T-F2-06: at 1280x800, / is server-rendered inside the shell", () 
     const row = rail.getByRole("link", { name: /Decisions/ });
     await expect(row).toHaveAttribute("aria-current", "page");
     await expect(page.locator(".lib-tabbar")).toBeHidden();
-    await expect(page.getByRole("button", { name: /navigation/i })).toBeHidden();
 
     const header = page.locator(".lib-topbar");
     await expect(header.getByRole("navigation", { name: "Breadcrumb" })).toHaveText(
@@ -123,9 +121,9 @@ test.describe("T-F2-07: the frame at 900 and 390", () => {
       const bar = page.locator(".lib-tabbar");
       await expect(bar).toBeVisible();
       const tabs = bar.locator(".lib-tab");
-      await expect(tabs).toHaveCount(1);
-      await expect(tabs.first()).toContainText("Decisions");
-      await expect(tabs.first()).toHaveAttribute("aria-current", "page");
+      const decisions = tabs.filter({ hasText: "Decisions" });
+      await expect(decisions).toHaveCount(1);
+      await expect(decisions).toHaveAttribute("aria-current", "page");
       for (const tab of await tabs.all()) {
         const box = await tab.boundingBox();
         expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
@@ -152,17 +150,5 @@ test.describe("T-F2-07: the frame at 900 and 390", () => {
       await expectNoViolations(page);
       await attachShot(page, info, "shell-390");
     });
-  });
-});
-
-test.describe("T-F2-07: nothing the ticket leaves out", () => {
-  test.use({ viewport: PHONE });
-  test("no menu button, no More tab and no Project tab yet", async ({ page }) => {
-    await page.goto("/");
-    await expect(hydrated(page)).toBeAttached();
-    await expect(page.getByRole("button", { name: /navigation|more/i })).toHaveCount(0);
-    await expect(page.locator(".lib-tabbar").getByText(/^(Project|More|Release)$/)).toHaveCount(0);
-    await expect(page.locator(SHELL)).not.toHaveAttribute("data-rail", /.*/);
-    await expect(page.locator(SHELL)).not.toHaveAttribute("data-focus", /.*/);
   });
 });
