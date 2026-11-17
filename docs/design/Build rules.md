@@ -229,7 +229,7 @@ CI is green and the acceptance tests pass. Nothing else.
 - **H1. `main` is protected.** Changes arrive only by PR, squash-merged, with linear history. Nobody pushes to it directly.
 - **H2. Commits follow the AVEL Commit Convention v1** (v1.1 if you accept it).
   - The PR title is the squash commit's header, for example `feat(server/events): add the commit-ordered event seq`.
-  - Trailers include `Refs:` for the ticket and any CR.
+  - Trailers include `Refs:` for the ticket and any CR. Only a ticket's own commits name it in `Refs:`; a plan, CR or docs commit names tickets in its text instead. The kit counts a ticket as merged when its build report is on `main`, never from a `Refs:` line.
 - **H3. One ticket, one PR.** The PR description is the report:
   - what changed;
   - how it was checked;
