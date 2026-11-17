@@ -728,11 +728,20 @@ def running_markers():
     return live
 
 
+_MAIN_REPORTS = None
+
+
 def ticket_merged(tid):
-    out = git("log", "main", "--format=%B")
-    if out.returncode != 0:
-        return False
-    return bool(re.search(r"(?mi)^Refs:.*(?<![\w-])" + re.escape(tid) + r"(?![\w])", out.stdout))
+    """True when the ticket's build report is in main's tree. Only the ticket's own squash merge brings
+    it there: the builder commits it on the ticket branch. A `Refs:` line is no proof, since a plan,
+    CR or docs commit can name a ticket too (T-B5 looked merged on Nov 17 from a plan commit's Refs)."""
+    global _MAIN_REPORTS
+    if _MAIN_REPORTS is None:
+        out = git("ls-tree", "-r", "--name-only", "main", "--", "docs/agent-dispatch")
+        _MAIN_REPORTS = out.stdout.splitlines() if out.returncode == 0 else []
+    pat = re.compile(r"^docs/agent-dispatch/[^/]+/sprint-\d{2}/agent-[a-z0-9]+-" + re.escape(tid_l(tid))
+                     + r"-build-completion\.md$")
+    return any(pat.match(p) for p in _MAIN_REPORTS)
 
 
 LOCK_LINE = re.compile(r"^\s*[-*]\s*(?P<id>T-[A-Z]\d+)\s*:\s*(?P<paths>.*?)\s*@\s*(?P<sha>[0-9a-f]{7,40})"

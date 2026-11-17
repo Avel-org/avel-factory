@@ -222,6 +222,11 @@ class Flow(unittest.TestCase):
         self.assertEqual(self.state("agent-rigg-t-b1-review"), "done")
         self.assertIn("verdict pass", self.status())
 
+        # a plan or docs commit that names the ticket doesn't make it merged
+        r.run("git commit -q --allow-empty -m 'plan: T-B1 notes' -m 'Refs: T-B1'")
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "done")
+        self.assertEqual(self.state("agent-rigg-t-b2-test-unit"), "waiting")
+
         # 5. the lead squash-merges with Refs: T-B1, and T-B2's tests become ready
         r.run("git merge -q --squash t/B1-effect-spike && git commit -qm 'feat(server): spike 1' -m 'Refs: T-B1'")
         self.assertEqual(self.state("agent-soap-t-b1-build"), "merged")
