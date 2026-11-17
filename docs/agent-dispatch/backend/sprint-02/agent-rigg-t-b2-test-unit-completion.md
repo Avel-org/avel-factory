@@ -70,4 +70,4 @@ Each fails because the behaviour isn't built: no tsgo pin, no `@avel/db`, no `ch
 None.
 
 ## Lock line
-- T-B2: tools/repo-checks/test/dependencies.test.ts, tools/repo-checks/test/effect-check.test.ts, tools/repo-checks/test/fixtures/effect/** @ <fill after commit>
+- T-B2: tools/repo-checks/test/dependencies.test.ts, tools/repo-checks/test/effect-check.test.ts, tools/repo-checks/test/fixtures/effect/** @ 4c823b5 (the commit that holds the tests; a later commit changes only this report line)
