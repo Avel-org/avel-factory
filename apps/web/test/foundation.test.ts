@@ -23,9 +23,10 @@ describe("T-F1-04: tokens, shadcn init and cn()", () => {
     expect(config.aliases.components.startsWith("@/")).toBe(true);
   });
 
-  it("app.css imports tokens.css and maps shadcn's variables to --av-* values", () => {
+  it("app.css imports tokens.css, not tailwindcss itself, and maps shadcn's variables to --av-* values", () => {
     const css = readFileSync(join(web, "src", "styles", "app.css"), "utf8");
-    expect(css).toMatch(/@import\s+["']tailwindcss["']/);
+    // tokens.css already has `@import "tailwindcss"`: importing it here too would load it twice.
+    expect(css).not.toMatch(/@import\s+(?:url\(\s*)?["']?tailwindcss/);
     expect(css).toMatch(/@import\s+["']\.\/tokens\.css["']/);
     for (const name of ["background", "foreground", "primary", "border", "ring"]) {
       expect(css, `--${name}`).toMatch(new RegExp(`--${name}\\s*:[^;]*var\\(--av-`));

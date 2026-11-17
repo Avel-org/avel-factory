@@ -8,6 +8,7 @@ import { PREVIEW_PORT } from "./support/ports";
 
 // E16: at most 150 KB of JavaScript for the route, a warning over 130 KB. Measured on the
 // production build, gzipped, for what the server's HTML for / loads or preloads.
+// KB means 1024 bytes here, not 1000.
 const LIMIT = 150 * 1024;
 const WARN = 130 * 1024;
 
@@ -64,7 +65,7 @@ function startPreview(): Promise<ChildProcess> {
   });
 }
 
-test.describe("T-F1-10: the production build", () => {
+test.describe("T-F1-11: the production build", () => {
   test.describe.configure({ timeout: 300_000 });
   let preview: ChildProcess | undefined;
   let ready: Promise<void> | undefined;
