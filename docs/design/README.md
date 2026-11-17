@@ -96,6 +96,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-36 | OSA may merge clear and clean PRs: CI green, standard rigor, no P0 or P1, no conflicts, squash with `Refs:`; not guardrail, contract, schema or lockfile PRs | Accepted Nov 16, with conditions 7 and 8 (`CR-36 OSA may merge clear and clean PRs.md`) |
 | CR-37 | OSA and agents message each other, and messages can carry relayed instructions, logged outside git and listed in the report; interactive sessions get a turn limit | Accepted Nov 16 (`CR-37 OSA and agents message each other.md`); the turn-limit hook and `agent.sh` follow in a lead PR after the scaffold |
 | CR-38 | A contract error code for defects (500) | Proposed Nov 16, for the next cycle (`CR-38 A contract error code for defects.md`) |
+| CR-39 | Effect's language service on TypeScript 7: `@effect/tsgo` replaces `@effect/language-service`, run in the editor and CI | Proposed Nov 17, for the next cycle (`CR-39 Effect's language service on TypeScript 7.md`) |
 | CR-W1 to CR-W22 | The web's contract changes | Decided Nov 12 and built in contract 1.0.0 |
 | CR-W23 | TanStack DB in the control room | Proposed (frontend) |
 | CR-W24 | The Learning screens | Proposed (frontend); reads CR-28 |
@@ -132,6 +133,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 - CR-34: one upload inbox (11 decisions).
 - CR-35: the context layer (8 decisions).
 - CR-38: the contract's defect code (500), next cycle.
+- CR-39: `@effect/tsgo` for the language service, next cycle's lockfile change (E5).
 - The internal project for the live run, the host provider (Step 2), pricing for local models, the first real mission (Step 14).
 
 ## Retired files
