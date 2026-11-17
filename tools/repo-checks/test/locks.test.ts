@@ -2,6 +2,8 @@ import { describe, expect, test } from "vitest";
 import {
   BRANCH,
   builderCommit,
+  editLocks,
+  git,
   LOCKED_TEST,
   REPORT,
   runLocks,
@@ -102,6 +104,40 @@ describe("lock check (H6)", () => {
       const r = runLocks(dir, "feature/anything");
       expect(r.output).toContain("not a ticket PR");
       expect(r.status).toBe(0);
+    },
+    LONG,
+  );
+
+  test(
+    "a builder can't move its lock line's sha forward or drop a path from it",
+    () => {
+      // case 1: the line's sha is rewritten to a later commit, then the builder leaves the Territory
+      const moved = ticketRepo();
+      builderCommit(moved.dir, [TERRITORY_FILE]);
+      const later = git(moved.dir, "rev-parse", "HEAD");
+      editLocks(moved.dir, (t) => t.replace(moved.lockSha, later));
+      builderCommit(moved.dir, ["packages/db/src/schema.ts"]);
+      const r1 = runLocks(moved.dir, BRANCH);
+      expect(r1.status).toBe(1);
+      expect(r1.output).toContain("locks.md");
+
+      // case 2: a path is dropped from the line, then the builder edits it. The path is inside
+      // the Territory, so only the line (not the Territory) can hold it.
+      const guarded = "packages/server/src/http/guarded.ts";
+      const dropped = ticketRepo({ extraLocked: [guarded] });
+      editLocks(dropped.dir, (t) => t.replace(`, ${guarded}`, ""));
+      builderCommit(dropped.dir, [guarded]);
+      const r2 = runLocks(dropped.dir, BRANCH);
+      expect(r2.status).toBe(1);
+      expect(r2.output).toContain("locks.md");
+
+      // and the same drop of the checker's own test, then an edit to it
+      const test = ticketRepo({ extraLocked: [guarded] });
+      editLocks(test.dir, (t) => t.replace(`${LOCKED_TEST}, `, ""));
+      builderCommit(test.dir, [LOCKED_TEST]);
+      const r3 = runLocks(test.dir, BRANCH);
+      expect(r3.status).toBe(1);
+      expect(r3.output).toContain(LOCKED_TEST);
     },
     LONG,
   );

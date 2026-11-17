@@ -19,7 +19,10 @@ import { fileURLToPath } from "node:url";
 //           with no rendered build task doc, or no locks.md line, fails and the output names
 //           the ticket (T-B9), and says "locks.md" when it's the line that is missing.
 //   range   the builder's commits are `<lock sha>..HEAD`. A commit that changes only the sprint's
-//           locks.md is the lead's lock commit, not the builder's, and is not held to the Territory.
+//           locks.md is the lead's lock commit, not the builder's, and is not held to the Territory,
+//           but only if it adds lines and leaves every existing lock line unchanged. The ticket's
+//           line is read from the commit that first added it, never from a later edit. A commit
+//           that rewrites or drops a lock line fails, and the output names locks.md.
 //   globs   the Territory is the build task doc's "You may change" list, read as render.py's
 //           glob_regex reads it. The doc's own report path is in that list.
 //   locks   the locks.md line is `- T-B2: <path or glob>, <path or glob> @ <sha>`. A line inside
@@ -140,4 +143,10 @@ export function runLocks(dir: string, branch: string): RunResult {
 
 export function readRepoFile(path: string): string {
   return readFileSync(join(repoRoot, path), "utf8");
+}
+
+// A commit that changes only the sprint's locks.md, on the fixture's detached head.
+export function editLocks(dir: string, edit: (text: string) => string): void {
+  const path = `${SPRINT_DIR}/locks.md`;
+  commit(dir, "edit locks.md", { [path]: edit(readFileSync(join(dir, path), "utf8")) });
 }
