@@ -78,6 +78,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - The rounded canvas at 1024px and wider (S1): the page column takes margin var(--canvas-inset) except on the sidebar's side, border-radius var(--radius-dialog), background var(--av-page-bg) and box-shadow 0 0 0 1px var(--av-hairline). It's the scroller, with overscroll-behavior contain and scroll-padding-top 76px. Below 1024px the window scrolls
 - kit.css: every hover rule under @media (hover: hover) and (pointer: fine); widths as media queries only (no matchMedia, no measuring); keyboard focus rings only; nothing moves under prefers-reduced-motion
 - The tests check what T-F2 draws, never the absence of what T-F3 and T-F4 add to the same frame (the menu button, More, the sheet, data-rail, data-focus, the collapse toggle, badges) or of routes later tickets add. Count only what this ticket owns (for example the Decisions tab, not how many tabs the bar holds). A test pinning their absence would need a test-dispute on each of those tickets
+- app.css (T-F1's, needs-cr fix, Javaris option A, Nov 17): its @theme inline block must not redefine a name tokens.css already defines. Delete exactly these six lines from @theme inline: --color-foreground, --color-card, --color-popover, --color-accent, --color-destructive and --color-border. tokens.css already maps them to AVEL's values (--color-border is the light-mode cycle through --av-hairline; --color-accent turned --av-primary into the tint). Change nothing else in app.css: :root keeps every shadcn variable, which T-F1's locked foundation test requires
 - The document title stays '{last crumb} · AVEL', so / is still 'Decisions · AVEL'. T-F1's locked tests stay green: the h1, the count, the theme cookie, the axe check and the 150 KB budget
 
 ## 4. Tasks
@@ -139,6 +140,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - `apps/web/src/modules/system/**`
 - `apps/web/src/routes/**`
 - `apps/web/src/routeTree.gen.ts`
+- `apps/web/src/styles/app.css`
 
 **Never change, whatever the task says:**
 - `apps/web/package.json`
