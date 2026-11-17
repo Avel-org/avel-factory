@@ -162,6 +162,27 @@ class RenderChecks(unittest.TestCase):
         self.assertIn("never changed", out.stderr)  # packages/** is off limits to the frontend lane
 
 
+    def test_a_merged_ticket_in_another_lane_clashes_with_nothing(self):
+        # Nov 17: frontend sprint-03 couldn't render because backend sprint-02's merged T-B2 also built
+        # pnpm-lock.yaml. A ticket whose build report is on main can't run again.
+        back = example().replace('may_change = ["packages/server/src/http/**"',
+                                 'may_change = ["pnpm-lock.yaml", "packages/server/src/http/**"')
+        self.r.plan(back)
+        self.r.run("python3 scripts/render.py backend/sprint-01 && git add -A && git commit -qm 'render backend'")
+        front = example().replace('lane = "backend"', 'lane = "frontend"').replace("T-B", "T-F") \
+            .replace('role = "test-unit"', 'role = "test-e2e"').replace("packages/server/", "apps/web/") \
+            .replace('may_change = ["apps/web/src/http/**"', 'may_change = ["pnpm-lock.yaml", "apps/web/src/http/**"')
+        self.r.plan(front, lane="frontend")
+        out = self.r.run("python3 scripts/render.py --check frontend/sprint-01", check=False)
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        self.assertIn("could change the same files", out.stderr)
+        report = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b2-build-completion.md")
+        with open(report, "w") as f:
+            f.write("status: done\nticket: T-B2\n")
+        self.r.run("git add -A && git commit -qm 'T-B2 merged'")
+        out = self.r.run("python3 scripts/render.py --check frontend/sprint-01", check=False)
+        self.assertEqual(out.returncode, 0, out.stderr)
+
 class Flow(unittest.TestCase):
     """One ticket, end to end, through agent.sh with the fake claude."""
 
