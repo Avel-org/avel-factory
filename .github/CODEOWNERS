@@ -1,0 +1,26 @@
+# Every path is owned by the operator. "Require review from code owners" is on, so only he
+# merges the full-rigor areas (Build rules C4, G7) and the rule files (H6).
+* @Avel-org/operator
+
+# The full-rigor areas (C4)
+/packages/server/src/platform/auth/** @Avel-org/operator
+/packages/server/src/platform/db/** @Avel-org/operator
+/packages/server/src/platform/jobs/** @Avel-org/operator
+/packages/server/src/modules/events/** @Avel-org/operator
+/packages/server/src/modules/integrator/** @Avel-org/operator
+/packages/server/src/modules/runner/** @Avel-org/operator
+/packages/server/src/modules/harness/** @Avel-org/operator
+/packages/server/src/modules/compute/** @Avel-org/operator
+/packages/server/src/modules/metering/** @Avel-org/operator
+/packages/server/src/modules/gate/** @Avel-org/operator
+/packages/server/src/modules/delivery/** @Avel-org/operator
+
+# The rule files
+/.github/** @Avel-org/operator
+/scripts/agents/** @Avel-org/operator
+/scripts/render.py @Avel-org/operator
+/scripts/dispatch.sh @Avel-org/operator
+/scripts/agent.sh @Avel-org/operator
+/.agents/** @Avel-org/operator
+/.claude/** @Avel-org/operator
+/docs/design/Build\ rules.md @Avel-org/operator

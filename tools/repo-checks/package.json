@@ -1,0 +1,12 @@
+{
+  "name": "@avel/repo-checks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AVEL's repo checks: the lock check CI runs on ticket PRs (Build rules H6).",
+  "scripts": {
+    "check-locks": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/check-locks.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  }
+}

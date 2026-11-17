@@ -1,0 +1,34 @@
+# The lock check (Build rules H6): a ticket PR's builder commits stay inside the build task
+# doc's Territory and never touch a locked test. It needs the full history to read the commits
+# after the lock line's sha.
+name: Locks
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  locks:
+    name: lock check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @avel/repo-checks run check-locks
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
