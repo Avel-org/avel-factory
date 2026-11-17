@@ -18,7 +18,8 @@ import unittest
 
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FILES = ["scripts/render.py", "scripts/agent.sh", "scripts/dispatch.sh", "scripts/agents/lane.sh",
-         "scripts/agents/roster.json", "scripts/agents/limits.json", "docs/agent-dispatch/avel/example-plan.toml"]
+         "scripts/agents/roster.json", "scripts/agents/limits.json", "docs/agent-dispatch/avel/example-plan.toml",
+         "scripts/agents/kit.py", ".claude/settings.json", ".claude/agents/soap.md", ".claude/agents/rigg.md"]
 
 FAKE_CLAUDE = r'''#!/usr/bin/env bash
 # Fake claude: find the task doc from the "/dispatch <lane>/<sprint>/<doc>" argument (or the
@@ -261,6 +262,30 @@ class Flow(unittest.TestCase):
         wts = [l for l in r.run("git worktree list --porcelain").stdout.splitlines() if l.startswith("worktree ")]
         self.assertEqual(len(wts), 1, wts)
         self.assertTrue(r.run("git rev-parse --verify -q t/B1-effect-spike").stdout.strip())
+
+    def test_a_session_gets_the_kit_from_main_not_from_its_branch(self):
+        # Nov 17: Fenn's T-F5 tests a2 ran on a branch cut before #23 and had no SendMessage.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("git branch t/B1-effect-spike main && git checkout -q t/B1-effect-spike"
+              " && sed -i 's/^tools: .*/tools: Read/' .claude/agents/rigg.md && git commit -qam 'an older kit'"
+              " && git checkout -q main")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        with open(os.path.join(r.tmp, "last-claude-args")) as f:
+            args = f.read()
+        self.assertIn("SendMessage", args)
+        self.assertIn(f"{r.root}/scripts/hooks/session.py", open(args.split("--settings ", 1)[1].split()[0]).read())
+
+    def test_a_branch_with_an_older_task_doc_is_refused(self):
+        # Nov 17: a re-plan re-rendered T-F5 on main, but its branch still held attempt 1's task doc.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("git branch t/B1-effect-spike main")
+        r.plan(example().replace('notes = ["If the spike fails', 'notes = ["Re-planned.", "If the spike fails'))
+        r.run("python3 scripts/render.py backend/sprint-01 && git add -A && git commit -qm 're-plan on main'")
+        out = r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("merges main into t/B1-effect-spike", out.stderr)
 
     def test_the_lock_line_is_read_from_the_ticket_branch(self):
         # The lead commits the lock line on the ticket's branch, so a dispatcher on main must see it.
