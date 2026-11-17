@@ -129,7 +129,7 @@ CI is green and the acceptance tests pass. Nothing else.
   | Lead (planning or full-rigor review) | 60 | 45 minutes | $6 |
   | The whole build, per day | — | — | $75 |
 
-  These are starting values, set in `scripts/agents/limits.json`. Interactive sessions are capped by turns as well as time (CR-37) once its turn hook lands (`scripts/hooks/turns.py`, a lead PR after the scaffold); until then they're capped by time only. When the day's limit is reached, OSA starts nothing new and tells Javaris.
+  These are starting values, set in `scripts/agents/limits.json`. A builder's or checker's interactive session is capped by turns as well as time (CR-37): `scripts/agent.sh` sets the limit, and `scripts/hooks/turns.py` warns in the last 5 turns, then allows only the report, its commit and a message to OSA for 5 grace turns, then refuses everything. The lead row isn't enforced by the hook yet: how to cap a lead's long-running seat is Javaris's decision (lead kit PR, Nov 17). When the day's limit is reached, OSA starts nothing new and tells Javaris.
 - **D3. The startup routine,** every session, in order:
   1. Confirm the folder and branch.
   2. Read the task doc in full, then its Context in order: the identity file, `AGENTS.md`, this doc, the codebase analysis and the reading list.
@@ -195,7 +195,7 @@ CI is green and the acceptance tests pass. Nothing else.
 ## F. Tests
 
 - **F1. Acceptance tests come first,** written by the checker, and must fail on `main` before the build starts (B2).
-- **F2. Locked means locked.** After B2, the builder can't change those test files. If a test seems wrong, the builder reports `test-dispute`, the checker answers, and the lead decides. A disputed test is changed only by the checker, in its own commit.
+- **F2. Locked means locked.** After B2, the builder can't change those test files. If a test seems wrong, the builder reports `test-dispute`, the checker answers, and the lead decides. A disputed test is changed only by the checker, in its own commit. If the test was already locked, the lead then adds a second line for the ticket in `locks.md`, at the branch tip after the checker's commit, ending `(F2 relock)`; lines are only ever added, never edited. The lock check honours the relock once T-B5 (backend sprint-02) teaches it to; until then an F2 change after a lock means rebuilding the unpushed branch with the lock at the new tip, as T-B0's was.
 - **F3. No skipped or focused tests on `main`:** no `.skip`, `.only` or `todo` without a linked issue. CI refuses them.
 - **F4. Time and randomness are controlled:** `TestClock` and the `Clock`, `Ids` and `Random` services. A test never sleeps on the wall clock.
 - **F5. A flaky test is a bug.** Two different results on the same commit get an issue, and the test is quarantined only by its lead with Javaris's OK, listed in `docs/quarantine.md`. A quarantine lasts until the end of the step.

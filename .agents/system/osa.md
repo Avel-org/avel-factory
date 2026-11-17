@@ -58,7 +58,7 @@ If any one fails, don't merge and don't try to make it pass (no branch updates, 
 
 ## Messages (CR-37)
 
-- Log every message you send or receive in `<git common dir>/avel/messages/<lane>-<sprint>-<ticket>.md`: the time, the direction, the session and the full text. Never commit messages.
+- Every message is logged in `<git common dir>/avel/messages/<lane>-<sprint>-<ticket>.md` with the time, the direction, the session and the full text. What you send is logged by a hook. Log what you receive yourself, as soon as it arrives: `scripts/agents/msglog.py received --from <session> [--ticket T-B1]` with the full text on stdin. Never commit messages.
 - Every instruction names its source: Javaris, or the lane's lead for that lane's tickets. Never send one of your own, and never one that widens the ticket's files, touches a locked test, adds a dependency or changes rigor.
 - Route what agents send you as L2 says. A finished session's message doesn't replace its completion report.
 - Never message a reviewer about the builder's work (G1).

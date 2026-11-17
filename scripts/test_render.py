@@ -252,6 +252,61 @@ class Flow(unittest.TestCase):
             self.assertNotRegex(f.read(), r"(?m)^- T-B1:")  # main's copy has no line
         self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
 
+    def test_a_done_dispatch_runs_again_only_as_a_named_attempt(self):
+        # After a review asks for changes, the build's next attempt is the lead's call (CR-37 kit fixes).
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        self.assertEqual(self.state("agent-rigg-t-b1-test-unit"), "done")
+        out = r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("the lead's call", out.stderr)
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit 2")
+        self.assertIn("a2", r.run("python3 scripts/render.py --status backend/sprint-01").stdout)
+
+    def test_a_lock_line_with_spaces_between_paths_doesnt_lock(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        locks = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md")
+        with open(locks, "a") as f:
+            f.write("- T-B1: packages/server/test/a.test.ts packages/server/test/b.test.ts @ abc1234\n")
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting")
+        self.assertIn("separate the paths with commas", self.status())
+        with open(locks, "a") as f:
+            f.write("- T-B1: packages/server/test/a.test.ts, packages/server/test/b.test.ts @ abc1234\n")
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
+
+    def test_an_f2_relock_line_is_a_lock_line(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        with open(os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
+            f.write("- T-B1: packages/server/test/a.test.ts @ def5678 (F2 relock)\n")
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
+
+    def test_task_docs_ask_for_the_messages_received_section(self):
+        p = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
+        self.assertIn("Messages received", read(p).decode())
+
+    def test_a_package_keeps_the_renderer_it_was_rendered_with(self):
+        # A package rendered before this kit change still verifies, so work in flight isn't stopped.
+        r = self.r
+        r.run("python3 - <<'PY'\n"
+              "import os, sys\n"
+              "sys.path.insert(0, 'scripts')\n"
+              "import render\n"
+              "plan, _ = render.load_plan('backend', 'sprint-01', render.load_json('roster.json'))\n"
+              "files = render.render_package(plan, render.owned_paths([plan]), 'avel-render 1')\n"
+              "for name, body in files.items():\n"
+              "    open(os.path.join(render.folder('backend', 'sprint-01'), name), 'w').write(body)\n"
+              "PY")
+        r.run("git add -A && git commit -qm 'a v1 package'")
+        out = r.run("python3 scripts/render.py --verify backend/sprint-01")
+        self.assertIn("matches a fresh render", out.stdout)
+        p = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
+        self.assertNotIn("Messages received", read(p).decode())
+
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
