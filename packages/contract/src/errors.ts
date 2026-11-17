@@ -30,7 +30,7 @@ export const StaleVersionDetails = z.discriminatedUnion("field", [
 ]);
 export type StaleVersionDetails = z.infer<typeof StaleVersionDetails>;
 
-/** The codes every route can return: the generic seven, then the specific ones (D5). */
+/** The codes every route can return: the generic eight, then the specific ones (D5). */
 export const errorMap = {
   BAD_REQUEST: { status: 400, message: "Bad input" },
   UNAUTHORIZED: { status: 401, message: "Not signed in" },
@@ -44,6 +44,8 @@ export const errorMap = {
     message: "Rate limited",
     data: z.object({ retryAfterMs: z.int().check(z.minimum(0)) }),
   },
+  /** A defect: nothing from the cause reaches the body, so there are no details. */
+  INTERNAL_SERVER_ERROR: { status: 500, message: "Something went wrong" },
   STEP_UP_REQUIRED: { status: 403, message: "A credential action with no valid grant" },
   STALE_VERSION: {
     status: 409,

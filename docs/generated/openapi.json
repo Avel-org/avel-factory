@@ -1,7 +1,7 @@
 {
   "info": {
     "title": "AVEL API",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Generated from `@avel/contract` by `pnpm --filter @avel/docs generate`. Don't edit it by hand."
   },
   "openapi": "3.1.1",
@@ -4065,6 +4065,27 @@
           "message": {
             "type": "string",
             "default": "The same key, a different body"
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Matches the X-Request-Id header"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "requestId"
+        ]
+      },
+      "Error_INTERNAL_SERVER_ERROR": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "const": "INTERNAL_SERVER_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "default": "Something went wrong"
           },
           "requestId": {
             "type": "string",
@@ -27591,6 +27612,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -27731,6 +27762,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -27883,6 +27924,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -28062,6 +28113,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -28206,6 +28267,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -28336,6 +28407,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -28472,6 +28553,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -28602,6 +28693,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -28808,6 +28909,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -29048,6 +29159,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -29189,6 +29310,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -29447,6 +29578,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -29625,6 +29766,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       },
@@ -29796,6 +29947,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -29972,6 +30133,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       },
@@ -30134,6 +30305,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -30275,6 +30456,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -30447,6 +30638,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -30625,6 +30826,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -30831,6 +31042,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       },
@@ -30986,6 +31207,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -31127,6 +31358,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -31304,6 +31545,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -31461,6 +31712,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -31637,6 +31898,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -31805,6 +32076,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -31946,6 +32227,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -32114,6 +32405,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -32287,6 +32588,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -32452,6 +32763,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -32622,6 +32943,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -32763,6 +33094,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -32931,6 +33272,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -33118,6 +33469,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -33562,6 +33923,16 @@
               }
             }
           },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
           "503": {
             "description": "503",
             "content": {
@@ -33963,6 +34334,16 @@
               }
             }
           },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
           "503": {
             "description": "503",
             "content": {
@@ -34303,6 +34684,16 @@
               }
             }
           },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          },
           "503": {
             "description": "503",
             "content": {
@@ -34499,6 +34890,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       },
@@ -34656,6 +35057,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -34820,6 +35231,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -35076,6 +35497,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -35237,6 +35668,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -35410,6 +35851,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -35579,6 +36030,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -35744,6 +36205,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -35916,6 +36387,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -36093,6 +36574,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -36265,6 +36756,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -36420,6 +36921,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -36550,6 +37061,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -36789,6 +37310,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -36954,6 +37485,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -37095,6 +37636,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -37277,6 +37828,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -37427,6 +37988,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -37620,6 +38191,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -37808,6 +38389,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -37949,6 +38540,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -38126,6 +38727,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -38270,6 +38881,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -38411,6 +39032,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -38600,6 +39231,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -38832,6 +39473,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -39009,6 +39660,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -39178,6 +39839,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -39341,6 +40012,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -39517,6 +40198,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -39658,6 +40349,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -39861,6 +40562,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -40094,6 +40805,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -40331,6 +41052,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -40519,6 +41250,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -40697,6 +41438,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       },
@@ -40856,6 +41607,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -41037,6 +41798,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -41215,6 +41986,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -41375,6 +42156,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -41553,6 +42344,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -41769,6 +42570,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -41910,6 +42721,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -42089,6 +42910,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -42250,6 +43081,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -42428,6 +43269,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -42611,6 +43462,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -42752,6 +43613,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -42936,6 +43807,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -43114,6 +43995,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       },
@@ -43286,6 +44177,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -43427,6 +44328,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -43603,6 +44514,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -43744,6 +44665,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -43922,6 +44853,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -44111,6 +45052,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -44252,6 +45203,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -44425,6 +45386,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -44581,6 +45552,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -44722,6 +45703,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -45007,6 +45998,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -45180,6 +46181,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -45370,6 +46381,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -45548,6 +46569,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -45689,6 +46720,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -45867,6 +46908,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -46211,6 +47262,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -46460,6 +47521,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -46619,6 +47690,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -46864,6 +47945,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -47013,6 +48104,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -47207,6 +48308,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -47375,6 +48486,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -47569,6 +48690,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -47748,6 +48879,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -47914,6 +49055,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -48113,6 +49264,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       },
@@ -48294,6 +49455,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -48469,6 +49640,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -48610,6 +49791,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
@@ -48787,6 +49978,16 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
           }
         }
       }
@@ -48917,6 +50118,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error_TOO_MANY_REQUESTS"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_INTERNAL_SERVER_ERROR"
                 }
               }
             }
