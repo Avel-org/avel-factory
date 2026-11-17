@@ -112,6 +112,6 @@ describe("S1-2: the contract version", () => {
       version: string;
     };
     expect(C.CONTRACT_VERSION).toBe(pkg.version);
-    expect(C.CONTRACT_VERSION).toBe("1.0.0");
+    expect(C.CONTRACT_VERSION).toBe("1.0.1");
   });
 });
