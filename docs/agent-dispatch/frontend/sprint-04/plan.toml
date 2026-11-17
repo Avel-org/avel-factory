@@ -3,25 +3,24 @@
 # Check it:   scripts/render.py --check frontend/sprint-04
 # Render it:  scripts/render.py frontend/sprint-04   (after approval), then commit the folder.
 #
-# The shell's third ticket (C2 split of shell-layout.md rev 2): the rail's collapse and the
-# Decisions badge. Its own sprint because it changes kit/AppShell.tsx after T-F3 (Javaris,
-# Nov 17: no shared sprints).
+# The sidebar's second half (Javaris, Nov 17: the whole sidebar, from his prototype): the
+# Projects group. After T-F5 (sprint-03), because both change the shell's kit, nav and routes;
+# then T-F3 (sprint-05) and T-F4 (sprint-06).
 
 lane = "frontend"
 sprint = "sprint-04"
 step = 1
-title = "The shell's rail: collapse it and remember it, and see what's waiting"
+title = "The sidebar's Projects group: All projects and a row per project"
 goals = [
-  "On a desk the sidebar folds to an icon rail and stays that way after a reload, and the Decisions entry shows how many are waiting",
+  "The sidebar lists the open projects from the contract, each with its colour dot, and opens each one's page",
 ]
 done_when = [
-  "control-room-handoff README, port step 2 (Shell), third part: shell-layout.md rev 2 section 2's collapse and counts, and section 1's data-rail, passing flow-keyboard's ⌘B step",
-  "Every width passes the WCAG 2.2 AA check (E17) with the rail open and collapsed, / stays within 150 KB of JavaScript (E16), and nothing moves at hydration",
+  "shell-layout.md revision 3, section 4: the Projects group's head with its All link, and one row per open project from routes 19 and 8 (S6's label, the --cr-id dot), each linked to Progress",
+  "Every new page passes the WCAG 2.2 AA check (E17), and / stays within 150 KB of JavaScript (E16)",
 ]
 sources = [
-  { path = "docs/ui-contracts/shell-layout.md", why = "the shell's UI contract, rev 2: data-rail, the collapse, the badges and the cookies" },
-  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "the 64px icon rail, the tooltip, the remembered choice, the badge from route 52" },
-  { path = "docs/ui-reference/control-room-handoff/README.md", why = "port step 2 and flow-keyboard; focus, motion and targets" },
+  { path = "docs/ui-contracts/shell-layout.md", why = "revision 3 of section 4: the Projects group; section 2: project rows (S6's label, leaving out closed and cancelled), _shell's loader; S17" },
+  { path = "docs/ui-reference/control-room-prototype.html", why = "the prototype: the Projects group's head (.cr-nav-head), its rows (missionRow, missionDot, DOTS) and the --cr-id colours, read as data" },
 ]
 
 [commands]
@@ -31,32 +30,35 @@ lint = "pnpm lint"
 test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
 
 [analysis]
-stack = "TanStack Start on Vite 8, React 19, Tailwind v4, the oRPC client over @avel/contract, contract-mock in dev and tests. Vitest 5 (node, react-dom/server) and Playwright with axe-core. No jsdom"
-layout = "apps/web after T-F1 to T-F3: src/kit (AppShell with the sheet, Icon, kit.css), src/modules/system/nav.ts, src/routes/_shell.tsx with / at routes/_shell/index.tsx, src/home (loadHome, HomeView), src/data/client.ts, src/styles. T-F1's to T-F3's locked tests stay on main and must keep passing"
+stack = "TanStack Start on Vite 8, React 19, Tailwind v4, the oRPC client over @avel/contract, contract-mock in dev and tests (routes 8 and 19 with the sample world's missions and clients). Vitest 5 (node, react-dom/server) and Playwright with axe-core. No jsdom"
+layout = "apps/web after T-F1, T-F2 and T-F5: src/kit (AppShell, ScreenHeader, WidgetState, Icon, kit.css), src/modules/system/nav.ts, src/routes/_shell.tsx and its pages, src/home, src/data/client.ts (route 52 only, narrowed for the budget), src/styles. Earlier tickets' locked tests stay on main and must keep passing"
 conventions = [
   "AGENTS.md and Build rules E4: strict TypeScript, Biome with no warnings, no console.log",
-  "E15: no money, no '$'",
-  "shell-layout.md section 0: nothing moves at hydration, every width is a media query, preferences are cookies the server reads, nothing is measured until the user acts",
+  "E15: no money, no '$'; client names and package keys are plain text, never HTML",
+  "shell-layout.md section 0: nothing moves at hydration, every width is a media query",
 ]
 notes = [
-  "Still out of the shell: project rows, their badges and avel-project (routes 19 and 8), the pages, sign-in, the live footer (S9), the highlight's glide (S4 needs two routes) and focus mode (waits for Canon, E8)",
+  "Reading the prototype: a bundler page, never run. Extract the JSON string in <script type=\"__bundler/template\"> as data (T-F5's plan shows one way) and read NAV, PAGES, missionRow, missionDot and DOTS, and the --cr-id rules",
+  "Out of T-F6: New project and its + link (no /missions/new route yet, S17), project badges, Step N of 5 (S7), project page trees, the Project tab and avel-project, the real All projects and Progress content",
 ]
 
 [[ticket]]
-id = "T-F4"
-slug = "shell-rail"
-title = "The shell's rail: collapse with its button or ⌘B, remembered in avel-rail, and the Decisions badge"
-goal = "On a desk the sidebar folds to a 64px icon rail with its button, ⌘B or Ctrl+B, shows each name in a tooltip, and stays folded after a reload; the Decisions entry and tab show how many decisions are waiting."
+id = "T-F6"
+slug = "sidebar-projects"
+title = "The sidebar's Projects group: the All link, project rows from routes 19 and 8, and their pages"
+goal = "The sidebar's Projects group lists every open project as '{client} · {package}' with its colour dot, and its All link and each row open their page."
 refs = [
-  "shell-layout.md rev 2, section 1 (data-rail on the AppShell element) and section 2 (Collapsed, the counts, _shell's loader and its cookies)",
-  "control-room-handoff README, port step 2, flow-keyboard",
+  "shell-layout.md revision 3, section 4; section 2's project rows and S6; S17",
+  "control-room-prototype.html: NAV's projects group, .cr-nav-head, missionRow, missionDot, DOTS, PAGES.projects and PAGES.progress",
 ]
-depends_on = ["T-F3"]
+depends_on = ["T-F5"]
 may_change = [
   "apps/web/src/kit/**",
   "apps/web/src/modules/system/**",
   "apps/web/src/routes/**",
   "apps/web/src/routeTree.gen.ts",
+  "apps/web/src/styles/project-identity.css",
+  "apps/web/src/styles/app.css",
 ]
 must_not_change = [
   "apps/web/package.json",
@@ -81,14 +83,17 @@ must_not_change = [
   "apps/web/e2e/shell/**",
   "apps/web/test/shell-sheet/**",
   "apps/web/e2e/shell-sheet/**",
+  "apps/web/test/shell-rail/**",
+  "apps/web/e2e/shell-rail/**",
+  "apps/web/test/sidebar-pages/**",
+  "apps/web/e2e/sidebar-pages/**",
 ]
 context = [
-  { path = "docs/ui-contracts/shell-layout.md", why = "section 1: data-rail=\"collapsed\" on the AppShell element in the server's HTML; section 2: Collapsed (the DL's .lib-rail[data-collapsed] rules, ⌘B and Ctrl+B, the toggle, the 240ms transition only on a toggle, the tooltip from the item's rect), Counts (Decisions: route 52's loaded rows, then + while nextCursor isn't null, labelled '{text} waiting'; no badge for 0, no data or an error), _shell's loader and cookies; section 3: AppShellProps' collapsed and onCollapsedChange; S10" },
-  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "the 64px icon rail, the tooltip to the right, the remembered choice, the amber count badge" },
-  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the toggle (.lib-rail-toggle: aria-label 'Collapse sidebar' or 'Expand sidebar', aria-expanded, the panel-left icon), .lib-rail[data-collapsed], .lib-rail-tip and .lib-tip, .lib-nav-badge and the tab badge (final cascade) for kit.css, and the panel-left Lucide node" },
-  { path = "apps/web/src/kit/AppShell.tsx", why = "AppShell after T-F3, which gains collapsed, onCollapsedChange, the toggle, the tooltip and badges" },
-  { path = "apps/web/src/routes/_shell.tsx", why = "the layout route, whose loader gains the avel-rail cookie and route 52" },
-  { path = "apps/web/src/home/load-home.ts", why = "loadHome(client): the badge's count and more come from it, unchanged" },
+  { path = "docs/ui-contracts/shell-layout.md", why = "revision 3 under section 4; section 2: project rows (route 19's first page in order, leaving out closed and cancelled; S6's label: '{client name} · {package}', the package key read as capitalised words, the fallbacks 'Project' and the client or package alone), _shell's loader (a failure is swallowed and that part isn't drawn)" },
+  { path = "docs/ui-reference/control-room-prototype.html", why = "the Projects group's head (label, the All link to /missions with aria-current on All projects), the row's dot (DOTS by the project's place in the list), the --cr-id-1 to --cr-id-5 colours for light and night, and PAGES.projects' and PAGES.progress' eyebrow, title and lead" },
+  { path = "packages/contract/src/routes/missions.ts", why = "route 19, missions.list: a Page of MissionListRowDto (state, clientId, package)" },
+  { path = "packages/contract/src/routes/clients.ts", why = "route 8, clients.list: a Page of ClientDto (the client's name)" },
+  { path = "packages/contract-mock/src/mock.ts", why = "createMock({ world: true }) serves routes 19 and 8 with the sample world; failNext(19) and failNext(8) for the failure cases" },
 ]
 verify = [
   "pnpm --filter @avel/web exec vitest run",
@@ -99,28 +104,26 @@ verify = [
   "pnpm lint",
 ]
 notes = [
-  "No new dependency. The panel-left icon comes from the DL's Lucide nodes into Icon.tsx, as before. The badge reuses loadHome and createClient as they are: src/home and src/data don't change",
-  "The seams the tests use: AppShell gains collapsed: boolean and onCollapsedChange(next: boolean) (section 3), and ShellItem's badge?: { text, label } and the tabs' badge. apps/web/src/modules/system/badge.ts exports decisionsBadge(state: HomeState): { text, label } | undefined: ready gives text '{count}' or '{count}+' with label '{text} waiting'; empty and error give undefined",
-  "_shell's loader (ssr: true) reads the avel-rail cookie on the server (collapsed, else open) and awaits route 52 through loadHome. A failure gives no badge and is swallowed: the shell still draws. Route 52 is read by _shell and by / on the same load; that's accepted until the data core's cache",
-  "In the server's HTML, the AppShell element has data-rail=\"collapsed\" when avel-rail=collapsed, and the rail draws collapsed then, so a reload paints it folded with nothing moving. The client writes avel-rail on each toggle with path=/; max-age=31536000; samesite=lax",
-  "The toggle: beside the brand in the rail (1024px and wider), .lib-rail-toggle with aria-label 'Collapse sidebar' when open and 'Expand sidebar' when collapsed, aria-expanded true when open, and the panel-left icon. ⌘B on macOS and Ctrl+B elsewhere toggle it too, at 1024px and wider, and not while a text field has focus. No other shortcut (S14). The sheet keeps its 'Close navigation' button in the toggle's place",
-  "Collapsed: icons only (64px rail), each row's name in .lib-rail-tip to the right, positioned from that row's rect when it's hovered or focused, and gone on leave or blur. The row keeps its accessible name. The 240ms grid transition runs only on a toggle, never on load, and not under prefers-reduced-motion",
-  "The Decisions badge on its nav row (.lib-nav-badge) and on its tab: the text from decisionsBadge, the label '{text} waiting' on the nav row, and on the tab the sr-only word 'waiting' after the number (S10). No badge for 0, no data or an error",
-  "The tests check what this ticket draws, never the absence of what later tickets add or of routes later tickets add. Count only what this ticket owns. A test pinning their absence would need a test-dispute on each later ticket",
-  "If a locked T-F1, T-F2 or T-F3 test conflicts with shell-layout.md here (for example one that requires no data-rail, or a badge-free row), stop with test-dispute (F2); don't work around it",
+  "No new dependency. src/data stays as it is: the shell reads routes 19 and 8 through a server function (createServerFn) in src/modules/system, so their schemas never ship to the browser and the 150 KB budget holds. If the budget breaks anyway, stop and report; don't trim other code to fit",
+  "The seams the tests use: apps/web/src/modules/system/projects.ts exports projectRows(missions, clients): { id, label, href, dot }[] — open projects only (not closed or cancelled), in route 19's order, label by S6, href /missions/{id}, dot 'var(--cr-id-N)' with N the row's place counted from 1, repeating after 5 — and projectLabel(mission, clients) for S6 alone",
+  "_shell's loader reads routes 19 (the first page) and 8 on the server. A failure of either is swallowed: the Projects group still draws its head, with no rows. The rows come after the head in the Projects group, which sits between the main group and the Factory group",
+  "The Projects group's head: the 'Projects' label and an 'All' link to /missions, aria-current=\"page\" on /missions. No + link: /missions/new doesn't exist (S17). A row: the dot (aria-hidden), the label as plain text, linked to Progress, aria-current=\"page\" on that project's page.",
+  "apps/web/src/styles/project-identity.css holds the prototype's --cr-id-1 to --cr-id-5 rules for light and night, word for word; app.css imports it after tokens.css and changes nothing else. tokens.css is untouched",
+  "/missions (All projects): ScreenHeader with the prototype's eyebrow 'Projects', title 'All projects' and lead, then WidgetState 'All projects isn't built yet' (the world has projects, so the prototype's 'No projects yet' would be false). /missions/$missionId (Progress): eyebrow 'Project', the S6 label as title and crumb, the prototype's lead, then WidgetState 'Progress isn't built yet'; an id not in route 19's first page shows WidgetState 'Not found' with a link back to All projects. Titles '{title} · AVEL'",
+  "The tests check what this ticket draws, never the absence of what later tickets add (New project, badges, project page trees, the Project tab, T-F3's sheet and More, T-F4's collapse). Count only what this ticket owns",
+  "If a locked T-F1, T-F2 or T-F5 test conflicts with shell-layout.md revision 3, stop with test-dispute (F2); don't work around it",
 ]
 
 [ticket.tests]
 role = "test-e2e"
-paths = ["apps/web/test/shell-rail/**", "apps/web/e2e/shell-rail/**"]
+paths = ["apps/web/test/sidebar-projects/**", "apps/web/e2e/sidebar-projects/**"]
 behaviours = [
-  "unit: decisionsBadge gives '{count}' and '{count}+' with the label '{text} waiting' for ready, and nothing for empty or error",
-  "unit: AppShell in renderToString with collapsed = true has data-rail=\"collapsed\" and the toggle 'Expand sidebar' with aria-expanded=\"false\"; with collapsed = false, no data-rail and 'Collapse sidebar' with aria-expanded=\"true\"",
-  "unit: AppShell draws a nav badge's text with its label, and a tab badge with the sr-only 'waiting'; no badge element when an item has none",
-  "unit: kit.css, read as text: the collapsed rail at 64px under [data-rail=\"collapsed\"], the transition only under a toggling state and off under prefers-reduced-motion, and no :hover outside @media (hover: hover) and (pointer: fine)",
-  "e2e: at 1280x800 with no cookie, the rail is open; the toggle collapses it, writes avel-rail=collapsed, and after a reload the server's HTML has data-rail=\"collapsed\" and the rail's and h1's boxes don't move at hydration",
-  "e2e: at 1280x800, Control+B (and Meta+B) toggles the rail and its aria-expanded, but not while focus is in a text field; the key does nothing at 900x800",
-  "e2e: collapsed at 1280x800, hovering and focusing the Decisions row shows a tooltip reading 'Decisions' beside it, and leaving or blurring hides it",
-  "e2e: under AVEL_API=mock the Decisions row and tab show the world's count in the server's HTML, with the row's accessible text '{count} waiting'; on the dev server with no mock, the shell draws with no badge and the page shows its error state",
-  "e2e: WCAG 2.2 AA with no violation at 1280 with the rail open and collapsed, and at 390 with the badge, in light and night, and no '$' in the page's text",
+  "unit: projectLabel follows S6: '{client} · {Package words}', the client alone with no package, the package alone with no client found, 'Project' with neither, and an unknown package key as it is",
+  "unit: projectRows leaves out closed and cancelled projects, keeps route 19's order, links each to /missions/{id}, and gives dots var(--cr-id-1) to var(--cr-id-5) by place, the sixth open project getting var(--cr-id-1) again",
+  "unit: project-identity.css, read as text, defines --cr-id-1 to --cr-id-5 for light and for night, and app.css imports it after tokens.css",
+  "e2e: under AVEL_API=mock at 1280x800, the server's HTML for / shows the Projects group's head with its All link, then one row per open world project in route 19's order, each with the S6 label and a dot in its --cr-id colour",
+  "e2e: All goes to /missions with All projects' h1 and the link aria-current; a project row goes to its Progress page with the S6 label as h1 and the row aria-current; both are client navigations",
+  "e2e: /missions/<an unknown id> shows Not found with a link back to All projects",
+  "e2e: on the dev server with no mock, the Projects group shows its head and no rows, and the rest of the shell still draws",
+  "e2e: WCAG 2.2 AA with no violation on /, /missions and a Progress page at 1280 and 390, in light and night, and no '$' in any page's text",
 ]

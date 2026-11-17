@@ -1,4 +1,4 @@
-# DISPATCH: frontend/sprint-03: The shell's sheet: the menu button and More
+# DISPATCH: frontend/sprint-03: The sidebar's pages: Live, Business, Clients, Library, Agents and Settings
 
 <!-- Rendered by scripts/render.py from plan.toml. Never edit this file. -->
 
@@ -6,18 +6,18 @@ Lead: Zero · builder: Fantem · checker: Fenn · Step 1
 
 ## Goals
 
-- Below 1024px the whole sidebar is one tap away: the header's menu button on a tablet, the More tab on a phone
+- Every entry in the sidebar's main and Factory groups opens its page, titled as in the prototype
 
 ## Done when
 
-- control-room-handoff README, port step 2 (Shell), second part: shell-layout.md rev 2 section 1's sheet, and section 2's tab bar More, passing flow-sheets' steps
-- Every width passes the WCAG 2.2 AA check (E17) with the sheet open and closed, and / stays within 150 KB of JavaScript (E16)
+- shell-layout.md revision 3, section 4: the unlabelled main group and the small Factory group, each entry with its placeholder page
+- Every new page passes the WCAG 2.2 AA check (E17), carries no money (E15), and / stays within 150 KB of JavaScript (E16)
 
 ## Tickets
 
 | Ticket | Title | Rigor | Branch | Depends on |
 | --- | --- | --- | --- | --- |
-| T-F3 | The shell's sheet: the menu button and the More tab | standard | `t/F3-shell-sheet` | T-F2 |
+| T-F5 | The sidebar's main and Factory groups, with placeholder pages from the prototype | standard | `t/F5-sidebar-pages` | T-F2 |
 
 ## Dispatches
 
@@ -25,21 +25,21 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 
 | Task doc | Agent | Kind | Model |
 | --- | --- | --- | --- |
-| `agent-fenn-t-f3-test-e2e.md` | Fenn | tests | sonnet |
-| `agent-fantem-t-f3-build.md` | Fantem | build | sonnet |
-| `agent-fenn-t-f3-review.md` | Fenn | review | sonnet |
+| `agent-fenn-t-f5-test-e2e.md` | Fenn | tests | sonnet |
+| `agent-fantem-t-f5-build.md` | Fantem | build | sonnet |
+| `agent-fenn-t-f5-review.md` | Fenn | review | sonnet |
 
 ## Territory map
 
 | Ticket | Builds | Tests |
 | --- | --- | --- |
-| T-F3 | `apps/web/src/kit/**` | `apps/web/test/shell-sheet/**`, `apps/web/e2e/shell-sheet/**` |
+| T-F5 | `apps/web/src/kit/**`, `apps/web/src/modules/system/**`, `apps/web/src/routes/**`, `apps/web/src/routeTree.gen.ts` | `apps/web/test/sidebar-pages/**`, `apps/web/e2e/sidebar-pages/**`, `apps/web/test/shell/nav.test.ts` |
 
 ## Merge order
 
 One ticket at a time, squash-merged with `Refs: <ticket>` (H1 to H3):
 
-1. T-F3
+1. T-F5
 
 ## Commands
 

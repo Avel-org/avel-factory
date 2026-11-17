@@ -1,0 +1,125 @@
+# frontend/sprint-05: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-05
+# Render it:  scripts/render.py frontend/sprint-05   (after approval), then commit the folder.
+#
+# The shell's second ticket (C2 split of shell-layout.md rev 2): the sheet (focus mode waits for Canon, E8).
+# T-F2 drew the frame and T-F5 and T-F6 the full sidebar (Javaris, Nov 17: the sidebar first);
+# T-F4 (sprint-06) adds the rail's collapse, ⌘B, the avel-rail cookie
+# and the Decisions badge. Each is its own sprint while render.py refuses two tickets in one
+# sprint that share a file, even in dependency order (they all change kit/AppShell.tsx).
+
+lane = "frontend"
+sprint = "sprint-05"
+step = 1
+title = "The shell's sheet: the menu button and More"
+goals = [
+  "Below 1024px the whole sidebar is one tap away: the header's menu button on a tablet, the More tab on a phone",
+]
+done_when = [
+  "control-room-handoff README, port step 2 (Shell), second part: shell-layout.md rev 2 section 1's sheet, and section 2's tab bar More, passing flow-sheets' steps",
+  "Every width passes the WCAG 2.2 AA check (E17) with the sheet open and closed, and / stays within 150 KB of JavaScript (E16)",
+]
+sources = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "the shell's UI contract, rev 2: section 1's frame table, the sheet; S17" },
+  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "the sheet: from the left, 320px or 88%, over a dimmed page, with a close button" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "port step 2 and flow-sheets; focus, motion and phone targets" },
+]
+
+[commands]
+build = "pnpm --filter @avel/web exec vite build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "TanStack Start on Vite 8, React 19, Tailwind v4, the oRPC client over @avel/contract, contract-mock in dev and tests. Vitest 5 (node, react-dom/server) and Playwright with axe-core. No jsdom"
+layout = "apps/web after T-F1, T-F2, T-F5 and T-F6: src/kit (AppShell, ScreenHeader, WidgetState, Icon, kit.css), src/modules/system (nav.ts, projects.ts), the sidebar's pages and the Projects group, src/routes/_shell.tsx with / at routes/_shell/index.tsx, src/home, src/data/client.ts, src/styles. T-F1's and T-F2's locked tests stay on main and must keep passing"
+conventions = [
+  "AGENTS.md and Build rules E4: strict TypeScript, Biome with no warnings, no console.log",
+  "E15: no money, no '$'",
+  "shell-layout.md section 0: nothing moves at hydration, every width is a media query, nothing is measured until the user acts",
+]
+notes = [
+  "Out of T-F3, for T-F4: the rail's collapse toggle, ⌘B and Ctrl+B, the collapsed tooltip, data-rail and the avel-rail cookie, and the Decisions badge (route 52 in _shell's loader)",
+  "Still out: project rows and avel-project, the pages, sign-in, the live footer (S9), the highlight's glide (S4 needs two routes), and focus mode (E8, Javaris Nov 17: it comes with Canon onboarding, port step 6, the first route that turns it on)",
+]
+
+[[ticket]]
+id = "T-F3"
+slug = "shell-sheet"
+title = "The shell's sheet: the menu button and the More tab"
+goal = "On a tablet the header's menu button, and on a phone the More tab, open the whole sidebar as a sheet over a dimmed page, which closes with Escape, the scrim, its close button or any link, and hands focus back."
+refs = [
+  "shell-layout.md rev 2, section 1 (the frame table and the sheet) and section 2 (the tab bar's More); S17",
+  "control-room-handoff README, port step 2, flow-sheets",
+]
+depends_on = ["T-F6"]
+may_change = ["apps/web/src/kit/**"]
+must_not_change = [
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/styles/tokens.css",
+  "apps/web/src/routes/**",
+  "apps/web/src/modules/**",
+  "apps/web/src/home/**",
+  "apps/web/src/data/**",
+  "apps/web/test/foundation.test.ts",
+  "apps/web/test/gitignore.test.ts",
+  "apps/web/test/home-loader.test.ts",
+  "apps/web/test/home-loader-states.test.ts",
+  "apps/web/test/home-view.test.ts",
+  "apps/web/test/hygiene.test.ts",
+  "apps/web/e2e/budget.spec.ts",
+  "apps/web/e2e/home.spec.ts",
+  "apps/web/e2e/states.spec.ts",
+  "apps/web/e2e/support/page.ts",
+  "apps/web/e2e/support/ports.ts",
+  "apps/web/vitest.config.ts",
+  "apps/web/playwright.config.ts",
+  "apps/web/test/shell/**",
+  "apps/web/e2e/shell/**",
+  "apps/web/test/sidebar-pages/**",
+  "apps/web/e2e/sidebar-pages/**",
+  "apps/web/test/sidebar-projects/**",
+  "apps/web/e2e/sidebar-projects/**",
+]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "section 1: the frame table (menu button 761 to 1023px, More at 760px and narrower), the sheet's rules; section 2: More is a button that opens the sheet" },
+  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "the sheet from the left, 320px or 88% of a narrow screen, over a dimmed page, with a close button" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the DL's sheet, scrim, .lib-rail-close and menu button rules (final cascade) for kit.css, and the Lucide nodes for menu, x and more-horizontal in its icon registry" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "focus rings for the keyboard only, motion off under reduced motion, 44px primary targets" },
+  { path = "apps/web/src/kit/AppShell.tsx", why = "AppShell after T-F6, which gains the menu button, More and the sheet" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm --filter @avel/web exec tsc -p tsconfig.json --noEmit",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "No new dependency, and no dialog library: the sheet, its focus trap and its focus return are the kit's own code (useDialogFocus in apps/web/src/kit). New icons (menu, x, more-horizontal) come from the DL's Lucide nodes into Icon.tsx, as T-F2's did",
+  "The seams the tests use: apps/web/src/kit/AppShell.tsx draws the sheet as a dialog with aria-modal=\"true\" and aria-label=\"Navigation\", inert and hidden while closed. The sheet holds the same brand and nav \"Main\" as the rail, with .lib-rail-close's 'Close navigation' button where the collapse toggle would be",
+  "The menu button: in the header, labelled 'Open navigation', with aria-expanded and aria-controls naming the sheet; shown by kit.css alone from 761 to 1023px. Not drawn in the rail's place on a desk",
+  "More: the tab bar's last tab, a button (not a link) labelled 'More', with aria-expanded, at least 52px tall like the other tabs. It opens the same sheet. S17 is now met for More, so the tab bar is the route tabs then More",
+  "Opening focuses the sheet's close button and traps Tab and Shift+Tab inside. Escape, a click on the scrim, the close button and any link in the sheet close it, and focus returns to whichever button opened it. The page behind is inert while it's open. No scroll jump on open or close",
+  "Motion: the sheet slides in from the left and the scrim fades, with the DL's durations and easing; under prefers-reduced-motion neither moves. Nothing in the server's HTML changes, so nothing moves at hydration",
+  "The tests check what this ticket draws, never the absence of what T-F4 adds (the collapse toggle, data-rail, badges) or of routes later tickets add. Count only what this ticket owns. A test pinning their absence would need a test-dispute on each later ticket",
+  "If a locked T-F1, T-F2, T-F5 or T-F6 test conflicts with shell-layout.md's sheet or More (for example a test that fixes the tab bar to one tab), stop with test-dispute (F2); don't work around it",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/test/shell-sheet/**", "apps/web/e2e/shell-sheet/**"]
+behaviours = [
+  "unit: AppShell in renderToString draws the sheet closed: role=dialog with aria-modal and aria-label 'Navigation', inert, the brand, nav \"Main\" and the 'Close navigation' button",
+  "unit: the menu button 'Open navigation' and the More tab are buttons with aria-expanded=\"false\" and aria-controls naming the sheet; More comes after the route tabs",
+  "unit: kit.css, read as text: the menu button shows only from 761 to 1023px, the sheet and scrim have a reduced-motion rule, and no :hover outside @media (hover: hover) and (pointer: fine)",
+  "e2e: at 900x800, 'Open navigation' opens the sheet: aria-expanded true, the dialog visible, focus on 'Close navigation', and Tab and Shift+Tab stay inside",
+  "e2e: at 900x800, each of Escape, a click on the scrim, 'Close navigation' and the Decisions link closes the sheet, sets aria-expanded false and returns focus to 'Open navigation'",
+  "e2e: at 390x844, More opens the same sheet, Escape closes it, and focus returns to More; More is at least 44px tall",
+  "e2e: at 1280x800 there is no menu button and no More, and the rail is unchanged",
+  "e2e: WCAG 2.2 AA with no violation at 900 and 390 with the sheet open and closed, in light and night, and no '$' in the page's text",
+]
