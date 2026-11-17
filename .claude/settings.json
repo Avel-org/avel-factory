@@ -25,7 +25,16 @@
       "Bash(wc:*)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "WebFetch(domain:registry.npmjs.org)"
+      "WebFetch(domain:registry.npmjs.org)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh repo view:*)"
     ],
     "deny": [
       "Bash(git push:*)",
@@ -34,13 +43,18 @@
       "Bash(git reset --hard:*)",
       "Bash(git checkout main:*)",
       "Bash(git switch main:*)",
-      "Bash(gh:*)",
       "Bash(curl:*)",
       "Bash(wget:*)",
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(**/.env)",
-      "Read(**/.env.*)"
+      "Read(**/.env.*)",
+      "Bash(gh repo edit:*)",
+      "Bash(gh repo delete:*)",
+      "Bash(gh secret:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh pr merge --admin:*)",
+      "Bash(gh api:*)"
     ]
   },
   "hooks": {
