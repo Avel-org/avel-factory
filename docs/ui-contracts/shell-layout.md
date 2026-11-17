@@ -169,6 +169,7 @@ Each page is `ScreenHeader`, its content, and then `WidgetState` `empty` (with n
 - **S13.** Progress at `/missions/$missionId` (DL), not FM's index redirect.
 - **S14.** No command palette (`Fme`, Jump to, its keys) and no header switches: Theme is on Settings only (Int).
 - **S16.** No Depth setting or cookie: always glass. Theme reads `Light` and `Dark` (Int).
+- **S17.** A tab, like a nav entry, is drawn only once its route exists: Project waits for `/missions`, as Release waits for its page (S8), and More waits for the sheet (Zero, 2026-11-17; frontend sprint-02, T-F2).
 - **S15.** Product labels for DL's library ones: `nav "Main"`, and section 5's leads (Int).
 
 ## 8. Budget

@@ -1,0 +1,127 @@
+# frontend/sprint-02: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-02
+# Render it:  scripts/render.py frontend/sprint-02   (after approval), then commit the folder.
+#
+# Javaris (Nov 17) asked for the shell in this cycle. It's two tickets (C2): T-F2 draws the
+# frame, and T-F3 (planned next) adds the sheet, the collapse and the badge. T-F2 sits in its
+# own sprint because it moves T-F1's files, and render.py refuses two tickets in one sprint that
+# share a file, even when one depends on the other. T-F2 starts once T-F1 merges.
+
+lane = "frontend"
+sprint = "sprint-02"
+step = 1
+title = "The shell's frame: rail, header and tab bar around Decisions"
+goals = [
+  "The control room opens inside its shell at every width: the sidebar on a desk, the header on a tablet, the tab bar on a phone",
+]
+done_when = [
+  "control-room-handoff README, port step 2 (Shell), first half: the frame, the rail, the header and the tab bar from shell-layout.md rev 2 sections 1, 2 and 4, for the routes that exist",
+  "Every width passes the WCAG 2.2 AA check (E17), / stays within 150 KB of JavaScript (E16), and nothing moves at hydration",
+]
+sources = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "the shell's UI contract, rev 2: the frame, the parts, the nav model" },
+  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "what the shell is for, and what the app drops from the design library" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "port step 2, and the rules on focus, motion and phone targets" },
+]
+
+[commands]
+build = "pnpm --filter @avel/web exec vite build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "TanStack Start on Vite 8, React 19, Tailwind v4, shadcn/ui, the oRPC client over @avel/contract, contract-mock in dev and tests. Vitest 5 (node, react-dom/server) and Playwright with axe-core. No jsdom"
+layout = "apps/web from T-F1: src/routes (__root.tsx, index.tsx), src/home (the Decisions view), src/data/client.ts, src/styles (tokens.css, app.css), src/lib/utils.ts. T-F1's locked tests under apps/web/test and apps/web/e2e stay on main and must keep passing"
+conventions = [
+  "AGENTS.md and Build rules E4: strict TypeScript, Biome with no warnings, no console.log",
+  "E15: no money, no '$'; untrusted text is plain text",
+  "shell-layout.md section 0: nothing moves at hydration, every width is a media query, preferences are cookies the server reads",
+]
+notes = [
+  "Out of T-F2, for T-F3: the menu button, More and the sheet; the collapse toggle, ⌘B and Ctrl+B, the collapsed tooltip and the avel-rail cookie; focus mode; the Decisions badge (route 52 in _shell's loader); the highlight's glide (S4 needs two routes)",
+  "Out of the shell for now: the project rows, avel-project and routes 19 and 8 (no project page exists to link to); ScreenHeader and SegmentedControl (no page uses them yet); the pages; sign-in and the auth guard; the rail's live footer (S9)",
+]
+
+[[ticket]]
+id = "T-F2"
+slug = "shell-frame"
+title = "The shell's frame: rail, header and tab bar, from the route tree"
+goal = "Opening / shows Decisions inside the app's shell: the sidebar with the brand and the nav on a desk, the header with the breadcrumb at every width, and the tab bar on a phone, all in the server's HTML."
+refs = [
+  "shell-layout.md rev 2, sections 1, 2 and 4, and S1, S2, S3, S12, S14, S15, S16",
+  "control-room-handoff README, port step 2",
+]
+depends_on = ["T-F1"]
+may_change = [
+  "apps/web/src/kit/**",
+  "apps/web/src/modules/system/**",
+  "apps/web/src/routes/**",
+  "apps/web/src/routeTree.gen.ts",
+]
+must_not_change = [
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/styles/tokens.css",
+  "apps/web/src/home/**",
+  "apps/web/src/data/**",
+  "apps/web/test/foundation.test.ts",
+  "apps/web/test/gitignore.test.ts",
+  "apps/web/test/home-loader.test.ts",
+  "apps/web/test/home-loader-states.test.ts",
+  "apps/web/test/home-view.test.ts",
+  "apps/web/test/hygiene.test.ts",
+  "apps/web/e2e/budget.spec.ts",
+  "apps/web/e2e/home.spec.ts",
+  "apps/web/e2e/states.spec.ts",
+  "apps/web/e2e/support/page.ts",
+  "apps/web/e2e/support/ports.ts",
+  "apps/web/vitest.config.ts",
+  "apps/web/playwright.config.ts",
+]
+context = [
+  { path = "docs/ui-contracts/shell-layout.md", why = "sections 1 (the frame), 2 (sidebar, header, tab bar), 3 (the kit's AppShellProps) and 4 (the nav model), and section 7's departures; S17 is this ticket's" },
+  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "the shell in words, and what the app drops from the design library" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the DL: the .lib-app, .lib-rail, .lib-nav, .lib-head and tab bar rules (final cascade) for kit.css, the brand mark, and the Lucide icon nodes (its icon registry, e.g. inbox) to copy" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "focus rings (keyboard only), motion off under reduced motion, 44px primary targets, 24px others" },
+  { path = "docs/ui-reference/control-room-handoff/tokens.css", why = "the --av-* values kit.css uses; never redefined in kit.css" },
+  { path = "apps/web/src/routes/index.tsx", why = "T-F1's / route, which moves under _shell" },
+  { path = "apps/web/src/routes/__root.tsx", why = "T-F1's root: data-theme, data-depth and lang stay as they are" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm --filter @avel/web exec tsc -p tsconfig.json --noEmit",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "No new dependency. Icons: apps/web/src/kit/Icon.tsx draws Lucide's icons from inline SVG nodes copied from the DL's icon registry, as the DL itself does, with Lucide's ISC notice in the file's header comment. Only the icons this ticket draws (inbox, and the brand mark). No lucide-react",
+  "The seams the tests use: apps/web/src/kit/AppShell.tsx exports AppShell with shell-layout.md section 3's props, minus what T-F3 adds (collapsed, onCollapsedChange, focus): { groups, tabs, currentId, crumbs, renderLink, children }. apps/web/src/kit/kit.css holds the shell's DL rules. apps/web/src/modules/system/nav.ts exports navFromRoutes(routes), which reads each route's staticData.nav = { group, order, label, icon } into section 4's groups and the tabs, in order, leaving out empty groups",
+  "Routes: apps/web/src/routes/_shell.tsx is the layout (ssr: true): it renders AppShell from navFromRoutes and links kit.css. / moves from routes/index.tsx to routes/_shell/index.tsx with staticData.nav = { group: 'Decide', order: 1, label: 'Decisions', icon: 'inbox' }, and keeps T-F1's loader, view and title. Regenerate routeTree.gen.ts",
+  "In the server's HTML, the AppShell element carries data-ui=\"AppShell\" and data-tabbar (S2); data-hydrated is set in a commit after hydration, for the tests only. No data-rail or data-focus yet: they come with T-F3",
+  "The rail (1024px and wider): the brand link to / with the 32px mark and 'AVEL' and no sub line (S3), then nav \"Main\" (S15) with the Decide group's Decisions row, aria-current=\"page\" on the current row, and the current row drawn with .lib-nav-indicator's look in the server's HTML (S4, no glide). No collapse button yet",
+  "The header, at every width: the breadcrumb (a top-level page is [label], so 'Decisions') and the progress line, 0 in the server's HTML, then following the scroller. Nothing on the right (S14). No menu button yet",
+  "The tab bar (760px and narrower): one tab per route with staticData.nav that the bar lists (Decisions), current with aria-current, each at least 52px tall, and main's bottom padding under [data-tabbar]. S17: a tab is drawn only once its route exists, as S8 says for Release, so Project waits for /missions and More waits for T-F3's sheet",
+  "The rounded canvas at 1024px and wider (S1): the page column takes margin var(--canvas-inset) except on the sidebar's side, border-radius var(--radius-dialog), background var(--av-page-bg) and box-shadow 0 0 0 1px var(--av-hairline). It's the scroller, with overscroll-behavior contain and scroll-padding-top 76px. Below 1024px the window scrolls",
+  "kit.css: every hover rule under @media (hover: hover) and (pointer: fine); widths as media queries only (no matchMedia, no measuring); keyboard focus rings only; nothing moves under prefers-reduced-motion",
+  "The document title stays '{last crumb} · AVEL', so / is still 'Decisions · AVEL'. T-F1's locked tests stay green: the h1, the count, the theme cookie, the axe check and the 150 KB budget",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/test/shell/**", "apps/web/e2e/shell/**"]
+behaviours = [
+  "unit: AppShell in renderToString draws the brand link to / with 'AVEL', nav \"Main\" with each group's label and its items in order, aria-current=\"page\" on currentId's row only, and the crumbs",
+  "unit: AppShell's server markup has data-ui=\"AppShell\" and data-tabbar, and no data-hydrated",
+  "unit: AppShell draws the tab bar's tabs in order with the current one marked, and leaves out a group with no items",
+  "unit: navFromRoutes reads staticData.nav into groups and tabs in section 4's order and skips routes without it; with T-F2's route tree it gives the Decide group with Decisions at / and the inbox icon, and nothing else",
+  "unit: kit.css, read as text: the 1024px and 760px breakpoints, the canvas rule (radius, inset, scroller), and no :hover outside @media (hover: hover) and (pointer: fine)",
+  "e2e: at 1280x800, / is server-rendered inside the shell: the rail with the Decisions row current, the rounded canvas, the header's 'Decisions' crumb, no tab bar, and T-F1's h1 and count inside the canvas",
+  "e2e: at 900x800, there is no rail and no tab bar, and the header and the page show; at 390x844, the tab bar shows with Decisions current, every tab at least 44px tall, main padded above the bar, and no sideways scroll",
+  "e2e: data-hydrated appears after hydration, and nothing moves at hydration: at 1280 the Decisions row, the header and the h1, and at 390 the header, the tab bar and the h1, keep their boxes within 1px between the server's paint (scripts off) and the hydrated page",
+  "e2e: the progress line is 0 before any scroll and grows when the canvas (1280) or the window (390) scrolls",
+  "e2e: WCAG 2.2 AA with no violation at 1280, 900 and 390, in light and night, and no '$' in the page's text",
+]
