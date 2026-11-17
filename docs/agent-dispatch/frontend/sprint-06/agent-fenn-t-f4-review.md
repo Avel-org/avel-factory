@@ -2,7 +2,7 @@
 doc: agent-fenn-t-f4-review
 ticket: T-F4
 lane: frontend
-sprint: sprint-04
+sprint: sprint-06
 agent: fenn
 seat: checker
 kind: review
@@ -13,7 +13,7 @@ branch: t/F4-shell-rail
 checkout: detached
 after: [agent-fantem-t-f4-build]
 depends_on: [T-F3]
-report: docs/agent-dispatch/frontend/sprint-04/agent-fenn-t-f4-review-completion.md
+report: docs/agent-dispatch/frontend/sprint-06/agent-fenn-t-f4-review-completion.md
 ---
 
 
@@ -24,7 +24,7 @@ report: docs/agent-dispatch/frontend/sprint-04/agent-fenn-t-f4-review-completion
 | | |
 | --- | --- |
 | Lane | frontend · lead Zero |
-| Sprint | sprint-04 · Step 1 |
+| Sprint | sprint-06 · Step 1 |
 | Ticket | T-F4 · rigor standard |
 | Dispatch | review · Fenn (checker) · model sonnet |
 | Works on | a detached checkout of `t/F4-shell-rail`'s head |
@@ -41,7 +41,7 @@ You review the builder's work on this ticket, from the diff and this document on
 1. `.claude/agents/fenn.md`: who you are, and your always and never
 2. `AGENTS.md`: the rules for the code itself
 3. `docs/design/Build rules.md`: how work moves from a ticket to main; cite rules by ID
-4. `docs/agent-dispatch/frontend/sprint-04/codebase-analysis.md`: the codebase in short
+4. `docs/agent-dispatch/frontend/sprint-06/codebase-analysis.md`: the codebase in short
 5. `docs/ui-contracts/shell-layout.md`: the shell's UI contract, rev 2: data-rail, the collapse, the badges and the cookies
 6. `docs/design/AVEL Shell Layout brief v1.9.md`: the 64px icon rail, the tooltip, the remembered choice, the badge from route 52
 7. `docs/ui-reference/control-room-handoff/README.md`: port step 2 and flow-keyboard; focus, motion and targets
@@ -53,8 +53,8 @@ You review the builder's work on this ticket, from the diff and this document on
 13. `apps/web/src/home/load-home.ts`: loadHome(client): the badge's count and more come from it, unchanged
 14. `apps/web/test/shell-rail/**`: the locked acceptance tests: they define done
 15. `apps/web/e2e/shell-rail/**`: the locked acceptance tests: they define done
-16. `docs/agent-dispatch/frontend/sprint-04/agent-fantem-t-f4-build-completion.md`: the builder's completion report
-17. `docs/agent-dispatch/frontend/sprint-04/agent-fenn-t-f4-review.md`: this document: follow it exactly
+16. `docs/agent-dispatch/frontend/sprint-06/agent-fantem-t-f4-build-completion.md`: the builder's completion report
+17. `docs/agent-dispatch/frontend/sprint-06/agent-fenn-t-f4-review.md`: this document: follow it exactly
 
 ## 3. Domain
 
@@ -72,10 +72,10 @@ You review the builder's work on this ticket, from the diff and this document on
 - _shell's loader (ssr: true) reads the avel-rail cookie on the server (collapsed, else open) and awaits route 52 through loadHome. A failure gives no badge and is swallowed: the shell still draws. Route 52 is read by _shell and by / on the same load; that's accepted until the data core's cache
 - In the server's HTML, the AppShell element has data-rail="collapsed" when avel-rail=collapsed, and the rail draws collapsed then, so a reload paints it folded with nothing moving. The client writes avel-rail on each toggle with path=/; max-age=31536000; samesite=lax
 - The toggle: beside the brand in the rail (1024px and wider), .lib-rail-toggle with aria-label 'Collapse sidebar' when open and 'Expand sidebar' when collapsed, aria-expanded true when open, and the panel-left icon. ⌘B on macOS and Ctrl+B elsewhere toggle it too, at 1024px and wider, and not while a text field has focus. No other shortcut (S14). The sheet keeps its 'Close navigation' button in the toggle's place
-- Collapsed: icons only (64px rail), each row's name in .lib-rail-tip to the right, positioned from that row's rect when it's hovered or focused, and gone on leave or blur. The row keeps its accessible name. The 240ms grid transition runs only on a toggle, never on load, and not under prefers-reduced-motion
+- Collapsed: icons only (64px rail), each row's name in .lib-rail-tip to the right, positioned from that row's rect when it's hovered or focused, and gone on leave or blur. The row keeps its accessible name. A project row keeps its dot and shows its label in the tooltip. The 240ms grid transition runs only on a toggle, never on load, and not under prefers-reduced-motion
 - The Decisions badge on its nav row (.lib-nav-badge) and on its tab: the text from decisionsBadge, the label '{text} waiting' on the nav row, and on the tab the sr-only word 'waiting' after the number (S10). No badge for 0, no data or an error
 - The tests check what this ticket draws, never the absence of what later tickets add or of routes later tickets add. Count only what this ticket owns. A test pinning their absence would need a test-dispute on each later ticket
-- If a locked T-F1, T-F2 or T-F3 test conflicts with shell-layout.md here (for example one that requires no data-rail, or a badge-free row), stop with test-dispute (F2); don't work around it
+- If a locked T-F1, T-F2, T-F5, T-F6 or T-F3 test conflicts with shell-layout.md here (for example one that requires no data-rail, or a badge-free row), stop with test-dispute (F2); don't work around it
 
 ## 4. Tasks
 
@@ -124,8 +124,8 @@ You review the builder's work on this ticket, from the diff and this document on
 ## 5. Territory
 
 **You change no file** except your report and findings, both left uncommitted:
-- `docs/agent-dispatch/frontend/sprint-04/agent-fenn-t-f4-review-completion.md`
-- `docs/agent-dispatch/frontend/sprint-04/findings/t-f4-fenn-NN.md`, one per finding
+- `docs/agent-dispatch/frontend/sprint-06/agent-fenn-t-f4-review-completion.md`
+- `docs/agent-dispatch/frontend/sprint-06/findings/t-f4-fenn-NN.md`, one per finding
 
 **The build's territory**, for checking the diff:
 - `apps/web/src/kit/**`
@@ -156,6 +156,10 @@ You review the builder's work on this ticket, from the diff and this document on
 - `apps/web/e2e/shell/**`
 - `apps/web/test/shell-sheet/**`
 - `apps/web/e2e/shell-sheet/**`
+- `apps/web/test/sidebar-pages/**`
+- `apps/web/e2e/sidebar-pages/**`
+- `apps/web/test/sidebar-projects/**`
+- `apps/web/e2e/sidebar-projects/**`
 - `packages/**`
 - `.claude/**`, `.agents/**`, `docs/agent-dispatch/**` (except your report), `scripts/agents/**`, the kit scripts, `.env*`
 
@@ -184,7 +188,7 @@ pnpm typecheck
 pnpm lint
 ```
 
-**Your report:** `docs/agent-dispatch/frontend/sprint-04/agent-fenn-t-f4-review-completion.md`. Its first lines are:
+**Your report:** `docs/agent-dispatch/frontend/sprint-06/agent-fenn-t-f4-review-completion.md`. Its first lines are:
 
 ```
 status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
@@ -201,4 +205,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F4, "The shell's rail: collapse with its button or ⌘B, remembered in avel-rail, and the Decisions badge": the review dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-04/agent-fenn-t-f4-review.md`. Read it in full, then its Context in order, before you change anything. You're on a detached checkout of the builder's result. Review the diff against the ticket, the locked tests and the rules. Every finding cites evidence and a severity. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-04/agent-fenn-t-f4-review-completion.md`, left uncommitted. Don't push.
+> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F4, "The shell's rail: collapse with its button or ⌘B, remembered in avel-rail, and the Decisions badge": the review dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-06/agent-fenn-t-f4-review.md`. Read it in full, then its Context in order, before you change anything. You're on a detached checkout of the builder's result. Review the diff against the ticket, the locked tests and the rules. Every finding cites evidence and a severity. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-06/agent-fenn-t-f4-review-completion.md`, left uncommitted. Don't push.

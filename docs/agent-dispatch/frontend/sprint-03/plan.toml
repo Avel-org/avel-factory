@@ -3,26 +3,25 @@
 # Check it:   scripts/render.py --check frontend/sprint-03
 # Render it:  scripts/render.py frontend/sprint-03   (after approval), then commit the folder.
 #
-# The shell's second ticket (C2 split of shell-layout.md rev 2): the sheet (focus mode waits for Canon, E8).
-# T-F2 drew the frame; T-F4 (planned next) adds the rail's collapse, ⌘B, the avel-rail cookie
-# and the Decisions badge. Each is its own sprint while render.py refuses two tickets in one
-# sprint that share a file, even in dependency order (they all change kit/AppShell.tsx).
+# Javaris (Nov 17): the web recreates his prototype, and the sidebar comes whole. Two tickets
+# (C2): T-F5 the main and Factory groups with their placeholder pages, T-F6 (sprint-04) the
+# Projects group with its rows. Javaris (Nov 17): the sidebar first, then T-F3 (sheet, sprint-05)
+# and T-F4 (collapse and badge, sprint-06).
 
 lane = "frontend"
 sprint = "sprint-03"
 step = 1
-title = "The shell's sheet: the menu button and More"
+title = "The sidebar's pages: Live, Business, Clients, Library, Agents and Settings"
 goals = [
-  "Below 1024px the whole sidebar is one tap away: the header's menu button on a tablet, the More tab on a phone",
+  "Every entry in the sidebar's main and Factory groups opens its page, titled as in the prototype",
 ]
 done_when = [
-  "control-room-handoff README, port step 2 (Shell), second part: shell-layout.md rev 2 section 1's sheet, and section 2's tab bar More, passing flow-sheets' steps",
-  "Every width passes the WCAG 2.2 AA check (E17) with the sheet open and closed, and / stays within 150 KB of JavaScript (E16)",
+  "shell-layout.md revision 3, section 4: the unlabelled main group and the small Factory group, each entry with its placeholder page",
+  "Every new page passes the WCAG 2.2 AA check (E17), carries no money (E15), and / stays within 150 KB of JavaScript (E16)",
 ]
 sources = [
-  { path = "docs/ui-contracts/shell-layout.md", why = "the shell's UI contract, rev 2: section 1's frame table, the sheet; S17" },
-  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "the sheet: from the left, 320px or 88%, over a dimmed page, with a close button" },
-  { path = "docs/ui-reference/control-room-handoff/README.md", why = "port step 2 and flow-sheets; focus, motion and phone targets" },
+  { path = "docs/ui-contracts/shell-layout.md", why = "revision 3 of section 4: the prototype's groups, the placeholders, S17" },
+  { path = "docs/ui-reference/control-room-prototype.html", why = "the prototype (a bundler page): NAV, NAV_LABEL and PAGES in its template, read as data" },
 ]
 
 [commands]
@@ -33,34 +32,37 @@ test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec 
 
 [analysis]
 stack = "TanStack Start on Vite 8, React 19, Tailwind v4, the oRPC client over @avel/contract, contract-mock in dev and tests. Vitest 5 (node, react-dom/server) and Playwright with axe-core. No jsdom"
-layout = "apps/web after T-F1 and T-F2: src/kit (AppShell, Icon, kit.css), src/modules/system/nav.ts (navFromRoutes), src/routes/_shell.tsx with / at routes/_shell/index.tsx, src/home, src/data/client.ts, src/styles. T-F1's and T-F2's locked tests stay on main and must keep passing"
+layout = "apps/web after T-F1 and T-F2: src/kit (AppShell, Icon, kit.css), src/modules/system/nav.ts (navFromRoutes), src/routes/_shell.tsx with / at routes/_shell/index.tsx, src/home, src/data/client.ts, src/styles. Earlier tickets' locked tests stay on main and must keep passing"
 conventions = [
   "AGENTS.md and Build rules E4: strict TypeScript, Biome with no warnings, no console.log",
-  "E15: no money, no '$'",
-  "shell-layout.md section 0: nothing moves at hydration, every width is a media query, nothing is measured until the user acts",
+  "E15: no money anywhere, no '$'; agent, client and Canon text is plain text",
+  "shell-layout.md section 0: nothing moves at hydration, every width is a media query",
 ]
 notes = [
-  "Out of T-F3, for T-F4: the rail's collapse toggle, ⌘B and Ctrl+B, the collapsed tooltip, data-rail and the avel-rail cookie, and the Decisions badge (route 52 in _shell's loader)",
-  "Still out: project rows and avel-project, the pages, sign-in, the live footer (S9), the highlight's glide (S4 needs two routes), and focus mode (E8, Javaris Nov 17: it comes with Canon onboarding, port step 6, the first route that turns it on)",
+  "Reading the prototype: it's a bundler page, never run. Its app is the JSON string in <script type=\"__bundler/template\">. Extract it as data, for example `python3 -I -c 'import json,re,sys; h=open(sys.argv[1]).read(); print(json.loads(re.search(r\"<script type=\\\"__bundler/template\\\"[^>]*>([\\s\\S]*?)</script>\", h).group(1)))' docs/ui-reference/control-room-prototype.html > <your scratch file>`, then read NAV, NAV_LABEL and PAGES in it",
+  "Out of T-F5, for T-F6: the Projects group (its head, the All link, project rows), /missions and /missions/$missionId, the --cr-id colours. Still out: the pages' real content, New project, the Project tab and avel-project; the sheet and More (T-F3), the collapse and the badge (T-F4)",
 ]
 
 [[ticket]]
-id = "T-F3"
-slug = "shell-sheet"
-title = "The shell's sheet: the menu button and the More tab"
-goal = "On a tablet the header's menu button, and on a phone the More tab, open the whole sidebar as a sheet over a dimmed page, which closes with Escape, the scrim, its close button or any link, and hands focus back."
+id = "T-F5"
+slug = "sidebar-pages"
+title = "The sidebar's main and Factory groups, with placeholder pages from the prototype"
+goal = "The sidebar shows the prototype's main group (Decisions, Live, Business, Clients) and its small Factory group (Library, Agents, Settings), and each entry opens a page titled as in the prototype that says plainly what's there."
 refs = [
-  "shell-layout.md rev 2, section 1 (the frame table and the sheet) and section 2 (the tab bar's More); S17",
-  "control-room-handoff README, port step 2, flow-sheets",
+  "shell-layout.md revision 3, section 4; S17",
+  "control-room-prototype.html: NAV, NAV_LABEL, PAGES (live, business, clients, library, roster, settings)",
 ]
 depends_on = ["T-F2"]
-may_change = ["apps/web/src/kit/**"]
+may_change = [
+  "apps/web/src/kit/**",
+  "apps/web/src/modules/system/**",
+  "apps/web/src/routes/**",
+  "apps/web/src/routeTree.gen.ts",
+]
 must_not_change = [
   "apps/web/package.json",
   "pnpm-lock.yaml",
   "apps/web/src/styles/tokens.css",
-  "apps/web/src/routes/**",
-  "apps/web/src/modules/**",
   "apps/web/src/home/**",
   "apps/web/src/data/**",
   "apps/web/test/foundation.test.ts",
@@ -76,15 +78,24 @@ must_not_change = [
   "apps/web/e2e/support/ports.ts",
   "apps/web/vitest.config.ts",
   "apps/web/playwright.config.ts",
-  "apps/web/test/shell/**",
-  "apps/web/e2e/shell/**",
+  "apps/web/test/shell/app-shell.test.tsx",
+  "apps/web/test/shell/kit-css.test.ts",
+  "apps/web/test/shell/support.tsx",
+  "apps/web/e2e/shell/a11y.spec.ts",
+  "apps/web/e2e/shell/frame.spec.ts",
+  "apps/web/e2e/shell/hydration.spec.ts",
+  "apps/web/e2e/shell/support.ts",
+  "apps/web/test/shell-sheet/**",
+  "apps/web/e2e/shell-sheet/**",
+  "apps/web/test/shell-rail/**",
+  "apps/web/e2e/shell-rail/**",
 ]
 context = [
-  { path = "docs/ui-contracts/shell-layout.md", why = "section 1: the frame table (menu button 761 to 1023px, More at 760px and narrower), the sheet's rules; section 2: More is a button that opens the sheet" },
-  { path = "docs/design/AVEL Shell Layout brief v1.9.md", why = "the sheet from the left, 320px or 88% of a narrow screen, over a dimmed page, with a close button" },
-  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "the DL's sheet, scrim, .lib-rail-close and menu button rules (final cascade) for kit.css, and the Lucide nodes for menu, x and more-horizontal in its icon registry" },
-  { path = "docs/ui-reference/control-room-handoff/README.md", why = "focus rings for the keyboard only, motion off under reduced motion, 44px primary targets" },
-  { path = "apps/web/src/kit/AppShell.tsx", why = "T-F2's AppShell, which gains the menu button, More and the sheet" },
+  { path = "docs/ui-contracts/shell-layout.md", why = "revision 3 under section 4: the groups, entries, labels, icons, placeholders and titles; section 3's ScreenHeader; S17" },
+  { path = "docs/ui-reference/control-room-prototype.html", why = "PAGES' eyebrow, title, lead and empty state for live, business, clients, library, roster and settings; NAV's small Factory rows; its .cr-nav and .scr-head and widget-state rules; its Lucide nodes for bot and settings-2" },
+  { path = "docs/design/AVEL Enclosure Grid · Design library v1.9.html", why = "ScreenHeader (.scr-head, its ea function), WidgetState (OT) and the Lucide nodes it has (activity, wallet, building, swatch-book, radio, blocks)" },
+  { path = "apps/web/src/modules/system/nav.ts", why = "navFromRoutes, which gains unlabelled and small groups" },
+  { path = "apps/web/src/routes/_shell/index.tsx", why = "Decisions' staticData.nav moves from the Decide group to the unlabelled main group" },
 ]
 verify = [
   "pnpm --filter @avel/web exec vitest run",
@@ -95,26 +106,25 @@ verify = [
   "pnpm lint",
 ]
 notes = [
-  "No new dependency, and no dialog library: the sheet, its focus trap and its focus return are the kit's own code (useDialogFocus in apps/web/src/kit). New icons (menu, x, more-horizontal) come from the DL's Lucide nodes into Icon.tsx, as T-F2's did",
-  "The seams the tests use: apps/web/src/kit/AppShell.tsx draws the sheet as a dialog with aria-modal=\"true\" and aria-label=\"Navigation\", inert and hidden while closed. The sheet holds the same brand and nav \"Main\" as the rail, with .lib-rail-close's 'Close navigation' button where the collapse toggle would be",
-  "The menu button: in the header, labelled 'Open navigation', with aria-expanded and aria-controls naming the sheet; shown by kit.css alone from 761 to 1023px. Not drawn in the rail's place on a desk",
-  "More: the tab bar's last tab, a button (not a link) labelled 'More', with aria-expanded, at least 52px tall like the other tabs. It opens the same sheet. S17 is now met for More, so the tab bar is the route tabs then More",
-  "Opening focuses the sheet's close button and traps Tab and Shift+Tab inside. Escape, a click on the scrim, the close button and any link in the sheet close it, and focus returns to whichever button opened it. The page behind is inert while it's open. No scroll jump on open or close",
-  "Motion: the sheet slides in from the left and the scrim fades, with the DL's durations and easing; under prefers-reduced-motion neither moves. Nothing in the server's HTML changes, so nothing moves at hydration",
-  "The tests check what this ticket draws, never the absence of what T-F4 adds (the collapse toggle, data-rail, badges) or of routes later tickets add. Count only what this ticket owns. A test pinning their absence would need a test-dispute on each later ticket",
-  "If a locked T-F1 or T-F2 test conflicts with shell-layout.md's sheet or More (for example a test that fixes the tab bar to one tab), stop with test-dispute (F2); don't work around it",
+  "No new dependency and no API call: the six pages read nothing. Icons are inline Lucide nodes in Icon.tsx, from the DL's registry or, for bot and settings-2, the prototype's, with Lucide's ISC notice kept",
+  "The seams the tests use: apps/web/src/kit/ScreenHeader.tsx exports ScreenHeader({ eyebrow?, title, lead? }) with the title as the page's h1 (section 3). apps/web/src/kit/WidgetState.tsx exports WidgetState({ icon, title, message? }), the DL's empty state, its icon aria-hidden. staticData.nav gains group: '' for the unlabelled main group and size: 'sm' for the Factory group's rows; navFromRoutes keeps groups in section 4 revision 3's order and draws no label for ''",
+  "The routes, all under _shell, ssr: true, each with staticData.nav = { group, order, label, icon } and the document title '{title} · AVEL'. Main group (group ''): Decisions / (order 1, moved from Decide), Live /live (2, label 'Live', icon activity, title 'Factory live', eyebrow 'Watch'), Business /business (3, wallet), Clients /clients (4, building). Factory group (group 'Factory', size sm): Library /library/skills (1, swatch-book), Agents /roster (2, bot), Settings /settings (3, settings-2)",
+  "Each page is ScreenHeader then WidgetState. Live, Library and Agents use the prototype's eyebrow, title, lead and empty state word for word (Library's {kind} is 'skills'), without the empty state's actions, whose targets don't exist. Clients and Settings use the prototype's eyebrow, title and lead, and WidgetState '{title} isn't built yet': the mock has clients, so 'No clients yet' would be false, and Settings has no empty state. Business uses eyebrow 'Business' and title 'Business', no lead, and WidgetState 'Business isn't built yet': the prototype's lead and empty state are about margin and dollars, which E15 forbids",
+  "The sidebar: the main group has no label; the Factory group's rows are the prototype's small rows (15px icons). The current row has aria-current=\"page\" on every page, and the crumb is the page's title. Moving between pages is a client navigation (no reload)",
+  "The tests check what this ticket draws, never the absence of what T-F6, T-F3 and T-F4 add (the Projects group, /missions, project rows, the sheet, More, the collapse, badges) or of routes later tickets add. Count only what this ticket owns",
+  "If a locked T-F1 or T-F2 test conflicts with shell-layout.md revision 3 (other than T-F2's nav.test.ts, which Fenn updates in this ticket), stop with test-dispute (F2); don't work around it",
 ]
 
 [ticket.tests]
 role = "test-e2e"
-paths = ["apps/web/test/shell-sheet/**", "apps/web/e2e/shell-sheet/**"]
+paths = ["apps/web/test/sidebar-pages/**", "apps/web/e2e/sidebar-pages/**", "apps/web/test/shell/nav.test.ts"]
 behaviours = [
-  "unit: AppShell in renderToString draws the sheet closed: role=dialog with aria-modal and aria-label 'Navigation', inert, the brand, nav \"Main\" and the 'Close navigation' button",
-  "unit: the menu button 'Open navigation' and the More tab are buttons with aria-expanded=\"false\" and aria-controls naming the sheet; More comes after the route tabs",
-  "unit: kit.css, read as text: the menu button shows only from 761 to 1023px, the sheet and scrim have a reduced-motion rule, and no :hover outside @media (hover: hover) and (pointer: fine)",
-  "e2e: at 900x800, 'Open navigation' opens the sheet: aria-expanded true, the dialog visible, focus on 'Close navigation', and Tab and Shift+Tab stay inside",
-  "e2e: at 900x800, each of Escape, a click on the scrim, 'Close navigation' and the Decisions link closes the sheet, sets aria-expanded false and returns focus to 'Open navigation'",
-  "e2e: at 390x844, More opens the same sheet, Escape closes it, and focus returns to More; More is at least 44px tall",
-  "e2e: at 1280x800 there is no menu button and no More, and the rail is unchanged",
-  "e2e: WCAG 2.2 AA with no violation at 900 and 390 with the sheet open and closed, in light and night, and no '$' in the page's text",
+  "unit (T-F2's nav.test.ts, updated): with the real route tree, the first group is unlabelled and holds Decisions at / with inbox, Live, Business and Clients in that order with their icons, and Decisions is still a tab",
+  "unit: navFromRoutes gives a Factory group with Library, Agents and Settings in that order, each marked small, after the main group; a group label '' draws no label",
+  "unit: ScreenHeader renders the eyebrow, the title as the only h1, and the lead; WidgetState renders its icon aria-hidden, its title and its message",
+  "e2e: at 1280x800, each of /live, /business, /clients, /library/skills, /roster and /settings is server-rendered inside the shell with its row aria-current, its h1, eyebrow and lead as the plan's table says, its state's title, and the document title '{title} · AVEL'",
+  "e2e: clicking each main and Factory row from / reaches its page with no full reload, and the current row follows",
+  "e2e: no page has '$' in its text, and /business has none of the words margin, revenue, payment or price",
+  "e2e: the Factory group's rows are shorter than the main group's rows, and the main group shows no group label",
+  "e2e: WCAG 2.2 AA with no violation on all six pages at 1280 and 390, in light and night",
 ]

@@ -1,0 +1,15 @@
+{
+  "files": {
+    "DISPATCH-PROMPTS.md": "7411a9d278edc859323053fdc96283cd28789d8c3c03ae13c6a237858cb160c6",
+    "DISPATCH.md": "3aa60d3a4ef1ed0a23fdb5a9d6409dd86938a7dee11ac10dc0bc5abd1d4093af",
+    "agent-fantem-t-f4-build.md": "5d44952ebbd46162e6f53d50b1f42f7c02a25f58497e8099673d0a8b7690a63d",
+    "agent-fenn-t-f4-review.md": "5d28ebaea01ebd06d9dfc218727e26bf8e0818e067c2970553c8172b12d91a16",
+    "agent-fenn-t-f4-test-e2e.md": "120fa04159cda5574908c481d21d8ef761f907c82b91151f66f0064a4912bdc0",
+    "codebase-analysis.md": "bd36bdc03cf0779e65a6915db5fc81aa4ed924f5aa67f5862c6caf89e9d3826e"
+  },
+  "lane": "frontend",
+  "packageSha256": "9d4672a48bf7c9bebe0cc607e0e90e29dc13b0b50d92e29d6bf282c22fe777b4",
+  "plan_sha256": "7a862ab6957e03dcb2b4949172dae75ec264f08b3cc3d8113fccda072e92df6e",
+  "renderer": "avel-render 2",
+  "sprint": "sprint-06"
+}

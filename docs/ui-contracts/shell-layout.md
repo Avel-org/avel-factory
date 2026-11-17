@@ -99,6 +99,19 @@ type AppShellProps = {
 
 Labels are DL's ("Gates and integration", not the brief's "Gates"). Icons are from DL's registry (S5).
 
+**Revision 3 (Zero, 2026-11-17; Javaris: the web recreates his prototype).** The sidebar's groups follow `docs/ui-reference/control-room-prototype.html` (its `NAV`, `NAV_LABEL` and `PAGES`) and replace the table above. Everything else in this contract stands, S17 included: an entry is drawn only once its route exists.
+
+| Group | Entries, in order: nav label · route · icon (the page's title, if different) |
+| --- | --- |
+| (no label) | Decisions · `/` · `inbox`; Live · `/live` · `activity` (Factory live); Business · `/business` · `wallet`; Clients · `/clients` · `building` |
+| Projects | The group's head: the `Projects` label, an `All` link to `/missions` (current on All projects) and a `+` New project link to `/missions/new` once that route exists. Then one row per open project (not `closed` or `cancelled`), in route 19's order: a dot in `--cr-id-{n}` (the project's place in the list, 1 to 5, repeating), the S6 label, linked to Progress at `/missions/$missionId` |
+| Factory (small rows) | Library · `/library/skills` · `swatch-book`; Agents · `/roster` · `bot`; Settings · `/settings` · `settings-2` |
+
+- **Icons** come from the prototype's Lucide registry when the DL's lacks them (`bot`, `settings-2`).
+- **The `--cr-id-1` to `--cr-id-5` colours** are the prototype's, light and night, kept in their own stylesheet; `tokens.css` stays the handoff's copy.
+- **Pages not built yet** are placeholders: `ScreenHeader` with the prototype's eyebrow, title and lead, then a `WidgetState`. Where the prototype's empty state would be false or breaks E15, the state reads `{title} isn't built yet`† instead.
+- **The crumb and document title** of a top-level page use its title: `Factory live · AVEL`.
+
 **Project rows** come from route 19's first page, through `missions`' `index.ts`, in its order, leaving out `closed` and `cancelled`.
 - **Label (S6):** `{client name} · {package}`.
   - The client name comes from route 8, through `clients`' `index.ts`.
