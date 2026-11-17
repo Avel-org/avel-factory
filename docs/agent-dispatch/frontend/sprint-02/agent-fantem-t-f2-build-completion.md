@@ -1,11 +1,11 @@
-status: needs-cr
+status: done
 ticket: T-F2
 
 # T-F2 build: completion report (Fantem)
 
-Stopped with one failing locked test, `T-F2-06` (the canvas hairline). The cause is a bug in T-F1's `apps/web/src/styles/app.css`, outside my territory. Everything else passes. Checkpoint commit: `cf10db7`.
+Done. The first attempt stopped `needs-cr` on `T-F2-06` (the canvas hairline), caused by T-F1's `app.css`. Javaris chose option A on Nov 17 and Zero's fix is in this ticket (plan commit `d5a179c`, `app.css` in my territory). I deleted the six `@theme inline` lines `--color-foreground`, `--color-card`, `--color-popover`, `--color-accent`, `--color-destructive` and `--color-border`, and changed nothing else. All tests now pass.
 
-## The change request
+## The change request (resolved)
 
 `app.css` defines a cycle in light mode:
 - `@theme inline { --color-border: var(--border) }`
@@ -27,7 +27,7 @@ I confirmed this by appending `:root{--av-hairline:#e6e4e2}` to kit.css temporar
 | `pnpm lint` | pass, no warnings |
 | `pnpm --filter @avel/web exec vitest run` | 44/44 pass |
 | `pnpm --filter @avel/web exec tsc -p tsconfig.json --noEmit` | pass |
-| `pnpm --filter @avel/web exec playwright test` | 28 pass, 1 fail (T-F2-06 shadow, above) |
+| `pnpm --filter @avel/web exec playwright test` | 29/29 pass (after the app.css fix) |
 
 I did not run the combined `vitest && playwright` line as a separate step, because it repeats the two lines above.
 
@@ -46,6 +46,7 @@ The worktree had no `node_modules` or package builds. I ran `pnpm install --offl
 - `apps/web/src/routes/_shell.tsx`: the layout (`ssr: true`) that links kit.css and renders AppShell.
 - `apps/web/src/routes/_shell/index.tsx`: moved from `routes/index.tsx` with `staticData.nav` added. The loader, view and title are unchanged.
 - `apps/web/src/routeTree.gen.ts`: regenerated.
+- `apps/web/src/styles/app.css`: the six lines above, deleted, to break the light-mode border cycle (and a silent `--color-accent` clash).
 
 ## Contract to files
 
@@ -68,11 +69,11 @@ The worktree had no `node_modules` or package builds. I ran `pnpm install --offl
 
 ## Limitations
 
-- Light-mode hairlines are blank until the cycle above is fixed.
-- No end-to-end screenshot of the finished page, because T-F2-06 fails. The Playwright run attached screenshots under `apps/web/test-results/`, which is untracked.
+- The Playwright run attached screenshots under `apps/web/test-results/`, which is untracked.
 
 ## Messages received
 
 1. OSA, relayed from Zero: write the DL's `#000` mask colour as `black`. **Followed.**
 2. OSA, relayed from Zero: build the tabs at the DL's 52px. **Followed**, with `min-height: 52px`.
 3. OSA: port 5173 is OSA's dev server. **Left alone.** My tests use the config's own ports.
+4. OSA, relayed from Zero and decided by Javaris (option A, Nov 17): delete the six `@theme inline` lines in `app.css`, re-run the verification, stop my vite processes, set status done. **Followed.** The plan commit `d5a179c` puts `app.css` in my territory, and the task doc's line 80 confirms the fix. Ports 5173 and 5174 are left alone.
