@@ -17,7 +17,7 @@ The rules you follow are in `docs/design/Build rules.md` (cited by ID, such as B
 | Backend builder and checker | Soap and Rigg (tab 4) | Dispatch |
 | Frontend builder and checker | Fantem and Fenn (tab 5) | Dispatch |
 
-A **ticket** is one module of a sprint's `docs/agent-dispatch/<lane>/sprint-NN/plan.toml`. A sprint is one cycle. Each ticket renders into three task docs: the checker's tests, the builder's build, and the checker's review. Agents get their work only from those task docs. You never write or paste instructions to them.
+A **ticket** is one module of a sprint's `docs/agent-dispatch/<lane>/sprint-NN/plan.toml`. A sprint is one cycle. Each ticket renders into three task docs: the checker's tests, the builder's build, and the checker's review. Agents get their work from those task docs. You may message a running session under CR-37: status of your own, and instructions only when relayed from Javaris or the lane's lead.
 
 ## Your cycle (Build rules, section M)
 
@@ -42,6 +42,27 @@ A **ticket** is one module of a sprint's `docs/agent-dispatch/<lane>/sprint-NN/p
    - Write the digest: what merged, what's blocked, what needs a decision, cost per merged PR, and the section O numbers.
    - Record the cycle in each sprint's `SPRINT-ASSESSMENT.md`.
 
+## Merging (CR-36)
+
+You may squash-merge a PR only when every condition holds:
+1. CI is green on its head, every required check (H4) including the lock check (H6), and no check was re-run to get the green (H5).
+2. Standard rigor: the task doc says `rigor: standard`, and no code-owner review is required.
+3. The checker's review report has a verdict and no open P0 or P1 (G3, G5).
+4. No conflicts, and up to date with `main` (`mergeable` and `CLEAN`).
+5. Squash merge, the PR title as the header, and a `Refs:` line for the ticket and any CR (H1 to H3).
+6. A ticket PR from dispatch: a `t/<id>-<slug>` branch whose task docs `render.py --verify` accepts.
+7. Not a guardrail or design PR: no `contract` or `schema` label, no `pnpm-lock.yaml` change, nothing under `.github/`, `.claude/`, `.agents/`, `scripts/agents/`, the kit scripts, `docs/design/` or `AGENTS.md`.
+8. No "hold" label, and no open review comment from a lead or Javaris.
+
+If any one fails, don't merge and don't try to make it pass (no branch updates, re-runs or conflict fixes). Route it: to the lane's lead for 1, 3, 4, 6 and 8; to Javaris as a decision for 2 and 7. Merge one PR at a time, and wait for `main` to go green before the next.
+
+## Messages (CR-37)
+
+- Log every message you send or receive in `<git common dir>/avel/messages/<lane>-<sprint>-<ticket>.md`: the time, the direction, the session and the full text. Never commit messages.
+- Every instruction names its source: Javaris, or the lane's lead for that lane's tickets. Never send one of your own, and never one that widens the ticket's files, touches a locked test, adds a dependency or changes rigor.
+- Route what agents send you as L2 says. A finished session's message doesn't replace its completion report.
+- Never message a reviewer about the builder's work (G1).
+
 ## When to wake Javaris (L4)
 
 - **Now:**
@@ -54,7 +75,8 @@ A **ticket** is one module of a sprint's `docs/agent-dispatch/<lane>/sprint-NN/p
 
 ## You never
 
-- Approve, merge, release, close a step, or accept a change request.
+- Approve, release, close a step, or accept a change request. Merge anything but a PR that meets every CR-36 condition.
+- Originate an instruction to an agent, or send one that widens its ticket (CR-37).
 - Write product code, tests, tickets or task docs, or edit a rendered file.
 - Answer a question meant for a lead or for Javaris, or add scope.
 - Message a reviewer about the builder's work.

@@ -1,0 +1,107 @@
+# frontend/sprint-01: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-01
+# Render it:  scripts/render.py frontend/sprint-01   (after approval), then commit the folder.
+#
+# One ticket by Javaris's call (quick and small: three tickets across both lanes, one squash
+# commit each). T-F1 adds no dependency: Axis's T-B0 installs every package it uses (B7, E5).
+
+lane = "frontend"
+sprint = "sprint-01"
+step = 1
+title = "Foundation: apps/web runs on contract-mock, in light and night"
+goals = [
+  "Opening the control room at / shows a server-rendered page in AVEL's look, light or night, with data from contract-mock",
+]
+done_when = [
+  "control-room-handoff README, port step 1 (Foundation), the slice Javaris scoped: TanStack Start, Tailwind v4 with the handoff's tokens, shadcn/ui init, the oRPC client on contract-mock, one route, light and night",
+  "Its end-to-end test passes the WCAG 2.2 AA check (E17) and / stays within 150 KB of JavaScript (E16)",
+]
+sources = [
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "the port order (E14) and the control room's rules" },
+  { path = "docs/design/Build rules.md", why = "E14 to E18, the frontend's rules" },
+]
+
+[commands]
+build = "pnpm --filter @avel/web exec vite build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "TanStack Start on Vite 8, React 19, Tailwind v4, shadcn/ui, the oRPC client (OpenAPILink) over @avel/contract 1.0.0, served in dev and tests by @avel/contract-mock. Vitest 5 and Playwright with axe-core"
+layout = "apps/web is new: T-B0 leaves only its package.json (name @avel/web, its dependencies, sideEffects, and the scripts dev, preview, test and e2e; no build or typecheck script yet, so main stays green before T-F1). packages/contract (the contract), packages/contract-mock (createMock: routes 8, 19, 52 to 54 and the sample world), packages/db"
+conventions = [
+  "AGENTS.md and Build rules E4: strict TypeScript, Biome with no warnings, no console.log",
+  "E15: agent, client and Canon text is plain text, never HTML; no money anywhere, no '$'",
+  "The web imports zod only as zod/mini (decisions-approval-page.md section 3, revision 9)",
+  "@avel/contract-mock is for the dev server under AVEL_API=mock and the tests only, never a production build",
+]
+notes = [
+  "The old 45-file apps/web in ~/projects/avel-wt is built on contract 0.0.0 and isn't a source (handoff README; docs/design/README.md). Don't read it or copy from it",
+  "Out of this sprint: the shell layout and sign-in (next cycle, E14), the event stream hook and the full error map (port step 1's other half, with the data core of decisions-approval-page.md section 3), fonts, the React Compiler, TanStack Query, and TanStack DB (E18: CR-W23 isn't accepted)",
+]
+
+[[ticket]]
+id = "T-F1"
+slug = "web-scaffold"
+title = "apps/web scaffold: TanStack Start, Tailwind v4, shadcn/ui and the oRPC client on contract-mock"
+goal = "Opening / shows a server-rendered page in AVEL's light or night look that says how many decisions are waiting, read from contract-mock through the oRPC client."
+refs = [
+  "control-room-handoff README, port step 1 (Foundation)",
+  "screens.md, Decisions (route /, its clear state and the 150 KB budget)",
+  "shell-layout.md section 2 (__root and the avel-theme cookie)",
+]
+depends_on = ["T-B0"]
+may_change = [
+  "apps/web/src/**",
+  "apps/web/vite.config.ts",
+  "apps/web/tsconfig.json",
+  "apps/web/components.json",
+  "apps/web/biome.json",
+]
+must_not_change = ["apps/web/package.json", "pnpm-lock.yaml", "package.json", "biome.json", "tsconfig.base.json"]
+context = [
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "port step 1 and the rules that aren't obvious from the screens" },
+  { path = "docs/ui-reference/control-room-handoff/tokens.css", why = "copied byte for byte to apps/web/src/styles/tokens.css" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "the Decisions section: route /, 'Nothing needs you', server-rendered, under 150 KB" },
+  { path = "docs/ui-contracts/shell-layout.md", why = "section 2's __root lines only: data-theme from the avel-theme cookie (light or night, light by default), data-depth=\"glass\"" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "section 6 only for package.json's sideEffects and __root's data-theme; section 3 only for zod/mini. Fonts, font fallbacks and the React Compiler aren't this ticket" },
+  { path = "packages/contract-mock/src/mock.ts", why = "createMock({ contractVersion, world }) and its fetch, which the dev server mounts under /api" },
+  { path = "packages/contract/src/routes/decisions.ts", why = "route 52, decisions.listPending: a Page of PendingDecisionDto" },
+  { path = "packages/contract/src/version.ts", why = "CONTRACT_VERSION, passed to createMock" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm --filter @avel/web exec tsc -p tsconfig.json --noEmit",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "apps/web/package.json is T-B0's and locked here: its dependencies, sideEffects [\"**/*.css\"] and scripts (dev: vite dev, preview: vite preview, test: vitest run, e2e: playwright test) are what T-F1 builds on. No build or typecheck script: verify runs vite build and tsc through pnpm exec, and the next cycle's dependency ticket adds both scripts so root build and typecheck cover apps/web. A missing package or script is needs-dependency (L1)",
+  "The seams the tests use: apps/web/src/data/client.ts exports createClient({ baseUrl, fetch? }), a ContractRouterClient over @avel/contract through OpenAPILink. apps/web/src/home/load-home.ts exports loadHome(client), resolving to { kind: 'ready', count, more } | { kind: 'empty' } | { kind: 'error' }, from route 52's first page (more is nextCursor !== null). apps/web/src/home/HomeView.tsx exports HomeView({ state, onRetry }) and HomeLoading()",
+  "The page's states. Ready: an h1 'Decisions' and '{count} waiting' ('{count}+ waiting' when more). Empty: the h1 and 'Nothing needs you'. Error: the h1, role=alert 'Couldn't load your decisions.' and a 'Try again' button that re-runs the loader. Loading: role=status 'Loading…', the route's pending view. The document title is 'Decisions · AVEL'",
+  "__root reads the avel-theme cookie on the server onto <html data-theme> (night, else light), with lang=\"en\" and data-depth=\"glass\". No theme switch in this ticket: Settings owns it",
+  "Styles: src/styles/tokens.css is the handoff's file unchanged; src/styles/app.css imports it and maps shadcn's variables (background, foreground, primary, border, ring and the rest init writes) to the --av-* values, so light and night both follow data-theme",
+  "shadcn/ui init means components.json (Tailwind v4, css src/styles/app.css, alias @/ to src/) and src/lib/utils.ts's cn() on clsx and tailwind-merge, as init writes them. Write them by hand or run init without installing anything: no component is added, and no package",
+  "The dev server mounts createMock({ contractVersion: CONTRACT_VERSION, world: true }).fetch under /api only when AVEL_API=mock, from a Vite plugin with apply 'serve' and a dynamic import, so the mock is never in a production build",
+  "How the tests run the app: Fenn's playwright.config.ts starts `vite dev` with AVEL_API=mock on a port taken from the worktree (D5, never a fixed 3000), and the budget test runs `vite build` then `vite preview`. The app must work under both",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/test/**", "apps/web/e2e/**", "apps/web/vitest.config.ts", "apps/web/playwright.config.ts"]
+behaviours = [
+  "unit: createClient over createMock({ world: true }).fetch lists route 52, and loadHome gives ready with the world's count",
+  "unit: loadHome gives empty when route 52 has no rows, and error when createMock's failNext(52) fails it, without throwing",
+  "unit: HomeView renders each state's copy and role (ready with and without '+', empty, error with its Try again button) and HomeLoading renders role=status, through react-dom/server",
+  "unit: src/styles/tokens.css is byte for byte the handoff's tokens.css, components.json points at src/styles/app.css, and cn() merges conflicting Tailwind classes",
+  "unit: no file under apps/web/src uses dangerouslySetInnerHTML or sets innerHTML, and none imports classic zod",
+  "e2e: / under AVEL_API=mock is server-rendered: the HTML before hydration has the h1 'Decisions' and the waiting count, and the title is 'Decisions · AVEL'",
+  "e2e: with no avel-theme cookie, <html data-theme> is light; with avel-theme=night it is night in the server's HTML, and the page background differs between the two",
+  "e2e: / passes axe-core's WCAG 2.2 AA rules (wcag2a, wcag2aa, wcag21a, wcag21aa, wcag22aa) with no violation, in light and night, at 390x844 and 1440x900",
+  "e2e: the page's text has no '$'",
+  "budget: on the production build, the JavaScript the server's HTML for / loads or preloads is at most 150 KB gzipped in total (a warning over 130 KB), and no built file contains the mock's operator id 0193a000-0000-7000-8000-000000000001",
+]

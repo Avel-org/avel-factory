@@ -13,7 +13,7 @@ This replaces that guide's team (section 3), its review team (section 7, items 1
 | Role | Who | Model | Does | Never |
 | --- | --- | --- | --- | --- |
 | **Operator** | Javaris | — | Approves each cycle's ticket lists, full-rigor merges, step closes, change requests and new dependencies. Answers escalations. | — |
-| **Operator agent** | OSA | MIOSA AI: DeepSeek V4.1 Flash for everyday work, Kimi K2.6 for briefs (CR-29) | Runs the cycle for Javaris: files the approved tickets, starts and watches sessions, keeps the board, writes digests and decision briefs | Approves, merges, writes product code or tests, changes rules, or decides anything (CR-29: OSA prepares, Javaris decides) |
+| **Operator agent** | OSA | MIOSA AI: DeepSeek V4.1 Flash for everyday work, Kimi K2.6 for briefs (CR-29) | Runs the cycle for Javaris: files the approved tickets, starts and watches sessions, keeps the board, writes digests and decision briefs, merges clear and clean PRs (CR-36), relays instructions to running sessions (CR-37) | Approves, merges anything but a clear and clean PR (CR-36), writes product code or tests, changes rules, or decides anything (CR-29: OSA prepares, Javaris decides) |
 | **Backend lead** | Axis | Opus | Plans backend tickets, answers the backend builder and checker, merges green backend work, drafts change requests | Writes most of the code, or reviews its own tickets |
 | **Backend builder** | Soap | Sonnet; Opus on full-rigor tickets | Builds one backend ticket per session to pass its acceptance tests | Edits the acceptance tests, or reviews |
 | **Backend checker** | Rigg | Sonnet; Opus for full-rigor reviews | Writes each ticket's acceptance tests first, then reviews the builder's pull request | Writes product code |
@@ -32,7 +32,7 @@ Each lead's two helpers are a **builder** and a **checker**, so no work grades i
 | Write product code | Yes | **No** | Small fixes only (A4) | **Yes**, inside the ticket's files | **No** |
 | Write acceptance and end-to-end tests | Yes | **No** | — | **No** | **Yes** |
 | Review a pull request | Yes | **No** | Full-rigor second review | **No** | **Yes**, their own lane |
-| Merge to `main` | Yes | **No** | **Yes**: green, reviewed, not full-rigor | **No** | **No** |
+| Merge to `main` | Yes | **Yes**, only when every CR-36 condition holds | **Yes**: green, reviewed, not full-rigor | **No** | **No** |
 | Merge a full-rigor PR | **Yes** | **No** | Recommends | — | — |
 | Change `packages/contract` or `packages/db` | Approves | **No** | Axis only, through a `contract` or `schema` ticket (I3) | Axis's builder, inside such a ticket | — |
 | Add a dependency | **Approves** | — | Requests | — | — |
@@ -40,7 +40,7 @@ Each lead's two helpers are a **builder** and a **checker**, so no work grades i
 | Close a build step | **Yes** | Prepares the report | Recommend | — | — |
 | Push to any remote | **Only when Javaris says** | No | No | No | No |
 
-- **A1.** Javaris decides; OSA prepares. OSA has no merge rights, no write access to `main`, and no approve button anywhere, and its session can't use one (CR-29).
+- **A1.** Javaris decides; OSA prepares. OSA merges only a PR that meets every CR-36 condition, by squash merge, and has no other write access to `main`. It still has no approve button anywhere, and its session can't use one (CR-29).
 - **A2.** A lead never reviews or merges a ticket it built itself.
 - **A3.** A builder never changes a file outside its ticket's "may change" list, and never edits a test its checker wrote. CI checks both (H6).
 - **A4.** A lead may push a fix of 10 lines or fewer straight to an open PR (a typo, a missed import) and says so in the PR. Anything bigger is a ticket.
@@ -56,7 +56,7 @@ PLAN → TESTS → BUILD → CHECK → REVIEW → MERGE
 - **B3. Build.** Once the tests are locked in `locks.md`, OSA starts the builder's **build dispatch** on the same branch. The session ends with its completion report, which becomes the pull request's description.
 - **B4. Check.** CI runs on every PR (H4).
 - **B5. Review.** The checker's **review dispatch** reviews each PR on a detached checkout, once per cycle (section G).
-- **B6. Merge.** The lead merges what's green and has no blocking finding. Full-rigor PRs wait for Javaris (G7).
+- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7).
 - **B7. Work in progress:**
   - At most 4 sessions run at once: one builder and one checker per lane.
   - A checker can write tests for the next ticket while the builder works on the current one, because they touch different files.
@@ -119,7 +119,7 @@ CI is green and the acceptance tests pass. Nothing else.
 - **D1. One dispatch per session, started fresh.**
   - `scripts/agent.sh` opens it in a new worktree with the agent's identity, `claude --agent <name>`, and `/dispatch <lane>/sprint-NN/<task doc>` as the first message.
   - In the building tabs, the lane loop does this in the agent's own pane. OSA may run it headless (`claude -p`) when nobody is watching.
-  - Nothing is ever pasted or typed in. If the task doc is missing something, the lead fixes the plan and re-renders.
+  - Nothing is pasted in by hand. OSA may message a running session under CR-37, logged, and only within the ticket. If the plan is missing something a message can't fix inside the ticket, the lead fixes the plan and re-renders.
   - No resuming: a session that stops leaves its completion report, and the next attempt starts fresh from that report.
 - **D2. Limits:**
 
@@ -129,7 +129,7 @@ CI is green and the acceptance tests pass. Nothing else.
   | Lead (planning or full-rigor review) | 60 | 45 minutes | $6 |
   | The whole build, per day | — | — | $75 |
 
-  These are starting values, set in `scripts/agents/limits.json`. When the day's limit is reached, OSA starts nothing new and tells Javaris.
+  These are starting values, set in `scripts/agents/limits.json`. Interactive sessions are capped by turns as well as time (CR-37) once its turn hook lands (`scripts/hooks/turns.py`, a lead PR after the scaffold); until then they're capped by time only. When the day's limit is reached, OSA starts nothing new and tells Javaris.
 - **D3. The startup routine,** every session, in order:
   1. Confirm the folder and branch.
   2. Read the task doc in full, then its Context in order: the identity file, `AGENTS.md`, this doc, the codebase analysis and the reading list.
@@ -283,6 +283,7 @@ CI is green and the acceptance tests pass. Nothing else.
 - **L2. Who answers:**
   - The lead answers `blocked`, `test-dispute` and `out-of-scope` within the cycle.
   - `needs-cr` and `needs-dependency` go to Javaris as a decision, with OSA's brief.
+  - The agent also messages OSA at once with its status (CR-37); the completion report is still the official record.
 - **L3. The same failure twice ends the loop.** The lead re-plans it or escalates it; nobody retries it a third time.
 - **L4. When Javaris is needed** (OSA's wake rules, CR-29):
   - **now:** a leak, a full-rigor merge waiting more than 2 working hours, the day's cost limit, or a step-close;
@@ -300,14 +301,16 @@ CI is green and the acceptance tests pass. Nothing else.
 4. **During the cycle:**
    - watches each session against its limits;
    - routes each report status to the right person (L2);
-   - never answers a question meant for a lead or for Javaris.
-5. **After the cycle:** writes the digest (what merged, what's blocked, what needs a decision, cost per merged PR) and records the cycle in each sprint's `SPRINT-ASSESSMENT.md`.
+   - never answers a question meant for a lead or for Javaris;
+   - relays instructions from Javaris or a lead to a running session, logged in `<git common dir>/avel/messages/` (CR-37), and never originates one;
+   - merges each PR that meets every CR-36 condition, one at a time, and routes the rest (L2).
+5. **After the cycle:** writes the digest (what merged, with OSA's merges listed apart from the leads', what's blocked, what needs a decision, cost per merged PR) and records the cycle in each sprint's `SPRINT-ASSESSMENT.md`.
 
 ## N. Done
 
 | Level | Done when | Who says so |
 | --- | --- | --- |
-| Ticket | Its acceptance tests pass, CI is green, the review has no blocking finding, and it's merged | The lead (Javaris for full rigor) |
+| Ticket | Its acceptance tests pass, CI is green, the review has no blocking finding, and it's merged | The lead, or OSA under CR-36 (Javaris for full rigor) |
 | Cycle | Every ticket is merged, sent back or re-planned, and the digest is out | OSA reports; the leads confirm |
 | Step | Every "done when" test of the step passes against real Postgres on `main`. The docs it touches are updated, generated artifacts are in sync, and the step report is written. | Javaris closes it |
 
