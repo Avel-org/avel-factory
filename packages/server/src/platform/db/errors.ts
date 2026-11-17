@@ -1,5 +1,6 @@
 import { errorMap } from "@avel/contract";
-import { AlreadyExists, ConstraintViolation, DeleteRefused } from "../errors.ts";
+import { Effect } from "effect";
+import { AlreadyExists, ConstraintViolation, DeleteRefused, StaleVersion } from "../errors.ts";
 
 /** The fields of a node-postgres error the mapper reads. */
 interface PgError {
@@ -44,4 +45,24 @@ export function mapDbError(
     default:
       return undefined;
   }
+}
+
+/**
+ * A stale `rowVersion` isn't a Postgres error: the versioned update matches no row. Returns the
+ * updated row, or fails with `StaleVersion` carrying the row's current version.
+ */
+export function requireUpdated<A>(
+  rows: readonly A[],
+  currentVersion: number,
+): Effect.Effect<A, StaleVersion> {
+  const [row] = rows;
+  if (row === undefined) {
+    return Effect.fail(
+      new StaleVersion({
+        message: errorMap.STALE_VERSION.message,
+        details: { field: "rowVersion", currentVersion },
+      }),
+    );
+  }
+  return Effect.succeed(row);
 }

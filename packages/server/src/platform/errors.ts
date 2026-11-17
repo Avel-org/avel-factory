@@ -1,4 +1,4 @@
-import type { ErrorBody, ErrorCode } from "@avel/contract";
+import type { ErrorBody, ErrorCode, StaleVersionDetails } from "@avel/contract";
 import { Data } from "effect";
 
 /**
@@ -10,6 +10,7 @@ export const errorTable = {
   AlreadyExists: "ALREADY_EXISTS",
   ConstraintViolation: "CONSTRAINT_VIOLATION",
   DeleteRefused: "DELETE_REFUSED",
+  StaleVersion: "STALE_VERSION",
 } as const satisfies Record<string, ErrorCode>;
 
 export type ErrorTag = keyof typeof errorTable;
@@ -45,4 +46,10 @@ export class ConstraintViolation extends Data.TaggedError("ConstraintViolation")
 export class DeleteRefused extends Data.TaggedError("DeleteRefused")<{
   message: string;
   details: ConstraintDetails;
+}> {}
+
+/** A versioned write that matched no row: the body's version isn't current (409). */
+export class StaleVersion extends Data.TaggedError("StaleVersion")<{
+  message: string;
+  details: StaleVersionDetails;
 }> {}
