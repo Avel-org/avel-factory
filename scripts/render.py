@@ -723,12 +723,19 @@ def ticket_merged(tid):
     return bool(re.search(r"(?mi)^Refs:.*(?<![\w-])" + re.escape(tid) + r"(?![\w])", out.stdout))
 
 
-def locked(plan, tid):
+def locked(plan, t):
+    """True when t's lock line is in locks.md: on the ticket's branch, where the lead commits it, or in
+    the working copy."""
     path = os.path.join(folder(plan["_lane"], plan["_sprint"]), "locks.md")
-    if not os.path.exists(path):
-        return False
-    with open(path) as f:
-        return any(re.match(r"\s*[-*]?\s*" + re.escape(tid) + r"\s*:", line) for line in f)
+    texts = []
+    out = git("show", f"{branch_of(t)}:{rel(path)}")
+    if out.returncode == 0:
+        texts.append(out.stdout)
+    if os.path.exists(path):
+        with open(path) as f:
+            texts.append(f.read())
+    line = re.compile(r"(?m)^\s*[-*]?\s*" + re.escape(t["id"]) + r"\s*:")
+    return any(line.search(text) for text in texts)
 
 
 def report_status(plan, d, attempt=None):
@@ -780,7 +787,7 @@ def dispatch_states(plan):
                 state, why = "waiting", "for " + ", ".join(waits) + " to merge"
             elif d["kind"] == "build" and not (report_status(plan, sib["tests"]) or ("",))[0] == "done":
                 state, why = "waiting", "for the tests' report"
-            elif d["kind"] == "build" and not locked(plan, t["id"]):
+            elif d["kind"] == "build" and not locked(plan, t):
                 state, why = "waiting", f"for {t['id']}'s lock line in locks.md"
             elif d["kind"] == "review" and not (report_status(plan, sib["build"]) or ("",))[0] == "done":
                 state, why = "waiting", "for the build's report"
