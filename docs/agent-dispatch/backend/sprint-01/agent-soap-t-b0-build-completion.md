@@ -1,4 +1,4 @@
-status: needs-cr
+status: done
 ticket: T-B0
 
 # T-B0 build: completion report (Soap)
@@ -13,8 +13,17 @@ for TypeScript 7.x and forward use @effect/tsgo ...
 
 The change request needs one of: a different package for Writing Effect rule 9 (`@effect/tsgo`, the error's own suggestion, which is a new dependency and so Javaris's approval under E5), or a TypeScript 5 or 6 side-by-side for the language service. The package is installed and pinned at 0.87.5 as the list says; nothing in the repo runs it yet.
 
+## Decision
+Stop text above kept as the record. OSA's session messaged after the stop (Javaris chose option A):
+
+> T-B0 merges as built.
+> @effect/language-service 0.87.5 stays installed and pinned, but nothing runs it, since your locked test expects that version.
+> Replacing it with @effect/tsgo, so that Writing Effect rule 9 gets an automatic check, is a CR that Axis will write for next cycle. It's not part of this ticket.
+
 ## Messages received
-None. (`AVEL_ROOT_OVERRIDE` was set in my shell, not sent as a message; see Deviations.)
+1. From OSA's session, after the stop: Javaris chose option A for the `needs-cr`. I changed the status to `done`, added the Decision section above, and committed only this report. It narrows nothing and adds no files, so I accepted it.
+
+`AVEL_ROOT_OVERRIDE` was set in my shell, not sent as a message; see Deviations.
 
 ## Pre-flight
 Node 24.22.2, pnpm 10.33.2, `AVEL_ROOT_OVERRIDE` unset for the runs.
