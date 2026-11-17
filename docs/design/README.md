@@ -87,7 +87,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-27 | The event catalog | Covered by CR-W1 and CR-W10 |
 | CR-28 | The learning layer: lessons, proof and the quality radar | Proposed Nov 14 (skills step); the web side is CR-W24 |
 | CR-29 | OSA as the operator agent | Decisions 1–3 and 5 made; decision 4 (the spend cap) open |
-| CR-30 | Effect 4 in the server, the DBOS test, spans | Accepted Nov 13: Effect behind spike 1, the DBOS test; spans declined (stay "later"). Check 8 (a crash between a side effect and its save) added Nov 14 |
+| CR-30 | Effect 4 in the server, the DBOS test, spans | Accepted Nov 13: Effect behind spike 1, the DBOS test; spans declined (stay "later"). Check 8 (a crash between a side effect and its save) added Nov 14. Nov 17: Effect adopted on spike 1's checks 1, 3 and 4 (T-B1); checks 2 and 5 due next cycle |
 | CR-31 | Step 1 without the sample route and the approval page | Accepted Nov 13 |
 | CR-32 | The skill library follows the Agent Skills spec | Accepted Nov 14: `allowed-tools` refused, `avel-` metadata keys (skills step) |
 | CR-33 | Running several missions at once: shared slots, held-back rooms, proxy turns, cross-mission ranking | Accepted Nov 14 with every recommendation; nothing in Step 1 |
