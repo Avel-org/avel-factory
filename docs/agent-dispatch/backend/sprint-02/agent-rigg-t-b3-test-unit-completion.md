@@ -67,4 +67,4 @@ Every test fails with `Error: Cannot find module '/src/platform/db/errors.ts'`, 
 None.
 
 ## Lock line
-- T-B3: packages/server/test/db/errors.test.ts packages/server/test/db/support/database.ts @ COMMIT
+- T-B3: packages/server/test/db/errors.test.ts packages/server/test/db/support/database.ts @ c35f386 (the commit that adds the tests; the report-only follow-up changes no test path)
