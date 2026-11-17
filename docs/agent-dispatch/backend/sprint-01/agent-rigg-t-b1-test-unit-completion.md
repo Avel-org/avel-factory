@@ -75,4 +75,4 @@ Checks 1, 3 and 4 have tests (T-B1-05 and 06, 08, 09). I can't give pass or fail
 None.
 
 ## Lock line
-- T-B1: packages/server/test/** @ COMMIT
+- T-B1: packages/server/test/** @ <the branch tip: the commit that holds this report; a commit cannot name its own hash, so read it with `git rev-parse t/B1-server-shell`>
