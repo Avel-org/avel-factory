@@ -99,6 +99,13 @@ free_branch() {
   git worktree remove "$other"
 }
 
+# The session reads its task doc from the branch, so the branch must hold main's copy of it: a branch
+# cut before a re-plan would hand the agent the old ticket (T-F5 tests a2, Nov 17). The lead merges main in.
+if git rev-parse --verify -q "$BRANCH" >/dev/null &&
+   [[ $(git rev-parse -q --verify "$BRANCH:$DOC_PATH" 2>/dev/null) != $(git rev-parse "main:$DOC_PATH") ]]; then
+  die "$BRANCH has a different $DOC_PATH from main's (the ticket was re-rendered after the branch was cut). The lead merges main into $BRANCH first."
+fi
+
 case $KIND in
   tests)
     git rev-parse --verify -q "$BRANCH" >/dev/null || git branch "$BRANCH" main
