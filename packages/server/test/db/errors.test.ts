@@ -211,9 +211,10 @@ describe("T-B3-05 · a versioned update that matches no row", () => {
     await client.query(
       "insert into jobs (kind, key) values ('k', 'stale-1') on conflict do nothing",
     );
-    await client.query("update jobs set row_version = 3 where key = 'stale-1'");
+    // The row_version trigger raises the version on every update: 1 after the insert, 2 after this.
+    await client.query("update jobs set last_error = null where key = 'stale-1'");
     const result = await client.query(
-      "update jobs set last_error = 'x', row_version = row_version + 1 where key = 'stale-1' and row_version = 2 returning id",
+      "update jobs set last_error = 'x' where key = 'stale-1' and row_version = 1 returning id",
     );
     return result.rows as { id: string }[];
   }
@@ -225,16 +226,16 @@ describe("T-B3-05 · a versioned update that matches no row", () => {
 
     const { requireUpdated } = await loadErrors();
     const { StaleVersion } = await loadTags();
-    const failed = await Effect.runPromise(Effect.flip(requireUpdated(rows, 3)));
+    const failed = await Effect.runPromise(Effect.flip(requireUpdated(rows, 2)));
     expect(failed).toBeInstanceOf(StaleVersion);
     expect(failed._tag).toBe("StaleVersion");
-    expect(failed.details).toEqual({ field: "rowVersion", currentVersion: 3 });
+    expect(failed.details).toEqual({ field: "rowVersion", currentVersion: 2 });
 
     // The control: an update that did match a row passes through.
     const matched = await client.query(
-      "update jobs set row_version = row_version + 1 where key = 'stale-1' and row_version = 3 returning id",
+      "update jobs set last_error = 'y' where key = 'stale-1' and row_version = 2 returning id",
     );
-    const ok = await Effect.runPromise(requireUpdated(matched.rows, 4));
+    const ok = await Effect.runPromise(requireUpdated(matched.rows, 3));
     expect(ok).toEqual(matched.rows[0]);
   });
 
