@@ -7,6 +7,7 @@ import { Data } from "effect";
  */
 export const errorTable = {
   NotFound: "NOT_FOUND",
+  AlreadyExists: "ALREADY_EXISTS",
 } as const satisfies Record<string, ErrorCode>;
 
 export type ErrorTag = keyof typeof errorTable;
@@ -21,4 +22,13 @@ export interface MappedError {
 export class NotFound extends Data.TaggedError("NotFound")<{
   message: string;
   details?: ErrorBody["details"];
+}> {}
+
+/** The details of a database-constraint error: the constraint's name. */
+type ConstraintDetails = { readonly constraint: string };
+
+/** A unique violation (23505): 409 `ALREADY_EXISTS`. */
+export class AlreadyExists extends Data.TaggedError("AlreadyExists")<{
+  message: string;
+  details: ConstraintDetails;
 }> {}
