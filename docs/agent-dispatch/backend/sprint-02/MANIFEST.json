@@ -1,0 +1,27 @@
+{
+  "files": {
+    "DISPATCH-PROMPTS.md": "7772b85e4d6b10ae70061a2e1c1383ba6699a92cb2dfe534a17b921a4c8adeb4",
+    "DISPATCH.md": "049ff770712db2712a46aedbdb676cff383d6eda93a246cbae72909176c14cda",
+    "agent-rigg-t-b2-review.md": "f4454227cab7d09bb08fbc73e526685a93865e1d3c5c034bc05a6bc341f2a441",
+    "agent-rigg-t-b2-test-unit.md": "02714f9f0308e532d24cfcba75968781c53322ae3132d405e13d57ac628b89c8",
+    "agent-rigg-t-b3-review.md": "461657625e5a43ea7507cf8b40d961616c985ce58a7988637365806cbbdde10f",
+    "agent-rigg-t-b3-test-unit.md": "3c6323b5d554392d4a49a6b8e5d90e71a4962a79879ae302f9633d725aabb454",
+    "agent-rigg-t-b4-review.md": "3d96d62d2255e4bbc2885cff669845a309704820995db4f47a5cdb3740b6a37f",
+    "agent-rigg-t-b4-test-unit.md": "838b344f1dac584bb10b58ca6e26f8239ff98e5fc50dfc9ce3cef223ab0cbc5a",
+    "agent-rigg-t-b5-review.md": "45307b190cf258aad8b76e6d75026e837fda9d087035257d866380131871e149",
+    "agent-rigg-t-b5-test-unit.md": "92f40cda9c84a73191031f3c9b50ae2c1d37ff1175294f128b6c6978d878a091",
+    "agent-rigg-t-b6-review.md": "f809484a5b8f6a66ebdaee1f23445b8aae097e8921de8005d727060b935a8f13",
+    "agent-rigg-t-b6-test-unit.md": "f479e993bd23890c7dcf76156e78d46679dbc766e752ce1a3c54d8252b5a7a3c",
+    "agent-soap-t-b2-build.md": "cafe3e5b3cfe72d952c03757e167c7815414d9d5a61103f026b4e0e359200f1c",
+    "agent-soap-t-b3-build.md": "38230576e6741f2e0984527185125e824cab754be67c3a426dfce2af89af5e54",
+    "agent-soap-t-b4-build.md": "780c0b68341ee96ae2a5a67ef42c7272d013afaa6ce7c1d017f07cafda162a98",
+    "agent-soap-t-b5-build.md": "59cbed2c92b7a6f55f8bd5105063a8a71f72794cbe3cc9542c601def9eb61ebb",
+    "agent-soap-t-b6-build.md": "4184cbc429932bedd01b3aeaea5f1cb695cb2469f3457ac7f0d3129612b3c7d9",
+    "codebase-analysis.md": "2a10eb60c6c04fc3712c3f6b5e1b0b35afbb6f9d4758a904e3240d63973b588c"
+  },
+  "lane": "backend",
+  "packageSha256": "0a8cd2d775dc38609a4eb34a25d5c3c4e5aadd5baaa877267824eff147f1067b",
+  "plan_sha256": "97eb96e8f7ce385bcc4f7249c16941bc915343c6408b5bdbfbf4b9b99f3a21f7",
+  "renderer": "avel-render 1",
+  "sprint": "sprint-02"
+}
