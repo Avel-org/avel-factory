@@ -3,24 +3,37 @@
 # Check it:   scripts/render.py --check backend/sprint-02
 # Render it:  scripts/render.py backend/sprint-02   (after approval), then commit the folder.
 #
-# A partial plan, started Nov 17 so the accepted CR-39 has its ticket. The rest of the cycle's
-# tickets (the Db service, the lock-check hardening from T-B0's review P2 and P3, and CR-38 if it's
-# accepted) are added once T-B1 lands. Nothing here is approved until Javaris approves the whole plan.
+# Five tickets, about 4 hours of building, one builder at a time (B7):
+#   T-B2 dependencies and @effect/tsgo (CR-39)            ~45 min  standard
+#   T-B3 database errors to contract codes (Step 1 item 3)  ~50 min  full (platform/db)
+#   T-B4 the Db service, spike 1 check 2 (Step 1 test 6)    ~70 min  full (events and seq, C4)
+#   T-B5 lock-check hardening (T-B0 review P2 and P3)       ~45 min  standard
+#   T-B6 the contract's defect code (CR-38)                 ~20 min  standard, contract
+# T-B6 is in only if Javaris accepts CR-38 and Zero signs off; otherwise it's removed before render.
+# Spike 1 check 5 (the reaper under TestClock) isn't here: see the cycle notes and the brief.
+# If the cycle has to be shorter, T-B5 is the one to move.
 
 lane = "backend"
 sprint = "sprint-02"
 step = 1
-title = "Step 1, cycle 2: Effect's language service on TypeScript 7, then the Db service"
+title = "Step 1, cycle 2: Effect's language service, the Db service with spike 1 check 2, database errors, a harder lock check"
 goals = [
   "Effect's language service runs in the editor and in CI on TypeScript 7, so Writing Effect rule 9 holds",
+  "A unique, CHECK or foreign-key violation from Postgres comes back as the contract's 409 or 422 with the constraint's name, never as a 500",
+  "A state change and its events commit together or not at all, and seq follows commit order (spike 1 check 2)",
+  "A builder can't slip a change past the lock check inside a merge commit",
 ]
 done_when = [
   "AGENTS.md, Writing Effect rule 9: Effect's language service runs in the editor and CI",
-  "Step 0 and Step 1 plan, Step 1 test 1: CI is green",
+  "Step 0 and Step 1 plan, Step 1 test 6: fed real Postgres errors through the Db service, a unique violation is 409, a CHECK violation is 422 and a stale rowVersion update is 409",
+  "CR-30 section 6, spike 1 check 2: a rolled-back program leaves no event, and Events.append outside a transaction doesn't compile",
+  "Build rules H6: the lock check can't be skipped by a merge commit",
 ]
 sources = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 items 3 (database errors) and 10 (events and seq), and test 6" },
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 2 (the Db service: withTransaction, Tx, Events.append, commitWithEvents) and section 6 (spike 1 check 2)" },
   { path = "docs/design/CR-39 Effect's language service on TypeScript 7.md", why = "the accepted change: @effect/tsgo 0.64.1 replaces @effect/language-service, run in the editor and CI" },
-  { path = "docs/design/Build rules.md", why = "E5 (dependencies: one lockfile change per cycle), F2 (locked tests change only in the checker's own commit)" },
+  { path = "docs/design/Build rules.md", why = "C4 (full rigor), E5 (one lockfile change per cycle), E9 (spike 2 before the jobs engine), E10 (real Postgres), F2 (locked tests), H6 (the lock check)" },
 ]
 
 [commands]
@@ -30,23 +43,27 @@ lint = "pnpm lint"
 test = "pnpm test"
 
 [analysis]
-stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7.0.2, Biome, Vitest 5; Hono, oRPC 1.16.2, Zod 4, Effect 4.1 inside packages/server"
-layout = "packages/contract, packages/contract-mock, packages/db, packages/server (the shell from sprint-01's T-B1), tools/repo-checks (the lock check, T-B0), tools/docs, apps/web"
+stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7.0.2, Biome, Vitest 5; Hono 4.13.16, oRPC 1.16.2, Zod 4, Effect 4.1.1 inside packages/server; Drizzle 0.45.4 and node-postgres 8.23.1 in packages/db; Postgres 17"
+layout = "packages/contract, packages/contract-mock, packages/db (schema and migrations), packages/server (src/platform: app, effect-handler, errors, ids, logger, request-id, from T-B1), tools/repo-checks (the lock check, T-B0), tools/docs, apps/web"
 conventions = [
-  "AGENTS.md is the rulebook: Writing Effect rules 1 to 10",
+  "AGENTS.md is the rulebook: API rules (errors, writes) and Writing Effect rules 1 to 10",
+  "packages/server/src/platform/errors.ts holds the one table from a tagged error to a contract code; a tag with no row doesn't compile through effectHandler (T-B1)",
+  "Real Postgres in tests (E10): scripts/pg-local.sh locally, the postgres service in CI; DATABASE_URL points at it. Each test file makes its own database and migrates it with pnpm --filter @avel/db migrate:up, as packages/db/test/helpers/db.ts does",
   "Exact versions only in package.json (no ^ or ~)",
 ]
 notes = [
-  "This sprint starts after sprint-01's T-B0 and T-B1 have merged: T-B2 changes the manifest and tsconfig T-B0 made final, and checks the src T-B1 adds",
-  "Lock at the head of the tests dispatch (after the checker's report commit), and run check-locks on the branch before the build starts (T-B0 review, t-b0-rigg-01)",
+  "This sprint starts after sprint-01's T-B0 and T-B1 merged (both on main, Nov 17)",
+  "Lock each ticket at the head of its tests dispatch (after the checker's report commit), and run check-locks on the branch before the build starts (T-B0 review, t-b0-rigg-01)",
+  "Spike 1 check 5 (the reaper under TestClock) is not in this cycle unless Javaris chooses it: a reaper is part of the jobs engine (C4), and E9 puts spike 2 (DBOS) before the jobs engine. Recommended: check 5 joins the jobs and events tests written right before spike 2, so it's proved once over whichever engine wins",
+  "Backlog, not this cycle: T-B1 review P3s (effectHandler's Promise<any> loses the compile-time DTO check; no lint rule for Writing Effect rule 2; an abort may log a false defect; an OpenAPIHandler per request; any UUID version accepted)",
 ]
 
 # ---------------------------------------------------------------------------------------------
 [[ticket]]
 id = "T-B2"
 slug = "effect-tsgo"
-title = "Effect's language service on TypeScript 7: @effect/tsgo in place of @effect/language-service, in the editor and CI"
-goal = "A common Effect mistake in packages/server, such as an Effect that is created and never run, fails CI."
+title = "The cycle's dependencies: @effect/tsgo in place of @effect/language-service (CR-39), and the database packages for the server"
+goal = "A common Effect mistake in packages/server, such as an Effect that is created and never run, fails CI, and the server can import @avel/db."
 rigor = "standard"
 refs = ["CR-39 decisions 1 and 2 (accepted Nov 17)", "AGENTS.md, Writing Effect rule 9", "Build rules E5"]
 may_change = [
@@ -68,6 +85,7 @@ context = [
   { path = "docs/design/CR-39 Effect's language service on TypeScript 7.md", why = "what changes where, and the stop rule" },
   { path = "AGENTS.md", why = "Writing Effect, rule 9, and the rules the language service catches" },
   { path = "packages/server/package.json", why = "the manifest T-B0 made: the pin to replace and the scripts to add to" },
+  { path = "packages/db/package.json", why = "the exact versions of drizzle-orm, pg and @types/pg the server must match" },
   { path = "packages/server/tsconfig.json", why = "where an editor plugin entry goes, if @effect/tsgo needs one" },
   { path = ".github/workflows/ci.yml", why = "the main CI job the new step joins" },
   { path = "tools/repo-checks/test/dependencies.test.ts", why = "T-B0-08, the locked pin test this ticket's tests change" },
@@ -81,10 +99,11 @@ verify = [
   "pnpm why @effect/language-service",
 ]
 notes = [
-  "Dependency, approved by Javaris with CR-39 (Nov 17, E5): dev only in packages/server, @effect/tsgo 0.64.1 (MIT; published Nov 2, 2026, the newest version at least two weeks old on Nov 17; about 11.3 MB plus one platform binary from its optional dependencies; bin effect-tsgo). Remove @effect/language-service 0.87.5: `pnpm why @effect/language-service` must print nothing. This is the cycle's one lockfile change",
+  "New dependency, approved by Javaris with CR-39 (Nov 17, E5): dev only in packages/server, @effect/tsgo 0.64.1 (MIT; published Nov 2, 2026, the newest version at least two weeks old on Nov 17; about 11.3 MB plus one platform binary from its optional dependencies; bin effect-tsgo). Remove @effect/language-service 0.87.5: `pnpm why @effect/language-service` must print nothing",
+  "Not new, already in the lockfile through packages/db, so no E5 approval is needed: add to packages/server's dependencies @avel/db workspace:*, drizzle-orm 0.45.4 and pg 8.23.1, and to devDependencies @types/pg 8.23.1, the same versions packages/db pins. T-B3 and T-B4 need them. This ticket is the cycle's one lockfile change",
   "The script check:effect in packages/server/package.json runs effect-tsgo and exits non-zero on any Effect diagnostic, naming the file. With no arguments it checks the server's src and test; given paths (after --), it checks those instead, which is how the tests point it at their fixtures. Read the package's README for the command line, and state in the report the exact command and any tsconfig plugin entry you added",
   "CI: add a step to the main job in .github/workflows/ci.yml, after typecheck, that runs pnpm --filter @avel/server run check:effect. .github/** is a CODEOWNERS path, so Javaris merges this PR",
-  "Outside sources and what we took.md: the Effect entry names @effect/tsgo as the language service (CR-39). CR-30's note is the lead's and is already on the CR-39 branch",
+  "Outside sources and what we took.md: the Effect entry names @effect/tsgo as the language service (CR-39)",
   "Stop rule (CR-39 section 3): if effect-tsgo can't run on TypeScript 7.0.2, or can't be run from the command line for CI, stop with needs-cr. Don't pin an older TypeScript or an older package",
 ]
 
@@ -97,7 +116,212 @@ paths = [
 ]
 behaviours = [
   "dependencies (T-B0-08, changed in the checker's own commit, F2): packages/server pins @effect/tsgo 0.64.1 and no longer lists @effect/language-service",
+  "dependencies: packages/server lists @avel/db workspace:*, drizzle-orm and pg at exactly the versions packages/db pins, and @types/pg likewise",
   "effect check: packages/server's check:effect, given a fixture with an Effect that is created and never run, exits non-zero and names the file",
   "effect check: the same script exits 0 on a clean fixture, and with no arguments on the server as it stands",
   "ci: .github/workflows/ci.yml runs pnpm --filter @avel/server run check:effect",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B3"
+slug = "db-errors"
+title = "Database errors to contract codes: unique 409, CHECK 422, foreign key 409 or 422, stale rowVersion 409"
+goal = "A write that breaks a database rule comes back as the contract's 409 or 422 naming the constraint, not as a 500."
+rigor = "full"
+refs = ["Step 0 and Step 1 plan, Step 1 item 3 and test 6", "AGENTS.md, API rules (writes) and Writing Effect rule 3", "Build rules E11"]
+depends_on = ["T-B2"]
+may_change = [
+  "packages/server/src/platform/db/errors.ts",
+  "packages/server/src/platform/errors.ts",
+]
+must_not_change = [
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/app.ts",
+  "packages/server/package.json",
+  "packages/contract/**",
+  "packages/db/**",
+]
+context = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 item 3: which violation becomes which status, and 'constraints are never duplicated in code as the only guard'" },
+  { path = "packages/contract/src/errors.ts", why = "the codes to map to: ALREADY_EXISTS (409), DELETE_REFUSED (409), CONSTRAINT_VIOLATION (422), STALE_VERSION (409), each with its details schema" },
+  { path = "packages/server/src/platform/errors.ts", why = "the one table from a tagged error to a code (T-B1); new tags get rows here" },
+  { path = "packages/server/src/platform/effect-handler.ts", why = "how a tagged failure becomes the ORPCError with its details; read only" },
+  { path = "packages/db/src/schema/platform.ts", why = "real constraints to test against: users_email_uq, the CHECKs, the foreign keys, row_version columns" },
+  { path = "packages/db/test/helpers/db.ts", why = "how a test makes and migrates its own database" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "errors.ts in platform/db exports one function that turns a thrown node-postgres error into a tagged error: 23505 unique to AlreadyExists, 23514 CHECK to ConstraintViolation, 23503 foreign key to DeleteRefused when a referenced row's delete or update is refused and to ConstraintViolation when the parent is missing. Each carries details { constraint } with the constraint's name from the error. Any other database error stays a defect (Writing Effect rule 3)",
+  "Stale rowVersion is not a Postgres error: a versioned update matches no row. errors.ts also exports a helper that turns 'no row updated' into StaleVersion, with STALE_VERSION's details for field rowVersion and the current version",
+  "Add each new tag's row to errorTable in platform/errors.ts. Nothing calls the function yet: T-B4 wires it into the Db service",
+  "Full rigor: platform/db is a CODEOWNERS path, so Javaris merges it (G7), and the second review follows the security checklist",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/db/**"]
+behaviours = [
+  "harness: each test file gets its own migrated database (support file in test/db, reused by T-B4's tests)",
+  "a real unique violation (a second user with the same email) becomes AlreadyExists, and through effectHandler a 409 ALREADY_EXISTS whose details name users_email_uq",
+  "a real CHECK violation becomes ConstraintViolation, and a 422 CONSTRAINT_VIOLATION naming the CHECK",
+  "a real foreign-key refusal on delete becomes DeleteRefused, a 409 DELETE_REFUSED; a real missing parent on insert becomes ConstraintViolation, a 422",
+  "a versioned update that matches no row becomes StaleVersion, a 409 STALE_VERSION with field rowVersion",
+  "any other database error (for example a syntax error) stays a defect: 500, never shown",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B4"
+slug = "db-service"
+title = "The Db service: withTransaction, Tx, Events.append and commitWithEvents (spike 1 check 2)"
+goal = "A state change and its events commit together or not at all, events get seq in commit order, and Events.append outside a transaction doesn't compile."
+rigor = "full"
+refs = [
+  "CR-30 section 2 (the Db service) and section 6, spike 1 check 2",
+  "Step 0 and Step 1 plan, Step 1 item 10 and test 6",
+  "AGENTS.md, Writing Effect rules 6 and 8, and the Events.append rule",
+]
+depends_on = ["T-B3"]
+may_change = [
+  "packages/server/src/platform/db/db.ts",
+  "packages/server/src/platform/db/tx.ts",
+  "packages/server/src/platform/db/events.ts",
+  "packages/server/src/platform/db/index.ts",
+]
+must_not_change = [
+  "packages/server/src/platform/db/errors.ts",
+  "packages/server/src/platform/errors.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/app.ts",
+  "packages/server/package.json",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 2: withTransaction takes a pool client as a scoped resource, provides Tx, commits or rolls back; Events.append needs Tx; commitWithEvents takes the advisory lock and assigns seq last" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 item 10 (one transaction for a change, its event and its job; seq under the advisory lock as the last statement) and test 6" },
+  { path = "packages/db/src/schema/events.ts", why = "the events table: seq, and 'taken under an advisory lock as the last statement before commit'" },
+  { path = "packages/server/src/platform/db/errors.ts", why = "T-B3's mapper: every database error inside withTransaction goes through it" },
+  { path = "packages/server/src/platform/ids.ts", why = "the pattern for an Effect service and its Layer (T-B1)" },
+  { path = "packages/server/test/db", why = "T-B3's harness, which this ticket's tests reuse" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Db is an Effect service with a Layer built from DATABASE_URL read through Config as Redacted, holding one node-postgres Pool released in the layer's finalizer. No route uses it yet: wiring it into app.ts comes with the first route that writes",
+  "withTransaction(program): acquireRelease a pool client, BEGIN, provide Tx (the Drizzle transaction), COMMIT on success, ROLLBACK on failure, defect or interruption, and always release the client (Writing Effect rule 6). Database errors are mapped through T-B3's function, so a program sees tagged errors, never pg's",
+  "Events.append(event) requires Tx in its type, so it can't be called outside withTransaction. It only queues the event for this transaction",
+  "commitWithEvents: the one way to commit when events are queued. It takes the transaction-level advisory lock, inserts the queued events as the last statement (so seq follows commit order), then commits. If events are queued and the program ends without it, the transaction fails as a defect rather than dropping them. No other code takes the lock",
+  "Spike 1 check 2: the report gives pass or fail, with evidence, and says whether anything needed a beta package, a fork or a patch (Javaris's Effect decision, CR-30 decision 1). A fail stops with needs-cr",
+  "Full rigor (C4: events and seq): Javaris merges it, and the second review follows the security checklist",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/db-service/**"]
+behaviours = [
+  "withTransaction commits a program that succeeds: its rows are there afterwards",
+  "a program that fails with a tagged error, dies, or is interrupted is rolled back, and the pool client is released each time",
+  "spike 1 check 2: a program that appends an event and then fails leaves no event and no row",
+  "spike 1 check 2: Events.append outside withTransaction fails to compile (a type-level test, checked by the server typecheck)",
+  "commitWithEvents: under concurrent transactions, events' seq order equals commit order, with no gap a reader at the last seq can miss",
+  "test 6 through the Db service: a unique violation inside withTransaction reaches the caller as AlreadyExists (409), a CHECK violation as ConstraintViolation (422), and a stale rowVersion update as StaleVersion (409)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B5"
+slug = "lock-check-merges"
+title = "Lock check: merge commits are checked, and the build doc is found by the PR's branch"
+goal = "A builder can't change a locked test or a file outside the ticket inside a merge commit, and a PR is always checked against its own ticket's build doc."
+rigor = "standard"
+refs = ["Build rules H6", "T-B0 review findings t-b0-rigg-02 (P2) and t-b0-rigg-03 (P3)"]
+may_change = ["tools/repo-checks/src/**"]
+must_not_change = [
+  "tools/repo-checks/package.json",
+  ".github/workflows/locks.yml",
+  "scripts/render.py",
+]
+context = [
+  { path = "tools/repo-checks/src/check-locks.ts", why = "the check as T-B0 built it: rev-list --no-merges, and findBuildDoc's first match" },
+  { path = "tools/repo-checks/test/helpers.ts", why = "the locked interface (T-B0) the check keeps to, and the scratch-repo helpers" },
+  { path = "docs/agent-dispatch/backend/sprint-01/findings/t-b0-rigg-02.md", why = "P2: an 'evil merge' hides a change; the suggested fixes" },
+  { path = "docs/agent-dispatch/backend/sprint-01/findings/t-b0-rigg-03.md", why = "P3: the first match across sprints; match by the doc's branch front matter" },
+  { path = "scripts/render.py", why = "the build doc's front matter (branch:) and report paths; read only" },
+]
+verify = [
+  "pnpm --filter @avel/repo-checks test",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "P2: a merge commit's own changes must be held to the same rules as any builder commit: compare each merge against its first parent (or the whole range's tree), so a locked test or an out-of-Territory file changed only in a merge result fails and is named. A plain merge of main that brings in main's own changes must still pass",
+  "P3: find the build doc whose front matter branch: equals GITHUB_HEAD_REF, not the first file with the ticket's name. Ticket IDs are never reused across sprints today, so this is hardening, not a live bug",
+  "The T-B0 interface in helpers.ts stays: same script, environment and messages",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["tools/repo-checks/test/locks-merges.test.ts"]
+behaviours = [
+  "a merge commit whose result changes a locked test that neither parent changed fails, and names the file",
+  "a merge commit whose result changes a file outside the Territory that neither parent changed fails, and names the file",
+  "a merge of main into the ticket branch that only brings in main's own commits passes",
+  "the build doc is the one whose branch: front matter matches GITHUB_HEAD_REF, even when another sprint's folder has a doc with the same file name",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B6"
+slug = "defect-code"
+title = "The contract's defect code: INTERNAL_SERVER_ERROR, 500, no details; contract 1.0.1 (CR-38)"
+goal = "A defect's 500 carries a code from the contract's catalog, so the web can show it like any other error."
+rigor = "standard"
+refs = ["CR-38 (only if accepted, with Zero's sign-off)", "AGENTS.md, Writing Effect rule 3", "Build rules I3"]
+labels = ["contract"]
+cr = "CR-38"
+may_change = [
+  "packages/contract/src/errors.ts",
+  "packages/contract/src/version.ts",
+  "docs/generated/**",
+]
+must_not_change = [
+  "packages/contract/src/routes/**",
+  "packages/contract/src/dto/**",
+  "packages/contract-mock/**",
+  "packages/server/**",
+  "apps/web/**",
+]
+context = [
+  { path = "docs/design/CR-38 A contract error code for defects.md", why = "the change, word for word" },
+  { path = "packages/contract/src/errors.ts", why = "errorMap: the generic codes, where the new one goes" },
+  { path = "packages/contract/src/version.ts", why = "CONTRACT_VERSION 1.0.0 to 1.0.1" },
+  { path = "packages/server/src/platform/effect-handler.ts", why = "already answers a defect with INTERNAL_SERVER_ERROR; read only, it shouldn't need a change" },
+]
+verify = [
+  "pnpm --filter @avel/contract test",
+  "pnpm --filter @avel/docs generate && git diff --exit-code docs/generated",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Add INTERNAL_SERVER_ERROR { status: 500, message: 'Something went wrong' } to errorMap's generic codes, with no data. Bump CONTRACT_VERSION to 1.0.1. Regenerate docs/generated with pnpm --filter @avel/docs generate and commit it",
+  "The server already sends INTERNAL_SERVER_ERROR for a defect (T-B1), so no server file changes. If a server test or typecheck fails because of the new code, stop with out-of-scope rather than editing the server",
+  "API routes.md's error section is the lead's to update when CR-38 is accepted, not this ticket's",
+  "Remove this ticket from the plan before rendering if CR-38 isn't accepted",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/contract/test/defect-code.test.ts"]
+behaviours = [
+  "errorMap has INTERNAL_SERVER_ERROR with status 500, message 'Something went wrong' and no data schema",
+  "CONTRACT_VERSION is 1.0.1",
+  "the generated OpenAPI document lists INTERNAL_SERVER_ERROR as a 500 error code",
 ]
