@@ -74,6 +74,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - The toggle: beside the brand in the rail (1024px and wider), .lib-rail-toggle with aria-label 'Collapse sidebar' when open and 'Expand sidebar' when collapsed, aria-expanded true when open, and the panel-left icon. ⌘B on macOS and Ctrl+B elsewhere toggle it too, at 1024px and wider, and not while a text field has focus. No other shortcut (S14). The sheet keeps its 'Close navigation' button in the toggle's place
 - Collapsed: icons only (64px rail), each row's name in .lib-rail-tip to the right, positioned from that row's rect when it's hovered or focused, and gone on leave or blur. The row keeps its accessible name. The 240ms grid transition runs only on a toggle, never on load, and not under prefers-reduced-motion
 - The Decisions badge on its nav row (.lib-nav-badge) and on its tab: the text from decisionsBadge, the label '{text} waiting' on the nav row, and on the tab the sr-only word 'waiting' after the number (S10). No badge for 0, no data or an error
+- The tests check what this ticket draws, never the absence of what later tickets add or of routes later tickets add. Count only what this ticket owns. A test pinning their absence would need a test-dispute on each later ticket
 - If a locked T-F1, T-F2 or T-F3 test conflicts with shell-layout.md here (for example one that requires no data-rail, or a badge-free row), stop with test-dispute (F2); don't work around it
 
 ## 4. Tasks
@@ -196,6 +197,7 @@ Then these sections:
 - Findings: one line each, with its severity and its file under findings/
 - Checked: what you checked, and against which rule
 - Not reached: what you couldn't check, and why
+- Messages received: every instruction OSA relayed, who it came from, and what you did with it (followed, or refused and why); "None" if there were none (CR-37)
 
 ## Activation prompt
 

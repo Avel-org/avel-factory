@@ -107,6 +107,7 @@ notes = [
   "The tab bar (760px and narrower): one tab per route with staticData.nav that the bar lists (Decisions), current with aria-current, each at least 52px tall, and main's bottom padding under [data-tabbar]. S17: a tab is drawn only once its route exists, as S8 says for Release, so Project waits for /missions and More waits for T-F3's sheet",
   "The rounded canvas at 1024px and wider (S1): the page column takes margin var(--canvas-inset) except on the sidebar's side, border-radius var(--radius-dialog), background var(--av-page-bg) and box-shadow 0 0 0 1px var(--av-hairline). It's the scroller, with overscroll-behavior contain and scroll-padding-top 76px. Below 1024px the window scrolls",
   "kit.css: every hover rule under @media (hover: hover) and (pointer: fine); widths as media queries only (no matchMedia, no measuring); keyboard focus rings only; nothing moves under prefers-reduced-motion",
+  "The tests check what T-F2 draws, never the absence of what T-F3 and T-F4 add to the same frame (the menu button, More, the sheet, data-rail, data-focus, the collapse toggle, badges) or of routes later tickets add. Count only what this ticket owns (for example the Decisions tab, not how many tabs the bar holds). A test pinning their absence would need a test-dispute on each of those tickets",
   "The document title stays '{last crumb} · AVEL', so / is still 'Decisions · AVEL'. T-F1's locked tests stay green: the h1, the count, the theme cookie, the axe check and the 150 KB budget",
 ]
 
@@ -117,7 +118,7 @@ behaviours = [
   "unit: AppShell in renderToString draws the brand link to / with 'AVEL', nav \"Main\" with each group's label and its items in order, aria-current=\"page\" on currentId's row only, and the crumbs",
   "unit: AppShell's server markup has data-ui=\"AppShell\" and data-tabbar, and no data-hydrated",
   "unit: AppShell draws the tab bar's tabs in order with the current one marked, and leaves out a group with no items",
-  "unit: navFromRoutes reads staticData.nav into groups and tabs in section 4's order and skips routes without it; with T-F2's route tree it gives the Decide group with Decisions at / and the inbox icon, and nothing else",
+  "unit: navFromRoutes reads staticData.nav into groups and tabs in section 4's order and skips routes without it; with T-F2's route tree its Decide group holds Decisions at / with the inbox icon, and Decisions is a tab",
   "unit: kit.css, read as text: the 1024px and 760px breakpoints, the canvas rule (radius, inset, scroller), and no :hover outside @media (hover: hover) and (pointer: fine)",
   "e2e: at 1280x800, / is server-rendered inside the shell: the rail with the Decisions row current, the rounded canvas, the header's 'Decisions' crumb, no tab bar, and T-F1's h1 and count inside the canvas",
   "e2e: at 900x800, there is no rail and no tab bar, and the header and the page show; at 390x844, the tab bar shows with Decisions current, every tab at least 44px tall, main padded above the bar, and no sideways scroll",
