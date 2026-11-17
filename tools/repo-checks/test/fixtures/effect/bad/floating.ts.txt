@@ -1,0 +1,6 @@
+import { Effect } from "effect";
+
+// A known Effect mistake: the Effect is created and never run (effect(floatingEffect)).
+export const logIt = (): void => {
+  Effect.log("created and never run");
+};

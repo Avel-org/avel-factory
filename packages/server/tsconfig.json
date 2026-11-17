@@ -3,7 +3,22 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "overrides": [
+          {
+            "include": ["src/**/*.ts"],
+            "options": { "diagnosticSeverity": { "floatingEffect": "error" } }
+          },
+          {
+            "include": ["test/errors.test.ts"],
+            "options": { "diagnosticSeverity": { "missingEffectError": "off" } }
+          }
+        ]
+      }
+    ]
   },
   "include": ["src", "test", "vitest.config.ts"]
 }

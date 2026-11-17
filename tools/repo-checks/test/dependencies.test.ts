@@ -25,7 +25,7 @@ const SERVER = {
     zod: "4.6.7",
   },
   devDependencies: {
-    "@effect/language-service": "0.87.5",
+    "@effect/tsgo": "0.64.1",
     "@effect/vitest": "4.1.1",
   },
 };
@@ -77,6 +77,32 @@ describe("dependencies (E5)", () => {
         expect(version, dep).not.toMatch(/^[\^~><*]|latest/);
       }
     }
+  });
+
+  test("T-B2-01: the server pins @effect/tsgo 0.64.1 and no longer lists @effect/language-service (CR-39)", () => {
+    const server = manifest("packages/server/package.json");
+    expect(server.devDependencies?.["@effect/tsgo"]).toBe("0.64.1");
+    expect(server.devDependencies).not.toHaveProperty("@effect/language-service");
+    expect(server.dependencies).not.toHaveProperty("@effect/language-service");
+    // `pnpm why @effect/language-service` must print nothing: no importer and no package entry
+    const lock = readRepoFile("pnpm-lock.yaml");
+    expect(lock).not.toMatch(/@effect\/language-service/);
+    expect(lock).toMatch(/'?@effect\/tsgo'?:\s*\n\s+specifier: 0\.64\.1/);
+  });
+
+  test("T-B2-02: the server lists @avel/db, drizzle-orm, pg and @types/pg at the versions packages/db pins", () => {
+    const server = manifest("packages/server/package.json");
+    const db = manifest("packages/db/package.json");
+    expect(server.dependencies?.["@avel/db"]).toBe("workspace:*");
+    for (const dep of ["drizzle-orm", "pg"]) {
+      expect(db.dependencies?.[dep], `${dep} in packages/db`).toBeDefined();
+      expect(server.dependencies?.[dep], dep).toBe(db.dependencies?.[dep]);
+    }
+    expect(db.devDependencies?.["@types/pg"]).toBeDefined();
+    expect(server.devDependencies?.["@types/pg"]).toBe(db.devDependencies?.["@types/pg"]);
+    // the versions the ticket names, so a change in packages/db can't move both unnoticed
+    expect(server.dependencies).toMatchObject({ "drizzle-orm": "0.45.4", pg: "8.23.1" });
+    expect(server.devDependencies).toMatchObject({ "@types/pg": "8.23.1" });
   });
 
   test("apps/web has exactly the scripts dev, preview, test and e2e, and sideEffects for css", () => {

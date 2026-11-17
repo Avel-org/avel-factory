@@ -1,0 +1,6 @@
+import { Effect } from "effect";
+
+export const logTwice = Effect.gen(function* () {
+  yield* Effect.log("first");
+  yield* Effect.log("second");
+});

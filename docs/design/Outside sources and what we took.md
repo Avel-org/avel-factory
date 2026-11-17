@@ -34,7 +34,7 @@ Every outside repo, library, spec and service we studied while designing the fac
 
 ### Effect 4 · Adopted (CR-30)
 - **What it is:** a TypeScript library where a function's failures are part of its type, dependencies are passed in as services, and resources always clean up. Stable since Sep 30, 2026; 4.1 since Oct 20.
-- **What we took:** services and layers, tagged errors, `Scope` and `acquireRelease`, `Schedule`, fibers, `Stream`, `Config` with `Redacted`, the `Logger` slot, `@effect/vitest` with `TestClock`, and the language service.
+- **What we took:** services and layers, tagged errors, `Scope` and `acquireRelease`, `Schedule`, fibers, `Stream`, `Config` with `Redacted`, the `Logger` slot, `@effect/vitest` with `TestClock`, and the language service (`@effect/tsgo`, which replaces `@effect/language-service` on TypeScript 7; CR-39).
 - **Its role:** the inside of `packages/server`. It turns the design's rules into types: an event can't be written outside a transaction, a cost reservation can't leak, a room is always torn down, every error maps to a contract code.
 - **What we didn't take:** Effect Schema (Zod stays), `effect/sql` (still unstable; Drizzle stays), Effect's HTTP server and RPC (Hono and oRPC stay), Effect's AI packages (our model proxy stays).
 - **Gate:** spike 1 must pass before any Step 1 code.
