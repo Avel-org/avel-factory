@@ -11,7 +11,8 @@
 #   committed or isn't what the plan renders, a dispatch that isn't ready (a stopped or done one only as a
 #   named retry, the lead's call), a seat already busy
 #   (one builder and one checker per lane, 4 at most, B7), and anything while .git/avel/paused exists (J4).
-#   Worktrees: ../<repo>-wt/<lane>-<sprint>-<ticket>-<role>-a<n>. Branch per ticket: t/<id>-<slug>.
+#   Worktrees: ../<repo>-wt/<lane>-<sprint>-<ticket>-<role>-a<n>, removed when the session ends unless it
+#   left uncommitted work (AVEL_KEEP_WORKTREE=1 keeps it). Branch per ticket: t/<id>-<slug>.
 set -euo pipefail
 
 die() { echo "agent.sh: $*" >&2; exit 1; }
@@ -44,7 +45,8 @@ if (( ! here )); then
   # wezterm cli spawn starts a fresh login shell, so the AVEL_* settings are passed on explicitly.
   envs=""
   while IFS='=' read -r k v; do envs+=" $k=$(printf %q "$v")"; done < <(env | grep -E '^AVEL_[A-Z0-9_]*=' | grep -v '^AVEL_SEAT=' || true)
-  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here $lane $sprint $doc $want; exec bash"
+  # The tab closes when the session ends. If agent.sh refuses to start, the reason stays up for a minute.
+  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here $lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
   domain=${AVEL_WSL_DOMAIN:-WSL:Ubuntu}
   for wt in wezterm.exe wezterm; do
     if command -v "$wt" >/dev/null 2>&1; then
@@ -117,7 +119,22 @@ printf '{"pid": %d, "lane": "%s", "sprint": "%s", "doc": "%s", "attempt": %d, "s
   $$ "$lane" "$sprint" "$doc" "$n" "$SEAT" >"$marker"
 flock -u 9
 
-# When the session ends: drop the marker, and keep a copy of the report (a reviewer's stays uncommitted).
+# When the session ends: drop the marker, keep a copy of the report (a reviewer's stays uncommitted),
+# then remove the worktree if nothing would be lost. The branch stays; the next attempt makes a fresh one.
+cleanup() {
+  cd "$root" || return 0
+  local left
+  left=$(git -C "$wt" status --porcelain 2>/dev/null) || return 0
+  if [[ $KIND == review ]]; then
+    # A reviewer's report and findings are uncommitted by design, and were copied to $state/reports above.
+    left=$(grep -v -F -e "$REPORT" -e "${FINDINGS%/}/" <<<"$left" || true)
+  fi
+  if [[ -n $left ]]; then
+    echo "kept $wt: it has uncommitted work"
+    return 0
+  fi
+  git worktree remove --force "$wt" && echo "removed $wt"
+}
 finish() {
   rm -f "$marker"
   if [[ -f $wt/$REPORT ]]; then
@@ -130,6 +147,7 @@ finish() {
     mkdir -p "$state/reports/$lane-$sprint-$doc.a$n-findings"
     cp -r "$wt/$FINDINGS/." "$state/reports/$lane-$sprint-$doc.a$n-findings/"
   fi
+  [[ ${AVEL_KEEP_WORKTREE:-} == 1 ]] || cleanup
 }
 trap finish EXIT
 
@@ -150,7 +168,25 @@ if (( headless )); then
   timeout "${minutes}m" claude -p --agent "$AGENT" --model "$MODEL" --max-turns "$turns" "$ACTIVATION" >"$log" 2>&1 \
     || echo "the session ended with an error or hit its limit: $log"
 else
+  # A finished session ends itself: the Stop hook (scripts/hooks/session.py) raises the flag once the
+  # report is final, and 15 seconds later, if no new turn has lowered it, the session is closed.
+  export AVEL_DONE_FLAG="$state/logs/$lane-$sprint-$doc.a$n.done" AVEL_KIND="$KIND"
+  rm -f "$AVEL_DONE_FLAG"
+  (
+    while sleep 5; do
+      kill -0 $$ 2>/dev/null || exit 0
+      [[ -e $AVEL_DONE_FLAG ]] || continue
+      sleep 15
+      [[ -e $AVEL_DONE_FLAG ]] || continue
+      echo; echo "$name: the report is in; closing the session."
+      pkill -TERM -P $$ -x timeout
+      exit 0
+    done
+  ) &
+  watcher=$!
   printf '\033]0;%s\007' "$name"
   timeout --foreground "${minutes}m" claude --agent "$AGENT" --model "$MODEL" -n "$name" "/dispatch $lane/$sprint/$doc" \
     || echo "the session ended (or hit its $minutes-minute limit)"
+  kill "$watcher" 2>/dev/null || true
+  rm -f "$AVEL_DONE_FLAG"
 fi

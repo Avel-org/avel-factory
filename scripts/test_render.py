@@ -232,11 +232,21 @@ class Flow(unittest.TestCase):
         self.assertEqual(self.state("agent-soap-t-b1-build"), "merged")
         self.assertEqual(self.state("agent-rigg-t-b2-test-unit"), "ready")
 
+    def test_a_finished_session_removes_its_clean_worktree(self):
+        # Nobody has to close what a finished dispatch leaves behind: a clean worktree goes, the branch stays.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        wts = [l for l in r.run("git worktree list --porcelain").stdout.splitlines() if l.startswith("worktree ")]
+        self.assertEqual(len(wts), 1, wts)
+        self.assertTrue(r.run("git rev-parse --verify -q t/B1-effect-spike").stdout.strip())
+
     def test_the_lock_line_is_read_from_the_ticket_branch(self):
         # The lead commits the lock line on the ticket's branch, so a dispatcher on main must see it.
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
-        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        # The test uses the finished session's worktree as the lead's checkout of the branch, so keep it.
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", env={"AVEL_KEEP_WORKTREE": "1"})
         self.assertEqual(r.run("git branch --show-current").stdout.strip(), "main")
         wt = [l.split(" ", 1)[1] for l in r.run("git worktree list --porcelain").stdout.splitlines()
               if l.startswith("worktree ")]
