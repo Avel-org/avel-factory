@@ -227,6 +227,31 @@ class Flow(unittest.TestCase):
         self.assertEqual(self.state("agent-soap-t-b1-build"), "merged")
         self.assertEqual(self.state("agent-rigg-t-b2-test-unit"), "ready")
 
+    def test_the_lock_line_is_read_from_the_ticket_branch(self):
+        # The lead commits the lock line on the ticket's branch, so a dispatcher on main must see it.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        self.assertEqual(r.run("git branch --show-current").stdout.strip(), "main")
+        wt = [l.split(" ", 1)[1] for l in r.run("git worktree list --porcelain").stdout.splitlines()
+              if l.startswith("worktree ")]
+        wt = next(w for w in wt if r.run(f"git -C '{w}' branch --show-current").stdout.strip() == "t/B1-effect-spike")
+        locks = "docs/agent-dispatch/backend/sprint-01/locks.md"
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting")
+
+        def on_branch(text, msg):
+            with open(os.path.join(wt, locks), "a") as f:
+                f.write(text)
+            r.run(f"git -C '{wt}' commit -qam '{msg}'")
+
+        on_branch("<!-- - T-B1: packages/server/test/spike.test.ts @ abc1234 -->\n", "comment only")
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting")  # a commented line isn't a lock
+
+        on_branch("- T-B1: packages/server/test/spike.test.ts @ abc1234\n", "lock T-B1")
+        with open(os.path.join(r.root, locks)) as f:
+            self.assertNotRegex(f.read(), r"(?m)^- T-B1:")  # main's copy has no line
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
+
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
