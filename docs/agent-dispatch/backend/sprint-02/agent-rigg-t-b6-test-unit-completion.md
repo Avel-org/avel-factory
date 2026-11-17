@@ -52,4 +52,4 @@ None.
 None.
 
 ## Lock line
-- T-B6: packages/contract/test/defect-code.test.ts @ COMMIT
+- T-B6: packages/contract/test/defect-code.test.ts @ 88fca07
