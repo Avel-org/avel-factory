@@ -22,7 +22,8 @@ function mockApi(): Plugin {
         for await (const chunk of req) chunks.push(chunk as Buffer);
         const headers = new Headers();
         for (const [name, value] of Object.entries(req.headers)) {
-          if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(", ") : value);
+          if (value !== undefined)
+            headers.set(name, Array.isArray(value) ? value.join(", ") : value);
         }
         const method = req.method ?? "GET";
         const body = method === "GET" || method === "HEAD" ? undefined : Buffer.concat(chunks);

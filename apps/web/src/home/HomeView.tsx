@@ -17,9 +17,7 @@ export function HomeView({ state, onRetry }: { state: HomeViewState; onRetry: ()
   return (
     <main className="mx-auto max-w-[var(--av-content-max)] p-6">
       <h1 className={heading}>Decisions</h1>
-      {state.kind === "ready" && (
-        <p>{`${state.count}${state.more ? "+" : ""} waiting`}</p>
-      )}
+      {state.kind === "ready" && <p>{`${state.count}${state.more ? "+" : ""} waiting`}</p>}
       {state.kind === "empty" && <p>Nothing needs you</p>}
       {state.kind === "error" && (
         <>

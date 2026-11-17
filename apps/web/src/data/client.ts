@@ -1,4 +1,4 @@
-import { contract } from "@avel/contract";
+import { decisions } from "@avel/contract/routes/decisions";
 import { type Client, type ClientContext, createORPCClient } from "@orpc/client";
 import { OpenAPILink } from "@orpc/openapi-client/fetch";
 
@@ -15,6 +15,9 @@ type Infer<S, K extends "input" | "output"> = S extends {
  * answers its output schema's output. (@orpc/contract's own ContractRouterClient is the same
  * shape, but @orpc/contract isn't a dependency of the web.)
  */
+/** Route 52 is all the page reads; each page widens this to the routes it uses. */
+const contract = { decisions };
+
 type ClientOf<T> = T extends { "~orpc": { inputSchema?: infer I; outputSchema?: infer O } }
   ? Client<ClientContext, Infer<I, "input">, Infer<O, "output">, Error>
   : { [K in keyof T]: ClientOf<T[K]> };
