@@ -4,7 +4,7 @@ ticket: T-B0
 # T-B0 tests: completion report (Rigg)
 
 ## Messages received
-None. I acted only on the task doc and the `/dispatch` command.
+1. From OSA's session (Axis's review of these tests): accepted the interface and tests 01 to 11; asked for one change so a builder can't move its lock line's sha forward or drop a path from it. Done: the `helpers.ts` header now says a locks.md-only commit is exempt only if it adds lines and leaves existing lock lines unchanged, and the line is read from the commit that first added it; a new test covers it (below). It only changes my own tests before the lock and adds no files, so I accepted it.
 
 ## Pre-flight
 Run on the start commit plus my new tests (node 24.22.2 from nvm; pnpm 10.33.2; `scripts/pg-local.sh` Postgres).
@@ -14,7 +14,7 @@ Run on the start commit plus my new tests (node 24.22.2 from nvm; pnpm 10.33.2; 
 | `pnpm build` | passes |
 | `pnpm typecheck` | passes (repo-checks has no tsconfig yet, so my files aren't typechecked: Soap's `tsconfig.json` will include `test`) |
 | `pnpm lint` | passes (biome, 159 files) |
-| `pnpm test` | **fails as intended**: 11 failed (all mine) / 849 passed |
+| `pnpm test` | **fails as intended**: 12 failed (all mine) / 849 passed (11 failed / 849 passed before the added test) |
 | `pnpm install --frozen-lockfile` | passes |
 | `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | fails only at `pnpm test`, the 11 new tests |
 | `pnpm --filter @avel/repo-checks test` | "No projects matched the filters", exit 0: the package doesn't exist yet. Soap's job |
@@ -23,7 +23,7 @@ Run on the start commit plus my new tests (node 24.22.2 from nvm; pnpm 10.33.2; 
 | `pnpm why esbuild` | prints 0.28.2 only (it follows the root's dependents); the lockfile still holds 0.18.20 (drizzle-kit), which test 10 catches |
 
 ## Failing first
-On the start commit (no `tools/repo-checks` package, no CODEOWNERS, no locks workflow, no server or web manifest), all 11 fail:
+On the start commit (no `tools/repo-checks` package, no CODEOWNERS, no locks workflow, no server or web manifest), all 12 fail (the 11 below, and the one added after Axis's review, under it):
 
 ```
  × CODEOWNERS > every C4 area path and every rule file is owned by @Avel-org/operator
@@ -48,12 +48,18 @@ On the start commit (no `tools/repo-checks` package, no CODEOWNERS, no locks wor
      expected +0 to be 1
  × lock check > a branch not named t/* passes and says it isn't a ticket PR
      expected 'No projects matched the filters in ...' to contain 'not a ticket PR'
+
+Added after Axis's review:
 ```
+ × lock check > a builder can't move its lock line's sha forward or drop a path from it
+     expected +0 to be 1   (test/locks.test.ts:121)
+```
+It fails because the check doesn't exist: pnpm matches no project and exits 0.
 
 ## What changed
 All in `tools/repo-checks/test/`:
 - `helpers.ts`: builds scratch git repos (render.py, roster.json and the example plan, rendered and committed), runs the check as `pnpm --filter @avel/repo-checks run check-locks`. **Its header comment is the locked CLI interface Soap builds to.**
-- `locks.test.ts`: T-B0-01 to 06.
+- `locks.test.ts`: T-B0-01 to 06, plus the added test: after the lead's lock commit, (1) a locks.md-only commit rewrites the T-B2 sha to a later commit and the builder then edits outside the Territory; (2) a commit drops a Territory-matching path (`guarded.ts`) from the line and the builder edits it; (3) the same drop of `LOCKED_TEST`. Each expects exit 1 and names locks.md or the path. Case 2 uses a Territory-matching path, not `LOCKED_TEST` as Axis wrote, because `LOCKED_TEST` is outside the Territory and would fail the check even with no hole; case 3 keeps Axis's `LOCKED_TEST` case.
 - `codeowners.test.ts`: T-B0-07 (a small gitignore-style matcher, last match wins).
 - `dependencies.test.ts`: T-B0-08, 09, 10.
 - `workflow.test.ts`: T-B0-11.
@@ -78,16 +84,16 @@ All in `tools/repo-checks/test/`:
 - **The lock check's interface wasn't specified**, so I fixed one in `helpers.ts` (script name `check-locks`, env `AVEL_REPO_ROOT` and `GITHUB_HEAD_REF`, output strings "lock check passed" and "not a ticket PR", exit 1 on failure). Axis should read that header before locking; if it's wrong, it's a change to my tests before the lock, not a dispute later.
 - **The lead's lock commit.** Build rules say the lead writes `locks.md` after the tests, so that commit lands after the lock SHA. I assumed a commit changing only the sprint's `locks.md` isn't a builder commit. Stated in the interface header. Without that, no builder commit could ever pass.
 - **CODEOWNERS** is checked by sample files, not by the ticket's brace shorthand: CODEOWNERS has no `{a,b}` syntax, so each path must be spelled out.
-- **Lock line SHA.** A report can't hold its own commit's SHA, so the lock line below uses the tests commit (`b410331`), and my report is a second commit that touches only the report.
+- **Lock line SHA.** A report can't hold its own commit's SHA, so the lock line below uses the last tests commit (`c2056fe`), and my report is a later commit that touches only the report.
 - `node` wasn't on PATH; I used the nvm node 24.22.2. Engines says >=22.12, so this is fine.
 - No Postgres or `TestClock` is used: nothing in T-B0 touches a database or time.
 
 ## Limitations
 - The lock check's passing cases (1 and 4) and `render.py --verify` can't be proven against a real implementation until Soap builds; the fixture itself was verified (render, commit, `--verify` passes in a scratch repo).
 - `@effect/language-service` against TypeScript 7 isn't tested here; the ticket says to stop with needs-cr if it can't run (Soap's check).
-- The lock-check's merge-commit handling (a PR head that merged main) and `locks.md` read from the PR tree, not from main (anyone changing it is a rule-file change CODEOWNERS covers), aren't tested.
+- The lock-check's merge-commit handling (a PR head that merged main) isn't tested.
 - The dependency test checks the approved list as a subset (extra dependencies aren't rejected), and doesn't check the server's scripts, tsconfig or vitest config, or the pnpm override in `pnpm-workspace.yaml` (only its effect on the lockfile).
 - Locked CODEOWNERS, workflow and lockfile tests read the real repo, so they will also guard later tickets.
 
 ## Lock line
-`- T-B0: tools/repo-checks/test/** @ b4103317bea595a30a125681655c6e74477da517`
+`- T-B0: tools/repo-checks/test/** @ c2056fefce5929cfb78f7f0d463c5f1117a669f9`
