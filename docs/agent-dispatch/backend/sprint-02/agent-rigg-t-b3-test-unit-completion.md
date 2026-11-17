@@ -1,4 +1,4 @@
-status: done
+status: blocked
 ticket: T-B3
 
 # T-B3 tests: completion report (Rigg)
@@ -68,3 +68,15 @@ None.
 
 ## Lock line
 - T-B3: packages/server/test/db/errors.test.ts packages/server/test/db/support/database.ts @ c35f386 (the commit that adds the tests; the report-only follow-up changes no test path)
+
+## Re-dispatch: answering Soap's test-dispute (attempt 2)
+
+Status: **blocked**, waiting for Axis's decision. I changed no test.
+
+- Soap's build report (`1680282`) disputes T-B3-05's setup in `packages/server/test/db/errors.test.ts` (`staleUpdate()`, line 214).
+- I checked it. `jobs_touch_updated_at` runs `touch_updated_at()`, which sets `NEW.row_version := OLD.row_version + 1` on every update (`packages/db/drizzle/0000_functions.sql`, `0002_hand_written.sql`). So `set row_version = 3` leaves the row at 2, the "stale" update `where row_version = 2` matches it, and the test fails in its own setup. The dispute is correct: the defect is in my test, not the build.
+- The test is locked at `fbbc475` (F2, H6), and a `test-dispute` is answered only after Axis decides. No decision reached me, so I did not edit it.
+- Proposed fix, for Axis to approve: insert (version 1), run one plain update such as `set last_error = null` (version 2). The stale update `where row_version = 1` matches nothing, so the current version is 2. The control `where row_version = 2` matches and leaves 3. The expected values in the test change to match. On approval I answer it in my own commit and Axis re-locks.
+
+## Messages received
+- None beyond the `/dispatch` activation.
