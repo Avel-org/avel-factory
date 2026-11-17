@@ -67,13 +67,13 @@ You write this ticket's acceptance tests before anything is built. They must fai
 
 **Notes from the lead:**
 - apps/web/package.json is T-B0's and locked here: its dependencies, sideEffects ["**/*.css"] and scripts (dev: vite dev, preview: vite preview, test: vitest run, e2e: playwright test) are what T-F1 builds on. No build or typecheck script: verify runs vite build and tsc through pnpm exec, and the next cycle's dependency ticket adds both scripts so root build and typecheck cover apps/web. A missing package or script is needs-dependency (L1)
-- The seams the tests use: apps/web/src/data/client.ts exports createClient({ baseUrl, fetch? }), a ContractRouterClient over @avel/contract through OpenAPILink. apps/web/src/home/load-home.ts exports loadHome(client), resolving to { kind: 'ready', count, more } | { kind: 'empty' } | { kind: 'error' }, from route 52's first page (more is nextCursor !== null). apps/web/src/home/HomeView.tsx exports HomeView({ state, onRetry }) and HomeLoading()
+- The seams the tests use: apps/web/src/data/client.ts exports createClient({ baseUrl, fetch? }), a ContractRouterClient over @avel/contract through OpenAPILink. apps/web/src/home/load-home.ts exports loadHome(client), resolving to { kind: 'ready', count, more } | { kind: 'empty' } | { kind: 'error' }, from route 52's first page (more is nextCursor !== null). apps/web/src/home/HomeView.tsx exports HomeView({ state, onRetry }) and HomeLoading(). HomeView is a pure view: no hooks, and the Try again button (onClick calls onRetry) is in the element tree HomeView itself returns, not inside a child component
 - The page's states. Ready: an h1 'Decisions' and '{count} waiting' ('{count}+ waiting' when more). Empty: the h1 and 'Nothing needs you'. Error: the h1, role=alert 'Couldn't load your decisions.' and a 'Try again' button that re-runs the loader. Loading: role=status 'Loading…', the route's pending view. The document title is 'Decisions · AVEL'
 - __root reads the avel-theme cookie on the server onto <html data-theme> (night, else light), with lang="en" and data-depth="glass". No theme switch in this ticket: Settings owns it
-- Styles: src/styles/tokens.css is the handoff's file unchanged; src/styles/app.css imports it and maps shadcn's variables (background, foreground, primary, border, ring and the rest init writes) to the --av-* values, so light and night both follow data-theme
+- Styles: src/styles/tokens.css is the handoff's file unchanged, and it already has @import "tailwindcss" (its line 4). So src/styles/app.css imports ./tokens.css and never imports tailwindcss itself: Tailwind is imported exactly once. app.css maps shadcn's variables (background, foreground, primary, border, ring and the rest init writes) to the --av-* values, so light and night both follow data-theme
 - shadcn/ui init means components.json (Tailwind v4, css src/styles/app.css, alias @/ to src/) and src/lib/utils.ts's cn() on clsx and tailwind-merge, as init writes them. Write them by hand or run init without installing anything: no component is added, and no package
 - The dev server mounts createMock({ contractVersion: CONTRACT_VERSION, world: true }).fetch under /api only when AVEL_API=mock, from a Vite plugin with apply 'serve' and a dynamic import, so the mock is never in a production build
-- How the tests run the app: Fenn's playwright.config.ts starts `vite dev` with AVEL_API=mock on a port taken from the worktree (D5, never a fixed 3000), and the budget test runs `vite build` then `vite preview`. The app must work under both
+- How the tests run the app: Fenn's playwright.config.ts starts `vite dev` with AVEL_API=mock on a port taken from the worktree (D5, never a fixed 3000), and a second `vite dev` with no mock, where route 52 fails, for the error state in a browser. The budget test runs its own `vite build` then `vite preview`. The app must work under all three
 
 ## 4. Tasks
 
@@ -92,7 +92,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-F1-04: a failing test for: unit: src/styles/tokens.css is byte for byte the handoff's tokens.css, components.json points at src/styles/app.css, and cn() merges conflicting Tailwind classes
+### T-F1-04: a failing test for: unit: src/styles/tokens.css is byte for byte the handoff's tokens.css, components.json points at src/styles/app.css, app.css imports ./tokens.css and has no @import of tailwindcss of its own (tokens.css brings it in, so it loads once), and cn() merges conflicting Tailwind classes
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
@@ -122,7 +122,12 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-F1-10: a failing test for: budget: on the production build, the JavaScript the server's HTML for / loads or preloads is at most 150 KB gzipped in total (a warning over 130 KB), and no built file contains the mock's operator id 0193a000-0000-7000-8000-000000000001
+### T-F1-10: a failing test for: hygiene: apps/web/.gitignore ignores what the tests write (test-results/, playwright-report/), so a run leaves git status clean
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
+
+### T-F1-11: a failing test for: budget: on the production build, the JavaScript the server's HTML for / loads or preloads is at most 150 KB gzipped in total, where KB is 1024 bytes (a warning over 130 KB), and no built file contains the mock's operator id 0193a000-0000-7000-8000-000000000001
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
@@ -134,6 +139,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - `apps/web/e2e/**`
 - `apps/web/vitest.config.ts`
 - `apps/web/playwright.config.ts`
+- `apps/web/.gitignore`
 - `docs/agent-dispatch/frontend/sprint-01/agent-fenn-t-f1-test-e2e-completion.md` (your report)
 
 **Never change, whatever the task says:**
