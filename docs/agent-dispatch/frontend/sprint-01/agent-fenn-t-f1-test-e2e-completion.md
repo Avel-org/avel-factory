@@ -119,8 +119,12 @@ Without a stub, vitest on the start commit: 6 files fail, `Tests 5 failed`. Lint
 
 **Deviation, for Zero to decide:** I did not commit `apps/web/.gitignore`. The plan puts it in my paths and the build doc's T-F1-10 says "make it true", so it's the builder's product; committing it now would make `gitignore.test.ts` pass on the start commit, which B2 forbids. The file is in the lock paths, but the builder can't change locked files, so the lead has to settle who writes it: either Fantem writes it as the product (and it comes out of the lock paths), or I commit it after this review of the failing run. Until then `test-results/` and `playwright-report/` stay untracked after a run. I removed them before committing.
 
+## Round 3 (OSA, from Zero)
+
+Zero settled the round 2 question: `apps/web/.gitignore` is mine (in my paths, not Fantem's), so I created it with `test-results/` and `playwright-report/` and committed it. `gitignore.test.ts` is unchanged. It fails on main (no `apps/web/.gitignore` there, as shown in round 2) and passes on this branch (2 of 2). Nothing else changed.
+
 ## Lock line
 
-Tests and the report are in one set of commits; the lock hash is the last commit that changes a test path:
+Last commit that changes a lock path: the `.gitignore` commit below.
 
-- T-F1: apps/web/test/** apps/web/e2e/** apps/web/vitest.config.ts apps/web/playwright.config.ts @ fa9a451
+- T-F1: apps/web/test/** apps/web/e2e/** apps/web/vitest.config.ts apps/web/playwright.config.ts apps/web/.gitignore @ ab2c03d
