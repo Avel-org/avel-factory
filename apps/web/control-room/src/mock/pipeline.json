@@ -1,0 +1,171 @@
+{
+  "_note": "CR-W17 in contract 1.0.0. leads: GET /api/leads (route 117). followups: GET /api/followups/{followupId} (route 120). pipeline: GET /api/pipeline (route 122). The stage is derived by the server, never set. The internal client isn't in the pipeline; route 8 lists it only with ?kind=internal.",
+  "leads": {
+    "items": [
+      {
+        "id": "01a1c200-0000-7000-8000-000000000b01",
+        "clientId": "01a1c100-0000-7000-8000-000000000a01",
+        "clientName": "Northside Physio",
+        "source": "referral",
+        "referrerId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+        "referrerName": "Blume Studio",
+        "firstContactAt": "2026-11-08T17:00:00Z",
+        "notes": "Wants online booking for 3 therapists. Asked about the booking template.",
+        "lostReason": null,
+        "lostAt": null,
+        "stage": "lead",
+        "createdAt": "2026-11-08T17:00:00Z",
+        "rowVersion": 1,
+        "updatedAt": "2026-11-08T17:00:00Z"
+      },
+      {
+        "id": "01a1c200-0000-7000-8000-000000000b02",
+        "clientId": "01a1c100-0000-7000-8000-000000000a02",
+        "clientName": "Lakeside Auto",
+        "source": "direct",
+        "referrerId": null,
+        "referrerName": null,
+        "firstContactAt": "2026-10-20T15:00:00Z",
+        "notes": "Wanted a landing page before the spring season.",
+        "lostReason": "timing",
+        "lostAt": "2026-11-02T18:00:00Z",
+        "stage": "lost",
+        "createdAt": "2026-10-20T15:00:00Z",
+        "rowVersion": 2,
+        "updatedAt": "2026-11-02T18:00:00Z"
+      }
+    ],
+    "nextCursor": null
+  },
+  "followups": [
+    {
+      "id": "01a1d300-0000-7000-8000-000000000801",
+      "clientId": "01a1c100-0000-7000-8000-000000000a01",
+      "missionId": null,
+      "kind": "followup",
+      "channel": "copy",
+      "draft": "Hi Ana, thanks for the chat on Friday. The booking template we talked about fits three therapists well. Want to pick a time this week to go through it?",
+      "draftHash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "state": "drafted",
+      "sentAt": null,
+      "sentBy": null,
+      "unsubscribed": false,
+      "createdAt": "2026-11-10T07:00:00Z",
+      "rowVersion": 1,
+      "updatedAt": "2026-11-10T07:00:00Z"
+    },
+    {
+      "id": "01a1d300-0000-7000-8000-000000000802",
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "missionId": null,
+      "kind": "upkeep",
+      "channel": "copy",
+      "draft": "Hi Mara, want us to keep the price sheet and the site up to date each month? We'd check them every few weeks and send you what changed.",
+      "draftHash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "state": "drafted",
+      "sentAt": null,
+      "sentBy": null,
+      "unsubscribed": false,
+      "createdAt": "2026-11-11T07:00:00Z",
+      "rowVersion": 1,
+      "updatedAt": "2026-11-11T07:00:00Z"
+    }
+  ],
+  "pipeline": {
+    "stages": [
+      {
+        "stage": "lead",
+        "count": 1
+      },
+      {
+        "stage": "talking",
+        "count": 1
+      },
+      {
+        "stage": "scoped",
+        "count": 0
+      },
+      {
+        "stage": "building",
+        "count": 2
+      },
+      {
+        "stage": "delivered",
+        "count": 0
+      },
+      {
+        "stage": "upkeep",
+        "count": 0
+      },
+      {
+        "stage": "lost",
+        "count": 1
+      }
+    ],
+    "rows": [
+      {
+        "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+        "clientName": "Blume Studio",
+        "stage": "building",
+        "leadId": null,
+        "missionIds": [
+          "01a1912f-ee80-709f-891e-7d29547e91a0",
+          "01a10624-3a80-7a29-9574-820ad7f8a09f"
+        ],
+        "lastActivityAt": "2026-11-09T16:00:00Z",
+        "salesMinutes": 95,
+        "proofConsent": true,
+        "plain": "Spring launch site is being built. Price sheet audit was delivered in October."
+      },
+      {
+        "clientId": "01a1250a-6280-754c-b300-e8b9b805cb26",
+        "clientName": "Harbor Dental",
+        "stage": "building",
+        "leadId": null,
+        "missionIds": [
+          "01a17770-2280-7db5-9be9-18411454e558"
+        ],
+        "lastActivityAt": "2026-11-10T08:00:00Z",
+        "salesMinutes": 40,
+        "proofConsent": false,
+        "plain": "Booking fix is ready to release."
+      },
+      {
+        "clientId": "01a11070-f280-7405-be02-939daa1426cd",
+        "clientName": "GTS Diesel",
+        "stage": "talking",
+        "leadId": null,
+        "missionIds": [
+          "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+          "01a1ba62-ce80-7464-8a88-33e8742b6678"
+        ],
+        "lastActivityAt": "2026-11-09T11:00:00Z",
+        "salesMinutes": 120,
+        "proofConsent": false,
+        "plain": "Fleet portal is in its interview. Parts catalogue hasn't started."
+      },
+      {
+        "clientId": "01a1c100-0000-7000-8000-000000000a01",
+        "clientName": "Northside Physio",
+        "stage": "lead",
+        "leadId": "01a1c200-0000-7000-8000-000000000b01",
+        "missionIds": [],
+        "lastActivityAt": "2026-11-08T17:00:00Z",
+        "salesMinutes": 25,
+        "proofConsent": false,
+        "plain": "Referred by Blume Studio. A follow-up is drafted."
+      },
+      {
+        "clientId": "01a1c100-0000-7000-8000-000000000a02",
+        "clientName": "Lakeside Auto",
+        "stage": "lost",
+        "leadId": "01a1c200-0000-7000-8000-000000000b02",
+        "missionIds": [],
+        "lastActivityAt": "2026-11-02T18:00:00Z",
+        "salesMinutes": 30,
+        "proofConsent": false,
+        "plain": "Lost on timing."
+      }
+    ]
+  }
+}

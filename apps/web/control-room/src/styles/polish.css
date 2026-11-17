@@ -1,0 +1,146 @@
+/* better-ui polish (Nov 11). Loaded last. */
+
+/* Press: one feel everywhere. 0.96 over 150ms ease-out, never on a disabled control. */
+.av-btn, .lib-seg-btn, .lib-btn-quiet, .lib-swatch, .aie-suggestion, .cr-search, .fb-btn, .cr-avatar-btn, .cr-pin-tuck {
+  transition-property: scale, background-color, color, box-shadow, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+.av-btn:active, .av-btn[data-variant]:active { transform: none; }
+.av-btn:not(:disabled):active, .lib-seg-btn:not(:disabled):active, .lib-btn-quiet:not(:disabled):active,
+.lib-swatch:not(:disabled):active, .aie-suggestion:not(:disabled):active, .cr-search:active, .fb-btn:not(:disabled):active,
+.cr-avatar-btn:active, .cr-pin-tuck:active { scale: 0.96; }
+.lib-seg-btn:active, .lib-btn-quiet:active, .lib-swatch:active, .aie-suggestion:active { transform: none; }
+.av-btn[data-static]:active { scale: 1; }
+@media (prefers-reduced-motion: reduce) { .av-btn:active, .lib-seg-btn:active, .cr-search:active, .fb-btn:active { scale: 1 !important; } }
+
+/* Secondary with emphasis: the approve button on a project page's waiting list. Not a second primary. */
+.av-btn[data-variant="secondary"][data-emph] { color: var(--av-accent-text, var(--av-accent)); font-weight: 500; }
+
+/* Icons: the line keeps its weight at every size (1.5px beside regular text, 2px beside 500-weight labels) */
+.lucide :is(path, circle, rect, line, polyline, polygon, ellipse) { vector-effect: non-scaling-stroke; }
+.av-btn .lucide, .lib-tab[aria-current] .lucide, .lib-nav-item[aria-current] .lucide, .cmdk-opt[aria-selected="true"] .lucide { stroke-width: 2; }
+
+/* State changes that toggle back and forth are transitions, so a reversal retargets instead of snapping */
+.lib-topbar[data-condensed] .cr-top-title { animation: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .cr-top-title { transition-property: opacity, translate; transition-duration: 200ms; transition-timing-function: ease-out; }
+  @starting-style { .lib-topbar[data-condensed] .cr-top-title { opacity: 0; translate: 0 4px; } }
+  .cr-dq-body, .cr-proof { animation: none; transition-property: opacity, translate; transition-duration: 300ms; transition-timing-function: ease-out; }
+  @starting-style { .cr-dq-body, .cr-proof { opacity: 0; translate: 0 8px; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cr-dq-body, .cr-proof { animation: none; transition: opacity 150ms ease-out; }
+  @starting-style { .cr-dq-body, .cr-proof { opacity: 0; } }
+}
+
+/* High contrast (forced colours) drops box-shadow, so surfaces and controls drawn with a ring get a real edge */
+@media (forced-colors: active) {
+  .lib-card, .cr-panel, .op-panel, .op-stats > div, .av-btn, .cr-search, .cr-pulse, .fb-btn, .av-tag, .cmdk, .keys,
+  .fb-sheet, .kbd-sheet, .lib-sheet, .cr-pin, .cr-acct, .cr-dock-panel, .kbd-browse, .cr-dc, .cr-dq-row, .lib-seg { border: 1px solid CanvasText; }
+  .op-gates i, .op-meter i { forced-color-adjust: none; }
+}
+
+/* Canon's interview (focus mode) on phone: the back link, not the menu button, like every other inner page */
+@media (max-width: 760px) {
+  html[data-focus] .lib-topbar[data-back] .lib-only-narrow { display: none !important; }
+  html[data-focus] .lib-app[data-tabbar] .lib-topbar[data-back] .cr-top-back,
+  html[data-focus] .lib-topbar[data-back] .cr-top-back { display: inline-flex; }
+}
+
+/* Phone tab bar: five tabs; the project tab shows the project's name, cut cleanly */
+.lib-tab .lib-tab-l { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lib-tabbar .lib-tab { min-width: 0; }
+.lib-app .lib-tabbar, .lib-tabbar { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.lib-tabbar .lib-tab { padding-left: 2px; padding-right: 2px; }
+@media (max-width: 760px) {
+  html[data-focus] .lib-topbar[data-back] .cr-top-back { width: auto; min-width: 44px; height: 44px; padding: 0 8px 0 2px; gap: 2px; align-items: center; color: var(--av-ink); text-decoration: none; }
+  html[data-focus] .lib-topbar .cr-top-back-l { position: static; width: auto; height: auto; clip: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; line-height: 24px; color: var(--av-accent-text, var(--av-ink)); }
+}
+
+/* Gate strip: Gates 2 and 3 carry a live count while modules build */
+.cr-gate .cr-gate-count { margin-left: 4px; font: 500 12px/16px var(--av-font-sans); font-feature-settings: "tnum"; color: inherit; opacity: 0.8; }
+/* project tabs that open after finalize */
+.cr-mast-tab[data-off] { color: var(--av-muted); cursor: not-allowed; text-decoration: line-through; text-decoration-color: transparent; }
+
+/* Toast tones: the icon and an edge carry the tone, never colour alone */
+.lib-toast[data-tone] .lucide { flex: none; }
+.lib-toast[data-tone="success"] .lucide { color: var(--av-verified); }
+.lib-toast[data-tone="info"] .lucide { color: var(--av-muted); }
+.lib-toast[data-tone="warning"] .lucide { color: var(--av-needs-text); }
+.lib-toast[data-tone="failure"] { box-shadow: inset 3px 0 0 var(--av-stopped), var(--av-shadow-popover); }
+.lib-toast[data-tone="failure"] .lucide { color: var(--av-stopped); }
+
+/* Project controls (header menu) */
+.cr-ctl { position: relative; display: inline-flex; }
+.cr-ctl-btn { width: 36px; padding: 0; justify-content: center; }
+.cr-ctl-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: var(--z-popover, 300); width: 300px; display: grid; padding: 4px; border-radius: 12px; background: var(--color-app-float, var(--av-faceplate)); box-shadow: var(--av-shadow-popover); }
+@media (prefers-reduced-motion: no-preference) {
+  @starting-style { .cr-ctl-menu { opacity: 0; translate: 0 -4px; } }
+  .cr-ctl-menu { transition-property: opacity, translate; transition-duration: 150ms; transition-timing-function: ease-out; }
+}
+.cr-ctl-menu .cr-acct-item { flex-wrap: wrap; row-gap: 0; padding-top: 6px; padding-bottom: 6px; }
+.cr-ctl-menu .cr-acct-item small { flex-basis: 100%; padding-left: 26px; font-size: 12px; line-height: 16px; color: var(--av-muted); }
+.cr-acct-item[data-danger] { color: var(--av-stopped); }
+.cr-acct-item[data-danger] .lucide { color: var(--av-stopped); }
+.cr-ctl-ask { display: grid; gap: 8px; padding: 8px; }
+.cr-ctl-h { margin: 0; font-size: 14px; font-weight: 500; }
+.cr-ctl-note { margin: 0; font-size: 13px; line-height: 20px; color: var(--av-muted); }
+.cr-ctl-why { display: grid; gap: 4px; font-size: 13px; color: var(--av-muted); }
+.cr-ctl-why textarea { font: inherit; font-size: 14px; padding: 8px; border-radius: 8px; border: 1px solid var(--av-hairline-strong); background: var(--av-inset, transparent); color: var(--av-ink); resize: vertical; }
+.cr-ctl-btns { display: flex; justify-content: flex-end; gap: 8px; }
+.av-btn[data-variant="danger"] { background: var(--av-stopped); color: #fff; box-shadow: none; }
+.av-btn[data-variant="danger"]:disabled { opacity: 0.45; cursor: not-allowed; }
+@media (max-width: 760px) { .cr-ctl-menu { position: fixed; left: 8px; right: 8px; top: auto; bottom: calc(77px + env(safe-area-inset-bottom, 0px)); width: auto; } }
+.cr-mast { position: relative; z-index: 6; }
+.cr-ctl-menu { z-index: 1000; }
+
+/* Targets: every control and row link at least 24px tall (WCAG 2.2 target size); links inside a sentence are exempt */
+.cr-dc-proj, .cr-wroom-proj, .cr-ev-text, .ro-prline, .op-more, .op-links a, .op-links li > a { display: inline-flex; align-items: center; min-height: 24px; }
+.cr-ev-text { display: flex; }
+.cr-proof-chip { min-height: 28px; }
+.cv-steps a, .cv-src { min-height: 24px; }
+b, strong { font-weight: 500; }
+
+/* Icon and button rhythm, one set of rules everywhere.
+   Icon scale: 12 inline status, 14 dense controls (28px and under), 16 standard, 20 icon-only touch and tab bar.
+   Icon to label: 6px inside controls, 10px in navigation rows. Icons sit on the label's centre line.
+   Icon-only controls are square. The icon side of a labelled button gets 2px less padding (optical). */
+:root { --icon-gap: 6px; --icon-gap-row: 10px; }
+.av-btn, .cr-search, .fb-btn, .lib-seg-btn, .cr-dock-toggle, .ro-lane-toggle, .aie-suggestion, .op-act, .cr-pin-tuck { gap: var(--icon-gap); }
+.lib-nav-item, .kbd-cat, .cr-acct-item, .cr-ctl-item { gap: var(--icon-gap-row); }
+:is(.av-btn, .fb-btn, .cr-search, .lib-seg-btn, .kbd-cat, .lib-nav-item) > svg { align-self: center; }
+.fb-btn { padding: 0 10px 0 12px; }                 /* label first, chevron last */
+.fb-btn:has(> svg:first-child) { padding: 0 12px 0 10px; } /* icon first */
+.fb-btn:has(> .fb-count:last-child) { padding-right: 8px; } /* count pill is its own rounded shape */
+.fb-btn[data-variant="plain"] { padding: 0 8px; }
+.cr-ctl { margin-left: -4px; }
+.cr-ctl-btn { width: auto; aspect-ratio: 1; }
+@media (max-width: 760px) {
+  .cr-ctl-btn > svg { width: 20px; height: 20px; }
+}
+.cr-prop-btns { gap: 8px; } /* buttons side by side: 8px apart, 12px between groups */
+@media (max-width: 760px) { .cr-mast-head[data-kind="project"] .cr-gates-sum { margin-left: 0; flex-basis: 100%; } } /* wraps to its own line flush with "Gates" */
+@media (max-width: 760px) { .cr-mast-side > .cr-ctl:first-child { margin-left: -12px; } } /* menu alone on a row: its dots line up with the text edge */
+
+/* sidebar project rows: the name keeps its room; the status note gives way first */
+.lib-nav-item > .lib-nav-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lib-nav-item > .lib-nav-meta { flex: 0 3 auto; min-width: 0; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lib-nav-item > .lib-nav-badge { flex: none; }
+
+/* segmented controls used as tabs mark the current one with aria-selected (radios use aria-checked) */
+.lib-seg-btn[aria-selected="true"], .lib-seg-btn[aria-pressed="true"] { background: var(--av-chip); color: var(--av-ink); box-shadow: var(--av-shadow-raised); }
+
+/* ---- final audit, Nov 11 ---------------------------------------------------------------------------------- */
+/* tracking: text at 16px and under keeps the font's own spacing; only 20px and up tightens slightly */
+.lib-brand-name, .cr-top-title, .cr-dc-title, .av-state-title, .scr-h2, .tpg-card-head b, .cr-dmline-sum, .cr-dmline-sum *, .resume-title { letter-spacing: 0; }
+/* inline code sits on the type scale: 13px in body text, 12px in small text and tables */
+.kb-md code { font-size: 13px; }
+.kb-table code, .tpd-sub code, .kb-callout code, .kb-md small code { font-size: 12px; }
+.kb-md code, .mdp-chips code { border-radius: 6px; }
+/* screen-reader-only headings use the scale's heading weight too */
+h1.sr-only, h2.sr-only { font-weight: 500; }
+/* targets: links that stand alone get at least 24px of height */
+.cr-wroom-mod, .mdp-now-foot a, .tn-key { min-height: 24px; display: inline-flex; align-items: center; }
+a.cr-wroom-mod { display: flex; }
+.tn-key { min-height: 28px; padding: 0 2px; }

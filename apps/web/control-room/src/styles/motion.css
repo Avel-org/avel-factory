@@ -1,0 +1,66 @@
+/* Motion: one set of tokens and a few moves that each mean something.
+   - Moving between pages: the page eases in from just below; the sidebar and a project's header stay put.
+   - Lists arrive in order, a beat apart, so the eye reads top to bottom.
+   - Things that change value (gates, meters, checks) animate the change, never the layout.
+   - Live things breathe; done things pop once.
+   Only transform and opacity animate. All of it switches off with reduced motion. */
+
+:root {
+  --m-fast: 150ms;
+  --m-base: 240ms;
+  --m-slow: 420ms;
+  --m-ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --m-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --m-spring: cubic-bezier(0.2, 0.9, 0.3, 1.15);
+  --m-step: 35ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* ---- page changes, through the View Transitions API (logic.js starts one on navigation) */
+  .lib-screen { view-transition-name: page; }
+  .cr-mast { view-transition-name: mast; }
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
+  ::view-transition-old(page) { animation: m-out 110ms var(--m-ease-in) both; }
+  ::view-transition-new(page) { animation: m-in var(--m-base) var(--m-ease-out) both; }
+  ::view-transition-group(mast) { animation-duration: var(--m-base); animation-timing-function: var(--m-ease-out); }
+
+  /* ---- lists arrive in order */
+  .cr-dq-row, .op-row, .tpg-card, .kbd-index-row, .mdp-tl > li, .cr-mt-row, .cr-done-row {
+    animation: m-rise var(--m-base) var(--m-ease-out) both;
+  }
+  :is(.cr-dq-row, .op-row, .tpg-card, .kbd-index-row, .mdp-tl > li, .cr-mt-row, .cr-done-row):nth-child(2) { animation-delay: calc(var(--m-step) * 1); }
+  :is(.cr-dq-row, .op-row, .tpg-card, .kbd-index-row, .mdp-tl > li, .cr-mt-row, .cr-done-row):nth-child(3) { animation-delay: calc(var(--m-step) * 2); }
+  :is(.cr-dq-row, .op-row, .tpg-card, .kbd-index-row, .mdp-tl > li, .cr-mt-row, .cr-done-row):nth-child(4) { animation-delay: calc(var(--m-step) * 3); }
+  :is(.cr-dq-row, .op-row, .tpg-card, .kbd-index-row, .mdp-tl > li, .cr-mt-row, .cr-done-row):nth-child(5) { animation-delay: calc(var(--m-step) * 4); }
+  :is(.cr-dq-row, .op-row, .tpg-card, .kbd-index-row, .mdp-tl > li, .cr-mt-row, .cr-done-row):nth-child(6) { animation-delay: calc(var(--m-step) * 5); }
+  :is(.cr-dq-row, .op-row, .tpg-card, .kbd-index-row, .mdp-tl > li, .cr-mt-row, .cr-done-row):nth-child(n + 7) { animation-delay: calc(var(--m-step) * 6); }
+  /* ---- the receipt prints: its sections arrive top to bottom, once */
+  .rcp-paper > * { animation: m-rise var(--m-slow) var(--m-ease-out) both; }
+  .rcp-paper > :nth-child(2) { animation-delay: 60ms; }
+  .rcp-paper > :nth-child(3) { animation-delay: 120ms; }
+  .rcp-paper > :nth-child(4) { animation-delay: 180ms; }
+  .rcp-paper > :nth-child(5) { animation-delay: 240ms; }
+  .rcp-paper > :nth-child(n + 6) { animation-delay: 300ms; }
+
+  /* ---- cards you can open lift a little under the pointer */
+  @media (hover: hover) {
+    .tpg-card, .mdp-tl-card, .rcp-file, .op-row:is(a) { transition: translate var(--m-fast) var(--m-ease-out), box-shadow var(--m-fast) var(--m-ease-out); }
+    .tpg-card:hover, .rcp-file:hover { translate: 0 -2px; }
+  }
+
+  /* ---- status that changes: the badge pops when its number changes (React re-keys it) */
+  .lib-nav-badge, .lib-tab-badge { animation: m-pop 260ms var(--m-spring) both; }
+
+  /* ---- the current tab's underline grows in */
+  .cr-mast-tabs [aria-current="page"]::after { animation: m-grow var(--m-base) var(--m-ease-out) both; transform-origin: center; }
+
+  /* ---- toasts and the snackbar rise in */
+  .dec-snack, .cr-toast { animation: m-rise var(--m-base) var(--m-spring) both; }
+}
+
+@keyframes m-in { from { opacity: 0; translate: 0 8px; } }
+@keyframes m-out { to { opacity: 0; translate: 0 -4px; } }
+@keyframes m-rise { from { opacity: 0; translate: 0 6px; } }
+@keyframes m-pop { 0% { scale: 0.6; } 100% { scale: 1; } }
+@keyframes m-grow { from { scale: 0 1; } }

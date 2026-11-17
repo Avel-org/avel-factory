@@ -1,0 +1,51 @@
+/* Focus without the blue ring.
+   Clicking a box or a field never paints a blue outline or halo. Fields show focus with a quiet,
+   darker edge (still 3:1 against the page, so keyboard users can see where they are), and the caret
+   does the rest. Buttons, links and tabs keep their ring for the keyboard only: :focus-visible never
+   matches on a mouse click or a tap for those. Loaded last, so it wins over older field rules. */
+
+:root { --field-focus-edge: color-mix(in oklab, var(--av-ink) 50%, transparent); }
+
+/* anything focused by a click or by code, that isn't keyboard focus, shows nothing */
+:focus:not(:focus-visible) { outline: none; }
+
+/* text fields and selects: no outline, no halo, a darker edge */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):focus,
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none !important;
+  border-color: var(--field-focus-edge);
+  box-shadow: var(--shadow-field, none);
+}
+.np-field input:focus, .np-field select:focus { box-shadow: inset 0 0 0 1px var(--field-focus-edge); }
+
+/* fields that draw their own frame: the frame darkens instead of glowing */
+.av-filter-search:focus-within,
+.aie-prompt:focus-within,
+.fb-search:focus-within,
+.kbd-find:focus-within { box-shadow: inset 0 0 0 1px var(--field-focus-edge); }
+.cr-why-field:focus-within { background: var(--color-field-fill-focus, transparent); box-shadow: inset 0 0 0 1px var(--field-focus-edge); }
+.cd-row:focus-within { box-shadow: 0 0 0 1px var(--field-focus-edge), 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 20px -10px rgb(0 0 0 / 0.16); }
+
+/* fields that sit inside a frame keep their own edge off; the frame shows focus */
+.cd-row textarea:focus, .cd-row textarea:focus-visible,
+.cr-why-input:focus, .cr-why-input:focus-visible,
+.cmdk .cmdk-input:focus, .cmdk .cmdk-input:focus-visible,
+.fb-search input:focus, .fb-search input:focus-visible,
+.kbd-find input:focus, .kbd-find input:focus-visible,
+.av-filter-search input:focus, .av-filter-search input:focus-visible,
+.aie-prompt textarea:focus, .aie-prompt textarea:focus-visible { border-color: transparent; box-shadow: none; }
+
+/* a box you click (a card, a code block, a table that scrolls) never shows a ring for it */
+.lib-card:focus:not(:focus-visible),
+.cb-pre:focus:not(:focus-visible),
+.kb-table-wrap:focus:not(:focus-visible),
+.tpd-table-wrap:focus:not(:focus-visible),
+[tabindex="-1"]:focus { outline: none; }
+
+@media (forced-colors: active) {
+  input:focus, textarea:focus, select:focus { outline: 2px solid Highlight !important; }
+}

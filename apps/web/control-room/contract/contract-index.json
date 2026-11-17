@@ -1,0 +1,1498 @@
+{
+ "version": "1.0.0",
+ "routes": [
+  {
+   "no": 94,
+   "method": "POST",
+   "path": "/api/agent/reports",
+   "procedure": "agent.report",
+   "input": "SubmitCompletionReportInput",
+   "inputKeys": [
+    "status",
+    "resultCommit",
+    "body"
+   ]
+  },
+  {
+   "no": 95,
+   "method": "POST",
+   "path": "/api/agent/findings",
+   "procedure": "agent.finding",
+   "input": "SubmitFindingInput",
+   "inputKeys": [
+    "kind",
+    "checkId",
+    "targetRef",
+    "evidence",
+    "reviewedCommit"
+   ]
+  },
+  {
+   "no": 96,
+   "method": "POST",
+   "path": "/api/agent/dependency-requests",
+   "procedure": "agent.dependencyRequest",
+   "input": "RequestDependencyInput",
+   "inputKeys": [
+    "name",
+    "version",
+    "reason"
+   ]
+  },
+  {
+   "no": 97,
+   "method": "POST",
+   "path": "/api/agent/escalations",
+   "procedure": "agent.escalation",
+   "input": "EscalateInput",
+   "inputKeys": [
+    "kind",
+    "reason",
+    "options"
+   ]
+  },
+  {
+   "no": 98,
+   "method": "POST",
+   "path": "/api/agent/progress-notes",
+   "procedure": "agent.progressNote",
+   "input": "AddProgressNoteInput",
+   "inputKeys": [
+    "body"
+   ]
+  },
+  {
+   "no": 99,
+   "method": "GET",
+   "path": "/api/agent/kb-entries",
+   "procedure": "agent.searchKb",
+   "input": "SearchKbEntriesInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "query"
+   ]
+  },
+  {
+   "no": 93,
+   "method": "GET",
+   "path": "/api/activity",
+   "procedure": "audit.activity",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 1,
+   "method": "POST",
+   "path": "/api/cli/device-logins",
+   "procedure": "auth.startDeviceLogin",
+   "input": "StartDeviceLoginInput",
+   "inputKeys": null
+  },
+  {
+   "no": 2,
+   "method": "POST",
+   "path": "/api/cli/device-logins/{userCode}/approvals",
+   "procedure": "auth.approveDeviceLogin",
+   "input": "ApproveDeviceLoginInput",
+   "inputKeys": null
+  },
+  {
+   "no": 3,
+   "method": "POST",
+   "path": "/api/cli/sessions",
+   "procedure": "auth.createSession",
+   "input": "CreateCliSessionInput",
+   "inputKeys": [
+    "deviceCode"
+   ]
+  },
+  {
+   "no": 4,
+   "method": "GET",
+   "path": "/api/cli/sessions",
+   "procedure": "auth.listSessions",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 5,
+   "method": "DELETE",
+   "path": "/api/cli/sessions/{sessionId}",
+   "procedure": "auth.revokeSession",
+   "input": "RevokeCliSessionInput",
+   "inputKeys": [
+    "sessionId"
+   ]
+  },
+  {
+   "no": 8,
+   "method": "GET",
+   "path": "/api/clients",
+   "procedure": "clients.list",
+   "input": "ListClientsInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "kind",
+    "status"
+   ]
+  },
+  {
+   "no": 9,
+   "method": "POST",
+   "path": "/api/clients",
+   "procedure": "clients.create",
+   "input": "CreateClientInput",
+   "inputKeys": [
+    "name",
+    "kind",
+    "contacts"
+   ]
+  },
+  {
+   "no": 10,
+   "method": "GET",
+   "path": "/api/clients/{clientId}",
+   "procedure": "clients.get",
+   "input": "ClientIdInput",
+   "inputKeys": [
+    "clientId"
+   ]
+  },
+  {
+   "no": 11,
+   "method": "PATCH",
+   "path": "/api/clients/{clientId}",
+   "procedure": "clients.update",
+   "input": "UpdateClientInput",
+   "inputKeys": [
+    "clientId",
+    "rowVersion",
+    "name",
+    "contacts",
+    "status",
+    "proofConsent"
+   ]
+  },
+  {
+   "no": 12,
+   "method": "GET",
+   "path": "/api/repo-connections",
+   "procedure": "repoConnections.list",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 13,
+   "method": "POST",
+   "path": "/api/repo-connections",
+   "procedure": "repoConnections.create",
+   "input": "CreateRepoConnectionInput",
+   "inputKeys": [
+    "clientId",
+    "owner",
+    "repos",
+    "readToken",
+    "writeToken"
+   ]
+  },
+  {
+   "no": 14,
+   "method": "PATCH",
+   "path": "/api/repo-connections/{connectionId}",
+   "procedure": "repoConnections.update",
+   "input": "UpdateRepoConnectionInput",
+   "inputKeys": [
+    "connectionId",
+    "rowVersion",
+    "repos"
+   ]
+  },
+  {
+   "no": 15,
+   "method": "DELETE",
+   "path": "/api/repo-connections/{connectionId}",
+   "procedure": "repoConnections.revoke",
+   "input": "RevokeRepoConnectionInput",
+   "inputKeys": [
+    "connectionId",
+    "rowVersion"
+   ]
+  },
+  {
+   "no": 16,
+   "method": "POST",
+   "path": "/api/repo-connections/{connectionId}/verifications",
+   "procedure": "repoConnections.verify",
+   "input": "RepoConnectionIdInput",
+   "inputKeys": [
+    "connectionId"
+   ]
+  },
+  {
+   "no": 17,
+   "method": "POST",
+   "path": "/api/repo-connections/{connectionId}/rotations",
+   "procedure": "repoConnections.rotate",
+   "input": "RotateRepoConnectionInput",
+   "inputKeys": [
+    "connectionId",
+    "rowVersion",
+    "readToken",
+    "writeToken"
+   ]
+  },
+  {
+   "no": 52,
+   "method": "GET",
+   "path": "/api/pending-decisions",
+   "procedure": "decisions.listPending",
+   "input": "ListPendingDecisionsInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "missionId"
+   ]
+  },
+  {
+   "no": 53,
+   "method": "GET",
+   "path": "/api/proposals/{proposalId}",
+   "procedure": "decisions.getProposal",
+   "input": "ProposalIdInput",
+   "inputKeys": [
+    "proposalId"
+   ]
+  },
+  {
+   "no": 54,
+   "method": "POST",
+   "path": "/api/proposals/{proposalId}/decisions",
+   "procedure": "decisions.decide",
+   "input": "DecideProposalInput",
+   "inputKeys": [
+    "proposalId",
+    "version",
+    "choice",
+    "reason"
+   ]
+  },
+  {
+   "no": 100,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/dispatch-package",
+   "procedure": "dispatchPackage.manifest",
+   "input": "DispatchPackageInput",
+   "inputKeys": [
+    "missionId",
+    "planVersion"
+   ]
+  },
+  {
+   "no": 101,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/dispatch-package/files",
+   "procedure": "dispatchPackage.file",
+   "input": "DispatchPackageFileInput",
+   "inputKeys": [
+    "missionId",
+    "planVersion",
+    "path"
+   ]
+  },
+  {
+   "no": 102,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/dispatch-package/archive",
+   "procedure": "dispatchPackage.archive",
+   "input": "DispatchPackageInput",
+   "inputKeys": [
+    "missionId",
+    "planVersion"
+   ]
+  },
+  {
+   "no": 114,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/dispatch-package/commits",
+   "procedure": "dispatchPackage.commit",
+   "input": "CommitDispatchPackageInput",
+   "inputKeys": [
+    "missionId",
+    "packageHash"
+   ]
+  },
+  {
+   "no": 49,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/dispatches",
+   "procedure": "dispatches.listForMission",
+   "input": "ListMissionDispatchesInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "missionId"
+   ]
+  },
+  {
+   "no": 50,
+   "method": "GET",
+   "path": "/api/dispatches/{dispatchId}",
+   "procedure": "dispatches.get",
+   "input": "DispatchIdInput",
+   "inputKeys": [
+    "dispatchId"
+   ]
+  },
+  {
+   "no": 51,
+   "method": "POST",
+   "path": "/api/dispatches/{dispatchId}/overrides",
+   "procedure": "dispatches.override",
+   "input": "CreateDispatchOverrideInput",
+   "inputKeys": [
+    "dispatchId",
+    "rowVersion",
+    "action",
+    "reason"
+   ]
+  },
+  {
+   "no": 108,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/modules/{moduleRef}",
+   "procedure": "dispatches.getModule",
+   "input": "ModuleRunInput",
+   "inputKeys": [
+    "missionId",
+    "moduleRef"
+   ]
+  },
+  {
+   "no": 109,
+   "method": "GET",
+   "path": "/api/attempts/{attemptId}/steps",
+   "procedure": "dispatches.listSteps",
+   "input": "ListAttemptStepsInput",
+   "inputKeys": [
+    "attemptId",
+    "after",
+    "limit"
+   ]
+  },
+  {
+   "no": 92,
+   "method": "GET",
+   "path": "/api/eval/configs",
+   "procedure": "evals.listConfigs",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 116,
+   "method": "GET",
+   "path": "/api/eval/runs/{runId}",
+   "procedure": "evals.getRun",
+   "input": "EvalRunIdInput",
+   "inputKeys": [
+    "runId"
+   ]
+  },
+  {
+   "no": 63,
+   "method": "GET",
+   "path": "/api/events/stream",
+   "procedure": "events.stream",
+   "input": "EventStreamInput",
+   "inputKeys": [
+    "missionId"
+   ]
+  },
+  {
+   "no": 64,
+   "method": "GET",
+   "path": "/api/traces/stream",
+   "procedure": "traces.stream",
+   "input": "TraceStreamInput",
+   "inputKeys": [
+    "attemptId",
+    "sessionId",
+    "view"
+   ]
+  },
+  {
+   "no": 71,
+   "method": "GET",
+   "path": "/api/factory/versions",
+   "procedure": "factory.listVersions",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 72,
+   "method": "GET",
+   "path": "/api/factory/changes",
+   "procedure": "factory.listChanges",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 73,
+   "method": "POST",
+   "path": "/api/factory/changes/{changeId}/merges",
+   "procedure": "factory.mergeChange",
+   "input": "MergeFactoryChangeInput",
+   "inputKeys": [
+    "changeId",
+    "headSha"
+   ]
+  },
+  {
+   "no": 35,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/uploads",
+   "procedure": "gate0.listUploads",
+   "input": "ListUploadsInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "missionId"
+   ]
+  },
+  {
+   "no": 36,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/uploads",
+   "procedure": "gate0.createUpload",
+   "input": "CreateUploadInput",
+   "inputKeys": [
+    "missionId",
+    "file"
+   ]
+  },
+  {
+   "no": 37,
+   "method": "DELETE",
+   "path": "/api/uploads/{uploadId}",
+   "procedure": "gate0.deleteUpload",
+   "input": "DeleteUploadInput",
+   "inputKeys": [
+    "uploadId",
+    "rowVersion"
+   ]
+  },
+  {
+   "no": 38,
+   "method": "PATCH",
+   "path": "/api/checkpoints/{checkpointId}/sections/{sectionKey}",
+   "procedure": "gate0.updateCheckpointSection",
+   "input": "UpdateCheckpointSectionInput",
+   "inputKeys": [
+    "checkpointId",
+    "sectionKey",
+    "rowVersion",
+    "section"
+   ]
+  },
+  {
+   "no": 39,
+   "method": "POST",
+   "path": "/api/checkpoints/{checkpointId}/drafts",
+   "procedure": "gate0.draftCheckpoint",
+   "input": "DraftCheckpointInput",
+   "inputKeys": [
+    "checkpointId",
+    "rowVersion"
+   ]
+  },
+  {
+   "no": 40,
+   "method": "POST",
+   "path": "/api/checkpoints/{checkpointId}/approvals",
+   "procedure": "gate0.approveCheckpoint",
+   "input": "ApproveCheckpointInput",
+   "inputKeys": [
+    "checkpointId",
+    "rowVersion"
+   ]
+  },
+  {
+   "no": 41,
+   "method": "POST",
+   "path": "/api/checkpoints/{checkpointId}/change-requests",
+   "procedure": "gate0.requestCheckpointChanges",
+   "input": "RequestCheckpointChangesInput",
+   "inputKeys": [
+    "checkpointId",
+    "rowVersion",
+    "reason"
+   ]
+  },
+  {
+   "no": 42,
+   "method": "POST",
+   "path": "/api/checkpoints/{checkpointId}/reopenings",
+   "procedure": "gate0.reopenCheckpoint",
+   "input": "ReopenCheckpointInput",
+   "inputKeys": [
+    "checkpointId",
+    "rowVersion",
+    "reason"
+   ]
+  },
+  {
+   "no": 43,
+   "method": "PATCH",
+   "path": "/api/facts/{factId}",
+   "procedure": "gate0.updateFact",
+   "input": "UpdateFactInput",
+   "inputKeys": [
+    "factId",
+    "rowVersion",
+    "status"
+   ]
+  },
+  {
+   "no": 44,
+   "method": "POST",
+   "path": "/api/questions/{questionId}/answers",
+   "procedure": "gate0.answerQuestion",
+   "input": "AnswerQuestionInput",
+   "inputKeys": [
+    "questionId",
+    "rowVersion",
+    "choice",
+    "answer"
+   ]
+  },
+  {
+   "no": 45,
+   "method": "PUT",
+   "path": "/api/missions/{missionId}/secrets/{secretName}",
+   "procedure": "gate0.putSecret",
+   "input": "PutSecretInput",
+   "inputKeys": [
+    "missionId",
+    "secretName",
+    "value"
+   ]
+  },
+  {
+   "no": 55,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/gates",
+   "procedure": "gates.listForMission",
+   "input": "MissionIdInput",
+   "inputKeys": [
+    "missionId"
+   ]
+  },
+  {
+   "no": 56,
+   "method": "GET",
+   "path": "/api/integration-commits/{integrationCommitId}",
+   "procedure": "gates.getIntegrationCommit",
+   "input": "IntegrationCommitIdInput",
+   "inputKeys": [
+    "integrationCommitId"
+   ]
+  },
+  {
+   "no": 57,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/overrides",
+   "procedure": "gates.override",
+   "input": "CreateGateOverrideInput",
+   "inputKeys": [
+    "missionId",
+    "gate",
+    "gateEvaluationId",
+    "rowVersion",
+    "checkId",
+    "reason"
+   ]
+  },
+  {
+   "no": 58,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/findings",
+   "procedure": "findings.list",
+   "input": "ListFindingsInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "missionId",
+    "state",
+    "route",
+    "moduleRunId"
+   ]
+  },
+  {
+   "no": 59,
+   "method": "PATCH",
+   "path": "/api/findings/{findingId}",
+   "procedure": "findings.update",
+   "input": "UpdateFindingInput",
+   "inputKeys": [
+    "findingId",
+    "rowVersion",
+    "state",
+    "reason"
+   ]
+  },
+  {
+   "no": 60,
+   "method": "POST",
+   "path": "/api/findings/{findingId}/acceptances",
+   "procedure": "findings.accept",
+   "input": "AcceptFindingInput",
+   "inputKeys": [
+    "findingId",
+    "rowVersion",
+    "reason"
+   ]
+  },
+  {
+   "no": 6,
+   "method": "GET",
+   "path": "/api/health",
+   "procedure": "health.health"
+  },
+  {
+   "no": 7,
+   "method": "GET",
+   "path": "/api/doctor",
+   "procedure": "health.doctor"
+  },
+  {
+   "no": 104,
+   "method": "GET",
+   "path": "/api/status",
+   "procedure": "health.status"
+  },
+  {
+   "no": 74,
+   "method": "GET",
+   "path": "/api/library/skills",
+   "procedure": "skills.list",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 75,
+   "method": "POST",
+   "path": "/api/library/skills",
+   "procedure": "skills.create",
+   "input": "CreateSkillInput",
+   "inputKeys": [
+    "slug",
+    "version",
+    "layer",
+    "type",
+    "versionRange",
+    "author",
+    "source",
+    "sourceUrl",
+    "license",
+    "upstreamRef",
+    "editionNote",
+    "files"
+   ]
+  },
+  {
+   "no": 76,
+   "method": "GET",
+   "path": "/api/library/skills/{itemId}",
+   "procedure": "skills.get",
+   "input": "SkillIdInput",
+   "inputKeys": [
+    "itemId"
+   ]
+  },
+  {
+   "no": 77,
+   "method": "PATCH",
+   "path": "/api/library/skills/{itemId}",
+   "procedure": "skills.update",
+   "input": "UpdateSkillInput",
+   "inputKeys": [
+    "itemId",
+    "rowVersion",
+    "status",
+    "files"
+   ]
+  },
+  {
+   "no": 115,
+   "method": "GET",
+   "path": "/api/library/skills/{itemId}/results",
+   "procedure": "skills.results",
+   "input": "SkillResultsInput",
+   "inputKeys": [
+    "itemId",
+    "from",
+    "to"
+   ]
+  },
+  {
+   "no": 78,
+   "method": "GET",
+   "path": "/api/library/kb-entries",
+   "procedure": "kbEntries.list",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 79,
+   "method": "POST",
+   "path": "/api/library/kb-entries",
+   "procedure": "kbEntries.create",
+   "input": "CreateKbEntryInput",
+   "inputKeys": [
+    "layer",
+    "clientId",
+    "kind",
+    "tags",
+    "path",
+    "body"
+   ]
+  },
+  {
+   "no": 80,
+   "method": "GET",
+   "path": "/api/library/kb-entries/{itemId}",
+   "procedure": "kbEntries.get",
+   "input": "KbEntryIdInput",
+   "inputKeys": [
+    "itemId"
+   ]
+  },
+  {
+   "no": 81,
+   "method": "PATCH",
+   "path": "/api/library/kb-entries/{itemId}",
+   "procedure": "kbEntries.update",
+   "input": "UpdateKbEntryInput",
+   "inputKeys": [
+    "itemId",
+    "rowVersion",
+    "status",
+    "tags",
+    "body"
+   ]
+  },
+  {
+   "no": 82,
+   "method": "GET",
+   "path": "/api/library/rules",
+   "procedure": "rules.list",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 83,
+   "method": "POST",
+   "path": "/api/library/rules",
+   "procedure": "rules.create",
+   "input": "CreateRuleInput",
+   "inputKeys": [
+    "scope",
+    "stack",
+    "clientId",
+    "path",
+    "body"
+   ]
+  },
+  {
+   "no": 84,
+   "method": "GET",
+   "path": "/api/library/rules/{itemId}",
+   "procedure": "rules.get",
+   "input": "RuleIdInput",
+   "inputKeys": [
+    "itemId"
+   ]
+  },
+  {
+   "no": 85,
+   "method": "PATCH",
+   "path": "/api/library/rules/{itemId}",
+   "procedure": "rules.update",
+   "input": "UpdateRuleInput",
+   "inputKeys": [
+    "itemId",
+    "rowVersion",
+    "status",
+    "body"
+   ]
+  },
+  {
+   "no": 90,
+   "method": "GET",
+   "path": "/api/rules/{rulesVersion}/bundle",
+   "procedure": "rules.bundle",
+   "input": "GetRulesBundleInput",
+   "inputKeys": [
+    "rulesVersion"
+   ]
+  },
+  {
+   "no": 86,
+   "method": "GET",
+   "path": "/api/library/templates",
+   "procedure": "templates.list",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 87,
+   "method": "POST",
+   "path": "/api/library/templates",
+   "procedure": "templates.create",
+   "input": "CreateTemplateInput",
+   "inputKeys": [
+    "slug",
+    "version",
+    "packageKey",
+    "path",
+    "scaffoldCommit",
+    "sourceMissionId"
+   ]
+  },
+  {
+   "no": 88,
+   "method": "GET",
+   "path": "/api/library/templates/{itemId}",
+   "procedure": "templates.get",
+   "input": "TemplateIdInput",
+   "inputKeys": [
+    "itemId"
+   ]
+  },
+  {
+   "no": 89,
+   "method": "PATCH",
+   "path": "/api/library/templates/{itemId}",
+   "procedure": "templates.update",
+   "input": "UpdateTemplateInput",
+   "inputKeys": [
+    "itemId",
+    "rowVersion",
+    "status"
+   ]
+  },
+  {
+   "no": 110,
+   "method": "GET",
+   "path": "/api/library/templates/sources/{missionId}",
+   "procedure": "templates.source",
+   "input": "TemplateSourceInput",
+   "inputKeys": [
+    "missionId"
+   ]
+  },
+  {
+   "no": 111,
+   "method": "GET",
+   "path": "/api/library/template-drafts/{draftId}",
+   "procedure": "templates.getDraft",
+   "input": "TemplateDraftIdInput",
+   "inputKeys": [
+    "draftId"
+   ]
+  },
+  {
+   "no": 112,
+   "method": "PUT",
+   "path": "/api/library/template-drafts/{draftId}",
+   "procedure": "templates.saveDraft",
+   "input": "SaveTemplateDraftInput",
+   "inputKeys": [
+    "draftId",
+    "rowVersion",
+    "sourceMissionId",
+    "slug",
+    "name",
+    "pitch",
+    "bestFor",
+    "docs",
+    "modules"
+   ]
+  },
+  {
+   "no": 113,
+   "method": "POST",
+   "path": "/api/library/template-drafts/{draftId}/pull-requests",
+   "procedure": "templates.openDraftPr",
+   "input": "OpenTemplatePrInput",
+   "inputKeys": [
+    "draftId",
+    "rowVersion"
+   ]
+  },
+  {
+   "no": 91,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/closeout-items",
+   "procedure": "closeoutItems.list",
+   "input": "ListCloseoutItemsInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "missionId"
+   ]
+  },
+  {
+   "no": 19,
+   "method": "GET",
+   "path": "/api/missions",
+   "procedure": "missions.list",
+   "input": "ListMissionsInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "kind",
+    "clientId"
+   ]
+  },
+  {
+   "no": 20,
+   "method": "POST",
+   "path": "/api/missions",
+   "procedure": "missions.create",
+   "input": "CreateMissionInput",
+   "inputKeys": [
+    "name",
+    "clientId"
+   ]
+  },
+  {
+   "no": 21,
+   "method": "GET",
+   "path": "/api/missions/{missionId}",
+   "procedure": "missions.get",
+   "input": "MissionIdInput",
+   "inputKeys": [
+    "missionId"
+   ]
+  },
+  {
+   "no": 22,
+   "method": "PATCH",
+   "path": "/api/missions/{missionId}",
+   "procedure": "missions.update",
+   "input": "UpdateMissionInput",
+   "inputKeys": [
+    "missionId",
+    "rowVersion",
+    "repoConnectionId"
+   ]
+  },
+  {
+   "no": 23,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/pauses",
+   "procedure": "missions.pause",
+   "input": "PauseMissionInput",
+   "inputKeys": [
+    "missionId",
+    "reason"
+   ]
+  },
+  {
+   "no": 24,
+   "method": "DELETE",
+   "path": "/api/missions/{missionId}/pauses/{pauseId}",
+   "procedure": "missions.resume",
+   "input": "ResumeMissionInput",
+   "inputKeys": [
+    "missionId",
+    "pauseId",
+    "rowVersion"
+   ]
+  },
+  {
+   "no": 25,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/cancellations",
+   "procedure": "missions.cancel",
+   "input": "CancelMissionInput",
+   "inputKeys": [
+    "missionId",
+    "rowVersion",
+    "reason"
+   ]
+  },
+  {
+   "no": 26,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/context-runs",
+   "procedure": "missions.rerunContext",
+   "input": "MissionIdInput",
+   "inputKeys": [
+    "missionId"
+   ]
+  },
+  {
+   "no": 27,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/readiness-waivers",
+   "procedure": "missions.waiveReadiness",
+   "input": "CreateReadinessWaiverInput",
+   "inputKeys": [
+    "missionId",
+    "checkId",
+    "reason"
+   ]
+  },
+  {
+   "no": 28,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/finalizations",
+   "procedure": "missions.finalize",
+   "input": "FinalizeMissionInput",
+   "inputKeys": [
+    "missionId",
+    "version"
+   ]
+  },
+  {
+   "no": 29,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/pass-approvals",
+   "procedure": "missions.approvePass",
+   "input": "CreatePassApprovalInput",
+   "inputKeys": [
+    "missionId",
+    "receiptHash",
+    "reason"
+   ]
+  },
+  {
+   "no": 30,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/releases",
+   "procedure": "missions.release",
+   "input": "CreateReleaseInput",
+   "inputKeys": [
+    "missionId",
+    "receiptHash",
+    "passApprovalId"
+   ]
+  },
+  {
+   "no": 31,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/refreshes",
+   "procedure": "missions.refresh",
+   "input": "MissionIdInput",
+   "inputKeys": [
+    "missionId"
+   ]
+  },
+  {
+   "no": 32,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/budget-increases",
+   "procedure": "missions.increaseBudget",
+   "input": "CreateBudgetIncreaseInput",
+   "inputKeys": [
+    "missionId",
+    "moduleRunId",
+    "amountMicros"
+   ]
+  },
+  {
+   "no": 33,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/messages",
+   "procedure": "missions.listMessages",
+   "input": "ListMessagesInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "missionId"
+   ]
+  },
+  {
+   "no": 34,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/messages",
+   "procedure": "missions.postMessage",
+   "input": "SendMessageInput",
+   "inputKeys": [
+    "missionId",
+    "clientMessageId",
+    "text",
+    "source",
+    "relayedBy",
+    "answersQuestionId",
+    "checkpoint",
+    "uploadIds"
+   ]
+  },
+  {
+   "no": 105,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/messages/{messageId}/stream",
+   "procedure": "missions.resumeMessage",
+   "input": "ResumeMessageInput",
+   "inputKeys": [
+    "missionId",
+    "messageId"
+   ]
+  },
+  {
+   "no": 106,
+   "method": "POST",
+   "path": "/api/missions/{missionId}/transcriptions",
+   "procedure": "missions.transcribe",
+   "input": "TranscribeInput",
+   "inputKeys": [
+    "missionId",
+    "audio"
+   ]
+  },
+  {
+   "no": 18,
+   "method": "GET",
+   "path": "/api/packages",
+   "procedure": "packages.list",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 117,
+   "method": "GET",
+   "path": "/api/leads",
+   "procedure": "leads.list",
+   "input": "ListLeadsInput",
+   "inputKeys": [
+    "cursor",
+    "limit",
+    "stage"
+   ]
+  },
+  {
+   "no": 118,
+   "method": "POST",
+   "path": "/api/leads",
+   "procedure": "leads.create",
+   "input": "CreateLeadInput",
+   "inputKeys": [
+    "name",
+    "source",
+    "referrerName",
+    "firstContactAt",
+    "notes"
+   ]
+  },
+  {
+   "no": 119,
+   "method": "POST",
+   "path": "/api/leads/{leadId}/closures",
+   "procedure": "leads.close",
+   "input": "CloseLeadInput",
+   "inputKeys": [
+    "leadId",
+    "rowVersion",
+    "lostReason"
+   ]
+  },
+  {
+   "no": 120,
+   "method": "GET",
+   "path": "/api/followups/{followupId}",
+   "procedure": "followups.get",
+   "input": "FollowupIdInput",
+   "inputKeys": [
+    "followupId"
+   ]
+  },
+  {
+   "no": 121,
+   "method": "POST",
+   "path": "/api/followups/{followupId}/sends",
+   "procedure": "followups.send",
+   "input": "SendFollowupInput",
+   "inputKeys": [
+    "followupId",
+    "draftHash",
+    "outcome"
+   ]
+  },
+  {
+   "no": 122,
+   "method": "GET",
+   "path": "/api/pipeline",
+   "procedure": "pipeline.get"
+  },
+  {
+   "no": 46,
+   "method": "GET",
+   "path": "/api/missions/{missionId}/plan",
+   "procedure": "plan.get",
+   "input": "GetPlanInput",
+   "inputKeys": [
+    "missionId",
+    "version"
+   ]
+  },
+  {
+   "no": 47,
+   "method": "GET",
+   "path": "/api/roster",
+   "procedure": "roster.get",
+   "input": "PutRosterInput",
+   "inputKeys": null
+  },
+  {
+   "no": 48,
+   "method": "PUT",
+   "path": "/api/roster",
+   "procedure": "roster.put"
+  },
+  {
+   "no": 61,
+   "method": "GET",
+   "path": "/api/receipts/{receiptId}",
+   "procedure": "receipts.get",
+   "input": "GetReceiptInput",
+   "inputKeys": [
+    "receiptId",
+    "verify"
+   ]
+  },
+  {
+   "no": 107,
+   "method": "GET",
+   "path": "/api/receipts/{receiptId}/artifacts/{key}",
+   "procedure": "receipts.artifact",
+   "input": "ReceiptArtifactInput",
+   "inputKeys": [
+    "receiptId",
+    "key"
+   ]
+  },
+  {
+   "no": 62,
+   "method": "GET",
+   "path": "/api/deliveries/{deliveryId}/archive",
+   "procedure": "deliveries.archive",
+   "input": "DeliveryIdInput",
+   "inputKeys": [
+    "deliveryId"
+   ]
+  },
+  {
+   "no": 65,
+   "method": "POST",
+   "path": "/api/operator/events",
+   "procedure": "operator.recordEvent",
+   "input": "OperatorEventInput",
+   "inputKeys": null
+  },
+  {
+   "no": 66,
+   "method": "PATCH",
+   "path": "/api/time-entries/{timeEntryId}",
+   "procedure": "timeEntries.update",
+   "input": "UpdateTimeEntryInput",
+   "inputKeys": [
+    "timeEntryId",
+    "rowVersion",
+    "state",
+    "activity",
+    "minutes"
+   ]
+  },
+  {
+   "no": 67,
+   "method": "GET",
+   "path": "/api/notes",
+   "procedure": "notes.list",
+   "input": "PageQuery",
+   "inputKeys": [
+    "cursor",
+    "limit"
+   ]
+  },
+  {
+   "no": 68,
+   "method": "POST",
+   "path": "/api/notes",
+   "procedure": "notes.create",
+   "input": "CreateNoteInput",
+   "inputKeys": [
+    "body",
+    "source",
+    "missionId"
+   ]
+  }
+ ],
+ "events": [
+  "missions.mission.created",
+  "missions.mission.changed",
+  "missions.mission.kind_set",
+  "missions.mission.paused",
+  "missions.mission.resumed",
+  "missions.mission.cancelled",
+  "missions.mission.closed",
+  "onboarding.session.changed",
+  "onboarding.message.created",
+  "onboarding.message.updated",
+  "onboarding.fact.proposed",
+  "onboarding.fact.changed",
+  "onboarding.checkpoint.changed",
+  "onboarding.question.changed",
+  "onboarding.plan.finalized",
+  "factory.module.changed",
+  "factory.dispatch.changed",
+  "factory.task_doc.rendered",
+  "factory.dispatch_package.rendered",
+  "runner.attempt.started",
+  "runner.attempt.ended",
+  "integrator.commit.changed",
+  "integrator.tests.locked",
+  "integrator.dispatch_package.committed",
+  "gate.evaluation.recorded",
+  "gate.finding.created",
+  "gate.finding.changed",
+  "gate.receipt.issued",
+  "gate.pass.approved",
+  "gate.override.recorded",
+  "delivery.release.approved",
+  "delivery.delivery.changed",
+  "delivery.dispatch_package.built",
+  "metering.spend.updated",
+  "metering.budget.warned",
+  "metering.budget.increased",
+  "knowledge.change.opened",
+  "knowledge.change.updated",
+  "knowledge.change.closed",
+  "knowledge.release.cut",
+  "evals.run.started",
+  "evals.run.finished",
+  "pipeline.lead.created",
+  "pipeline.lead.closed",
+  "pipeline.followup.sent",
+  "system.alert.raised",
+  "system.alert.cleared",
+  "onboarding.decision.opened",
+  "onboarding.decision.resolved",
+  "onboarding.decision.expired",
+  "onboarding.decision.returned",
+  "factory.decision.opened",
+  "factory.decision.resolved",
+  "factory.decision.expired",
+  "factory.decision.returned",
+  "integrator.decision.opened",
+  "integrator.decision.resolved",
+  "integrator.decision.expired",
+  "integrator.decision.returned",
+  "gate.decision.opened",
+  "gate.decision.resolved",
+  "gate.decision.expired",
+  "gate.decision.returned",
+  "delivery.decision.opened",
+  "delivery.decision.resolved",
+  "delivery.decision.expired",
+  "delivery.decision.returned",
+  "metering.decision.opened",
+  "metering.decision.resolved",
+  "metering.decision.expired",
+  "metering.decision.returned",
+  "knowledge.decision.opened",
+  "knowledge.decision.resolved",
+  "knowledge.decision.expired",
+  "knowledge.decision.returned",
+  "rules.decision.opened",
+  "rules.decision.resolved",
+  "rules.decision.expired",
+  "rules.decision.returned",
+  "roster.decision.opened",
+  "roster.decision.resolved",
+  "roster.decision.expired",
+  "roster.decision.returned",
+  "pipeline.decision.opened",
+  "pipeline.decision.resolved",
+  "pipeline.decision.expired",
+  "pipeline.decision.returned"
+ ],
+ "eventPrefixes": [
+  "delivery",
+  "evals",
+  "factory",
+  "gate",
+  "integrator",
+  "knowledge",
+  "metering",
+  "missions",
+  "onboarding",
+  "pipeline",
+  "roster",
+  "rules",
+  "runner",
+  "system"
+ ],
+ "renamedEventKinds": {
+  "dispatch.ready": "factory.dispatch.changed",
+  "dispatch.started": "factory.dispatch.changed",
+  "dispatch.parked": "factory.dispatch.changed",
+  "attempt.started": "runner.attempt.started",
+  "attempt.ended": "runner.attempt.ended",
+  "mission.created": "missions.mission.created",
+  "pass.approved": "gate.pass.approved",
+  "receipt.issued": "gate.receipt.issued",
+  "usage.recorded": "metering.spend.updated",
+  "task_doc.rendered": "factory.task_doc.rendered",
+  "message.stopped": "onboarding.message.updated",
+  "mission.closed": "missions.mission.closed"
+ },
+ "decisionKinds": [
+  "proposal",
+  "factory_change",
+  "checkpoint",
+  "plan_finalize",
+  "checkpoint_question",
+  "pass_approval",
+  "release",
+  "dispatch_package_commit",
+  "followup_send",
+  "upkeep_offer"
+ ]
+}

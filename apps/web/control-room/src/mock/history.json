@@ -1,0 +1,62 @@
+{
+  "_readme": "A project's history on main, shaped like the contract: integrationCommits is route 55's MissionGatesDto.integrationCommits (kind, moduleRef via moduleRunId, attempt, baseSha, commitSha, state, finishedAt); attempts are route 108's ModuleAttemptDto per module plus AttemptDto.branch and checkpointCommit. Fields under _cr are not in contract 1.0.0: CR-W24 asks for a landing's title and its diff stat. Times are UTC; now is 2026-11-10T09:00:00Z.",
+  "missions": {
+    "01a1912f-ee80-709f-891e-7d29547e91a0": {
+      "earlier": { "count": 2, "text": "Set up from the Launch site template, plan version 2 approved" },
+      "integrationCommits": [
+        { "id": "ic-s1", "kind": "tests", "moduleRef": "M1", "baseSha": "d0a4c11", "commitSha": "5e1a7b2", "state": "landed", "finishedAt": "2026-11-02T16:00:00Z", "by": { "agent": "Fenn", "role": "test-unit" }, "_cr": { "title": "Locked M1's 18 tests", "files": 4, "plus": 212, "minus": 0 } },
+        { "id": "ic-s2", "kind": "module", "moduleRef": "M1", "attemptKey": "a1", "baseSha": "5e1a7b2", "commitSha": "3c9d1e0", "state": "landed", "finishedAt": "2026-11-05T11:48:00Z", "_cr": { "title": "Landed M1 Content model and CMS", "files": 12, "plus": 640, "minus": 22 } },
+        { "id": "ic-s3", "kind": "tests", "moduleRef": "M2", "baseSha": "3c9d1e0", "commitSha": "9d4f2c1", "state": "landed", "finishedAt": "2026-11-05T15:30:00Z", "by": { "agent": "Fenn", "role": "test-unit" }, "_cr": { "title": "Locked M2's 21 tests", "files": 3, "plus": 288, "minus": 0 } },
+        { "id": "ic-s4", "kind": "tests", "moduleRef": "M4", "baseSha": "9d4f2c1", "commitSha": "6c3b8d4", "state": "landed", "finishedAt": "2026-11-05T17:00:00Z", "by": { "agent": "Fenn", "role": "test-unit" }, "_cr": { "title": "Locked M4's 14 tests", "files": 5, "plus": 402, "minus": 0 } },
+        { "id": "ic-s5", "kind": "module", "moduleRef": "M2", "attemptKey": "a2", "baseSha": "9d4f2c1", "commitSha": "8b20f4a", "state": "landed", "finishedAt": "2026-11-07T15:20:00Z", "_cr": { "title": "Landed M2 Hero and product grid", "files": 9, "plus": 418, "minus": 37 } },
+        { "id": "ic-s6", "kind": "tests", "moduleRef": "M3", "baseSha": "8b20f4a", "commitSha": "2a7e6f9", "state": "landed", "finishedAt": "2026-11-07T17:05:00Z", "by": { "agent": "Fenn", "role": "test-unit" }, "_cr": { "title": "Locked M3's 15 tests", "files": 2, "plus": 196, "minus": 0 } },
+        { "id": "ic-s7", "kind": "module", "moduleRef": "M3", "attemptKey": "a1", "baseSha": "2a7e6f9", "commitSha": "e17c0b3", "state": "rejected", "note": "Rejected at gate 3: 1 of 15 tests fails", "finishedAt": "2026-11-10T08:09:00Z", "_cr": { "title": "M3 Signup and spring code, first try", "files": 6, "plus": 214, "minus": 38 } }
+      ],
+      "attempts": {
+        "M1": [
+          { "key": "a1", "label": "Initial", "agent": "Leon", "role": "build", "startedAt": "2026-11-03T09:00:00Z", "endedAt": "2026-11-03T09:34:00Z", "result": "landed", "branch": "avel/m1-content-model", "checkpointCommit": "71c2e0a" },
+          { "key": "a1r", "label": "Review", "agent": "Zane", "role": "review-spec", "startedAt": "2026-11-03T09:35:00Z", "endedAt": "2026-11-03T09:44:00Z", "result": "landed", "branch": "avel/m1-content-model", "checkpointCommit": "71c2e0a" }
+        ],
+        "M2": [
+          { "key": "a1", "label": "Initial", "agent": "Leon", "role": "build", "startedAt": "2026-11-06T14:00:00Z", "endedAt": "2026-11-06T14:40:00Z", "result": "failed", "branch": "avel/m2-hero-grid", "checkpointCommit": "b81f3d2" },
+          { "key": "a2", "label": "Retry 1", "agent": "Leon", "role": "build", "startedAt": "2026-11-06T14:45:00Z", "endedAt": "2026-11-06T15:03:00Z", "result": "landed", "branch": "avel/m2-hero-grid", "checkpointCommit": "c4a90e7" }
+        ],
+        "M3": [
+          { "key": "a1", "label": "Initial", "agent": "Leon", "role": "build", "startedAt": "2026-11-10T07:20:00Z", "endedAt": "2026-11-10T08:08:00Z", "result": "failed", "branch": "avel/m3-signup-spring", "checkpointCommit": "e17c0b3" },
+          { "key": "a2", "label": "Retry 1", "agent": "Leon", "role": "build", "startedAt": "2026-11-10T08:14:00Z", "endedAt": null, "result": "running", "branch": "avel/m3-signup-spring", "checkpointCommit": null }
+        ],
+        "M4": [
+          { "key": "a1", "label": "Initial", "agent": "Leon", "role": "build", "startedAt": "2026-11-06T09:00:00Z", "endedAt": "2026-11-06T09:44:00Z", "result": "failed", "branch": "avel/m4-checkout-pricing", "checkpointCommit": "f02b6a1" },
+          { "key": "a2", "label": "Retry 1", "agent": "Leon", "role": "build", "startedAt": "2026-11-06T10:00:00Z", "endedAt": "2026-11-06T10:30:00Z", "result": "failed", "branch": "avel/m4-checkout-pricing", "checkpointCommit": "a7d5c03" },
+          { "key": "a3", "label": "Retry 2", "agent": "Fantem", "role": "build", "startedAt": "2026-11-06T11:00:00Z", "endedAt": "2026-11-06T11:38:00Z", "result": "failed", "branch": "avel/m4-checkout-pricing", "checkpointCommit": "1e9b7f4" },
+          { "key": "a4", "label": "Retry 3", "agent": "Leon", "role": "build", "startedAt": "2026-11-06T13:00:00Z", "endedAt": "2026-11-06T13:22:00Z", "result": "parked", "branch": "avel/m4-checkout-pricing", "checkpointCommit": "5b6c2d8" }
+        ]
+      }
+    },
+    "01a17770-2280-7db5-9be9-18411454e558": {
+      "earlier": { "count": 2, "text": "Imported harbor-dental/booking, plan version 2 approved Oct 27" },
+      "ships": { "commitSha": "a41e9c2", "receipt": "rc_7f3a2c" },
+      "integrationCommits": [
+        { "id": "ic-b1", "kind": "tests", "moduleRef": "M1", "baseSha": "7720f1e", "commitSha": "4d81a0c", "state": "landed", "finishedAt": "2026-10-28T10:20:00Z", "by": { "agent": "Fenn", "role": "test-e2e" }, "_cr": { "title": "Locked M1's 9 tests", "files": 2, "plus": 141, "minus": 0 } },
+        { "id": "ic-b2", "kind": "module", "moduleRef": "M1", "attemptKey": "a1", "baseSha": "4d81a0c", "commitSha": "2f6e5b9", "state": "landed", "finishedAt": "2026-10-30T16:05:00Z", "_cr": { "title": "Landed M1 Find the double-booking race", "files": 4, "plus": 96, "minus": 31 } },
+        { "id": "ic-b3", "kind": "tests", "moduleRef": "M2", "baseSha": "2f6e5b9", "commitSha": "c90a3d7", "state": "landed", "finishedAt": "2026-10-30T17:40:00Z", "by": { "agent": "Fenn", "role": "test-unit" }, "_cr": { "title": "Locked M2's 22 tests", "files": 3, "plus": 260, "minus": 0 } },
+        { "id": "ic-b4", "kind": "module", "moduleRef": "M2", "attemptKey": "a2", "baseSha": "c90a3d7", "commitSha": "6b13e48", "state": "landed", "finishedAt": "2026-11-02T12:30:00Z", "_cr": { "title": "Landed M2 Slot lock on booking", "files": 7, "plus": 312, "minus": 54 } },
+        { "id": "ic-b5", "kind": "tests", "moduleRef": "M3", "baseSha": "6b13e48", "commitSha": "8e4f2b6", "state": "landed", "finishedAt": "2026-11-02T14:10:00Z", "by": { "agent": "Fenn", "role": "test-unit" }, "_cr": { "title": "Locked M3's 14 tests", "files": 2, "plus": 177, "minus": 0 } },
+        { "id": "ic-b6", "kind": "module", "moduleRef": "M3", "attemptKey": "a1", "baseSha": "8e4f2b6", "commitSha": "a41e9c2", "state": "landed", "finishedAt": "2026-11-04T18:10:00Z", "_cr": { "title": "Landed M3 Reminders in the clinic's time zone", "files": 6, "plus": 205, "minus": 19 } }
+      ],
+      "attempts": {
+        "M1": [
+          { "key": "a1", "label": "Initial", "agent": "Soap", "role": "build", "startedAt": "2026-10-29T09:00:00Z", "endedAt": "2026-10-29T10:01:00Z", "result": "landed", "branch": "avel/m1-double-booking", "checkpointCommit": "3a0c7e2" }
+        ],
+        "M2": [
+          { "key": "a1", "label": "Initial", "agent": "Soap", "role": "build", "startedAt": "2026-10-31T09:00:00Z", "endedAt": "2026-10-31T09:52:00Z", "result": "failed", "branch": "avel/m2-slot-lock", "checkpointCommit": "9f27b31" },
+          { "key": "a2", "label": "Retry 1", "agent": "Soap", "role": "build", "startedAt": "2026-10-31T10:10:00Z", "endedAt": "2026-10-31T10:46:00Z", "result": "landed", "branch": "avel/m2-slot-lock", "checkpointCommit": "d6e01a5" },
+          { "key": "a2r", "label": "Review", "agent": "Brennan", "role": "review-security", "startedAt": "2026-10-31T11:00:00Z", "endedAt": "2026-10-31T11:14:00Z", "result": "landed", "branch": "avel/m2-slot-lock", "checkpointCommit": "d6e01a5" }
+        ],
+        "M3": [
+          { "key": "a1", "label": "Initial", "agent": "Iyo", "role": "build", "startedAt": "2026-11-03T09:00:00Z", "endedAt": "2026-11-03T10:05:00Z", "result": "landed", "branch": "avel/m3-reminders-tz", "checkpointCommit": "0b5d9c4" }
+        ]
+      }
+    }
+  }
+}

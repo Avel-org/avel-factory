@@ -1,0 +1,29 @@
+{
+  "_note": "CR-29 (OSA as the operator agent) is proposed, not in the contract: contract 1.1.0 doesn't exist yet. These are the routes, fields and events the prototype assumes, taken from the CR-29 doc, section 6. The OSA screens use them only while the osa flag is on. Remove this file's entries as they land in @avel/contract.",
+  "source": "docs/CR-29 OSA as the operator agent.md, Nov 13, 2026",
+  "routes": [
+    { "no": null, "method": "PUT", "path": "/api/decision-briefs/{ref}", "procedure": "assistant.writeBrief", "caller": "assistant", "inputKeys": ["ref"] },
+    { "no": null, "method": "POST", "path": "/api/assistant/tasks", "procedure": "assistant.createTask", "caller": "operator", "inputKeys": [] },
+    { "no": null, "method": "GET", "path": "/api/assistant/tasks", "procedure": "assistant.listTasks", "caller": "both", "inputKeys": ["state", "cursor", "limit"] },
+    { "no": null, "method": "PATCH", "path": "/api/assistant/tasks/{taskId}", "procedure": "assistant.updateTask", "caller": "assistant", "inputKeys": ["taskId"] },
+    { "no": null, "method": "PUT", "path": "/api/operator/focus", "procedure": "operator.setFocus", "caller": "both", "inputKeys": [] },
+    { "no": null, "method": "GET", "path": "/api/operator/focus", "procedure": "operator.getFocus", "caller": "both", "inputKeys": [] }
+  ],
+  "events": [
+    "cli.brief.prepared",
+    "cli.assistant_task.created",
+    "cli.assistant_task.changed",
+    "cli.focus.changed",
+    "cli.assistant.paused"
+  ],
+  "fields": [
+    "PendingDecisionDto.brief: DecisionBriefDto | null  (ref, boundVersion, summary, evidence[], recommendation, confidence: high | medium | low, risk, reasonDraft, writtenAt, superseded)",
+    "StatusDto.terminal: { attached: boolean, lastSeenAt: IsoTime | null }",
+    "StatusDto.assistant: { session: active | paused | none, spendUsed: number, spendCap: number }  (assumed: CR-29 decision 4 leaves the cap open; no dollars on screen, so the web shows used over cap as a percent)",
+    "AssistantTaskDto: { id, subject: { kind, ref, label }, request, state: queued | working | done | failed, result: string | null, links: string[], createdAt, updatedAt }",
+    "OperatorFocusDto: { ref: string | null, label: string | null, setBy: operator | assistant | cli, at }",
+    "ActivityLogActorKind gains 'assistant'",
+    "cli_sessions.principal_kind: operator | assistant"
+  ],
+  "procedureNames": "The procedure names (assistant.*, operator.setFocus, operator.getFocus) are the prototype's guesses; CR-29 gives only method and path."
+}

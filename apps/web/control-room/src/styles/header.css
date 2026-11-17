@@ -1,0 +1,159 @@
+/* The header, polished (Nov 10). Loaded last.
+   Top of a page: the bar shows only where you came from (parents) and the factory pulse; the page's own
+   title is right below it. Scrolled past that title: the bar shows the title, small. Phone: same rule, with a
+   labelled back button. No "need you" button: the Decisions badge carries the count. */
+
+.lib-topbar { gap: 12px; }
+.lib-topbar .lib-crumbs { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 13px; line-height: 20px; }
+.lib-topbar .lib-crumbs .lib-crumb { color: var(--av-muted); font-weight: 400; text-decoration: none; padding: 4px 6px; margin: 0 -2px; border-radius: 6px; white-space: nowrap; }
+@media (hover: hover) { .lib-topbar .lib-crumbs .lib-crumb:hover { color: var(--av-ink); background: var(--av-faceplate-hover); } }
+.lib-topbar .lib-crumbs svg { color: var(--av-muted); flex: none; }
+.cr-top-title { font-size: 14px; font-weight: 500; letter-spacing: 0; }
+.lib-topbar[data-condensed] .lib-crumbs { display: none; }
+
+/* right side: pulse and search, same height, one quiet row */
+.cr-head-right { margin-left: 4px; }
+.cr-pulse { height: 32px; }
+@media (min-width: 761px) { .cr-search { height: 32px; } }
+
+/* a page title that received focus on a route change shows no ring; it isn't a control */
+h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus, .cr-hero-title:focus { outline: none !important; box-shadow: none !important; }
+
+/* the scroll progress line only reads well on long documents */
+.lib-progress { display: none; }
+.cr-canvas:has(.kbd-doc) .lib-progress { display: block; }
+
+@media (max-width: 760px) {
+  .lib-app[data-tabbar] .lib-topbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0; align-items: center; }
+  .lib-app[data-tabbar] .lib-topbar > .cr-top-back { grid-column: 1; }
+  .lib-app[data-tabbar] .lib-topbar > .lib-crumbs, .lib-app[data-tabbar] .lib-topbar > .cr-top-title { grid-column: 2; grid-row: 1; }
+  .lib-app[data-tabbar] .lib-topbar > .cr-pulse { grid-column: 3; grid-row: 1; }
+  .lib-app[data-tabbar] .lib-topbar > .cr-head-right { grid-column: 4; grid-row: 1; display: flex; margin-left: 0; }
+
+  /* at the top: the parent as the back button's label; the big title is on the page */
+  .lib-app[data-tabbar] .lib-topbar .lib-crumbs { display: none !important; }
+  .lib-app[data-tabbar] .lib-topbar[data-back] .cr-top-back { width: auto; min-width: 44px; padding: 0 8px 0 2px; gap: 2px; justify-content: flex-start; justify-self: start; max-width: 100%; margin-right: 0; }
+  .lib-app[data-tabbar] .lib-topbar .cr-top-back-l { position: static; width: auto; height: auto; clip: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 16px; line-height: 24px; color: var(--av-accent-text, var(--av-ink)); }
+  .lib-app[data-tabbar] .lib-topbar[data-back]:not([data-condensed]) { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .lib-app[data-tabbar] .lib-topbar[data-back]:not([data-condensed]) > .cr-pulse { grid-column: 2; }
+  .lib-app[data-tabbar] .lib-topbar[data-back]:not([data-condensed]) > .cr-head-right { grid-column: 3; }
+
+  /* scrolled: chevron only, then the title */
+  .cr-top-title { display: none !important; font-size: 16px; line-height: 24px; font-weight: 500; }
+  .lib-app[data-tabbar] .lib-topbar[data-condensed] > .cr-top-title { display: flex !important; }
+  .lib-app[data-tabbar] .lib-topbar[data-condensed] .cr-top-back-l { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .lib-app[data-tabbar] .lib-topbar[data-condensed] .cr-top-back { width: 44px; padding: 0; justify-content: center; }
+
+  /* the pulse: one item with words. Parked wins, because that's the one you act on. */
+  .lib-app[data-tabbar] .cr-pulse { margin-left: 4px; }
+  .lib-app[data-tabbar] .cr-pulse-item[data-minor] { display: none; }
+  .lib-app[data-tabbar] .cr-pulse-item .cr-pulse-w { position: static; width: auto; height: auto; clip: auto; overflow: visible; }
+  .lib-app[data-tabbar] .cr-pulse-item { font-size: 13px; padding: 0 8px; gap: 4px; white-space: nowrap; }
+  .lib-app[data-tabbar] .lib-topbar[data-condensed] .cr-pulse-w { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+/* desk: pulse and search share one shape, so the right side reads as one quiet group */
+@media (min-width: 761px) {
+  .cr-search { border-radius: var(--radius-full); box-shadow: inset 0 0 0 1px var(--color-border); padding: 0 6px 0 12px; }
+  .cr-search-k { border-radius: var(--radius-full); padding: 0 6px; }
+  .cr-head-right { margin-left: 0; }
+}
+
+/* ---------------------------------------------------------------- Header A: the title lives in the bar's row.
+   Top-level pages (no parent): the page header slides up under a see-through bar, so the title, its main
+   action, the pulse and search share one row. Inner pages keep the parent link in the bar, title below.
+   Scrolled: the bar turns solid and shows the title small, as before. */
+.cr-canvas > .lib-topbar[data-flush]:not([data-condensed]) {
+  background: transparent !important; border-bottom-color: transparent !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important;
+  pointer-events: none;
+}
+.cr-canvas > .lib-topbar[data-flush]:not([data-condensed]) > * { pointer-events: auto; }
+.cr-canvas > .lib-topbar[data-flush]:not([data-condensed]) > .lib-crumbs { pointer-events: none; }
+
+/* pages with a masthead */
+.cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast {
+  margin-top: calc(-1 * var(--topbar-height));
+  padding-top: calc((var(--topbar-height) - 36px) / 2);
+}
+.cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast .cr-mast-head { padding-right: calc(var(--bar-right, 280px) + 4px); }
+.cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast .cr-mast-titlerow { min-height: 36px; }
+/* Decisions: the date and count line is the row in the bar */
+.cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast:has(.cr-dmline) { padding-top: calc((var(--topbar-height) - 32px) / 2); }
+.cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast .cr-dmline { padding-right: calc(var(--bar-right, 280px) + 4px); }
+
+/* Live has no masthead: its title row rises instead */
+.cr-canvas:has(> .lib-topbar[data-flush]) .lib-screen > .cr-lvtop:first-child {
+  margin-top: calc(-1 * var(--topbar-height) - 25px);
+  min-height: var(--topbar-height);
+  padding-right: calc(var(--bar-right, 280px) + 4px);
+  box-sizing: border-box;
+}
+
+@media (max-width: 760px) {
+  .cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast {
+    margin-top: calc(-1 * (var(--topbar-height) + env(safe-area-inset-top, 0px)));
+    padding-top: calc((var(--topbar-height) - 28px) / 2 + env(safe-area-inset-top, 0px));
+  }
+  .cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast .cr-mast-head { padding-right: 0; }
+  .cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast .cr-mast-titlerow,
+  .cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast .cr-dmline-date { padding-right: calc(var(--bar-right, 140px) - 8px); min-height: 28px; box-sizing: border-box; }
+  .cr-canvas:has(> .lib-topbar[data-flush]) > .cr-mast .cr-dmline { padding-right: 0; }
+  /* phone: the date gets its own line, so no dot is left dangling at a wrap */
+  .cr-dmline-sum { display: grid; gap: 4px; }
+  .cr-dmline-dot { display: none; }
+  .cr-dmline-date { display: flex; align-items: center; }
+  .lib-app[data-tabbar] .lib-topbar[data-flush] { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .lib-app[data-tabbar] .lib-topbar[data-flush] > .cr-pulse { grid-column: 2; }
+  .lib-app[data-tabbar] .lib-topbar[data-flush] > .cr-head-right { grid-column: 3; }
+  .lib-app[data-tabbar] .lib-topbar[data-flush][data-condensed] > .cr-top-title { grid-column: 1; }
+}
+
+/* ---------------------------------------------------------------- account area (sidebar foot): you, Settings, theme, keys */
+.cr-acct-wrap { position: relative; margin-top: auto; padding: 8px; border-top: 1px solid var(--av-hairline); }
+.cr-avatar-btn { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 8px; border: none; border-radius: 10px; background: none; font: inherit; color: var(--av-ink); text-align: left; cursor: pointer; transition: background-color 120ms ease-out; }
+@media (hover: hover) { .cr-avatar-btn:hover { background: var(--av-faceplate-hover); } }
+.cr-avatar-btn[aria-expanded="true"] { background: var(--av-faceplate-hover); }
+.cr-avatar-btn:focus-visible { outline: 2px solid var(--av-focus-ring); outline-offset: -2px; }
+.cr-avatar-btn > .lucide { color: var(--av-muted); flex: none; }
+.cr-avatar { flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--av-ink); color: var(--av-on-ink, #fff); font-size: 13px; font-weight: 500; }
+.cr-acct-who { flex: 1; min-width: 0; display: grid; }
+.cr-acct-who b { font-size: 14px; line-height: 20px; font-weight: 500; }
+.cr-acct-who small { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; color: var(--av-muted); }
+.cr-acct-who .lib-live-dot { position: static; flex: none; }
+.cr-acct { position: absolute; left: 8px; right: 8px; bottom: calc(100% - 4px); z-index: var(--z-popover, 300); display: grid; padding: 4px; border-radius: 12px; background: var(--color-app-float, var(--av-faceplate)); box-shadow: var(--av-shadow-popover); }
+@media (prefers-reduced-motion: no-preference) {
+  @starting-style { .cr-acct { opacity: 0; translate: 0 4px; } }
+  .cr-acct { transition-property: opacity, translate; transition-duration: 150ms; transition-timing-function: ease-out; }
+}
+.cr-acct-item { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 8px; border: none; border-radius: 8px; background: none; font: inherit; font-size: 14px; color: var(--av-ink); text-decoration: none; text-align: left; cursor: pointer; }
+.cr-acct-item .lucide { color: var(--av-muted); }
+.cr-acct-item kbd { margin-left: auto; font: 500 12px/16px var(--av-font-sans); padding: 0 6px; border-radius: 4px; background: var(--av-inset, var(--av-hairline)); color: var(--av-muted); }
+@media (hover: hover) { .cr-acct-item:hover { background: var(--av-faceplate-hover); } }
+.cr-acct-item:focus-visible { outline: 2px solid var(--av-focus-ring); outline-offset: -2px; }
+.cr-acct-item[aria-current="page"] { background: var(--av-faceplate-hover); }
+.cr-acct-sep { height: 1px; margin: 4px 8px; background: var(--av-hairline); }
+@media (pointer: coarse) { .cr-acct-item { min-height: 44px; } .cr-acct-item kbd { display: none; } }
+/* collapsed rail: the avatar only */
+.lib-rail[data-collapsed] .cr-acct-wrap { padding: 8px 4px; }
+.lib-rail[data-collapsed] .cr-avatar-btn { justify-content: center; padding: 6px 0; }
+.lib-rail[data-collapsed] .cr-avatar-btn > .lucide, .lib-rail[data-collapsed] .cr-acct-who { display: none; }
+.lib-rail[data-collapsed] .cr-acct { left: 4px; right: auto; width: 220px; }
+
+/* Library home has no masthead either: its first row (find box and title) rises into the bar */
+.cr-canvas:has(> .lib-topbar[data-flush]) .lib-screen > .cr-content:first-child:has(.kbd[data-mode="home"]) { margin-top: calc(-1 * var(--topbar-height) - 25px); }
+.cr-canvas:has(> .lib-topbar[data-flush]) .kbd[data-mode="home"] .kbd-hero-row { padding-right: calc(var(--bar-right, 280px) + 4px); }
+@media (max-width: 760px) {
+  .cr-canvas:has(> .lib-topbar[data-flush]) .kbd[data-mode="home"] .kbd-hero-row { padding-right: 0; }
+  .cr-canvas:has(> .lib-topbar[data-flush]) .kbd[data-mode="home"] .kbd-browse { width: calc(100% - var(--bar-right, 140px) + 8px); min-height: 44px; }
+  .cr-canvas:has(> .lib-topbar[data-flush]) .lib-screen > .cr-lvtop:first-child { margin-top: calc(-1 * (var(--topbar-height) + env(safe-area-inset-top, 0px)) - 25px); padding-top: env(safe-area-inset-top, 0px); }
+}
+@media (max-width: 760px) {
+  .cr-canvas:has(> .lib-topbar[data-flush]) .lib-screen > .cr-lvtop:first-child { min-height: 0; align-items: flex-start; row-gap: 4px; }
+  .cr-canvas:has(> .lib-topbar[data-flush]) .lib-screen > .cr-lvtop:first-child .cr-lvtop-id { min-height: var(--topbar-height); display: flex; align-items: center; padding-right: calc(var(--bar-right, 140px) - 16px); box-sizing: border-box; }
+  .cr-canvas:has(> .lib-topbar[data-flush]) .lib-screen > .cr-lvtop:first-child { padding-right: 0; }
+  .cr-canvas:has(> .lib-topbar[data-flush]) .kbd[data-mode="home"] .kbd-browse { margin-top: 6px; }
+}
+/* focus mode (Canon) on phone: the back link names the parent, so the crumb isn't repeated */
+@media (max-width: 760px) {
+  html[data-focus] .lib-topbar[data-back] .lib-crumbs { display: none !important; }
+}
