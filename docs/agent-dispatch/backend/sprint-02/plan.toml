@@ -9,7 +9,7 @@
 #   T-B4 the Db service, spike 1 check 2 (Step 1 test 6)    ~70 min  full (events and seq, C4)
 #   T-B5 lock-check hardening (T-B0 review P2 and P3)       ~45 min  standard
 #   T-B6 the contract's defect code (CR-38)                 ~20 min  standard, contract
-# T-B6: CR-38 accepted Nov 17; it stays only if Zero signs off (I3), otherwise it's removed before render.
+# T-B6: CR-38 accepted Nov 17, and Zero signed off (I3).
 # Spike 1 check 5 (the reaper under TestClock) moved to the jobs and events tests before spike 2 (Javaris, Nov 17).
 # If the cycle has to be shorter, T-B5 is the one to move.
 
@@ -284,7 +284,7 @@ slug = "defect-code"
 title = "The contract's defect code: INTERNAL_SERVER_ERROR, 500, no details; contract 1.0.1 (CR-38)"
 goal = "A defect's 500 carries a code from the contract's catalog, so the web can show it like any other error."
 rigor = "standard"
-refs = ["CR-38 (accepted Nov 17; needs Zero's sign-off, I3)", "AGENTS.md, Writing Effect rule 3", "Build rules I3"]
+refs = ["CR-38 (accepted Nov 17; Zero signed off, I3)", "AGENTS.md, Writing Effect rule 3", "Build rules I3"]
 labels = ["contract"]
 cr = "CR-38"
 may_change = [
@@ -313,7 +313,6 @@ verify = [
 notes = [
   "Add INTERNAL_SERVER_ERROR { status: 500, message: 'Something went wrong' } to errorMap's generic codes, with no data, and change the comment 'the generic seven' to 'the generic eight'. Bump CONTRACT_VERSION to 1.0.1. Regenerate docs/generated with pnpm --filter @avel/docs generate and commit it",
   "The server already sends INTERNAL_SERVER_ERROR for a defect (T-B1), so no server file changes. If a server test or typecheck fails because of the new code, stop with out-of-scope rather than editing the server",
-  "Removed from the plan before rendering if Zero doesn't sign off",
 ]
 
 [ticket.tests]
