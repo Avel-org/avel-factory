@@ -33,7 +33,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 
 | Ticket | Builds | Tests |
 | --- | --- | --- |
-| T-F2 | `apps/web/src/kit/**`, `apps/web/src/modules/system/**`, `apps/web/src/routes/**`, `apps/web/src/routeTree.gen.ts` | `apps/web/test/shell/**`, `apps/web/e2e/shell/**` |
+| T-F2 | `apps/web/src/kit/**`, `apps/web/src/modules/system/**`, `apps/web/src/routes/**`, `apps/web/src/routeTree.gen.ts`, `apps/web/src/styles/app.css` | `apps/web/test/shell/**`, `apps/web/e2e/shell/**` |
 
 ## Merge order
 
