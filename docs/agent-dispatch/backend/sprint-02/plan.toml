@@ -1,0 +1,103 @@
+# backend/sprint-02: the sprint's plan. Axis writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Rigg's tests, Soap's build, Rigg's review.
+# Check it:   scripts/render.py --check backend/sprint-02
+# Render it:  scripts/render.py backend/sprint-02   (after approval), then commit the folder.
+#
+# A partial plan, started Nov 17 so the accepted CR-39 has its ticket. The rest of the cycle's
+# tickets (the Db service, the lock-check hardening from T-B0's review P2 and P3, and CR-38 if it's
+# accepted) are added once T-B1 lands. Nothing here is approved until Javaris approves the whole plan.
+
+lane = "backend"
+sprint = "sprint-02"
+step = 1
+title = "Step 1, cycle 2: Effect's language service on TypeScript 7, then the Db service"
+goals = [
+  "Effect's language service runs in the editor and in CI on TypeScript 7, so Writing Effect rule 9 holds",
+]
+done_when = [
+  "AGENTS.md, Writing Effect rule 9: Effect's language service runs in the editor and CI",
+  "Step 0 and Step 1 plan, Step 1 test 1: CI is green",
+]
+sources = [
+  { path = "docs/design/CR-39 Effect's language service on TypeScript 7.md", why = "the accepted change: @effect/tsgo 0.64.1 replaces @effect/language-service, run in the editor and CI" },
+  { path = "docs/design/Build rules.md", why = "E5 (dependencies: one lockfile change per cycle), F2 (locked tests change only in the checker's own commit)" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7.0.2, Biome, Vitest 5; Hono, oRPC 1.16.2, Zod 4, Effect 4.1 inside packages/server"
+layout = "packages/contract, packages/contract-mock, packages/db, packages/server (the shell from sprint-01's T-B1), tools/repo-checks (the lock check, T-B0), tools/docs, apps/web"
+conventions = [
+  "AGENTS.md is the rulebook: Writing Effect rules 1 to 10",
+  "Exact versions only in package.json (no ^ or ~)",
+]
+notes = [
+  "This sprint starts after sprint-01's T-B0 and T-B1 have merged: T-B2 changes the manifest and tsconfig T-B0 made final, and checks the src T-B1 adds",
+  "Lock at the head of the tests dispatch (after the checker's report commit), and run check-locks on the branch before the build starts (T-B0 review, t-b0-rigg-01)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B2"
+slug = "effect-tsgo"
+title = "Effect's language service on TypeScript 7: @effect/tsgo in place of @effect/language-service, in the editor and CI"
+goal = "A common Effect mistake in packages/server, such as an Effect that is created and never run, fails CI."
+rigor = "standard"
+refs = ["CR-39 decisions 1 and 2 (accepted Nov 17)", "AGENTS.md, Writing Effect rule 9", "Build rules E5"]
+may_change = [
+  "packages/server/package.json",
+  "packages/server/tsconfig.json",
+  "pnpm-lock.yaml",
+  ".github/workflows/ci.yml",
+  "docs/design/Outside sources and what we took.md",
+]
+must_not_change = [
+  "packages/server/src/**",
+  "packages/contract/**",
+  "packages/db/**",
+  "pnpm-workspace.yaml",
+  ".github/CODEOWNERS",
+  ".github/workflows/locks.yml",
+]
+context = [
+  { path = "docs/design/CR-39 Effect's language service on TypeScript 7.md", why = "what changes where, and the stop rule" },
+  { path = "AGENTS.md", why = "Writing Effect, rule 9, and the rules the language service catches" },
+  { path = "packages/server/package.json", why = "the manifest T-B0 made: the pin to replace and the scripts to add to" },
+  { path = "packages/server/tsconfig.json", why = "where an editor plugin entry goes, if @effect/tsgo needs one" },
+  { path = ".github/workflows/ci.yml", why = "the main CI job the new step joins" },
+  { path = "tools/repo-checks/test/dependencies.test.ts", why = "T-B0-08, the locked pin test this ticket's tests change" },
+  { path = "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b0-build-completion.md", why = "the needs-cr stop: the exact error @effect/language-service gives on TypeScript 7.0.2" },
+]
+verify = [
+  "pnpm install --frozen-lockfile",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+  "pnpm --filter @avel/server run check:effect",
+  "pnpm --filter @avel/repo-checks test",
+  "pnpm why @effect/language-service",
+]
+notes = [
+  "Dependency, approved by Javaris with CR-39 (Nov 17, E5): dev only in packages/server, @effect/tsgo 0.64.1 (MIT; published Nov 2, 2026, the newest version at least two weeks old on Nov 17; about 11.3 MB plus one platform binary from its optional dependencies; bin effect-tsgo). Remove @effect/language-service 0.87.5: `pnpm why @effect/language-service` must print nothing. This is the cycle's one lockfile change",
+  "The script check:effect in packages/server/package.json runs effect-tsgo and exits non-zero on any Effect diagnostic, naming the file. With no arguments it checks the server's src and test; given paths (after --), it checks those instead, which is how the tests point it at their fixtures. Read the package's README for the command line, and state in the report the exact command and any tsconfig plugin entry you added",
+  "CI: add a step to the main job in .github/workflows/ci.yml, after typecheck, that runs pnpm --filter @avel/server run check:effect. .github/** is a CODEOWNERS path, so Javaris merges this PR",
+  "Outside sources and what we took.md: the Effect entry names @effect/tsgo as the language service (CR-39). CR-30's note is the lead's and is already on the CR-39 branch",
+  "Stop rule (CR-39 section 3): if effect-tsgo can't run on TypeScript 7.0.2, or can't be run from the command line for CI, stop with needs-cr. Don't pin an older TypeScript or an older package",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = [
+  "tools/repo-checks/test/dependencies.test.ts",
+  "tools/repo-checks/test/effect-check.test.ts",
+  "tools/repo-checks/test/fixtures/effect/**",
+]
+behaviours = [
+  "dependencies (T-B0-08, changed in the checker's own commit, F2): packages/server pins @effect/tsgo 0.64.1 and no longer lists @effect/language-service",
+  "effect check: packages/server's check:effect, given a fixture with an Effect that is created and never run, exits non-zero and names the file",
+  "effect check: the same script exits 0 on a clean fixture, and with no arguments on the server as it stands",
+  "ci: .github/workflows/ci.yml runs pnpm --filter @avel/server run check:effect",
+]

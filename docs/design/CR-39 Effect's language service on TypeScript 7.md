@@ -1,8 +1,8 @@
-# CR-39: Effect's language service on TypeScript 7 (proposed)
+# CR-39: Effect's language service on TypeScript 7 (accepted)
 
 Nov 17, 2026 · drafted by Axis for @javaris · touches `packages/server/package.json`, `pnpm-lock.yaml`, `packages/server/tsconfig.json`, CI, the locked test T-B0-08, `CR-30` section 2 and `Outside sources and what we took.md`
 
-Proposed, for the next cycle. Nothing below is in force until Javaris accepts it. The new package also needs his E5 approval, given with this CR.
+**Accepted Nov 17 by the operator:** decisions 1 and 2, with E5 approval for `@effect/tsgo` 0.64.1. Decision 3 is rejected. Built next cycle as T-B2 (`docs/agent-dispatch/backend/sprint-02/plan.toml`).
 
 ## In short
 
@@ -57,6 +57,6 @@ One ticket in Axis's lane, standard rigor, about 45 minutes, and the cycle's onl
 
 ## Decisions
 
-1. Replace `@effect/language-service` with `@effect/tsgo` 0.64.1 next cycle, as the cycle's one lockfile change, with E5 approval for the package. **Recommended.**
-2. Run it in CI as well as the editor, as rule 9 says. **Recommended.**
-3. Not recommended: a TypeScript 5 or 6 compiler beside 7 only for the language service.
+1. **Accepted Nov 17:** replace `@effect/language-service` with `@effect/tsgo` 0.64.1 next cycle, as the cycle's one lockfile change, with E5 approval for the package.
+2. **Accepted Nov 17:** run it in CI as well as the editor, as rule 9 says.
+3. **Rejected Nov 17:** a TypeScript 5 or 6 compiler beside 7 only for the language service.

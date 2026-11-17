@@ -49,6 +49,8 @@ The server isn't written yet: `packages/server` doesn't exist. Changing how it's
 | `Effect.withSpan` | Naming units of work now; `@effect/opentelemetry` exports them once spans are turned on (section 4, later) |
 | `@effect/vitest`, `TestClock`, `@effect/language-service` | Tests and editor checks (development only) |
 
+Note, Nov 17: on TypeScript 7 the language service is `@effect/tsgo`, not `@effect/language-service`, and it runs in CI as well as the editor (CR-39, accepted).
+
 | Not used | What stays instead |
 | --- | --- |
 | Effect Schema | Zod 4, from the contract |
