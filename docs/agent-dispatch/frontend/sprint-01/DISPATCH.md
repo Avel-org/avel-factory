@@ -33,7 +33,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 
 | Ticket | Builds | Tests |
 | --- | --- | --- |
-| T-F1 | `apps/web/src/**`, `apps/web/vite.config.ts`, `apps/web/tsconfig.json`, `apps/web/components.json`, `apps/web/biome.json` | `apps/web/test/**`, `apps/web/e2e/**`, `apps/web/vitest.config.ts`, `apps/web/playwright.config.ts` |
+| T-F1 | `apps/web/src/**`, `apps/web/vite.config.ts`, `apps/web/tsconfig.json`, `apps/web/components.json`, `apps/web/biome.json` | `apps/web/test/**`, `apps/web/e2e/**`, `apps/web/vitest.config.ts`, `apps/web/playwright.config.ts`, `apps/web/.gitignore` |
 
 ## Merge order
 
