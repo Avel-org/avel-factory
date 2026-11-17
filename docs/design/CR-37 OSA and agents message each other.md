@@ -56,7 +56,7 @@ Today `scripts/agent.sh` caps headless runs at `--max-turns`, but interactive se
 | `Agents, identities and system prompts.md` | Rule 3, "The task doc is the whole briefing", becomes: "The task doc is the briefing. A relayed instruction can only narrow or clarify it (CR-37); if you find yourself relaying the same kind of instruction twice, the plan is missing something." |
 | `AVEL agent system.md` §6 and §12 item 5 | "Headless and capped" becomes "Capped by turns and time, headless or interactive (CR-37)". This guide isn't frozen, so it's edited, with a pointer to this CR |
 | `README.md`, "Retired files" | Add: CR-37 brings back messages between sessions, but not `tell.sh` or `messages.md`: messages use Claude Code's own session messaging and are logged outside git |
-| `scripts/agent.sh`, `scripts/hooks/turns.py`, `.claude/settings.json`, `scripts/agents/limits.json`'s note | The turn hook and where its limits come from. **Deferred** to the lead PR after the scaffold (Nov 16), with the `templates/completion.md` section through `scripts/render.py`; until then the identities and `/dispatch` ask for the **Messages received** section |
+| `scripts/agent.sh`, `scripts/hooks/turns.py`, `.claude/settings.json`, `scripts/agents/limits.json`'s note | The turn hook and where its limits come from. **Built Nov 17** in the lead kit PR: `scripts/hooks/turns.py`, `AVEL_TURN_LIMIT` and `AVEL_REPORT` from `agent.sh`, and `scripts/agents/msglog.py` for safeguard 1. The **Messages received** section comes from `scripts/render.py` (renderer 2; packages rendered earlier keep renderer 1). The hooks' entries in `.claude/settings.json` are added by Javaris |
 | `README.md` | The CR table: a CR-37 row, Proposed |
 
 ## 5. Risks

@@ -8,7 +8,8 @@
 #   scripts/agent.sh --docs <agent>                                what can be opened by hand (the picker)
 #
 #   The attempt is always the next one; naming it confirms a retry. It refuses: a task doc that isn't
-#   committed or isn't what the plan renders, a dispatch that isn't ready (a stopped one only as a named retry), a seat already busy
+#   committed or isn't what the plan renders, a dispatch that isn't ready (a stopped or done one only as a
+#   named retry, the lead's call), a seat already busy
 #   (one builder and one checker per lane, 4 at most, B7), and anything while .git/avel/paused exists (J4).
 #   Worktrees: ../<repo>-wt/<lane>-<sprint>-<ticket>-<role>-a<n>. Branch per ticket: t/<id>-<slug>.
 set -euo pipefail
@@ -40,7 +41,10 @@ title="$(echo "$AGENT" | tr a-z A-Z) $TICKET-$KIND"
 
 # Not --here: open a new tab that runs --here, and return.
 if (( ! here )); then
-  cmd="cd $(printf %q "$root") && scripts/agent.sh --here $lane $sprint $doc $want; exec bash"
+  # wezterm cli spawn starts a fresh login shell, so the AVEL_* settings are passed on explicitly.
+  envs=""
+  while IFS='=' read -r k v; do envs+=" $k=$(printf %q "$v")"; done < <(env | grep -E '^AVEL_[A-Z0-9_]*=' | grep -v '^AVEL_SEAT=' || true)
+  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here $lane $sprint $doc $want; exec bash"
   domain=${AVEL_WSL_DOMAIN:-WSL:Ubuntu}
   for wt in wezterm.exe wezterm; do
     if command -v "$wt" >/dev/null 2>&1; then
@@ -68,6 +72,7 @@ read -r st n < <(render --state "$lane/$sprint" "$doc")
 case $st in
   ready) ;;
   stopped) [[ -n $want ]] || die "$doc stopped on an earlier attempt. A retry is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
+  done) [[ -n $want ]] || die "$doc is done (a$((n - 1))). Another attempt after a review is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
   *) die "$doc is $st, not ready. scripts/render.py --status $lane/$sprint says why." ;;
 esac
 [[ -z $want || $want == "$n" ]] || die "the next attempt of $doc is a$n, not a$want"
@@ -132,6 +137,8 @@ limits=$(python3 -c 'import json;l=json.load(open("scripts/agents/limits.json"))
 read -r turns minutes <<<"$limits"
 name="$title a$n"
 export AVEL_SEAT="$name"
+# The turn limit for an interactive session (CR-37): scripts/hooks/turns.py reads these.
+export AVEL_TURN_LIMIT="$turns" AVEL_REPORT="$wt/$REPORT"
 
 cd "$wt"
 if [[ -f package.json ]]; then

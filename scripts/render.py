@@ -42,7 +42,11 @@ except ModuleNotFoundError:  # Python 3.10
     except ModuleNotFoundError:
         sys.exit("render.py needs Python 3.11+, or the tomli package (sudo apt install python3-tomli)")
 
-RENDERER = "avel-render 1"
+RENDERER = "avel-render 2"
+# A package keeps the renderer it was rendered with, so a kit change never invalidates one in flight:
+# --verify renders it again with the version its MANIFEST.json names. 2 adds the "Messages received"
+# report section (CR-37) and the comma-separated lock line.
+RENDERERS = ("avel-render 1", "avel-render 2")
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -430,7 +434,7 @@ def front_matter(plan, d):
     return "---\n" + "".join(f"{k}: {v}\n" for k, v in fields) + "---\n"
 
 
-def task_doc(plan, d, all_plans_owned):
+def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
     t, s, lane = d["ticket"], plan["_seats"], plan["_lane"]
     cmds = plan["commands"]
     kind = d["kind"]
@@ -599,14 +603,22 @@ def task_doc(plan, d, all_plans_owned):
                 "Contract to files: which requirement each change serves",
                 "Deviations: anything done differently from this document, and why",
                 "Limitations: what isn't covered, or couldn't be checked"]
+    v1 = renderer == "avel-render 1"
     if kind == "tests":
         sections.insert(1, "Failing first: the output of the tests failing on the start commit")
-        sections.append(f"Lock line, for the lead to copy into locks.md: `- {t['id']}: <test paths> @ <your last commit>`")
+        if v1:
+            sections.append(f"Lock line, for the lead to copy into locks.md: `- {t['id']}: <test paths> @ <your last commit>`")
+        else:
+            sections.append(f"Lock line, for the lead to copy into locks.md: `- {t['id']}: <path>, <path> @ <branch tip>`, "
+                            "the test paths separated by commas. The lead fills in the branch tip after your report commit")
     if kind == "review":
         sections = ["Pre-flight: each verification command and its result",
                     "Findings: one line each, with its severity and its file under findings/",
                     "Checked: what you checked, and against which rule",
                     "Not reached: what you couldn't check, and why"]
+    if not v1:
+        sections.append("Messages received: every instruction OSA relayed, who it came from, and what you did with it "
+                        "(followed, or refused and why); \"None\" if there were none (CR-37)")
     out.append("Then these sections:\n" + bullets(sections) + "\n")
 
     out.append("## Activation prompt\n")
@@ -614,7 +626,7 @@ def task_doc(plan, d, all_plans_owned):
     return "\n".join(out)
 
 
-def render_package(plan, owned):
+def render_package(plan, owned, renderer=RENDERER):
     lane, sprint = plan["_lane"], plan["_sprint"]
     files = {}
     a = plan.get("analysis", {})
@@ -661,11 +673,11 @@ def render_package(plan, owned):
     prompts = [f"# Activation prompts: {lane}/{sprint}", "",
                "<!-- Every task doc's activation prompt, archived. Rendered; never edit. -->", ""]
     for d in ds:
-        files[d["doc"] + ".md"] = task_doc(plan, d, owned)
+        files[d["doc"] + ".md"] = task_doc(plan, d, owned, renderer)
         prompts += [f"## {d['doc']}", "", "> " + activation(plan, d), ""]
     files["DISPATCH-PROMPTS.md"] = "\n".join(prompts)
 
-    manifest = {"renderer": RENDERER, "plan_sha256": plan["_sha"], "lane": lane, "sprint": sprint,
+    manifest = {"renderer": renderer, "plan_sha256": plan["_sha"], "lane": lane, "sprint": sprint,
                 "files": {n: hashlib.sha256(files[n].encode()).hexdigest() for n in sorted(files)}}
     manifest["packageSha256"] = hashlib.sha256(
         "".join(f"{n} {h}\n" for n, h in manifest["files"].items()).encode()).hexdigest()
@@ -723,9 +735,28 @@ def ticket_merged(tid):
     return bool(re.search(r"(?mi)^Refs:.*(?<![\w-])" + re.escape(tid) + r"(?![\w])", out.stdout))
 
 
-def locked(plan, t):
-    """True when t's lock line is in locks.md: on the ticket's branch, where the lead commits it, or in
-    the working copy."""
+LOCK_LINE = re.compile(r"^\s*[-*]\s*(?P<id>T-[A-Z]\d+)\s*:\s*(?P<paths>.*?)\s*@\s*(?P<sha>[0-9a-f]{7,40})"
+                       r"(?P<relock>\s+\(F2 relock\))?\s*$")
+
+
+def lock_line_problem(line):
+    """Why a locks.md line that names a ticket isn't a valid lock line, or None. The format is
+    `- T-B1: <path>, <path> @ <sha>`, optionally ending `(F2 relock)` (Build rules F2)."""
+    m = LOCK_LINE.match(line)
+    if not m:
+        return "it isn't `- <ticket>: <path>, <path> @ <sha>`"
+    paths = [p.strip() for p in m.group("paths").split(",")]
+    if not all(paths):
+        return "it has an empty path: separate the paths with commas"
+    spaced = [p for p in paths if re.search(r"\s", p)]
+    if spaced:
+        return f"`{spaced[0]}` has a space: separate the paths with commas, not spaces"
+    return None
+
+
+def lock_state(plan, t):
+    """(locked, why): whether t's lock line is in locks.md, on the ticket's branch (where the lead
+    commits it) or in the working copy. A malformed line doesn't lock, and says why."""
     path = os.path.join(folder(plan["_lane"], plan["_sprint"]), "locks.md")
     texts = []
     out = git("show", f"{branch_of(t)}:{rel(path)}")
@@ -734,8 +765,23 @@ def locked(plan, t):
     if os.path.exists(path):
         with open(path) as f:
             texts.append(f.read())
-    line = re.compile(r"(?m)^\s*[-*]?\s*" + re.escape(t["id"]) + r"\s*:")
-    return any(line.search(text) for text in texts)
+    mine = re.compile(r"^\s*[-*]?\s*" + re.escape(t["id"]) + r"\s*:")
+    problem = None
+    for text in texts:
+        for line in text.splitlines():
+            if not mine.match(line):
+                continue
+            why = lock_line_problem(line)
+            if why is None:
+                return True, ""
+            problem = problem or why
+    if problem:
+        return False, f"{t['id']}'s lock line in locks.md is malformed: {problem}"
+    return False, f"for {t['id']}'s lock line in locks.md"
+
+
+def locked(plan, t):
+    return lock_state(plan, t)[0]
 
 
 def report_status(plan, d, attempt=None):
@@ -787,8 +833,8 @@ def dispatch_states(plan):
                 state, why = "waiting", "for " + ", ".join(waits) + " to merge"
             elif d["kind"] == "build" and not (report_status(plan, sib["tests"]) or ("",))[0] == "done":
                 state, why = "waiting", "for the tests' report"
-            elif d["kind"] == "build" and not locked(plan, t):
-                state, why = "waiting", f"for {t['id']}'s lock line in locks.md"
+            elif d["kind"] == "build" and not lock_state(plan, t)[0]:
+                state, why = "waiting", lock_state(plan, t)[1]
             elif d["kind"] == "review" and not (report_status(plan, sib["build"]) or ("",))[0] == "done":
                 state, why = "waiting", "for the build's report"
             else:
@@ -808,7 +854,14 @@ def package_problems(lane, sprint):
         plan, _ = load_plan(lane, sprint, roster)
     except PlanError as e:
         return [str(e)]
-    files = render_package(plan, owned_paths([plan]))
+    try:
+        with open(man) as fh:
+            renderer = json.load(fh).get("renderer", RENDERER)
+    except Exception:
+        renderer = RENDERER
+    if renderer not in RENDERERS:
+        return [f"{lane}/{sprint} was rendered by {renderer}, which this render.py doesn't know: re-render"]
+    files = render_package(plan, owned_paths([plan]), renderer)
     problems = []
     for name, body in files.items():
         p = os.path.join(f, name)
@@ -897,7 +950,13 @@ LOCKS = '''# Locks: {lane}/{sprint}
 The lead adds one line per ticket once the checker's tests are committed and reviewed, copied
 from the tests report. The build starts once its line is here (Build rules B2, B3, H6).
 
-<!-- - T-B1: packages/server/test/health.test.ts @ abc1234 -->
+One line per ticket: the test paths separated by commas, then @ and the tip of the tests dispatch's
+branch after the checker's report commit. Run check-locks on the branch before the build starts.
+If a locked test changes after a test-dispute (F2), the checker commits the fix and the lead adds a
+second line for the ticket ending (F2 relock), at the new tip. Lines are only ever added.
+
+<!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ abc1234 -->
+<!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ def5678 (F2 relock) -->
 '''
 
 
