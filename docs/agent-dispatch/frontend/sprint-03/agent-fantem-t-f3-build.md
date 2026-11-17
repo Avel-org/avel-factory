@@ -71,6 +71,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - More: the tab bar's last tab, a button (not a link) labelled 'More', with aria-expanded, at least 52px tall like the other tabs. It opens the same sheet. S17 is now met for More, so the tab bar is the route tabs then More
 - Opening focuses the sheet's close button and traps Tab and Shift+Tab inside. Escape, a click on the scrim, the close button and any link in the sheet close it, and focus returns to whichever button opened it. The page behind is inert while it's open. No scroll jump on open or close
 - Motion: the sheet slides in from the left and the scrim fades, with the DL's durations and easing; under prefers-reduced-motion neither moves. Nothing in the server's HTML changes, so nothing moves at hydration
+- The tests check what this ticket draws, never the absence of what T-F4 adds (the collapse toggle, data-rail, badges) or of routes later tickets add. Count only what this ticket owns. A test pinning their absence would need a test-dispute on each later ticket
 - If a locked T-F1 or T-F2 test conflicts with shell-layout.md's sheet or More (for example a test that fixes the tab bar to one tab), stop with test-dispute (F2); don't work around it
 
 ## 4. Tasks
@@ -184,6 +185,7 @@ Then these sections:
 - Contract to files: which requirement each change serves
 - Deviations: anything done differently from this document, and why
 - Limitations: what isn't covered, or couldn't be checked
+- Messages received: every instruction OSA relayed, who it came from, and what you did with it (followed, or refused and why); "None" if there were none (CR-37)
 
 ## Activation prompt
 

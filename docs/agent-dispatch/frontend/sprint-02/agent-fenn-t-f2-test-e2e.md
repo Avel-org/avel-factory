@@ -74,6 +74,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - The tab bar (760px and narrower): one tab per route with staticData.nav that the bar lists (Decisions), current with aria-current, each at least 52px tall, and main's bottom padding under [data-tabbar]. S17: a tab is drawn only once its route exists, as S8 says for Release, so Project waits for /missions and More waits for T-F3's sheet
 - The rounded canvas at 1024px and wider (S1): the page column takes margin var(--canvas-inset) except on the sidebar's side, border-radius var(--radius-dialog), background var(--av-page-bg) and box-shadow 0 0 0 1px var(--av-hairline). It's the scroller, with overscroll-behavior contain and scroll-padding-top 76px. Below 1024px the window scrolls
 - kit.css: every hover rule under @media (hover: hover) and (pointer: fine); widths as media queries only (no matchMedia, no measuring); keyboard focus rings only; nothing moves under prefers-reduced-motion
+- The tests check what T-F2 draws, never the absence of what T-F3 and T-F4 add to the same frame (the menu button, More, the sheet, data-rail, data-focus, the collapse toggle, badges) or of routes later tickets add. Count only what this ticket owns (for example the Decisions tab, not how many tabs the bar holds). A test pinning their absence would need a test-dispute on each of those tickets
 - The document title stays '{last crumb} · AVEL', so / is still 'Decisions · AVEL'. T-F1's locked tests stay green: the h1, the count, the theme cookie, the axe check and the 150 KB budget
 
 ## 4. Tasks
@@ -93,7 +94,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-F2-04: a failing test for: unit: navFromRoutes reads staticData.nav into groups and tabs in section 4's order and skips routes without it; with T-F2's route tree it gives the Decide group with Decisions at / and the inbox icon, and nothing else
+### T-F2-04: a failing test for: unit: navFromRoutes reads staticData.nav into groups and tabs in section 4's order and skips routes without it; with T-F2's route tree its Decide group holds Decisions at / with the inbox icon, and Decisions is a tab
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
@@ -199,7 +200,8 @@ Then these sections:
 - Contract to files: which requirement each change serves
 - Deviations: anything done differently from this document, and why
 - Limitations: what isn't covered, or couldn't be checked
-- Lock line, for the lead to copy into locks.md: `- T-F2: <test paths> @ <your last commit>`
+- Lock line, for the lead to copy into locks.md: `- T-F2: <path>, <path> @ <branch tip>`, the test paths separated by commas. The lead fills in the branch tip after your report commit
+- Messages received: every instruction OSA relayed, who it came from, and what you did with it (followed, or refused and why); "None" if there were none (CR-37)
 
 ## Activation prompt
 
