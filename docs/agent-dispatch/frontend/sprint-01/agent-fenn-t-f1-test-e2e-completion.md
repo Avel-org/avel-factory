@@ -97,9 +97,30 @@ End to end (playwright), all 14 fail: the dev server has no app, so `/` has no h
 
 None.
 
+## Round 2 (OSA, plan ba10288)
+
+Read the re-rendered task doc first. Three changes, and 098b69a is untouched:
+
+1. `test/foundation.test.ts`: app.css must import `./tokens.css` and must not `@import` tailwindcss itself (tokens.css line 4 already does). The old assertion would have made Tailwind load twice.
+2. `test/gitignore.test.ts` (new, T-F1-10): `apps/web/.gitignore` exists, and `git check-ignore` says `test-results/` and `playwright-report/` are ignored.
+3. `e2e/budget.spec.ts` (now T-F1-11): a comment that KB means 1024 bytes.
+
+Failing first, on the start commit plus a throwaway stub (never committed):
+
+```
+FAIL test/gitignore.test.ts > apps/web/.gitignore exists                 expected false to be true
+FAIL test/gitignore.test.ts > ignores test-results/ and playwright-report/  expected false to be true
+FAIL test/foundation.test.ts > app.css imports tokens.css, not tailwindcss itself ...
+     AssertionError: expected '@import "tailwindcss";\n@import "./to…' not to match /@import\s+(?:url\(\s*)?["']?tailwindc…/
+     (stub app.css with the double import; with the first line removed, the test passed)
+```
+
+Without a stub, vitest on the start commit: 6 files fail, `Tests 5 failed`. Lint is green.
+
+**Deviation, for Zero to decide:** I did not commit `apps/web/.gitignore`. The plan puts it in my paths and the build doc's T-F1-10 says "make it true", so it's the builder's product; committing it now would make `gitignore.test.ts` pass on the start commit, which B2 forbids. The file is in the lock paths, but the builder can't change locked files, so the lead has to settle who writes it: either Fantem writes it as the product (and it comes out of the lock paths), or I commit it after this review of the failing run. Until then `test-results/` and `playwright-report/` stay untracked after a run. I removed them before committing.
+
 ## Lock line
 
+Tests and the report are in one set of commits; the lock hash is the last commit that changes a test path:
 
-(The hash is the commit that holds the tests; the report was committed right after it.)
-
-- T-F1: apps/web/test/** apps/web/e2e/** apps/web/vitest.config.ts apps/web/playwright.config.ts @ 098b69a
+- T-F1: apps/web/test/** apps/web/e2e/** apps/web/vitest.config.ts apps/web/playwright.config.ts @ fa9a451
