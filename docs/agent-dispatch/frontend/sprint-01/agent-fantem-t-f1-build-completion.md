@@ -1,22 +1,17 @@
-status: blocked
+status: done
 ticket: T-F1
 
-Re-run on head cbb8b45 after Zero's ruling (relayed by OSA). The ports were free. One failure remains, reported as it is: T-F1-11's first budget spec times out. I haven't worked around it.
+Verified on head 5f33404, after Zero re-locked the tests (budget.spec.ts fixed by Fenn: the preview-port match failed on Vite's bold output). Every command passes.
 
-## Pre-flight (re-run, in Zero's order)
-- `vitest run`: 6 files, 23 tests pass.
-- `playwright test` (all of it): 12 passed, 2 failed.
-  - Both failures are in e2e/budget.spec.ts.
-  - Spec 1 ("the JavaScript / loads is at most 150 KB gzipped") hit the 300 s test timeout. `vite build` ran and `vite preview` came up and listened on 28641, so the hang is after startup: in the request for `/`, the `networkidle` wait, or a script fetch.
-  - Spec 2 then failed with "Port 28641 is already in use". Spec 1's timeout left its preview running, and the spec's worker restart started a second one.
-  - Run alone with `-x`, the budget spec failed the same way (timeout, 5.1 m).
-  - I couldn't probe the preview myself: starting one and curling the leftover one were both denied, so I don't know why it hangs. First thing to check: whether `vite preview` serves the SSR response for `/` with this TanStack Start build.
-  - Zero's instruction was to report failures as they are, so I stopped here.
-- `vite build`: ok. Client JS is 134.24 kB gzipped. No built file contains the mock operator id (grep, run earlier).
-- `tsc -p tsconfig.json --noEmit`: clean.
-- `pnpm --filter @avel/db build`, then `pnpm typecheck`: clean. The db build is environment only and nothing from it is committed.
+## Pre-flight
+- `pnpm --filter @avel/web exec vitest run`: 6 files, 23 tests pass.
+- `pnpm --filter @avel/web exec playwright test`: 14 passed, including both budget specs.
+- `pnpm --filter @avel/web exec vite build`: ok. Client JS is 134.24 kB gzipped (vite's kB = 1000 B), under the 150 KB (1024 B) limit and over the 130 KB warning line.
+- `pnpm --filter @avel/web exec tsc -p tsconfig.json --noEmit`: clean.
+- `pnpm --filter @avel/db build`, then `pnpm typecheck`: clean. The db build is environment only; nothing from it is committed.
 - `pnpm lint`: clean.
-- Processes: I stopped the two vite preview servers my runs left behind. OSA's dev server on 5173 is still running and is not mine.
+- Processes: no vite process from my runs is left. OSA's dev server on 5173 is untouched.
+- Earlier runs (the stale-port block and the budget spec's timeout) are superseded.
 
 ## What changed
 - src/data/client.ts: `createClient` (OpenAPILink over the contract's decisions routes) and the `ApiClient` type.
@@ -32,17 +27,17 @@ Re-run on head cbb8b45 after Zero's ruling (relayed by OSA). The ports were free
 - T-F1-05: no raw HTML, no classic zod anywhere in src.
 - T-F1-06/07/08/09: routes and styles. These passed in the first Playwright run.
 - T-F1-10: apps/web/.gitignore is locked and unchanged.
-- T-F1-11: the budget and operator-id checks are met by my manual measurements above, but the Playwright specs haven't passed because of the blocked port.
+- T-F1-11: the budget and operator-id specs pass.
 
 ## Deviations
 - `ApiClient` is a small mapped type, not `ContractRouterClient`. That type lives in @orpc/contract, which isn't an apps/web dependency, and I can't add one.
 - The client builds from `@avel/contract/routes/decisions` (route 52 only) instead of the whole contract. The whole contract put the first run at 150.89 kB gzipped, too close to the limit. Later pages should widen the `contract` object in client.ts.
 
 ## Limitations
-- Budget Playwright specs not yet passing, for the port reason above.
-- The `vite build` warning band (over 130 KB) applies at 134.24 kB.
-- I didn't take a fresh end-to-end screenshot; the Playwright run attaches them to test-results/.
+- The 134.24 kB bundle is in the 130 KB warning band, which warns but passes.
+- Playwright attaches the end-to-end screenshots under test-results/ (git-ignored); I didn't copy one into the report.
 
 ## Messages received
-- OSA relaying Zero (within T-F1): re-run the verify commands in order, build @avel/db first (environment only), stop my own vite processes, update the report, status done only if all pass. Done as written. All passed except the budget spec, so the status stays blocked.
+- OSA relaying Zero (within T-F1): re-run the verify commands in order, build @avel/db first (environment only), stop my own vite processes, update the report, status done only if all pass. Done as written; the budget spec then timed out.
 - Zero accepted the four deviations (ApiClient mapped type, routes/decisions import, committed routeTree.gen.ts, typecheck failure as environment).
+- OSA relaying Zero (within T-F1): the budget spec was fixed and the tests re-locked; the branch was rewritten (head 5f33404); re-run all verify commands. Done as written. Everything passes, so the status is done.
