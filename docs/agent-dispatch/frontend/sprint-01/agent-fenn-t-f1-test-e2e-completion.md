@@ -88,7 +88,7 @@ End to end (playwright), all 14 fail: the dev server has no app, so `/` has no h
 - I could not run the e2e specs against a working app, because T-F1 isn't built. Selectors and server-HTML regexes follow the task doc's copy and could still be too strict for valid markup. Expect `test-dispute` traffic here.
 - `home-view.test.ts` calls `HomeView({ state, onRetry })` as a plain function and walks the returned element tree to find the Try again `onClick`. A `HomeView` that calls hooks fails that one test; the builder should keep `HomeView` a pure view, as the task doc's seam says.
 - `createClient`'s `baseUrl` has to be the origin only (e.g. `http://mock.test`): the contract's route paths already start with `/api`. I checked this with the throwaway stub.
-- Untested here: the `Loading…` state in a browser (the view's markup is covered by the unit test), `?` pages beyond the first, the production build's rendering of the error state, and `tsc -p tsconfig.json`, which needs the builder's tsconfig.
+- Untested here: the `Loading…` state in a browser (the view's markup is covered by the unit test), pages beyond the first, the production build's rendering of the error state, and `tsc -p tsconfig.json`, which needs the builder's tsconfig.
 - Playwright writes `test-results/` and `dist/` under `apps/web`; the root `.gitignore` doesn't list `test-results/`, and I may not edit it. I removed both before committing.
 - Two dev servers share Vite's dependency cache; if that ever flakes, `cacheDir` is the builder's `vite.config.ts` to set.
 - Node: the shell's `pnpm` wouldn't run until I put `~/.nvm/versions/node/v24.22.2/bin` on PATH.
@@ -99,4 +99,7 @@ None.
 
 ## Lock line
 
-LOCKLINE
+
+(The hash is the commit that holds the tests; the report was committed right after it.)
+
+- T-F1: apps/web/test/** apps/web/e2e/** apps/web/vitest.config.ts apps/web/playwright.config.ts @ 098b69a
