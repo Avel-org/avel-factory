@@ -1,0 +1,53 @@
+/* tokens.css brings in Tailwind itself, so Tailwind loads once. */
+@import "./tokens.css";
+
+/* shadcn/ui's variables, mapped to AVEL's semantic tokens. Light and night both follow
+   data-theme, because the --av-* values do. */
+:root {
+  --background: var(--av-floor);
+  --foreground: var(--av-ink);
+  --card: var(--av-floor);
+  --card-foreground: var(--av-ink);
+  --popover: var(--av-floor);
+  --popover-foreground: var(--av-ink);
+  --primary: var(--av-accent);
+  --primary-foreground: var(--av-on-ink);
+  --secondary: var(--av-accent-tint);
+  --secondary-foreground: var(--av-ink);
+  --muted: var(--av-accent-tint);
+  --muted-foreground: var(--av-muted);
+  --accent: var(--av-accent-tint);
+  --accent-foreground: var(--av-ink);
+  --destructive: var(--av-needs-text);
+  --border: var(--av-hairline);
+  --input: var(--av-hairline);
+  --ring: var(--av-focus-ring);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--av-font-sans);
+}
