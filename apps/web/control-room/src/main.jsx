@@ -1,5 +1,3 @@
-import { createRoot } from "react-dom/client";
-import { ControlRoom } from "./app/ControlRoom";
 import "./styles/enclosure-grid.css";
 import "./styles/control-room.css";
 import "./styles/host.css";
@@ -29,4 +27,4 @@ import "./styles/desk.css";
 import "./styles/agents.css";
 import "./styles/uploads.css";
 
-createRoot(document.getElementById("dc-root")).render(<ControlRoom showDock bannerStyle="stats" />);
+export { ControlRoom } from "./app/ControlRoom";

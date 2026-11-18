@@ -127,11 +127,11 @@ for (const file of files(scanDir)) {
 }
 
 if (list) {
-  console.log("Routes:\n  " + [...found.routes].sort().join("\n  "));
-  console.log("Events:\n  " + [...found.events].sort().join("\n  "));
+  process.stdout.write("Routes:\n  " + [...found.routes].sort().join("\n  ") + "\n");
+  process.stdout.write("Events:\n  " + [...found.events].sort().join("\n  ") + "\n");
 }
 if (problems.length) {
   console.error("check-contract: " + problems.length + " problem(s) against contract " + index.version + "\n" + problems.join("\n"));
   process.exit(1);
 }
-console.log("check-contract: every route, procedure and event is in contract " + index.version + " (or CR-29, flagged).");
+process.stdout.write("check-contract: every route, procedure and event is in contract " + index.version + " (or CR-29, flagged).\n");
