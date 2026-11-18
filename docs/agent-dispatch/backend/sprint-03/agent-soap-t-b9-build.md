@@ -77,6 +77,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - The request scope also carries the client IP (for the sign-in limit) and the request's Idempotency-Key header, as services a procedure can read, so T-B10 needs no change to app.ts or effect-handler.ts
 - Cookies: httpOnly, Secure outside tests, SameSite=Lax; the session id rotates at sign-in (session fixation, Breach)
 - A defect's 500 carries the contract's message: effect-handler.ts throws INTERNAL_SERVER_ERROR with errorMap's text ("Something went wrong"), not its own "Internal server error" (t-b3-rigg-03; moved here from T-B8 by Axis, Nov 18, because this ticket owns effect-handler.ts)
+- The client IP for the sign-in-ip limit is the socket's peer address, or the first trusted proxy's when one is configured, never a raw X-Forwarded-For a client can set (T-B8 G7 P2)
+- Review (Build rules G5, Javaris Nov 18): one review, no round 2. Only a P0 or P1 sends the PR back, and the checker then confirms only those fixes. Every P2 goes to a later ticket or the backlog, named in the PR text
 
 ## 4. Tasks
 
