@@ -36,6 +36,8 @@ Javaris, Nov 17: "remove the app shell; we're going to use the design UI from th
 
 **Amendment to decision 6 (Nov 17), accepted by Javaris** (to OSA: "220 KB now, 150 via wiring"): `/` is held to 220 KB gzipped from T-F8, and the limit is only ever lowered. 150 KB returns as the done-when of the wiring. If the wiring can't reach it, a CR decides with measured numbers.
 
+**Second amendment to decision 6 (Nov 17), accepted by Javaris** (to OSA: "approve all", on Zero's brief): `/` is held to at most 235 KB gzipped, with a warning over 225 KB. It replaces the 220 KB limit and its "only ever lowered" clause. The reason: `/` had 117 B of headroom after T-F8. T-F12's sign-in guard runs before Decisions is interactive, and Decisions' client over the minified router (CR-W30 D) measured about 9 KB. T-F12 changes `budget.spec.ts`'s limits, the ticket that needs the room. 150 KB stays the wiring's done-when, under the same rule: if the wiring can't reach it, a CR decides with measured numbers.
+
 Why: T-F8 measured `/` at about 355 KB, and the floor once every other page's code loads on demand at about 205 to 215 KB. The framework alone is about 108 KB: React about 69 KB and TanStack Start and Router about 39 KB. `logic.js`, which holds every page's values, is about 40 KB. Splitting `logic.js` would reach about 170 to 180 KB. 150 would also need TanStack out of `/`, which reverses decision 4. Each screen's wiring ticket moves that screen's values out of `logic.js` and drops its mock data, so the wiring does that split one screen at a time.
 
 - **Server rendering:** `/` renders on the client only (`ssr: false`), because the export reads `window` and `location.hash` from its first line. T-F1 and T-F2's "the server's HTML carries the shell" retires with the shell. A skeleton paints until the app boots.
@@ -75,6 +77,9 @@ These stay as they are: `foundation.test.ts`, `gitignore.test.ts`, `hygiene.test
 
 The wiring sprint follows, in the handoff's port order, starting with sign-in.
 
+6. **T-F12** (sprint-12, full rigor): sign-in, the session guard and sign-out. It changes `budget.spec.ts` to the second amendment's 235 KB.
+7. **T-F13** (sprint-13, full rigor): the typed client over the minified router, Settings live on routes 4 to 7, and the CLI login approval with step-up (CR-W30).
+
 **Correction (Nov 17):** the export loads 28 stylesheets, not 29. The 29th entry in `src/styles/` is the `fonts/` folder. The rendered sprint-07 task docs still say 29, kept rather than re-rendered mid-ticket. T-F7's tests count what `main.jsx` imports.
 
 ## Open questions
@@ -86,6 +91,6 @@ The wiring sprint follows, in the handoff's port order, starting with sign-in.
 
 - `/` shows the export's Decisions home, and every screen in its page registry opens by its `#/` route, looking as the export does.
 - T-F2's shell and T-F1's old home are gone, along with their tests.
-- `/` loads at most 220 KB of JavaScript, gzipped, from T-F8 (decision 6, as amended), and 150 KB once the wiring is done.
+- `/` loads at most 220 KB of JavaScript, gzipped, from T-F8, then at most 235 KB from T-F12 (decision 6, as amended twice), and 150 KB once the wiring is done.
 - axe finds no WCAG 2.2 AA violation on any screen.
 - `check-contract.mjs` and the no-money check run in `pnpm test`.
