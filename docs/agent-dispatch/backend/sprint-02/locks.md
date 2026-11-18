@@ -8,3 +8,4 @@ from the tests report. The build starts once its line is here (Build rules B2, B
 - T-B6: packages/contract/test/defect-code.test.ts, packages/contract/test/no-money.test.ts @ 0712fa1b9614af10a20d38c721b6465c4bb61677
 - T-B5: tools/repo-checks/test/locks-merges.test.ts @ 363f100e1fbe5d2ac62e9ac103fdd7ec2ec52cfc
 - T-B3: packages/server/test/db/** @ 0b0f25d58ff3cf240e713022969f572bc1293ad9
+- T-B7: tools/repo-checks/test/locks-tests-report.test.ts @ 809f4d7c54306e1c5b1c76163ed717944085decd
