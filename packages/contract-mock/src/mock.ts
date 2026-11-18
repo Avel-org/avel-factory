@@ -33,7 +33,7 @@ import * as world from "#world";
  */
 
 /** The operator the mock records as `resolvedBy`: a fixed UUIDv7 (INT). */
-export const MOCK_OPERATOR_ID = "0193a000-0000-7000-8000-000000000001";
+export const MOCK_OPERATOR_ID = fixtures.operator.id;
 
 export type MockRoute = 8 | 19 | 52 | 53 | 54;
 
@@ -82,7 +82,12 @@ export interface Mock {
    * failure included, each with its requestId, idempotencyKey and body.
    */
   requests(): RecordedRequest[];
+  /** The same log as `requests()`: auth requests carry route null and the password as "[redacted]". */
+  recorded(): RecordedRequest[];
+  /** Clears failure counts and lockouts, and keeps sessions. */
   reset(): void;
+  /** `reset()`, and forgets every session. */
+  resetAuth(): void;
 }
 
 /**
@@ -92,6 +97,29 @@ export interface Mock {
 const DEFAULT_LIMIT = 50;
 
 type Json = Record<string, unknown>;
+
+/** The auth mock's rules (login.md section 5). */
+const AUTH_PREFIX = "/api/auth/";
+const SESSION_COOKIE = "better-auth.session_token";
+const SESSION_MS = 12 * 60 * 60_000;
+const LOCKOUT_MS = 15 * 60_000;
+const MAX_FAILURES = 10;
+const COOKIE_ATTRS = "Path=/; HttpOnly; SameSite=Lax";
+
+/** The session token in a request's `cookie` header, or null. */
+function sessionTokenOf(request: Request): string | null {
+  for (const part of (request.headers.get("cookie") ?? "").split(";")) {
+    const [name, ...value] = part.trim().split("=");
+    if (name === SESSION_COOKIE) return value.join("=");
+  }
+  return null;
+}
+
+/** The body as logged: an auth request's password never leaves the handler. */
+function redacted(body: unknown): unknown {
+  if (body === null || typeof body !== "object" || !("password" in body)) return body;
+  return { ...(body as Json), password: "[redacted]" };
+}
 
 /** The route a request is for, by method and path; null for anything else. */
 function routeOf(method: string, path: string): MockRoute | null {
@@ -230,6 +258,8 @@ export function createMock(opts: {
   let injected: Json[] = [];
   let recorded: RecordedRequest[] = [];
   const failures = new Map<MockRoute, { failure: MockFailure; remaining: number }>();
+  const sessions = new Map<string, { id: string; expiresAt: number }>();
+  const signInState = new Map<string, { failures: number[]; lockedUntil: number }>();
   const idempotency = new Map<
     string,
     { path: string; body: string; status: number; text: string }
@@ -653,6 +683,97 @@ export function createMock(opts: {
     return respond(status, JSON.stringify(body), requestId);
   }
 
+  function json(status: number, body: unknown, requestId: string, extra: HeadersInit = {}) {
+    return respond(status, JSON.stringify(body), requestId, {
+      "content-type": "application/json",
+      ...extra,
+    });
+  }
+
+  /** Better Auth's three endpoints (login.md section 5); every other /api/auth/* path is 404. */
+  function serveAuth(
+    request: Request,
+    method: string,
+    path: string,
+    body: unknown,
+    requestId: string,
+  ): Response {
+    const at = now().getTime();
+    const operator = fixtures.operator;
+
+    if (method === "POST" && path === `${AUTH_PREFIX}sign-in/email`) {
+      const { email, password } = (body ?? {}) as Json;
+      const key = typeof email === "string" ? email : "";
+      const state = signInState.get(key) ?? { failures: [], lockedUntil: 0 };
+      signInState.set(key, state);
+      if (state.lockedUntil > at) {
+        return json(429, { code: "TOO_MANY_ATTEMPTS", message: "Too many attempts" }, requestId, {
+          "x-retry-after": String(Math.ceil((state.lockedUntil - at) / 1000)),
+        });
+      }
+      if (state.lockedUntil !== 0) state.failures = [];
+      state.lockedUntil = 0;
+      state.failures = state.failures.filter((t) => t > at - LOCKOUT_MS);
+      if (email !== operator.email || password !== operator.password) {
+        state.failures.push(at);
+        if (state.failures.length >= MAX_FAILURES) state.lockedUntil = at + LOCKOUT_MS;
+        return json(
+          401,
+          { code: "INVALID_EMAIL_OR_PASSWORD", message: "Invalid email or password" },
+          requestId,
+        );
+      }
+      const token = `${crypto.randomUUID()}${crypto.randomUUID()}`.replaceAll("-", "");
+      sessions.set(token, { id: crypto.randomUUID(), expiresAt: at + SESSION_MS });
+      return json(
+        200,
+        {
+          redirect: false,
+          token,
+          user: { id: operator.id, email: operator.email, name: operator.name },
+        },
+        requestId,
+        { "set-cookie": `${SESSION_COOKIE}=${token}; ${COOKIE_ATTRS}` },
+      );
+    }
+
+    if (method === "GET" && path === `${AUTH_PREFIX}get-session`) {
+      const token = sessionTokenOf(request);
+      const session = token === null ? undefined : sessions.get(token);
+      if (token === null || session === undefined || session.expiresAt <= at) {
+        return json(200, null, requestId);
+      }
+      return json(
+        200,
+        {
+          session: {
+            id: session.id,
+            userId: operator.id,
+            expiresAt: new Date(session.expiresAt).toISOString(),
+            token,
+            ipAddress: null,
+          },
+          user: { id: operator.id, email: operator.email, name: operator.name },
+        },
+        requestId,
+      );
+    }
+
+    if (method === "POST" && path === `${AUTH_PREFIX}sign-out`) {
+      const token = sessionTokenOf(request);
+      if (token !== null) sessions.delete(token);
+      return json(200, { success: true }, requestId, {
+        "set-cookie": `${SESSION_COOKIE}=; ${COOKIE_ATTRS}; Max-Age=0`,
+      });
+    }
+
+    return respondError(
+      404,
+      { code: "NOT_FOUND", message: errorMap.NOT_FOUND.message, requestId },
+      requestId,
+    );
+  }
+
   async function serve(request: Request, requestId: string): Promise<Response> {
     // A handler per request, so its error encoder can write this request's ID.
     const handler = new OpenAPIHandler(router, {
@@ -670,6 +791,16 @@ export function createMock(opts: {
     return respond(result.response.status, text, requestId, result.response.headers);
   }
 
+  function reset() {
+    signInState.clear();
+    proposals.clear();
+    factoryChanges = [];
+    injected = [];
+    recorded = [];
+    failures.clear();
+    idempotency.clear();
+  }
+
   return {
     async fetch(request: Request): Promise<Response> {
       const url = new URL(request.url);
@@ -681,7 +812,15 @@ export function createMock(opts: {
       const idempotencyKey = request.headers.get(IDEMPOTENCY_KEY_HEADER);
       const bodyText = method === "GET" || method === "HEAD" ? "" : await request.clone().text();
       const body = readBody(bodyText);
-      recorded.push({ route, method, path, requestId: sentId, idempotencyKey, body });
+      const isAuth = path.startsWith(AUTH_PREFIX);
+      recorded.push({
+        route,
+        method,
+        path,
+        requestId: sentId,
+        idempotencyKey,
+        body: isAuth ? redacted(body) : body,
+      });
 
       // failNext: before any check.
       const pending = route === null ? undefined : failures.get(route);
@@ -698,6 +837,8 @@ export function createMock(opts: {
         };
         return respond(failure.status, JSON.stringify(raw), requestId);
       }
+
+      if (isAuth) return serveAuth(request, method, path, body, requestId);
 
       if (path !== "/api" && !path.startsWith("/api/")) {
         return respondError(
@@ -801,13 +942,15 @@ export function createMock(opts: {
       return recorded.map((entry) => ({ ...entry }));
     },
 
-    reset() {
-      proposals.clear();
-      factoryChanges = [];
-      injected = [];
-      recorded = [];
-      failures.clear();
-      idempotency.clear();
+    recorded() {
+      return recorded.map((entry) => ({ ...entry }));
     },
+
+    resetAuth() {
+      reset();
+      sessions.clear();
+    },
+
+    reset,
   };
 }
