@@ -63,13 +63,14 @@ You write this ticket's acceptance tests before anything is built. They must fai
 
 **Refs:**
 - Axis's T-B4 second review: P2s (a) Drizzle params in the defect log, (d) pool timeouts ((e), the pool's error handler, is fixed in T-B4 a3 after t-b4-rigg-01)
+- t-b4-rigg-05 (P2): a checked-out client's error still crashes the process
 - t-b3-rigg-02 (lc_messages) and t-b3-rigg-03 (body.message)
 - Step 0 and Step 1 plan, Step 1 items 2.4 and 4, and the rate limits section
 - AGENTS.md, Writing Effect rules 4, 5 and 6
 
 **Notes from the lead:**
 - Defect log, fixed at the source in db.ts: no DrizzleQueryError leaves the Db service. An unmapped one is re-raised as a defect carrying only the pg error's code and message (or the query text without params), so effectHandler's log of the cause never holds a bound value. effect-handler.ts and logger.ts don't change
-- Pool: connect timeout and statement timeout come from Config (DATABASE_CONNECT_TIMEOUT_MS, DATABASE_STATEMENT_TIMEOUT_MS) with defaults of 5 s and 30 s. A connect that times out reaches the caller as a defect (500), not a hang, and the request's interruption still ends it. (The pool's error listener is already in from T-B4)
+- Pool: connect timeout and statement timeout come from Config (DATABASE_CONNECT_TIMEOUT_MS, DATABASE_STATEMENT_TIMEOUT_MS) with defaults of 5 s and 30 s. A connect that times out reaches the caller as a defect (500), not a hang, and the request's interruption still ends it. (The pool's error listener for idle clients is already in from T-B4.) A client checked out inside withTransaction has no pool listener (pg-pool removes it while the client is out, t-b4-rigg-05), so withTransaction puts its own error listener on that client for as long as it holds it: a backend that dies mid-transaction ends the program as a defect, the client is destroyed rather than returned, and the process stays up
 - lc_messages: the Db layer checks `show lc_messages` once when it's built and fails to build (a defect at boot) unless it is C, POSIX or starts with en, because the FK split reads English text
 - Idempotency store (Step 1 item 4) as an Effect service over idempotency_keys, through Db, with time from Clock. begin(principal, key, route, bodySha256) gives one of: new (row inserted in_progress, expires in 24 hours), replay (completed with the same route and body: the stored status and response), reused (another body or route: IdempotencyKeyReused, 409), in progress (IdempotencyInProgress, 409). complete(principal, key, status, response, { sensitive }) stores the response, or for a sensitive response stores no response and marks it so a replay fails with TokenReplayed (409). An expired row counts as absent. It is wired into routes in T-B10 and T-B11, not here
 - Rate limiter (item 2.4): an in-memory Effect service, a fixed window per (name, key), limits from Config with the plan's defaults (sign-in 5 a minute per email and per IP; device-login starts 5 a minute; webhook 60 a minute), time from Clock. Over the limit is TooManyRequests (429). It is applied in T-B9 and T-B10, not here
@@ -93,22 +94,27 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-B8-04: a failing test for: building the Db layer against a server whose lc_messages isn't English fails with a message naming lc_messages (set it per database for the test)
+### T-B8-04: a failing test for: a backend terminated (pg_terminate_backend) between two statements inside withTransaction ends the program as a defect, the process stays up, and the next withTransaction commits (t-b4-rigg-05)
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-B8-05: a failing test for: idempotency: a first begin is new; after complete, the same key, route and body replays the stored status and response; another body is 409 IDEMPOTENCY_KEY_REUSED; a second begin before complete is 409 IDEMPOTENCY_IN_PROGRESS; one principal's key never answers another's
+### T-B8-05: a failing test for: building the Db layer against a server whose lc_messages isn't English fails with a message naming lc_messages (set it per database for the test)
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-B8-06: a failing test for: idempotency: a sensitive response is never stored (the row has no response) and its replay is 409 TOKEN_REPLAYED; a key older than 24 hours (TestClock) is treated as new
+### T-B8-06: a failing test for: idempotency: a first begin is new; after complete, the same key, route and body replays the stored status and response; another body is 409 IDEMPOTENCY_KEY_REUSED; a second begin before complete is 409 IDEMPOTENCY_IN_PROGRESS; one principal's key never answers another's
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-B8-07: a failing test for: rate limit: the 6th call in a minute for one key is 429 TOO_MANY_REQUESTS; another key isn't affected; after the window (TestClock) it passes again
+### T-B8-07: a failing test for: idempotency: a sensitive response is never stored (the row has no response) and its replay is 409 TOKEN_REPLAYED; a key older than 24 hours (TestClock) is treated as new
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
+
+### T-B8-08: a failing test for: rate limit: the 6th call in a minute for one key is 429 TOO_MANY_REQUESTS; another key isn't affected; after the window (TestClock) it passes again
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
