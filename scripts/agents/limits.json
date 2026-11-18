@@ -4,7 +4,7 @@
     "total": 4,
     "per_lane": { "builder": 1, "checker": 1 }
   },
-  "agent_session": { "turns": 80, "minutes": 60, "usd": 4, "usd_opus": 8 },
+  "agent_session": { "turns": 150, "minutes": 120, "usd": 4, "usd_opus": 8 },
   "lead_session": { "turns": 60, "minutes": 45, "usd": 6 },
   "daily_usd": 75
 }
