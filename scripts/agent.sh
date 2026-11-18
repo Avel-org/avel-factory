@@ -88,11 +88,16 @@ mkdir -p "$base_dir"
 git rev-parse --verify -q main >/dev/null || die "there's no main branch yet"
 
 # A branch can be checked out in one worktree at a time: free it from a finished attempt's worktree.
+# Only a worktree the kit made for this ticket is removed. Any other (a lead's, Javaris's) is left
+# alone: on Nov 17 the lane loop removed the worktree Zero was locking T-F9 from.
 free_branch() {
   local other
   other=$(git worktree list --porcelain | awk -v b="refs/heads/$BRANCH" '/^worktree /{w=$2} $0=="branch "b{print w}')
   [[ -z $other ]] && return 0
   [[ $other == "$root" ]] && die "$BRANCH is checked out in the main checkout: switch it back to main"
+  if [[ ! $other =~ ^"$base_dir/$lane-$sprint-$tl-"[a-z0-9-]+-a[0-9]+$ ]]; then
+    die "$BRANCH is checked out in $other, which the kit didn't make. Whoever is using it checks out another branch or detaches it, then retry."
+  fi
   if [[ -n $(git -C "$other" status --porcelain) ]]; then
     die "$BRANCH is checked out in $other, which has uncommitted work. Commit or remove it first."
   fi
@@ -128,7 +133,12 @@ printf '{"pid": %d, "lane": "%s", "sprint": "%s", "doc": "%s", "attempt": %d, "s
   $$ "$lane" "$sprint" "$doc" "$n" "$SEAT" >"$marker"
 flock -u 9
 
-# When the session ends: drop the marker, keep a copy of the report (a reviewer's stays uncommitted),
+# A report already in the worktree (an earlier attempt's, on the branch or carried over by a rebuild)
+# isn't this attempt's. Its hash is taken now, so the done flag (scripts/hooks/session.py) and the
+# copy kept when the session ends both ignore it while it's unchanged.
+REPORT_START=$( [[ -f $wt/$REPORT ]] && sha256sum "$wt/$REPORT" | cut -d' ' -f1 || true )
+
+# When the session ends: drop the marker, keep a copy of this attempt's report (a reviewer's stays uncommitted),
 # then remove the worktree if nothing would be lost. The branch stays; the next attempt makes a fresh one.
 cleanup() {
   cd "$root" || return 0
@@ -146,9 +156,12 @@ cleanup() {
 }
 finish() {
   rm -f "$marker"
-  if [[ -f $wt/$REPORT ]]; then
+  if [[ -f $wt/$REPORT && $(sha256sum "$wt/$REPORT" | cut -d' ' -f1) != "$REPORT_START" ]]; then
     cp "$wt/$REPORT" "$state/reports/$lane-$sprint-$doc.a$n.md"
     echo "report: $(grep -m1 -i '^status:' "$wt/$REPORT" || echo 'no status line')"
+  elif [[ -f $wt/$REPORT ]]; then
+    # Nov 17: a2 of T-B3's build was killed by a crash, and a1's report on the branch was kept as a2's.
+    echo "no report from a$n: $REPORT is an earlier attempt's, unchanged. The lead decides what's next"
   else
     echo "no report at $REPORT: the lead decides what's next"
   fi
@@ -190,9 +203,8 @@ else
   # A finished session ends itself: the Stop hook (scripts/hooks/session.py) raises the flag once the
   # report is final, and 15 seconds later, if no new turn has lowered it, the session is closed.
   export AVEL_DONE_FLAG="$state/logs/$lane-$sprint-$doc.a$n.done" AVEL_KIND="$KIND"
-  # A report already on the branch (an earlier attempt's) isn't this attempt's: the hook compares against it.
-  AVEL_REPORT_START=$( [[ -f $wt/$REPORT ]] && sha256sum "$wt/$REPORT" | cut -d' ' -f1 || true )
-  export AVEL_REPORT_START
+  # The hook compares the report against the one the worktree held at the start (REPORT_START above).
+  export AVEL_REPORT_START="$REPORT_START"
   rm -f "$AVEL_DONE_FLAG"
   (
     while sleep 5; do
