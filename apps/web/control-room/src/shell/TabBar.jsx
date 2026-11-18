@@ -1,6 +1,7 @@
-import { Fragment } from "react";
+import { Fragment, lazy, Suspense } from "react";
 import { list } from "../lib/dc";
-import { Orb } from "../kit/Trail";
+// The thinking orb (thinking-orbs) only shows while Canon is working, so it loads then (E16, T-F8).
+const Orb = lazy(() => import("../kit/Trail").then((m) => ({ default: m.Orb })));
 
 /*
  * The phone dock: a floating bar with a lens that slides to where you are. Each item carries its
@@ -21,7 +22,9 @@ export function TabBar({ vals }) {
           <a className="lib-tab dock-tab" href={t?.href} aria-current={t?.current} data-k={t?.key}>
             <span className="lib-tab-icon dock-ic">
               {t?.canon ? (
-                <Orb size={20} state={t.canon === "thinking" ? "working" : "composing"} />
+                <Suspense fallback={null}>
+                  <Orb size={20} state={t.canon === "thinking" ? "working" : "composing"} />
+                </Suspense>
               ) : (
                 t?.iconEl
               )}

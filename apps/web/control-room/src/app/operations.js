@@ -6,24 +6,13 @@ import OPS from "../mock/operations.json";
 import PIPE from "../mock/pipeline.json";
 import OSA from "../mock/osa.json";
 import { facets } from "./knowledge";
+import { OPS_PAGES } from "./lazy";
 import { describeCall } from "./decisions";
 import { historyVals, moduleTrail } from "./history";
 import { clientFiles, moduleInputs, receiptInputs } from "./uploads";
 import { fmtCap, fmtDate, fmtDateTime, fmtDay, fmtMinutes, fmtRelDays, pct as pctOf } from "../lib/format";
 
-export const OPS_PAGES = [
-  "projects",
-  "clients",
-  "release",
-  "receipt",
-  "module",
-  "plan",
-  "dispatch",
-  "gates",
-  "findings",
-  "factory",
-  "activity",
-];
+export { OPS_PAGES };
 
 const NOW = new Date(OPS.asOf);
 const STATE = {

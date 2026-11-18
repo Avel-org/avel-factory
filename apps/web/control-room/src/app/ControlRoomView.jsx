@@ -1,38 +1,43 @@
 // Compiled from the Claude Design export (AVEL Control Room). Edit freely: this is the source now.
 import { Fragment, lazy, Suspense, useRef } from "react";
+import {
+  FilteredListPage,
+  GenericPage,
+  LibraryPage,
+  OpsPage,
+  TemplatePage,
+  TemplatesGalleryPage,
+  TemplateNewPage,
+  FactoryLivePage,
+  SlotRackPage,
+  CanonPage,
+  NewProjectPage,
+  ProjectOverviewPage,
+  AgentRosterPage,
+  SettingsPage,
+  UploadsPage,
+} from "./views";
 import { useSheet } from "../kit/sheet";
 import { css, list } from "../lib/dc";
 import { DecisionsPage } from "../pages/decisions/DecisionsPage";
-import { DropTarget, FilingSheet, UploadTray } from "../pages/uploads/UploadLayer";
-import { ErrorPanel } from "../shell/ErrorPanel";
-import { LiveStrip } from "../shell/LiveStrip";
 import { PageMasthead } from "../shell/PageMasthead";
-import { OsaBar } from "../shell/OsaBar";
 import { PageSkeleton } from "../shell/PageSkeleton";
-import { ScreenSpec } from "../shell/ScreenSpec";
 import { Sidebar } from "../shell/Sidebar";
 import { StateBar } from "../shell/StateBar";
-import { TabBar } from "../shell/TabBar";
 import { Topbar } from "../shell/Topbar";
 
-// Every page but Decisions loads its view when its route first opens (E16, T-F8).
+// Every page but Decisions loads its view when its route first opens (E16, T-F8): the pages' views are in
+// views.jsx, the shell's pieces that aren't always shown are here.
+const ErrorPanel = lazy(() => import("../shell/ErrorPanel").then((m) => ({ default: m.ErrorPanel })));
+const TabBar = lazy(() => import("../shell/TabBar").then((m) => ({ default: m.TabBar })));
+const LiveStrip = lazy(() => import("../shell/LiveStrip").then((m) => ({ default: m.LiveStrip })));
+const OsaBar = lazy(() => import("../shell/OsaBar").then((m) => ({ default: m.OsaBar })));
+const ScreenSpec = lazy(() => import("../shell/ScreenSpec").then((m) => ({ default: m.ScreenSpec })));
+const UploadTray = lazy(() => import("../pages/uploads/UploadLayer").then((m) => ({ default: m.UploadTray })));
+const FilingSheet = lazy(() => import("../pages/uploads/UploadLayer").then((m) => ({ default: m.FilingSheet })));
+const DropTarget = lazy(() => import("../pages/uploads/UploadLayer").then((m) => ({ default: m.DropTarget })));
 const SimDock = lazy(() => import("../dev/SimDock").then((m) => ({ default: m.SimDock })));
 const ViewportPreview = lazy(() => import("../dev/ViewportPreview").then((m) => ({ default: m.ViewportPreview })));
-const FilteredListPage = lazy(() => import("../pages/FilteredListPage").then((m) => ({ default: m.FilteredListPage })));
-const GenericPage = lazy(() => import("../pages/GenericPage").then((m) => ({ default: m.GenericPage })));
-const LibraryPage = lazy(() => import("../pages/library/LibraryPage").then((m) => ({ default: m.LibraryPage })));
-const OpsPage = lazy(() => import("../pages/operations/OpsPages").then((m) => ({ default: m.OpsPage })));
-const TemplatePage = lazy(() => import("../pages/templates/TemplatePage").then((m) => ({ default: m.TemplatePage })));
-const TemplatesGalleryPage = lazy(() => import("../pages/templates/TemplatesGalleryPage").then((m) => ({ default: m.TemplatesGalleryPage })));
-const TemplateNewPage = lazy(() => import("../pages/templates/TemplateNewPage").then((m) => ({ default: m.TemplateNewPage })));
-const FactoryLivePage = lazy(() => import("../pages/live/FactoryLivePage").then((m) => ({ default: m.FactoryLivePage })));
-const SlotRackPage = lazy(() => import("../pages/live/SlotRackPage").then((m) => ({ default: m.SlotRackPage })));
-const CanonPage = lazy(() => import("../pages/project/CanonPage").then((m) => ({ default: m.CanonPage })));
-const NewProjectPage = lazy(() => import("../pages/project/NewProjectPage").then((m) => ({ default: m.NewProjectPage })));
-const ProjectOverviewPage = lazy(() => import("../pages/project/ProjectOverviewPage").then((m) => ({ default: m.ProjectOverviewPage })));
-const AgentRosterPage = lazy(() => import("../pages/roster/AgentRosterPage").then((m) => ({ default: m.AgentRosterPage })));
-const SettingsPage = lazy(() => import("../pages/settings/SettingsPage").then((m) => ({ default: m.SettingsPage })));
-const UploadsPage = lazy(() => import("../pages/uploads/UploadsPages").then((m) => ({ default: m.UploadsPage })));
 const CommandPalette = lazy(() => import("../shell/CommandPalette").then((m) => ({ default: m.CommandPalette })));
 const KeysSheet = lazy(() => import("../shell/CommandPalette").then((m) => ({ default: m.KeysSheet })));
 
@@ -100,9 +105,11 @@ export function ControlRoomView({ vals }) {
               data-state={pg?.state}
               data-term={vals.termAttached}
             >
-              {vals.osaBar ? <OsaBar o={vals.osaBar} /> : null}
-              {lvTop ? <LiveStrip vals={vals} /> : null}
-              {specOpen ? <ScreenSpec vals={vals} /> : null}
+              <Suspense fallback={null}>
+                {vals.osaBar ? <OsaBar o={vals.osaBar} /> : null}
+                {lvTop ? <LiveStrip vals={vals} /> : null}
+                {specOpen ? <ScreenSpec vals={vals} /> : null}
+              </Suspense>
               {pg?.kindTabsOff ? (
                 <>
                   <div className="lib-screen-tabs cr-tabs" role="tablist" aria-label="Library kinds">
@@ -118,7 +125,7 @@ export function ControlRoomView({ vals }) {
                 </>
               ) : null}
               {show?.loading ? <PageSkeleton vals={vals} /> : null}
-              {show?.errorPanel ? <ErrorPanel vals={vals} /> : null}
+              <Suspense fallback={null}>{show?.errorPanel ? <ErrorPanel vals={vals} /> : null}</Suspense>
               {show?.bar ? <StateBar vals={vals} /> : null}
               {show?.content ? (
                 <>
@@ -155,7 +162,7 @@ export function ControlRoomView({ vals }) {
         aria-hidden="true"
         data-sheet-keep=""
       ></div>
-      {showTabbar ? <TabBar vals={vals} /> : null}
+      <Suspense fallback={null}>{showTabbar ? <TabBar vals={vals} /> : null}</Suspense>
       {snack ? (
         <>
           <div className="dec-snack" role="status" data-ui="Snackbar">
@@ -195,9 +202,9 @@ export function ControlRoomView({ vals }) {
       <Suspense fallback={null}>
       {vals.pal ? <CommandPalette p={vals.pal} /> : null}
       {vals.keys ? <KeysSheet k={vals.keys} /> : null}
-      {vals.up ? <UploadTray t={vals.up.tray} I={vals.up.I} /> : null}
-      {vals.up ? <FilingSheet sh={vals.up.sheet} I={vals.up.I} /> : null}
-      {vals.up ? <DropTarget d={vals.up.drop} /> : null}
+      {vals.up?.tray?.open ? <UploadTray t={vals.up.tray} I={vals.up.I} /> : null}
+      {vals.up?.sheet ? <FilingSheet sh={vals.up.sheet} I={vals.up.I} /> : null}
+      {vals.up?.drop ? <DropTarget d={vals.up.drop} /> : null}
       {showDock ? <SimDock vals={vals} /> : null}
       {vp ? <ViewportPreview vals={vals} /> : null}
       </Suspense>

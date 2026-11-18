@@ -5,22 +5,16 @@
 import React from "react";
 import { DCLogic } from "../lib/dc";
 import { sawLiveEvent } from "../lib/live";
-import { facets, libraryVals, templatesVals } from "./knowledge";
-import { OPS_PAGES, opsVals } from "./operations";
+import { LAZY, OPS_PAGES, ensure, load, needsFor, pageReady, preloadView } from "./lazy";
 import { fmtCapChange, fmtDate, fmtDay as fmtWeekday, fmtTime as fmtClock } from "../lib/format";
-import { CHORDS, KEYS, paletteItems, paletteResults } from "./palette";
 import { flushSync } from "react-dom";
 import { canonVals, cleanSummary, freshOnboarding, freshQuestions, readyCheckpoint, statesFor } from "./canon";
-import { agentWork, historyVals } from "./history";
-import { crewVals } from "./crew";
 import { addUploads, dropTarget, initUploads, missionFiles, offeredFiles, rerenderLine, startTray, uploadsVals } from "./uploads";
 import ON from "../mock/onboarding.json";
 import { gateOpen, withAudience } from "./audience";
 import { KIND_LABEL, approveCallFor, describeCall, rejectCallFor, toView } from "./decisions";
 import PENDING from "../mock/pending-decisions.json";
-import EVERY_KIND from "../mock/contract-mock-decisions.json";
 import EVIDENCE from "../mock/evidence-details.json";
-import OSA from "../mock/osa.json";
 
 const LS = "avel-cr";
 const STATE_LABEL = {
@@ -1174,7 +1168,19 @@ export class ControlRoomLogic extends DCLogic {
       })
       .catch(() => this.setState({ worldErr: true }));
     this.lastPath = (location.hash || "#/").split("?")[0];
+    // A page whose code isn't loaded yet opens once it has (or after 150 ms, with its skeleton), so the title
+    // and the page change together.
+    let hashSeq = 0;
     this.onHash = () => {
+      const seq = ++hashSeq;
+      const ready = pageReady(this.parse(location.hash).page, 150);
+      if (!ready) this.openHash();
+      else
+        ready.then(() => {
+          if (seq === hashSeq) this.openHash();
+        });
+    };
+    this.openHash = () => {
       const r = this.parse(location.hash);
       const path = (location.hash || "#/").split("?")[0];
       const moved = path !== this.lastPath;
@@ -1984,7 +1990,11 @@ export class ControlRoomLogic extends DCLogic {
    * (contract-mock-decisions.json), one of each kind, including one that came back.
    */
   everyKind(on) {
-    const src = on ? EVERY_KIND : PENDING;
+    if (on && !LAZY.every) {
+      load("every").then(() => this.everyKind(true));
+      return;
+    }
+    const src = on ? LAZY.every.default : PENDING;
     this.setState({
       everyKind: on || undefined,
       dec: {},
@@ -2028,8 +2038,8 @@ export class ControlRoomLogic extends DCLogic {
   }
   /** CR-29, behind the osa flag: OSA's brief for this item, or null. */
   briefFor(d) {
-    if (!this.state.osa || !d) return null;
-    return (OSA.briefs || {})[d.ref] || null;
+    if (!this.state.osa || !d || !ensure(this, ["osa"])) return null;
+    return (LAZY.osa.default.briefs || {})[d.ref] || null;
   }
   /**
    * CR-29, behind the osa flag (proposed: contract 1.1.0 doesn't exist; see contract/cr-29-assumed.json).
@@ -2038,7 +2048,8 @@ export class ControlRoomLogic extends DCLogic {
    */
   osaVals(c) {
     const s = this.state;
-    if (!s.osa) return null;
+    if (!s.osa || !ensure(this, ["osa"])) return null;
+    const OSA = LAZY.osa.default;
     const O = s.osaUi || {};
     const setO = (p) => this.setState({ osaUi: Object.assign({}, this.state.osaUi, p) });
     const I = (n, z) => this.icon(n, z);
@@ -2159,7 +2170,8 @@ export class ControlRoomLogic extends DCLogic {
   /** Settings, behind the osa flag: the assistant session, pause, and spend against its cap (no dollars). */
   osaSettings() {
     const s = this.state;
-    if (!s.osa) return null;
+    if (!s.osa || !ensure(this, ["osa"])) return null;
+    const OSA = LAZY.osa.default;
     const O = s.osaUi || {};
     const a = OSA.status.assistant;
     const paused = !!O.paused;
@@ -2214,6 +2226,7 @@ export class ControlRoomLogic extends DCLogic {
       return;
     }
     if (!mod && !typing && !e.altKey) {
+      if (e.key === "g") ensure(this, ["palette"]);
       if (e.key === "?") {
         e.preventDefault();
         this.palReturn = document.activeElement;
@@ -2222,7 +2235,7 @@ export class ControlRoomLogic extends DCLogic {
       }
       if (this.gAt && Date.now() - this.gAt < 1200) {
         this.gAt = 0;
-        const hit = CHORDS.find((x) => x[0] === k);
+        const hit = LAZY.palette && LAZY.palette.CHORDS.find((x) => x[0] === k);
         if (hit) {
           e.preventDefault();
           this.go(hit[2]);
@@ -2264,6 +2277,8 @@ export class ControlRoomLogic extends DCLogic {
   };
   palVals(c) {
     const P = this.state.pal;
+    if (!ensure(this, ["palette"])) return null;
+    const { paletteItems, paletteResults } = LAZY.palette;
     if (!this.palCache || this.palCache.w !== c.w) this.palCache = { w: c.w, items: paletteItems(this, c, PAGES) };
     const groups = paletteResults(this.palCache.items, P.q);
     const flat = groups.flatMap((g) => g.rows);
@@ -2476,7 +2491,7 @@ export class ControlRoomLogic extends DCLogic {
     };
   }
   templateName(c) {
-    const t = templatesVals(this, c).one;
+    const t = LAZY.knowledge ? LAZY.knowledge.templatesVals(this, c).one : null;
     return t ? t.name : "Template";
   }
   crumbs(c, title) {
@@ -2498,7 +2513,7 @@ export class ControlRoomLogic extends DCLogic {
     else if (c.id === "projects") list = [L("Projects")];
     else if (c.id === "library" && (c.r.item || c.r.cat || c.r.all)) {
       // the top bar is the Library's one breadcrumb: Factory › Library › category › entry
-      const kv = libraryVals(this, c);
+      const kv = LAZY.knowledge ? LAZY.knowledge.libraryVals(this, c) : {};
       list = [L("Library", "#/library")];
       const cc = kv.doc && kv.doc.crumbs[1];
       if (cc) list.push(L(cc.label, cc.href));
@@ -2614,8 +2629,15 @@ export class ControlRoomLogic extends DCLogic {
     if ((st === "running" || st === "full") && !roomsHere.length) st = "empty";
     if (c.id === "notFound") st = "error";
     if (!c.w) st = s.worldErr ? "error" : "loading";
-    const kb = kbPage && kbReady ? libraryVals(this, c) : null;
-    const tpl = tplPage && kbReady ? templatesVals(this, c) : null;
+    // a page whose values module hasn't arrived shows the skeleton until it does
+    const liveCrew = c.id === "live" && s.liveView === "crew";
+    if (c.w && !ensure(this, needsFor(c.id, liveCrew))) {
+      st = "loading";
+      preloadView(c.id);
+    }
+    const K = LAZY.knowledge;
+    const kb = kbPage && kbReady && K ? K.libraryVals(this, c) : null;
+    const tpl = tplPage && kbReady && K ? K.templatesVals(this, c) : null;
     if (c.id === "template" && st === "ready" && !(tpl && tpl.one)) st = "empty";
     const code = c.id === "notFound" ? 404 : s.worldErr ? 500 : s.errCode;
     const E = ERR[code] || ERR[500];
@@ -2706,7 +2728,7 @@ export class ControlRoomLogic extends DCLogic {
     };
     if (L.library || L.templates || L.template || L.templateNew || L.roster || L.overview || L.live || L.ops || L.uploads)
       L.generic = false;
-    const ops = L.ops ? opsVals(this, c) : {};
+    const ops = L.ops && LAZY.operations ? LAZY.operations.opsVals(this, c) : {};
     // CR-34: the tray, the drop target, the filing sheet and the Drive badge are on every page
     const up = uploadsVals(this, c);
     const projectFiles =
@@ -3604,11 +3626,11 @@ export class ControlRoomLogic extends DCLogic {
         })),
       };
       // CR-W24: history on main, worked out from route 55's integration commits and route 108's attempts
-      {
+      if (LAZY.history) {
         const titles = {};
         ((s.world.modules && s.world.modules.missionId === m.id && s.world.modules.items) || []).forEach((y) => (titles[y.ref] = y.title));
         const open = !!(s.histOpen || {})[m.id];
-        const h = historyVals(m.id, titles, { limit: 12, expanded: open });
+        const h = LAZY.history.historyVals(m.id, titles, { limit: 12, expanded: open });
         ov.history = h
           ? Object.assign(h, {
               I: (n, z, st) => this.icon(n, z, st),
@@ -3831,10 +3853,10 @@ export class ControlRoomLogic extends DCLogic {
       lv.viewCrew = view === "crew";
       lv.showRiver = view === "rooms";
       // the crew: Factory Live's Crew view picks a project; a project's Watch page shows its own crew on top
-      if (view === "crew" || c.id === "watch") {
+      if ((view === "crew" || c.id === "watch") && LAZY.crew) {
         const decRefs = ((s.world.decisions && s.world.decisions.items) || []).map((d) => d.ref);
         const live = (s.world.missions.items || []).filter((x) => !["closed", "draft"].includes(x.state));
-        const crewOf = (id) => crewVals(s.world, id, decRefs);
+        const crewOf = (id) => LAZY.crew.crewVals(s.world, id, decRefs);
         const firstRunning = live.find((x) => x.state === "running") || live[0];
         const crewId = c.id === "watch" && m ? m.id : s.crewMission || (firstRunning && firstRunning.id);
         lv.crew = crewId ? crewOf(crewId) : null;
@@ -4120,7 +4142,7 @@ export class ControlRoomLogic extends DCLogic {
         : "Rooms open here as modules start.";
     }
     let ro = null;
-    if (c.id === "roster" && rosterReady) {
+    if (c.id === "roster" && rosterReady && LAZY.knowledge && LAZY.history) {
       const R0 = s.world.roster,
         E = s.roEdit || { on: false, agents: {}, kinds: {}, step: "edit" },
         tk = s.roTick || 0;
@@ -4271,7 +4293,7 @@ export class ControlRoomLogic extends DCLogic {
           !q || (n.name + " " + n.kindWord + " " + n.team + " " + n.slotText + " " + n.does).toLowerCase().includes(q),
       );
       const RANK = { waiting: 0, parked: 1, working: 2, idle: 3 };
-      const fz = facets({
+      const fz = LAZY.knowledge.facets({
         pool: searched,
         defs: [
           { key: "team", name: "Team", get: (n) => [n.team], label: (v) => v, order: R0.teams.map((t) => t.label) },
@@ -4443,7 +4465,7 @@ export class ControlRoomLogic extends DCLogic {
         // a builder's disputes go where its reviewer's go (Leon → Zero → Brennan)
         const via = !rulerOf(pageA.name) && pageA.reviewedBy[0] ? pageA.reviewedBy[0] : null;
         const ruler = rulerOf(pageA.name) || (via ? rulerOf(via) || "Brennan" : null);
-        const work = agentWork(pageA.name, mName);
+        const work = LAZY.history.agentWork(pageA.name, mName);
         one = Object.assign({}, det, {
           slug: slugOf(pageA.name),
           teamLabel: team.label,
@@ -5353,7 +5375,7 @@ export class ControlRoomLogic extends DCLogic {
       pal: s.pal ? this.palVals(c) : null,
       cv,
       I,
-      keys: s.keysOpen ? { groups: KEYS, I, close: this.closePal } : null,
+      keys: s.keysOpen && ensure(this, ["palette"]) ? { groups: LAZY.palette.KEYS, I, close: this.closePal } : null,
       showDock: this.props.showDock !== false,
       dockOpen: s.dock,
       dockExpanded: String(s.dock),
@@ -5370,7 +5392,7 @@ export class ControlRoomLogic extends DCLogic {
       osaBar: this.osaVals(c),
       osaSet: this.osaSettings(),
       termAttached:
-        s.osa && !(s.osaUi || {}).paused && !(s.osaUi || {}).termOff && OSA.status.terminal.attached
+        s.osa && LAZY.osa && !(s.osaUi || {}).paused && !(s.osaUi || {}).termOff && LAZY.osa.default.status.terminal.attached
           ? "attached"
           : undefined,
       dockOsa: [
