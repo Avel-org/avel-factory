@@ -119,6 +119,8 @@ case $KIND in
     git rev-parse --verify -q "$BRANCH" >/dev/null || die "$BRANCH doesn't exist"
     git worktree add -q --detach "$wt" "$BRANCH" ;;
 esac
+# Clear Postgres containers left by attempts whose worktree is gone (a crash skips their stop).
+"$root/scripts/pg-local.sh" prune >/dev/null 2>&1 || true
 base=$(git merge-base main "$BRANCH")
 render --record "$lane/$sprint" "$doc" "$n" "$wt" "$base" "$( (( headless )) && echo headless || echo interactive)"
 marker="$state/running/$lane-$sprint-$doc.a$n"
@@ -154,6 +156,9 @@ finish() {
     mkdir -p "$state/reports/$lane-$sprint-$doc.a$n-findings"
     cp -r "$wt/$FINDINGS/." "$state/reports/$lane-$sprint-$doc.a$n-findings/"
   fi
+  # The worktree's Postgres is throwaway: stop it even when the worktree stays, or every
+  # attempt leaves a container running (they took the machine out of memory on Nov 17).
+  [[ -x $wt/scripts/pg-local.sh ]] && "$wt/scripts/pg-local.sh" stop >/dev/null 2>&1 || true
   [[ ${AVEL_KEEP_WORKTREE:-} == 1 ]] || cleanup
 }
 trap finish EXIT

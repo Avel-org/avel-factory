@@ -85,7 +85,7 @@ export DATABASE_URL=$(scripts/pg-local.sh start)
 pnpm build && pnpm typecheck && pnpm lint && pnpm test
 pnpm --filter @avel/docs drift
 pnpm --filter @avel/docs generate
-scripts/pg-local.sh stop
+scripts/pg-local.sh stop    # prune removes the ones whose worktree is gone
 ```
 
 ## The team that builds the factory
