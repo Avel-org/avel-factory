@@ -6,7 +6,7 @@ import OPS from "../mock/operations.json";
 import PIPE from "../mock/pipeline.json";
 import OSA from "../mock/osa.json";
 import { facets } from "./knowledge";
-import { OPS_PAGES } from "./lazy";
+import { OPS_PAGES } from "./logic";
 import { describeCall } from "./decisions";
 import { historyVals, moduleTrail } from "./history";
 import { clientFiles, moduleInputs, receiptInputs } from "./uploads";
