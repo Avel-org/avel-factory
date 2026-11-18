@@ -1,0 +1,138 @@
+{
+  "_note": "Route 115, GET /api/library/skills/{itemId}/results: SkillResultsDto, computed on read (CR-W16).",
+  "results": {
+    "01a1d500-0000-7000-8000-000000000007": {
+      "slug": "tdd-writer",
+      "versions": [
+        {
+          "version": "3.2.0",
+          "current": true,
+          "attempts": 38,
+          "firstAttemptPass": 0.77,
+          "findings": 2,
+          "from": "2026-11-02T00:00:00Z",
+          "to": null
+        },
+        {
+          "version": "3.1.0",
+          "current": false,
+          "attempts": 26,
+          "firstAttemptPass": 0.73,
+          "findings": 1,
+          "from": "2026-10-28T00:00:00Z",
+          "to": "2026-11-02T00:00:00Z"
+        }
+      ],
+      "baseline": {
+        "window": {
+          "from": "2026-10-01T00:00:00Z",
+          "to": "2026-11-10T00:00:00Z"
+        },
+        "with": {
+          "attempts": 64,
+          "firstAttemptPass": 0.77
+        },
+        "without": {
+          "attempts": 41,
+          "firstAttemptPass": 0.62
+        },
+        "match": "role+workKind"
+      },
+      "origin": {
+        "kind": "written"
+      }
+    },
+    "01a1d500-0000-7000-8000-000000000008": {
+      "slug": "ui-ux-pro-max",
+      "versions": [
+        {
+          "version": "2.15.0",
+          "current": true,
+          "attempts": 22,
+          "firstAttemptPass": 0.84,
+          "findings": 1,
+          "from": "2026-11-04T00:00:00Z",
+          "to": null
+        }
+      ],
+      "baseline": {
+        "window": {
+          "from": "2026-10-01T00:00:00Z",
+          "to": "2026-11-10T00:00:00Z"
+        },
+        "with": {
+          "attempts": 22,
+          "firstAttemptPass": 0.84
+        },
+        "without": {
+          "attempts": 19,
+          "firstAttemptPass": 0.71
+        },
+        "match": "role+workKind"
+      },
+      "origin": {
+        "kind": "import",
+        "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+        "upstreamRef": "v2.15.0",
+        "license": "MIT",
+        "editionNote": "Rules edition: the full rule set and checklist, without the upstream search tool",
+        "changesSinceImport": 0
+      }
+    },
+    "01a1d500-0000-7000-8000-000000000009": {
+      "slug": "a11y-review",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "current": true,
+          "attempts": 0,
+          "firstAttemptPass": null,
+          "findings": 0,
+          "from": null,
+          "to": null
+        }
+      ],
+      "baseline": null,
+      "origin": {
+        "kind": "written"
+      }
+    },
+    "01a1d500-0000-7000-8000-000000000023": {
+      "slug": "react-tanstack-performance",
+      "versions": [
+        {
+          "version": "1.3.0",
+          "current": true,
+          "attempts": 17,
+          "firstAttemptPass": 0.83,
+          "findings": 1,
+          "from": "2026-11-05T00:00:00Z",
+          "to": null
+        }
+      ],
+      "baseline": {
+        "window": {
+          "from": "2026-10-01T00:00:00Z",
+          "to": "2026-11-10T00:00:00Z"
+        },
+        "with": {
+          "attempts": 17,
+          "firstAttemptPass": 0.83
+        },
+        "without": {
+          "attempts": 12,
+          "firstAttemptPass": 0.75
+        },
+        "match": "role+workKind"
+      },
+      "origin": {
+        "kind": "import",
+        "url": "",
+        "upstreamRef": null,
+        "license": "MIT",
+        "editionNote": null,
+        "changesSinceImport": 1
+      }
+    }
+  }
+}

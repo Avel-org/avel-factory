@@ -4,13 +4,16 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { MOCK_OPERATOR_ID } from "@avel/contract-mock";
 import { expect, test } from "@playwright/test";
+import { attachShot, expectNoViolations } from "./support/page";
 import { PREVIEW_PORT } from "./support/ports";
 
-// E16: at most 150 KB of JavaScript for the route, a warning over 130 KB. Measured on the
-// production build, gzipped, for what the server's HTML for / loads or preloads.
+// E16 as changed by CR-W29 decision 6: at most 220 KB of JavaScript for /, a warning over
+// 200 KB (T-F8 holds it to 220 KB, CR-W29 as amended Nov 17). Measured on the production build, gzipped,
+// for everything / loads before the Decisions home is interactive, scripts fetched after
+// hydration included (the page is client-only, so the server's HTML names almost none).
 // KB means 1024 bytes here, not 1000.
-const LIMIT = 150 * 1024;
-const WARN = 130 * 1024;
+const LIMIT = 220 * 1024;
+const WARN = 200 * 1024;
 
 const root = join(import.meta.dirname, "..");
 
@@ -82,7 +85,7 @@ function startPreview(onSpawn: (child: ChildProcess) => void): Promise<ChildProc
   });
 }
 
-test.describe("T-F1-11: the production build", () => {
+test.describe("T-F8-01: the production build (budget held to 220 KB under CR-W29)", () => {
   test.describe.configure({ timeout: 300_000 });
   let preview: ChildProcess | undefined;
   let ready: Promise<void> | undefined;
@@ -108,31 +111,26 @@ test.describe("T-F1-11: the production build", () => {
     preview?.kill();
   });
 
-  test("the JavaScript / loads is at most 150 KB gzipped", async ({ page, request }) => {
+  test("the JavaScript / loads before Decisions is interactive is at most 220 KB gzipped", async ({
+    page,
+    request,
+  }) => {
     await ensureBuilt();
     const origin = `http://127.0.0.1:${PREVIEW_PORT}`;
     const html = await (await request.get(`${origin}/`)).text();
 
     const urls = new Set<string>();
-    const add = (href: string) => urls.add(new URL(href, `${origin}/`).href);
-    for (const m of html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)) add(m[1] ?? "");
-    for (const m of html.matchAll(/<link\b[^>]*>/g)) {
-      const tag = m[0];
-      const href = /\bhref="([^"]+)"/.exec(tag)?.[1];
-      if (
-        href &&
-        (/rel="modulepreload"/.test(tag) || (/rel="preload"/.test(tag) && /as="script"/.test(tag)))
-      )
-        add(href);
-    }
-    for (const m of html.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
-      for (const u of (m[1] ?? "").matchAll(/["'`](\/[^"'`\s]+\.m?js)["'`]/g)) add(u[1] ?? "");
-    }
-    // What the browser really fetches, too (static imports of the entry chunk).
+    // What the browser really fetches: every script response, whoever asked for it.
     page.on("response", (r) => {
       if (r.request().resourceType() === "script") urls.add(r.url());
     });
     await page.goto(`${origin}/`, { waitUntil: "networkidle" });
+    await expect(
+      page.locator("nav.lib-nav[aria-label='Main']").filter({ visible: true }),
+    ).toBeVisible();
+    await expect(page.locator('[data-ui="FactoryPulse"]')).toBeVisible();
+    await expect(page.locator("h1").first()).toContainText("Decisions");
+    await expect(page.locator('[data-ui="DecisionsDashboard"]')).toBeVisible();
 
     const sizes: Array<[string, number]> = [];
     for (const url of urls) {
@@ -146,15 +144,20 @@ test.describe("T-F1-11: the production build", () => {
     );
     const total = sizes.reduce((sum, [, n]) => sum + n, 0) + inline;
 
-    expect(sizes.length, "the HTML should load at least one script").toBeGreaterThan(0);
+    expect(sizes.length, "/ should load at least one script").toBeGreaterThan(0);
+    // A client-only page fetches its app after the HTML: the control room is far past a stub.
+    expect(total, "the control room's JS is more than a stub").toBeGreaterThan(50 * 1024);
     if (total > WARN) {
       test.info().annotations.push({
         type: "warning",
-        description: `JS is ${total} B gzipped, over 130 KB`,
+        description: `JS is ${total} B gzipped, over 200 KB`,
       });
       console.warn(`budget warning: ${total} B gzipped (over ${WARN})`);
     }
     expect(total, `gzipped JS: ${JSON.stringify(sizes)}`).toBeLessThanOrEqual(LIMIT);
+    await page.emulateMedia({ reducedMotion: "reduce" }); // settled colours for axe (motion.css)
+    await expectNoViolations(page);
+    await attachShot(page, test.info(), "budget-decisions");
   });
 
   test("no built file contains the mock's operator id", async () => {

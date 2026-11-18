@@ -66,8 +66,9 @@ You review the builder's work on this ticket, from the diff and this document on
 **Merged before this starts:** T-F2
 
 **Notes from the lead:**
-- No new dependency and no API call: the six pages read nothing. Icons are inline Lucide nodes in Icon.tsx, from the DL's registry or, for bot and settings-2, the prototype's, with Lucide's ISC notice kept
-- The seams the tests use: apps/web/src/kit/ScreenHeader.tsx exports ScreenHeader({ eyebrow?, title, lead? }) with the title as the page's h1 (section 3). apps/web/src/kit/WidgetState.tsx exports WidgetState({ icon, title, message? }), the DL's empty state, its icon aria-hidden. staticData.nav gains group: '' for the unlabelled main group and size: 'sm' for the Factory group's rows; navFromRoutes keeps groups in section 4 revision 3's order and draws no label for ''
+- One new dependency, approved in this ticket list (E5): class-variance-authority 0.7.1 (Apache-2.0; its one dependency, clsx, is already in apps/web), pinned exactly (no ^), added to apps/web's dependencies by `pnpm --filter @avel/web add class-variance-authority@0.7.1`; the lockfile changes only for it. clsx and tailwind-merge are already there. No API call: the six pages read nothing. Icons are inline Lucide nodes in Icon.tsx, from the DL's registry or, for bot and settings-2, the prototype's, with Lucide's ISC notice kept; no icon package
+- The empty state is ReUI's Empty (Javaris, Nov 17): run `pnpm --filter @avel/web exec shadcn@latest add empty` (or `npx shadcn@latest add empty` in apps/web) with the existing components.json, which writes apps/web/src/components/ui/empty.tsx. Keep its markup, classes and data-slot attributes as installed; only Biome's formatting and the import fixes strict TypeScript needs may change it. Its colours come from app.css's shadcn variables, already mapped to AVEL tokens by T-F1: don't edit app.css, tokens.css or components.json, and add no CSS variables. If the CLI wants to change any of those or add another package, stop with needs-dependency
+- The seams the tests use: apps/web/src/kit/ScreenHeader.tsx exports ScreenHeader({ eyebrow?, title, lead? }) with the title as the page's h1 (section 3). apps/web/src/kit/WidgetState.tsx exports WidgetState({ icon, title, message? }), now composed from ReUI's Empty: Empty > EmptyHeader > EmptyMedia variant="icon" (the Icon, aria-hidden) + EmptyTitle (holding an h2, so the heading order stays valid) + EmptyDescription (the message). kit.css carries no .widget-state rules; Empty's own classes style it. staticData.nav gains group: '' for the unlabelled main group and size: 'sm' for the Factory group's rows; navFromRoutes keeps groups in section 4 revision 3's order and draws no label for ''
 - The routes, all under _shell, ssr: true, each with staticData.nav = { group, order, label, icon } and the document title '{title} · AVEL'. Main group (group ''): Decisions / (order 1, moved from Decide), Live /live (2, label 'Live', icon activity, title 'Factory live', eyebrow 'Watch'), Business /business (3, wallet), Clients /clients (4, building). Factory group (group 'Factory', size sm): Library /library/skills (1, swatch-book), Agents /roster (2, bot), Settings /settings (3, settings-2)
 - Each page is ScreenHeader then WidgetState. Live, Library and Agents use the prototype's eyebrow, title, lead and empty state word for word (Library's {kind} is 'skills'), without the empty state's actions, whose targets don't exist. Clients and Settings use the prototype's eyebrow, title and lead, and WidgetState '{title} isn't built yet': the mock has clients, so 'No clients yet' would be false, and Settings has no empty state. Business uses eyebrow 'Business' and title 'Business', no lead, and WidgetState 'Business isn't built yet': the prototype's lead and empty state are about margin and dollars, which E15 forbids
 - The sidebar: the main group has no label; the Factory group's rows are the prototype's small rows (15px icons). The current row has aria-current="page" on every page, and the crumb is the page's title. Moving between pages is a client navigation (no reload)
@@ -84,7 +85,7 @@ You review the builder's work on this ticket, from the diff and this document on
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
-### T-F5-03: check: unit: ScreenHeader renders the eyebrow, the title as the only h1, and the lead; WidgetState renders its icon aria-hidden, its title and its message
+### T-F5-03: check: unit: ScreenHeader renders the eyebrow, the title as the only h1, and the lead; WidgetState renders ReUI's Empty (data-slot empty, empty-header, empty-icon with data-variant icon, empty-title holding an h2, empty-description), its icon aria-hidden, its title and its message
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
@@ -108,6 +109,18 @@ You review the builder's work on this ticket, from the diff and this document on
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
+### T-F5-09: check: unit: apps/web/src/components/ui/empty.tsx exports Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription and EmptyContent; apps/web/package.json pins class-variance-authority to exactly 0.7.1
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-F5-10: check: e2e: each page's main region holds exactly one [data-slot=empty], after the h1, holding the state's title
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-F5-11: check: Attempt 1's test-dispute (F2), fixed in this dispatch's own commit: in rows.spec.ts, `has:` locators are relative to the section (`a.lib-nav-item[href=...]`, no `.lib-rail` prefix); in pages.spec.ts, order is checked by element (the eyebrow's node, then the h1, then the lead, then the empty state, by DOM position), never by indexOf of text, so equal eyebrow and title pass. If you think either test was right as written, don't change it: stop with test-dispute and say why. Then the lead adds the F2 relock line in locks.md
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
 ### T-F5-R: the rules
 
 - The diff stays inside the build's territory (Part 5) and touches no locked test (A3, H6).
@@ -122,14 +135,17 @@ You review the builder's work on this ticket, from the diff and this document on
 
 **The build's territory**, for checking the diff:
 - `apps/web/src/kit/**`
+- `apps/web/src/components/ui/empty.tsx`
 - `apps/web/src/modules/system/**`
 - `apps/web/src/routes/**`
 - `apps/web/src/routeTree.gen.ts`
-
-**Never change, whatever the task says:**
 - `apps/web/package.json`
 - `pnpm-lock.yaml`
+
+**Never change, whatever the task says:**
 - `apps/web/src/styles/tokens.css`
+- `apps/web/src/styles/app.css`
+- `apps/web/components.json`
 - `apps/web/src/home/**`
 - `apps/web/src/data/**`
 - `apps/web/test/foundation.test.ts`

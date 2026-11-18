@@ -63,6 +63,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | `docs/ui-contracts/` | UI contracts: shell layout, login, decisions approval page, kit v1.9 | The frontend session's docs |
 | `docs/ui-reference/control-room-prototype.html` | Javaris's standalone control-room prototype (added Nov 17): what `apps/web` recreates. A bundler page: the app is the JSON string in `<script type="__bundler/template">`, its sidebar is `const NAV`. Read it as data; don't run it in a dispatch | The target `apps/web` is checked against; the UI contracts and CRs win on details |
 | `docs/ui-reference/control-room-handoff/` | The control-room prototype's handoff (added Nov 16): tokens, screens, components, port order, bottleneck audit, its CR notes. The `tools/…` scripts it names belong to the prototype and aren't in this repo | Reference for `apps/web`; the UI contracts and CRs win |
+| `docs/ui-reference/control-room-design-fidelity.md` | The control room's design fidelity spec (added Nov 17): every design pass the prototype made, the rules on every screen, tokens, and measured values per shell piece, control and screen at 1440 and 360, light and night; the motion catalogue and the audits. Javaris: the source for every design-polish ticket | The target for design polish in `apps/web`; the UI contracts and CRs win |
 | `docs/review/security-checklist.md`, `docs/quarantine.md` | The second review on full-rigor PRs (G7); quarantined tests, empty to start (F5) | Current |
 | `docs/agent-dispatch/` | The vendored dispatch kit, AVEL's notes on it (`avel/`), and each lane's sprints | The v3 kit (Nov 16): `avel/dispatch-kit.md`'s banner, `avel/example-plan.toml` |
 | `docs/agent-dispatch/archive/` | The old repo's sprint records (backend sprints 00 and 01, frontend sprints 01 and 02, Nov 4 to 9). The docs that cite `docs/agent-dispatch/<lane>/sprint-0N/…` for those sprints mean this folder | Record; never edited. New sprints restart at `sprint-01` in `backend/` and `frontend/` |
@@ -101,6 +102,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-W1 to CR-W22 | The web's contract changes | Decided Nov 12 and built in contract 1.0.0 |
 | CR-W23 | TanStack DB in the control room | Proposed (frontend) |
 | CR-W24 | The Learning screens | Proposed (frontend); reads CR-28 |
+| CR-W29 | The control room comes from the design export: Javaris's control room JSX runs at `/` in apps/web with its sample world; the old shell goes; T-F5 dropped, T-F6, T-F3 and T-F4 withdrawn; temporary exceptions to E2, E4, E14 and E16 | Accepted Nov 17 (`CR-W29 The control room from the design export.md`); built in frontend sprints 07 to 10 as T-F7 to T-F10; the setup.css question is open |
 
 ## Known drift in the frozen docs
 

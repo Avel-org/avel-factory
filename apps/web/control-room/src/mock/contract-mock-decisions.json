@@ -1,0 +1,439 @@
+{
+  "_note": "@avel/contract-mock's DECISIONS (world.ts, contract 1.0.0): one decision of every kind, missions mapped to the prototype's by name. Changed from the mock for the no-money rule: the budget raise's evidence and its choice labels are written as shares of the cap instead of money amounts. Shown with the Simulator's \"One of every kind\".",
+  "items": [
+    {
+      "mission": {
+        "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "name": "Fleet portal",
+        "kind": "client",
+        "clientName": "GTS Diesel"
+      },
+      "createdAt": "2026-11-12T14:00:00.000Z",
+      "expiresAt": "2026-11-18T15:00:00.000Z",
+      "asOfSeq": 1001,
+      "evidence": [
+        {
+          "label": "Spent",
+          "value": "95% of its cap"
+        }
+      ],
+      "reasonRequired": {
+        "approve": true,
+        "reject": true
+      },
+      "rejectable": true,
+      "unlocks": null,
+      "previous": {
+        "ref": "proposal:0193b000-0000-7000-8000-000000000200",
+        "verdict": "approved",
+        "optionLabel": "Raise the cap by 20%",
+        "boundVersion": "1",
+        "decidedAt": "2026-11-12T12:00:00.000Z",
+        "reason": "Worth one more try",
+        "tookEffect": false
+      },
+      "kind": "proposal",
+      "ref": "proposal:0193b000-0000-7000-8000-000000000201",
+      "owner": "metering",
+      "plain": {
+        "title": "A part needs more AI budget: Quote form",
+        "why": "The quote form needs a second try and its AI budget is nearly spent.",
+        "ifYouApprove": "The factory carries out the option you choose.",
+        "ifYouReject": "Nothing changes, and the part stays where it is.",
+        "returned": "You approved version 1. An agent changed it to version 2 before it took effect, so your decision no longer applies."
+      },
+      "target": {
+        "proposalId": "0193b000-0000-7000-8000-000000000201",
+        "proposalKind": "budget_increase",
+        "subjectKey": "M3",
+        "moduleRunId": "0193b000-0000-7000-8000-000000000301",
+        "version": 2,
+        "choices": [
+          {
+            "choice": "raise",
+            "label": "Raise the cap by a third",
+            "consequence": "The quote form keeps going with a higher AI cap.",
+            "effect": "approve",
+            "recommended": true
+          },
+          {
+            "choice": "park",
+            "label": "Park it",
+            "consequence": "The quote form stops until you look at it.",
+            "effect": "reject",
+            "recommended": false
+          }
+        ],
+        "decidable": true
+      },
+      "budget": {
+        "scope": "module",
+        "moduleRef": "M3",
+        "fromMicros": 15000000,
+        "toMicros": 20000000
+      }
+    },
+    {
+      "mission": null,
+      "createdAt": "2026-11-12T13:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1002,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "factory_change",
+      "ref": "factory_change:142",
+      "owner": "knowledge",
+      "plain": {
+        "title": "Factory change: Sharper form-validation skill",
+        "why": "A change to the factory's skill, reviewed before it's merged.",
+        "ifYouApprove": "It's merged, and new work uses it from now on.",
+        "ifYouReject": "It isn't merged. Work in progress isn't affected.",
+        "returned": null
+      },
+      "target": {
+        "changeId": "142",
+        "prNumber": 142,
+        "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "url": "https://github.com/avel/factory/pull/142",
+        "area": "skill",
+        "evalRun": {
+          "id": "0193b000-0000-7000-8000-000000000601",
+          "stage": "targeted",
+          "set": "role",
+          "aim": "improve",
+          "state": "done",
+          "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tasks": 3,
+          "repeats": 2,
+          "primary": {
+            "metric": "first_attempt_pass",
+            "baseline": 0.67,
+            "candidate": 1,
+            "interval": {
+              "low": 0.05,
+              "high": 0.6
+            }
+          },
+          "verdict": "improved",
+          "plain": "Passed first try on 3 of 3 tasks, was 2 of 3"
+        }
+      }
+    },
+    {
+      "mission": {
+        "id": "01a1347d-7680-7fc6-97d6-18511c87bf53",
+        "name": "Control room",
+        "kind": "internal",
+        "clientName": null
+      },
+      "createdAt": "2026-11-12T12:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1003,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": true
+      },
+      "rejectable": true,
+      "unlocks": "0.3 Mission and roster",
+      "previous": null,
+      "kind": "checkpoint",
+      "ref": "checkpoint:0193b000-0000-7000-8000-000000000401",
+      "owner": "onboarding",
+      "plain": {
+        "title": "Approve 0.2 Breakdown for Control room",
+        "why": "Canon has drafted this part of the scope from what you and the client said.",
+        "ifYouApprove": "It's locked in, and Canon moves on to 0.3 Mission and roster.",
+        "ifYouReject": "Canon revises it with your note.",
+        "returned": null
+      },
+      "target": {
+        "checkpointId": "0193b000-0000-7000-8000-000000000401",
+        "checkpoint": "0.2",
+        "version": 3,
+        "rowVersion": 4
+      }
+    },
+    {
+      "mission": {
+        "id": "01a1347d-7680-7fc6-97d6-18511c87bf53",
+        "name": "Control room",
+        "kind": "internal",
+        "clientName": null
+      },
+      "createdAt": "2026-11-12T11:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1004,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "plan_finalize",
+      "ref": "plan_finalize:01a1347d-7680-7fc6-97d6-18511c87bf53",
+      "owner": "onboarding",
+      "plain": {
+        "title": "Approve the plan for Control room",
+        "why": "The plan splits the work into 12 parts, each with its own tests.",
+        "ifYouApprove": "Building starts, and the deadline clock starts.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "missionId": "01a1347d-7680-7fc6-97d6-18511c87bf53",
+        "planId": "0193b000-0000-7000-8000-000000000206",
+        "planVersion": 2
+      }
+    },
+    {
+      "mission": {
+        "id": "01a1c2d4-5e80-7a11-8c3d-0b5e6f7a8b9c",
+        "name": "Field app",
+        "kind": null,
+        "clientName": null
+      },
+      "createdAt": "2026-11-12T10:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1005,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": "0.1 What it is",
+      "previous": null,
+      "kind": "checkpoint_question",
+      "ref": "checkpoint_question:0193b000-0000-7000-8000-000000000501",
+      "owner": "onboarding",
+      "plain": {
+        "title": "Is this a client project, or an internal template?",
+        "why": "Canon needs this before the scope can be approved (0.1 What it is).",
+        "ifYouApprove": "Canon takes your answer and carries on.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "questionId": "0193b000-0000-7000-8000-000000000501",
+        "rowVersion": 1,
+        "code": "Q-0.1a",
+        "text": "Is this a client project, or an internal template?",
+        "subject": {
+          "checkpoint": "0.1",
+          "moduleRef": null,
+          "risk": null,
+          "label": "0.1 What it is"
+        },
+        "blocking": true,
+        "options": [
+          {
+            "id": "template",
+            "label": "Internal template",
+            "consequence": "It ships to the templates repo, and you publish it to Templates once it's verified."
+          },
+          {
+            "id": "client",
+            "label": "Client project",
+            "consequence": "Canon asks which client it's for next."
+          },
+          {
+            "id": "internal",
+            "label": "Internal tool",
+            "consequence": "It's AVEL's own software, built like a client project with you as the client."
+          }
+        ],
+        "recommended": "template",
+        "why": "You described a starter every field-service client would begin from, and no client is attached.",
+        "after": null
+      }
+    },
+    {
+      "mission": {
+        "id": "01a17770-2280-7db5-9be9-18411454e558",
+        "name": "Booking fix",
+        "kind": "client",
+        "clientName": "GTS Diesel"
+      },
+      "createdAt": "2026-11-12T09:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1006,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": true,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "pass_approval",
+      "ref": "pass_approval:01a17770-2280-7db5-9be9-18411454e558",
+      "owner": "gate",
+      "plain": {
+        "title": "Accept a passing result for Booking fix",
+        "why": "Everything passed, with 1 known limit you'd ship with.",
+        "ifYouApprove": "You can release it as passing rather than verified.",
+        "ifYouReject": "It goes back for more work.",
+        "returned": null
+      },
+      "target": {
+        "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+        "receiptId": "0193b000-0000-7000-8000-000000000701",
+        "receiptHash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "verdictCaps": [
+          "One slow page on older phones"
+        ]
+      }
+    },
+    {
+      "mission": {
+        "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "name": "Spring launch site",
+        "kind": "client",
+        "clientName": "Blume Studio"
+      },
+      "createdAt": "2026-11-12T08:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1007,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "release",
+      "ref": "release:01a1912f-ee80-709f-891e-7d29547e91a0",
+      "owner": "delivery",
+      "plain": {
+        "title": "Release Spring launch site",
+        "why": "Every check passed on the exact version the client gets.",
+        "ifYouApprove": "The client gets that exact version, as a pull request.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "receiptId": "0193b000-0000-7000-8000-000000000702",
+        "receiptHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "verdict": "verified",
+        "passApprovalId": null,
+        "commitSha": "5555555555555555555555555555555555555555",
+        "deliveryKind": "pr"
+      }
+    },
+    {
+      "mission": {
+        "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "name": "Fleet portal",
+        "kind": "client",
+        "clientName": "GTS Diesel"
+      },
+      "createdAt": "2026-11-12T07:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1008,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "dispatch_package_commit",
+      "ref": "dispatch_package_commit:01a1b016-1680-7ea7-9b27-8f75c199eac7",
+      "owner": "integrator",
+      "plain": {
+        "title": "Add the Fleet portal work instructions to the GTS repo",
+        "why": "The instructions the agents work from are ready to keep with the client's code.",
+        "ifYouApprove": "They're added to the project's branch in one commit.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "missionId": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "packageHash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    },
+    {
+      "mission": null,
+      "createdAt": "2026-11-12T06:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1009,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": true,
+      "unlocks": null,
+      "previous": null,
+      "kind": "followup_send",
+      "ref": "followup_send:0193b000-0000-7000-8000-000000000801",
+      "owner": "pipeline",
+      "plain": {
+        "title": "Send a follow-up to Harbor Parts",
+        "why": "You send this yourself: copy it, send it, then mark it as sent.",
+        "ifYouApprove": "It's recorded as sent by you.",
+        "ifYouReject": "It isn't sent, and no reminder follows.",
+        "returned": null
+      },
+      "target": {
+        "followupId": "0193b000-0000-7000-8000-000000000801",
+        "draftHash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "channel": "copy",
+        "draft": "Hi, following up on the parts catalogue we talked about. Want to pick a time this week?"
+      }
+    },
+    {
+      "mission": {
+        "id": "01a1ba62-ce80-7464-8a88-33e8742b6678",
+        "name": "Parts catalogue",
+        "kind": "template",
+        "clientName": null
+      },
+      "createdAt": "2026-11-12T05:00:00.000Z",
+      "expiresAt": null,
+      "asOfSeq": 1010,
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": true,
+      "unlocks": null,
+      "previous": null,
+      "kind": "upkeep_offer",
+      "ref": "upkeep_offer:0193b000-0000-7000-8000-000000000802",
+      "owner": "pipeline",
+      "plain": {
+        "title": "Send an upkeep offer to GTS Diesel",
+        "why": "You send this yourself: copy it, send it, then mark it as sent.",
+        "ifYouApprove": "It's recorded as sent by you.",
+        "ifYouReject": "It isn't sent, and no reminder follows.",
+        "returned": null
+      },
+      "target": {
+        "followupId": "0193b000-0000-7000-8000-000000000802",
+        "clientId": "01a11070-f280-7405-be02-939daa1426cd",
+        "signals": [
+          "Booking fix delivered 30 days ago",
+          "Two dependency updates waiting"
+        ],
+        "draftHash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "channel": "copy",
+        "draft": "Hi Dale, want us to keep the booking flow up to date each month?"
+      }
+    }
+  ],
+  "nextCursor": null
+}

@@ -33,7 +33,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 
 | Ticket | Builds | Tests |
 | --- | --- | --- |
-| T-F5 | `apps/web/src/kit/**`, `apps/web/src/modules/system/**`, `apps/web/src/routes/**`, `apps/web/src/routeTree.gen.ts` | `apps/web/test/sidebar-pages/**`, `apps/web/e2e/sidebar-pages/**`, `apps/web/test/shell/nav.test.ts` |
+| T-F5 | `apps/web/src/kit/**`, `apps/web/src/components/ui/empty.tsx`, `apps/web/src/modules/system/**`, `apps/web/src/routes/**`, `apps/web/src/routeTree.gen.ts`, `apps/web/package.json`, `pnpm-lock.yaml` | `apps/web/test/sidebar-pages/**`, `apps/web/e2e/sidebar-pages/**`, `apps/web/test/shell/nav.test.ts` |
 
 ## Merge order
 

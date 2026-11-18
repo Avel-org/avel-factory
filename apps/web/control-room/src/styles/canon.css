@@ -1,0 +1,190 @@
+/* Gate 0: Canon's interview beside the checkpoint document. 12/13/14/16/20 type, 400 and 500 weights. */
+.cv { display: grid; gap: 16px; min-width: 0; }
+
+/* steps across the top, with the server's progress under them */
+.cv-steps { display: grid; gap: 8px; }
+.cv-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.cv-steps a { display: flex; align-items: flex-start; gap: 8px; min-height: 48px; padding: 8px 10px; border-radius: 10px; color: var(--av-ink); text-decoration: none; transition: background-color 120ms ease-out; }
+@media (hover: hover) { .cv-steps a:hover { background: var(--av-faceplate-hover); } }
+.cv-steps a[aria-current] { background: var(--av-faceplate); box-shadow: var(--av-shadow-faceplate); }
+.cv-steps a:focus-visible { outline: 2px solid var(--av-focus-ring); outline-offset: -2px; }
+.cv-step-dot { flex: none; display: inline-grid; place-items: center; width: 18px; height: 18px; margin-top: 1px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--av-hairline-strong); color: #fff; }
+li[data-state="approved"] .cv-step-dot, .cv-record .cv-step-dot { background: var(--av-verified-solid, var(--av-verified)); box-shadow: none; }
+li[data-state="draft"] .cv-step-dot { box-shadow: inset 0 0 0 1.5px var(--av-accent); background: var(--av-accent-tint); }
+.cv-step-text { display: grid; min-width: 0; }
+.cv-step-text b { font-size: 14px; line-height: 20px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cv-step-text small { font-size: 12px; line-height: 16px; color: var(--av-muted); }
+li[data-state="locked"] .cv-step-text b { color: var(--av-muted); }
+.cv-step-num { font-family: var(--av-font-mono); font-size: 12px; color: var(--av-muted); margin-right: 6px; font-weight: 400; }
+.cv-progress { height: 4px; border-radius: 2px; background: var(--av-hairline); overflow: hidden; }
+.cv-progress i { display: block; height: 100%; background: var(--av-accent); border-radius: 2px; transition: width 300ms ease-out; }
+
+.cv-switch { display: none; }
+.cv-cols { display: grid; grid-template-columns: minmax(340px, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
+.cv-cols-final { grid-template-columns: minmax(0, 7fr) minmax(260px, 4fr); }
+.cv-meta { font-size: 13px; line-height: 20px; color: var(--av-muted); }
+
+/* the interview */
+.cv-chat { display: flex; flex-direction: column; min-width: 0; height: min(720px, calc(100dvh - 300px)); min-height: 440px; padding: 0; overflow: hidden; position: sticky; top: 72px; }
+.cv-chat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--av-hairline); }
+.cv-chat-head h2, .cv-doc-head h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; }
+.cv-msgs { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; margin: 0; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+.cv-msg { display: grid; gap: 4px; max-width: 92%; }
+.cv-msg[data-role="operator"] { align-self: flex-end; justify-items: end; }
+.cv-msg[data-role="operator"] .cv-text { background: var(--av-accent-tint); }
+.cv-msg[data-role="system"] { align-self: center; max-width: 100%; }
+.cv-msg[data-role="system"] .cv-text { background: none; padding: 0; font-size: 13px; color: var(--av-muted); }
+.cv-who { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; color: var(--av-muted); }
+.cv-text { margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--av-inset, var(--av-faceplate)); font-size: 14px; line-height: 20px; color: var(--av-ink); overflow-wrap: anywhere; }
+.cv-msg[data-blocking] .cv-text { box-shadow: inset 0 0 0 1px var(--av-needs-line); background: var(--av-needs-tint); }
+.cv-why { margin: 0; font-size: 13px; line-height: 20px; color: var(--av-muted); }
+.cv-ref { font-size: 12px; }
+.cv-attach { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--av-muted); }
+.cv-answer { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; color: var(--av-muted); }
+.cv-note { margin: 0; font-size: 12px; line-height: 16px; color: var(--av-muted); }
+.cv-typing { color: var(--av-muted); }
+@media (prefers-reduced-motion: no-preference) { .cv-typing { animation: cv-breathe 1.4s ease-in-out infinite; } }
+@keyframes cv-breathe { 50% { opacity: 0.55; } }
+.cv-end { height: 1px; }
+
+/* the checkpoint document */
+.cv-doc { display: grid; gap: 16px; padding: 16px 20px; min-width: 0; }
+.cv-doc-head { display: flex; justify-content: space-between; gap: 12px; }
+.cv-secs { margin: 0; display: grid; gap: 16px; }
+.cv-sec dt { font-size: 13px; line-height: 20px; color: var(--av-muted); margin-bottom: 4px; }
+.cv-sec dd { margin: 0 0 4px; display: grid; gap: 2px; font-size: 14px; line-height: 20px; color: var(--av-ink); }
+.cv-sec dd[data-proposed] > span:first-child { background: var(--av-needs-tint); box-shadow: 0 0 0 2px var(--av-needs-tint); border-radius: 2px; }
+.cv-src { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; color: var(--av-muted); text-decoration: none; justify-self: start; }
+a.cv-src { text-decoration: underline; text-decoration-color: var(--av-hairline-strong); text-underline-offset: 3px; }
+.cv-src[data-src="inferred"] { color: var(--av-accent-text, var(--av-accent)); }
+.cv-bd { display: grid; gap: 8px; }
+.cv-bd h3, .cv-locked h3 { margin: 8px 0 0; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--av-muted); }
+.cv-mods, .cv-waves, .cv-rubric, .cv-plain, .cv-record, .cv-blockers { list-style: none; margin: 0; padding: 0; }
+.cv-mods li { display: grid; gap: 2px; padding: 8px 0; border-top: 1px solid var(--av-hairline); }
+.cv-mods li:first-child { border-top: 0; }
+.cv-mods b { font-size: 14px; font-weight: 500; }
+.cv-blocked { justify-self: start; font-size: 12px; line-height: 16px; padding: 2px 6px; border-radius: 4px; background: var(--av-needs-tint); color: var(--av-needs-text); }
+.cv-waves { display: flex; flex-wrap: wrap; gap: 8px; }
+.cv-waves li { display: grid; padding: 6px 10px; border-radius: 8px; background: var(--av-inset, var(--av-faceplate)); font-size: 13px; }
+.cv-rubric li { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 0; border-top: 1px solid var(--av-hairline); font-size: 14px; line-height: 20px; }
+.cv-rubric li:first-child { border-top: 0; }
+.cv-rb-id { font-size: 12px; line-height: 20px; color: var(--av-muted); }
+.cv-rb-main { display: grid; gap: 2px; }
+.cv-rb-main small { font-size: 12px; line-height: 16px; color: var(--av-muted); }
+.cv-rb-side { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; align-items: center; }
+.cv-plain li { position: relative; padding-left: 14px; font-size: 14px; line-height: 20px; margin: 4px 0; }
+.cv-plain li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 4px; height: 4px; border-radius: 50%; background: var(--av-muted); }
+.cv-locked { display: grid; gap: 8px; }
+.cv-act { position: sticky; bottom: 12px; display: grid; gap: 10px; padding: 12px; margin: 0 -8px -4px; border-radius: 12px; background: var(--color-app-float, var(--av-faceplate)); box-shadow: var(--av-shadow-popover); }
+.cv-blockers li { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 20px; color: var(--av-needs-text); }
+.cv-blockers a { color: inherit; text-underline-offset: 3px; }
+.cv-ready { margin: 0; font-size: 13px; color: var(--av-muted); }
+.cv-act-btns { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+
+/* finalized: the record */
+.cv-record li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 12px; padding: 12px 0; border-top: 1px solid var(--av-hairline); }
+.cv-record li:first-child { border-top: 0; }
+.cv-record li[data-current] { background: var(--av-faceplate-hover); margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: 8px; }
+.cv-rec-main { display: grid; gap: 2px; }
+.cv-rec-main b { font-size: 14px; font-weight: 500; }
+.cv-side { display: grid; gap: 16px; }
+
+@media (max-width: 1100px) {
+  .cv-steps ol { grid-template-columns: repeat(5, minmax(120px, 1fr)); overflow-x: auto; scrollbar-width: none; }
+}
+@media (max-width: 900px) {
+  .cv-switch { display: inline-flex; justify-self: start; }
+  .cv-cols, .cv-cols-final { grid-template-columns: minmax(0, 1fr); }
+  .cv-cols[data-tab="chat"] > .cv-doc, .cv-cols[data-tab="doc"] > .cv-chat { display: none; }
+  .cv-chat { position: static; height: calc(100dvh - 260px); min-height: 380px; }
+}
+@media (max-width: 719px) {
+  .cv-steps ol { display: flex; gap: 4px; margin: 0 -16px; padding: 0 16px; overflow-x: auto; scroll-snap-type: x proximity; }
+  .cv-steps li { flex: 0 0 auto; scroll-snap-align: start; }
+  .cv-steps a { min-height: 44px; padding: 6px 8px; }
+  .cv-doc { padding: 12px 14px; }
+  .cv-rubric li { grid-template-columns: 32px minmax(0, 1fr); }
+  .cv-rb-side { grid-column: 2; justify-content: flex-start; }
+  .cv-act-btns .av-btn { flex: 1 1 auto; min-height: 44px; }
+  .cv-act { bottom: 8px; }
+}
+
+/* ---------------------------------------------------------------- the composer (v2: roomy, with meaning in its styling) */
+.cv-sugs { display: flex; flex-wrap: wrap; gap: 6px; }
+.cv-sug { min-height: 28px; padding: 0 10px; border: 0; border-radius: 999px; background: var(--av-inset, var(--av-faceplate)); box-shadow: inset 0 0 0 1px var(--av-hairline); font: inherit; font-size: 13px; color: var(--av-ink); cursor: pointer; transition-property: background-color, box-shadow, scale; transition-duration: 150ms; transition-timing-function: ease-out; }
+@media (hover: hover) { .cv-sug:hover { box-shadow: inset 0 0 0 1px var(--av-hairline-strong); } }
+.cv-sug:active { scale: 0.96; }
+.cv-sug:focus-visible { outline: 2px solid var(--av-focus-ring); outline-offset: 2px; }
+
+/* the field: a raised card; focus draws an accent ring with a soft halo */
+
+
+
+/* quoting the client: the words become a relayed fact, so the field looks like a quotation */
+.cv-msg[data-relayed] .cv-text { font-style: italic; }
+.cv-msg[data-relayed] .cv-text::before { content: "\201C"; }
+.cv-msg[data-relayed] .cv-text::after { content: "\201D"; }
+
+/* while Canon streams: a thin line runs along the top of the field (opacity only under reduced motion) */
+@media (prefers-reduced-motion: no-preference) {
+}
+
+/* streaming text: a caret while it arrives; the waiting dots before the first word */
+.cv-thinking { display: inline-flex; align-items: center; min-height: 20px; }
+.cv-dots { display: inline-flex; gap: 4px; }
+.cv-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--av-muted); opacity: 0.5; }
+@media (prefers-reduced-motion: no-preference) {
+  .cv-dots i { animation: cv-dot 1s ease-in-out infinite; }
+  .cv-dots i:nth-child(2) { animation-delay: 150ms; }
+  .cv-dots i:nth-child(3) { animation-delay: 300ms; }
+}
+@keyframes cv-dot { 50% { opacity: 1; translate: 0 -2px; } }
+.cv-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0; font-size: 12px; line-height: 16px; color: var(--av-muted); }
+.cv-settled { display: inline-flex; align-items: center; gap: 4px; color: var(--av-verified); }
+@media (prefers-reduced-motion: no-preference) {
+  @starting-style { .cv-settled { opacity: 0; translate: 0 4px; } }
+  .cv-settled { transition-property: opacity, translate; transition-duration: 300ms; transition-timing-function: ease-out; }
+}
+
+/* the new checkpoint documents */
+.cv-table { display: grid; min-width: 0; overflow-x: auto; }
+.cv-tr { display: grid; grid-template-columns: 56px repeat(5, minmax(72px, 1fr)); gap: 8px; padding: 8px 0; border-top: 1px solid var(--av-hairline); font-size: 14px; line-height: 20px; }
+.cv-tr[data-head] { border-top: 0; font-size: 12px; color: var(--av-muted); padding-top: 0; }
+.cv-ledger > div { padding: 6px 0; }
+.cv-ready-box { display: grid; gap: 8px; justify-items: start; padding: 12px; border-radius: 10px; background: var(--av-inset, var(--av-faceplate)); }
+.cv-ready-box[data-state="partial"] { box-shadow: inset 0 0 0 1px var(--av-needs-line); background: var(--av-needs-tint); }
+.cv-waive { display: grid; gap: 6px; width: 100%; }
+.cv-waive label { font-size: 13px; color: var(--av-ink); }
+.cv-waive textarea { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--av-hairline-strong); background: var(--color-app-float, transparent); color: var(--av-ink); resize: vertical; }
+.cv-waive .av-btn { justify-self: start; }
+.cv-next { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; line-height: 20px; }
+p[data-ok] { color: var(--av-verified); }
+.cv-done { justify-items: start; max-width: 640px; }
+.cv-done h2 { margin: 0; font-size: 20px; line-height: 28px; font-weight: 500; }
+.cv-done-mark { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--av-verified-solid, var(--av-verified)); color: #fff; }
+@media (max-width: 719px) {
+  .cv-tr { grid-template-columns: 44px repeat(5, minmax(64px, 1fr)); font-size: 13px; }
+}
+
+/* ---------------------------------------------------------------- better-ui pass on Scope (Nov 11) */
+/* concentric radius: the field is 16px inside 12px of padding, so the card's bottom corners are 28px */
+.cv-chat { border-radius: 14px 14px 28px 28px; }
+/* the progress bar moves on the compositor, not through layout */
+.cv-progress i { width: 100% !important; transform-origin: left center; transform: scaleX(var(--pct, 0)); transition-property: transform; transition-duration: 300ms; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+/* optical alignment: the icon side of an icon-and-text button is 2px tighter */
+.cv-act .av-btn[data-variant="primary"] { padding-inline: 14px 16px; }
+/* high-contrast mode keeps an edge under every shadow ring */
+.cv-sug, .cv-steps a { border: 1px solid transparent; }
+/* send and stop cross-fade: scale 0.25 to 1, blur 4px to 0, 300ms; opacity only under reduced motion */
+/* territories: module and its paths on one line */
+.cv-terr { display: grid !important; grid-template-columns: 40px minmax(0, 1fr); align-items: baseline; gap: 8px; }
+.cv-terr .op-sub { overflow-wrap: anywhere; }
+/* plan approved: an infrequent moment, so title, details and action enter 100ms apart */
+.cv-stagger > * { animation: cv-in-fade 300ms ease-out both; }
+@media (prefers-reduced-motion: no-preference) { .cv-stagger > * { animation-name: cv-in-up; } }
+.cv-stagger > :nth-child(2) { animation-delay: 100ms; }
+.cv-stagger > :nth-child(3) { animation-delay: 200ms; }
+.cv-stagger > :nth-child(4) { animation-delay: 300ms; }
+.cv-stagger > :nth-child(5) { animation-delay: 400ms; }
+@keyframes cv-in-fade { from { opacity: 0; } }
+@keyframes cv-in-up { from { opacity: 0; transform: translateY(12px); filter: blur(4px); } }

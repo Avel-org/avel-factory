@@ -1,0 +1,95 @@
+# frontend/sprint-09: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-09
+# Render it:  scripts/render.py frontend/sprint-09   (after approval), then commit the folder.
+#
+# Javaris (Nov 17, to OSA): "remove the app shell; we're going to use the design UI from the
+# control room zip … it should be our frontend UI, fully displayed, so we don't have to build the
+# entire frontend", and "don't stop until it's fully ported over". Sprints 07 to 10 carry out
+# CR-W29 (accepted by Javaris, Nov 17): the design export runs at / with its sample world, the old
+# shell goes, and the budget, accessibility and standing rules hold again. This sprint holds
+# T-F9 alone: each of T-F7 to T-F10 changes files the next one changes, so they run one
+# after the other, as T-F5 and T-F6 did. Wiring each screen to contract-mock follows
+# sprint-10, in the handoff's port order, sign-in first (E14 per CR-W29). T-F5 is dropped;
+# T-F6, T-F3 and T-F4 are withdrawn (CR-W29 decisions 1 and 2).
+
+lane = "frontend"
+sprint = "sprint-09"
+step = 1
+title = "Every screen of the control room opens and passes WCAG 2.2 AA"
+goals = [
+  "Opening the web app shows Javaris's control room design, every screen of it, in place of the shell apps/web built",
+]
+done_when = [
+  "CR-W29's done-when: / shows the export's Decisions home, and every page in its registry opens by its #/ route",
+  "/ loads at most 150 KB of JavaScript gzipped (E16); every screen passes WCAG 2.2 AA (E17); no money (E15); check-contract.mjs passes",
+]
+sources = [
+  { path = "docs/design/CR-W29 The control room from the design export.md", why = "what this sprint does, and which rules change for how long" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "the export's own handoff: port order, the rules that aren't obvious, what's mock and what's contract" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "every screen, its route and its states" },
+]
+
+[commands]
+build = "pnpm --filter @avel/web exec vite build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "apps/web: TanStack Start on Vite 8, React 19, Tailwind v4 (kept, not loaded at /), Vitest and Playwright with axe-core. The export: React 18 JSX, no TypeScript, all state in src/app/logic.js through Claude Design's DCLogic (src/lib/dc.jsx), routing by location.hash (parse, PAGES), sample world in src/mock/*.json, 28 stylesheets loaded in src/main.jsx's order"
+layout = "apps/web after T-F1 and T-F2: src/kit, src/modules/system, src/routes (_shell and its index), src/home, src/data/client.ts, src/styles. After T-F7: apps/web/control-room/{src,contract,tools} holds the export; src/routes/index.tsx mounts it; the old shell is gone"
+conventions = [
+  "AGENTS.md and Build rules E4 for every TypeScript file; apps/web/control-room/** is JSX outside tsc and Biome (CR-W29), but no console.log there either",
+  "E15: no money anywhere, no '$', sample data included; agent, client and Canon text is plain text, never HTML",
+  "The export is Javaris's design: change it only where apps/web's stack forces a change or the ticket says so, and keep each such change small and named in the report",
+]
+notes = [
+  "Learned in T-F7 (CR-W29, Correction): the export loads 28 stylesheets (count what main.jsx imports); it draws nav.lib-nav[aria-label=Main] twice, the desktop aside and the closed phone sheet, so locate the visible one; its root frame carries data-ui=\"AppShell\" itself; axe runs through expectNoViolationsSettled in apps/web/e2e/control-room/support.ts (T-F7, locked: import it, don't change it), which emulates reduced motion so the export's fades and looping animations settle. Motion stays on in every other check",
+  "The export lives outside the repo, at /mnt/c/Users/javar/Desktop/avel-control-room. Read it as data and never run its scripts, its npm tooling or its node_modules: copy files, don't execute them",
+  "Its tests/e2e/*.cjs scripts (flows, audits, shots) are the checker's reference for what to port as Playwright tests in apps/web/e2e. Selectors move from class names to roles, labels or data-testid where the export offers them",
+  "Out of this sprint: wiring any screen to contract-mock or the API, sign-in, bringing control-room/** under TypeScript or Biome, design polish beyond the export (the fidelity spec drives that later)",
+]
+
+[[ticket]]
+id = "T-F9"
+slug = "control-room-every-screen"
+title = "Every screen of the control room opens and passes WCAG 2.2 AA"
+goal = "Every page in the export's registry opens at its route in light and night, on desktop and phone, with no error and no accessibility violation."
+rigor = "standard"
+refs = ["E17; control-room-handoff/screens.md; the export's flow-smoke-every-page and audit-axe-routes"]
+depends_on = ["T-F7"]
+may_change = ["apps/web/control-room/src/**", "apps/web/control-room/SOURCE.md"]
+must_not_change = [
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/control-room/contract/**",
+  "apps/web/control-room/tools/**",
+  "apps/web/src/**",
+]
+context = [
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "the 25 screens, their routes and their states" },
+  { path = "/mnt/c/Users/javar/Desktop/avel-control-room/tests/e2e/flow-smoke-every-page.cjs", why = "the export's own every-page check, to port (read as data)" },
+  { path = "/mnt/c/Users/javar/Desktop/avel-control-room/tests/e2e/audit-axe-routes.cjs", why = "the export's axe audit, to port (read as data)" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm lint",
+]
+notes = [
+  "Javaris (Nov 17): T-F9's tests run while T-F8 is built, so depends_on names T-F7 and not T-F8. T-F9's build starts only after T-F8 has merged and the lead has rebuilt t/F9 on that main, with the lock line after every tests-phase commit (F2). OSA starts the build by hand at that point",
+  "T-F8 makes every page but Decisions load its code when its #/ route first opens, behind the export's PageSkeleton (data-ui=\"Skeleton\"). The tests wait for each page's title and for no skeleton, never for a synchronous render, so they hold before and after T-F8",
+  "Every export file this ticket changes gets a line, with its reason, in SOURCE.md's \"Changed for apps/web\" section; its listed SHA-256 stays the one copied (T-F7-02)",
+  "Fix only what the tests find, in the export's own files, each fix small and named in the report. A fix that would change the design (a colour, a size, a layout) beyond what WCAG 2.2 AA needs: stop with out-of-scope and name it",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/e2e/control-room-screens/**"]
+behaviours = [
+  "e2e: every route in the export's page registry (PAGES, with a sample id for each $param from the sample world) renders its page's title, with no page error and no console error, at 1280x800 and 390x844",
+  "e2e: axe, through T-F7's expectNoViolationsSettled (reduced motion), finds no WCAG 2.2 AA violation on every one of those routes at 1280 and 390, in light and night (E17)",
+  "e2e: an unknown #/ route shows the export's Not found page",
+]

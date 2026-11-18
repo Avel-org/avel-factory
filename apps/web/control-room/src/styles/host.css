@@ -1,0 +1,3 @@
+/* The page frame Claude Design's runtime added around a full-page design. */
+html, body { height: 100%; margin: 0; }
+#dc-root, #dc-root > .sc-host { height: 100%; }

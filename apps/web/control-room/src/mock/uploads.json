@@ -1,0 +1,961 @@
+{
+ "_cr": "CR-34, One upload inbox (proposed, revision 2). Sample data only: these routes aren't in contract-mock yet. Field names follow CR-34 so the frontend can wire them later: StatusDto.inboxCount, uploads.state, scanStatus, link states waiting | active | refused | removed. Mapped onto this prototype's world: Acme Dental is Blume Studio, Booking app is Spring launch site, Northside Barbers is GTS Diesel, Landing page is Fleet portal.",
+ "asOf": "2026-11-10T09:00:00Z",
+ "items": [
+  {
+   "id": "u-1",
+   "fileId": "f-logo",
+   "version": 2,
+   "name": "logo-acme.svg",
+   "kind": "image",
+   "sniffed": "SVG image",
+   "sizeBytes": 21504,
+   "sentBy": "you",
+   "createdAt": "2026-11-10T08:41:00Z",
+   "expiresAt": "2026-11-24T08:41:00Z",
+   "state": "stored",
+   "scanStatus": "clean",
+   "newVersionOf": "logo-acme.svg v1",
+   "suggestion": {
+    "dests": [
+     {
+      "kind": "client",
+      "id": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "label": "Blume Studio · brand kit"
+     }
+    ],
+    "why": "the name contains “logo”",
+    "by": "rules"
+   }
+  },
+  {
+   "id": "u-2",
+   "name": "requirements-v3.pdf",
+   "kind": "pdf",
+   "sniffed": "PDF document · 42 pages",
+   "pages": 42,
+   "sizeBytes": 2202009,
+   "sentBy": "osa",
+   "createdAt": "2026-11-05T08:00:00Z",
+   "expiresAt": "2026-11-19T08:00:00Z",
+   "state": "stored",
+   "scanStatus": "clean",
+   "suggestion": {
+    "dests": [
+     {
+      "kind": "mission",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "label": "Spring launch site"
+     }
+    ],
+    "why": "you were viewing it",
+    "by": "rules"
+   }
+  },
+  {
+   "id": "u-3",
+   "name": "Inter.zip",
+   "kind": "archive",
+   "sniffed": "Font archive · 18 files",
+   "sizeBytes": 4823449,
+   "sentBy": "you",
+   "createdAt": "2026-11-08T09:00:00Z",
+   "expiresAt": "2026-11-22T09:00:00Z",
+   "state": "stored",
+   "scanStatus": "clean",
+   "contents": 18,
+   "suggestion": {
+    "dests": [
+     {
+      "kind": "client",
+      "id": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "label": "Blume Studio · brand kit"
+     }
+    ],
+    "why": "it’s a font archive and the brand kit has no fonts yet",
+    "by": "rules"
+   }
+  },
+  {
+   "id": "u-4",
+   "name": "walkthrough.mp4",
+   "kind": "video",
+   "sniffed": "MP4 video · 6m 12s · 1920 × 1080",
+   "sizeBytes": 1503238554,
+   "sentBy": "avel_os",
+   "createdAt": "2026-11-10T08:30:00Z",
+   "expiresAt": "2026-11-24T08:30:00Z",
+   "state": "uploading",
+   "scanStatus": "pending",
+   "progress": 0.63,
+   "suggestion": {
+    "dests": [
+     {
+      "kind": "mission",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "label": "Spring launch site, as media"
+     }
+    ],
+    "why": "it walks through the signup page",
+    "by": "canon"
+   }
+  },
+  {
+   "id": "u-5",
+   "name": "config-export.json",
+   "kind": "data",
+   "sniffed": "JSON data",
+   "sizeBytes": 12288,
+   "sentBy": "you",
+   "createdAt": "2026-11-07T14:00:00Z",
+   "expiresAt": "2026-11-21T14:00:00Z",
+   "state": "held",
+   "scanStatus": "flagged",
+   "flag": {
+    "code": "key",
+    "reason": "Looks like it contains an API key"
+   }
+  }
+ ],
+ "files": {
+  "f-logo": {
+   "id": "f-logo",
+   "name": "logo-acme.svg",
+   "kind": "image",
+   "sniffed": "SVG image",
+   "mime": "image/svg+xml",
+   "owner": {
+    "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-10T07:10:00Z",
+     "by": "you",
+     "sizeBytes": 18432,
+     "sha256": "8fc6f1772fb5d4dfcb799e1ac4e35f2122ed503863a2bca99a0e87ec1ea6ad91"
+    },
+    {
+     "v": 2,
+     "at": "2026-11-10T08:41:00Z",
+     "by": "you",
+     "sizeBytes": 21504,
+     "sha256": "357c7721a339eaf02ed96bd8195b2ac427adce828962d605cd70c6ec57ffd694",
+     "current": true
+    }
+   ],
+   "facts": {
+    "dimensions": "512 × 128"
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "client",
+      "id": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "label": "Blume Studio · brand kit"
+     },
+     "state": "active",
+     "why": "In the brand kit, so every Blume Studio project sees it",
+     "version": 1
+    }
+   ],
+   "readBy": [
+    {
+     "key": "r1",
+     "version": 1,
+     "label": "M1 · Content model and CMS · attempt 1",
+     "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+     "moduleRef": "M1",
+     "at": "2026-11-10T07:40:00Z"
+    }
+   ],
+   "receipts": [],
+   "inbox": "u-1"
+  },
+  "f-req": {
+   "id": "f-req",
+   "name": "requirements-v2.pdf",
+   "kind": "pdf",
+   "sniffed": "PDF document · 38 pages",
+   "mime": "application/pdf",
+   "owner": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-03T15:20:00Z",
+     "by": "you",
+     "sizeBytes": 1843200,
+     "sha256": "b97876678a3a5386087c469ce891e5d0a30445862a143b43ba344622d68ccbb8",
+     "current": true
+    }
+   ],
+   "facts": {
+    "pages": 38
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "mission",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "label": "Spring launch site · Gate 0 source"
+     },
+     "state": "active",
+     "why": "Canon read it during Gate 0",
+     "version": 1
+    },
+    {
+     "key": "l2",
+     "dest": {
+      "kind": "module",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0:M3",
+      "label": "M3 · Signup and spring code"
+     },
+     "state": "active",
+     "why": "On the reading list: signup rules, section 2",
+     "version": 1,
+     "listed": true,
+     "reason": "signup rules, section 2",
+     "range": "pages 6–11",
+     "tokens": 14000
+    }
+   ],
+   "readBy": [
+    {
+     "key": "r1",
+     "version": 1,
+     "label": "M3 · Signup and spring code · attempt 1",
+     "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+     "moduleRef": "M3",
+     "at": "2026-11-09T23:10:00Z"
+    },
+    {
+     "key": "r2",
+     "version": 1,
+     "label": "M3 · Signup and spring code · attempt 2",
+     "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+     "moduleRef": "M3",
+     "at": "2026-11-10T08:15:00Z"
+    }
+   ],
+   "receipts": []
+  },
+  "f-codes": {
+   "id": "f-codes",
+   "name": "spring-codes.csv",
+   "kind": "data",
+   "sniffed": "CSV table · 1,240 rows",
+   "mime": "text/csv",
+   "owner": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-04T10:05:00Z",
+     "by": "osa",
+     "sizeBytes": 48128,
+     "sha256": "f29a6588b5a457a509d0f412f21eb6b5afc6284b57e611fe1dccac898bb03b4b",
+     "current": true
+    }
+   ],
+   "facts": {
+    "rows": "1,240"
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "module",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0:M3",
+      "label": "M3 · Signup and spring code"
+     },
+     "state": "active",
+     "why": "Available in the agent’s workspace, not read: the codes for the signup test",
+     "version": 1,
+     "listed": false,
+     "reason": "codes the signup test redeems"
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-colors": {
+   "id": "f-colors",
+   "name": "brand-colors.pdf",
+   "kind": "pdf",
+   "sniffed": "PDF document · 4 pages",
+   "mime": "application/pdf",
+   "owner": {
+    "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-10-28T16:00:00Z",
+     "by": "you",
+     "sizeBytes": 286720,
+     "sha256": "9c5f34bcfc7ca48b42856753b3d61e1e902ab8f93a35d5f549461743a3fdc6e3",
+     "current": true
+    }
+   ],
+   "facts": {
+    "pages": 4
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "client",
+      "id": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "label": "Blume Studio · brand kit"
+     },
+     "state": "active",
+     "why": "In the brand kit",
+     "version": 1
+    },
+    {
+     "key": "l2",
+     "dest": {
+      "kind": "module",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0:M2",
+      "label": "M2 · Hero and product grid"
+     },
+     "state": "active",
+     "why": "On the reading list: the palette, page 2",
+     "version": 1,
+     "listed": true,
+     "reason": "the palette, page 2",
+     "tokens": 2000
+    }
+   ],
+   "readBy": [
+    {
+     "key": "r1",
+     "version": 1,
+     "label": "M2 · Hero and product grid · attempt 2",
+     "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+     "moduleRef": "M2",
+     "at": "2026-11-06T11:00:00Z"
+    }
+   ],
+   "receipts": []
+  },
+  "f-hero": {
+   "id": "f-hero",
+   "name": "hero-photo.jpg",
+   "kind": "image",
+   "sniffed": "JPEG photo · 2400 × 1600",
+   "mime": "image/jpeg",
+   "owner": {
+    "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-05T13:30:00Z",
+     "by": "you",
+     "sizeBytes": 1572864,
+     "sha256": "1cc4208ee28fb12a8e33b7e6d7c84145f263bec0180e0a2071866f879b8438bc",
+     "current": true
+    }
+   ],
+   "facts": {
+    "dimensions": "2400 × 1600",
+    "licence": "Unsplash licence, from unsplash.com/photos/spring-field"
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "client",
+      "id": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "label": "Blume Studio · brand kit"
+     },
+     "state": "active",
+     "why": "In the brand kit",
+     "version": 1
+    },
+    {
+     "key": "l2",
+     "dest": {
+      "kind": "repo",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "label": "Repo · public/img/hero.jpg"
+     },
+     "state": "refused",
+     "why": "Gate 2 failed: snapshot test header.spec",
+     "version": 1,
+     "path": "public/img/hero.jpg",
+     "gate": "Gate 2",
+     "test": "header.spec",
+     "module": "M2"
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-moodboard": {
+   "id": "f-moodboard",
+   "name": "moodboard.png",
+   "kind": "image",
+   "sniffed": "PNG image · 1600 × 1200",
+   "mime": "image/png",
+   "owner": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-06T09:00:00Z",
+     "by": "you",
+     "sizeBytes": 942080,
+     "sha256": "f5b73b653745795a937106af2935ad4bc2b1aa6f56bc1cd9980d0469b67807ed",
+     "current": true
+    }
+   ],
+   "facts": {
+    "dimensions": "1600 × 1200"
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "mission",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "label": "Spring launch site"
+     },
+     "state": "active",
+     "why": "Kept on the mission; link it to a module to use it",
+     "version": 1
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-sitemap": {
+   "id": "f-sitemap",
+   "name": "sitemap.md",
+   "kind": "text",
+   "sniffed": "Markdown text",
+   "mime": "text/markdown",
+   "owner": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-03T15:22:00Z",
+     "by": "you",
+     "sizeBytes": 6144,
+     "sha256": "d14e903b398f1d8a42099ce73570b6e23f9076a15030078d2247e31229add322",
+     "current": true
+    }
+   ],
+   "facts": {},
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "mission",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "label": "Spring launch site · Gate 0 source"
+     },
+     "state": "active",
+     "why": "Canon read it during Gate 0",
+     "version": 1
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-purged": {
+   "id": "f-purged",
+   "name": "customer-list.csv",
+   "kind": "data",
+   "sniffed": "CSV table",
+   "mime": "text/csv",
+   "owner": {
+    "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-02T12:00:00Z",
+     "by": "you",
+     "sizeBytes": 204800,
+     "sha256": "078bddb4134cc5410461a13fa07ffb87e55841b9cf8fab409f9bd2174c1ba048",
+     "current": true
+    }
+   ],
+   "facts": {},
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "module",
+      "id": "01a1912f-ee80-709f-891e-7d29547e91a0:M1",
+      "label": "M1 · Content model and CMS"
+     },
+     "state": "removed",
+     "why": "Removed when the file was purged",
+     "version": 1
+    }
+   ],
+   "readBy": [],
+   "receipts": [],
+   "purged": {
+    "at": "2026-11-09T17:20:00Z",
+    "by": "you",
+    "reason": "Blume Studio asked us to delete their customer list (email from Mara, Nov 9)."
+   }
+  },
+  "f-gts-logo": {
+   "id": "f-gts-logo",
+   "name": "gts-logo.png",
+   "kind": "image",
+   "sniffed": "PNG image · 800 × 300",
+   "mime": "image/png",
+   "owner": {
+    "clientId": "01a11070-f280-7405-be02-939daa1426cd"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-10-20T14:00:00Z",
+     "by": "you",
+     "sizeBytes": 61440,
+     "sha256": "eb278cbd88b0d938e6d7186d9b917b9261b17c26df9b9d33f8c83b751f69ffdf",
+     "current": true
+    }
+   ],
+   "facts": {
+    "dimensions": "800 × 300"
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "client",
+      "id": "01a11070-f280-7405-be02-939daa1426cd",
+      "label": "GTS Diesel · brand kit"
+     },
+     "state": "active",
+     "why": "In the brand kit",
+     "version": 1
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-handbook": {
+   "id": "f-handbook",
+   "name": "fleet-handbook.pdf",
+   "kind": "pdf",
+   "sniffed": "PDF document · 64 pages",
+   "mime": "application/pdf",
+   "owner": {
+    "clientId": "01a11070-f280-7405-be02-939daa1426cd"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-10-20T14:05:00Z",
+     "by": "you",
+     "sizeBytes": 3355443,
+     "sha256": "2a5bf035fa06b986f41d6b6de8462843ec3e0e0fa4502f5d717c8a6d672eb94d",
+     "current": true
+    }
+   ],
+   "facts": {
+    "pages": 64
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "client",
+      "id": "01a11070-f280-7405-be02-939daa1426cd",
+      "label": "GTS Diesel · files"
+     },
+     "state": "active",
+     "why": "Client file",
+     "version": 1
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-dispatch": {
+   "id": "f-dispatch",
+   "name": "dispatch-sheet.pdf",
+   "kind": "pdf",
+   "sniffed": "PDF document · 3 pages",
+   "mime": "application/pdf",
+   "owner": {
+    "missionId": "01a1b016-1680-7ea7-9b27-8f75c199eac7"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-08T16:40:00Z",
+     "by": "you",
+     "sizeBytes": 204800,
+     "sha256": "566ca0305c4cd694f8b65ee9688edff8673b739b5311893d7faaf46c7071f518",
+     "current": true
+    }
+   ],
+   "facts": {
+    "pages": 3
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "mission",
+      "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+      "label": "Fleet portal · Gate 0 source"
+     },
+     "state": "active",
+     "why": "Canon will read it",
+     "version": 1
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-faq": {
+   "id": "f-faq",
+   "name": "driver-faq.docx",
+   "kind": "doc",
+   "sniffed": "Word document · 9 pages",
+   "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+   "owner": {
+    "missionId": "01a1b016-1680-7ea7-9b27-8f75c199eac7"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-11-08T16:42:00Z",
+     "by": "osa",
+     "sizeBytes": 88064,
+     "sha256": "1b45746e773a9d251c4b75a564a62541fde667f01e40e5d9010eb21770fbbbaa",
+     "current": true
+    }
+   ],
+   "facts": {
+    "pages": 9
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "mission",
+      "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+      "label": "Fleet portal · Gate 0 source"
+     },
+     "state": "waiting",
+     "why": "Waiting for scan",
+     "version": 1
+    }
+   ],
+   "readBy": [],
+   "receipts": []
+  },
+  "f-harbor-logo": {
+   "id": "f-harbor-logo",
+   "name": "harbor-logo.svg",
+   "kind": "image",
+   "sniffed": "SVG image",
+   "mime": "image/svg+xml",
+   "owner": {
+    "clientId": "01a1250a-6280-754c-b300-e8b9b805cb26"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-10-30T10:00:00Z",
+     "by": "you",
+     "sizeBytes": 14336,
+     "sha256": "fe35e03a6d6aec6d46386cf273c3f1b91143c73eb4c26c307b2f0966f13299e8",
+     "current": true
+    }
+   ],
+   "facts": {},
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "client",
+      "id": "01a1250a-6280-754c-b300-e8b9b805cb26",
+      "label": "Harbor Dental · brand kit"
+     },
+     "state": "active",
+     "why": "In the brand kit",
+     "version": 1
+    },
+    {
+     "key": "l2",
+     "dest": {
+      "kind": "repo",
+      "id": "01a17770-2280-7db5-9be9-18411454e558",
+      "label": "Repo · public/brand/logo.svg"
+     },
+     "state": "active",
+     "why": "Committed and tested",
+     "version": 1,
+     "path": "public/brand/logo.svg"
+    }
+   ],
+   "readBy": [],
+   "receipts": [
+    "rc_7f3a2c"
+   ]
+  },
+  "f-rules": {
+   "id": "f-rules",
+   "name": "booking-rules.pdf",
+   "kind": "pdf",
+   "sniffed": "PDF document · 12 pages",
+   "mime": "application/pdf",
+   "owner": {
+    "missionId": "01a17770-2280-7db5-9be9-18411454e558"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-10-29T09:00:00Z",
+     "by": "you",
+     "sizeBytes": 512000,
+     "sha256": "da4c68d08ee9e37b3a7f56368a586d32e8765f59c193a3d20135864238433571"
+    },
+    {
+     "v": 2,
+     "at": "2026-10-31T09:00:00Z",
+     "by": "you",
+     "sizeBytes": 530432,
+     "sha256": "19a31acf20f7ba159cd36246d05bfdd94a13c0f057359b0f2e9e2954eb26a893",
+     "current": true
+    }
+   ],
+   "facts": {
+    "pages": 12
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "module",
+      "id": "01a17770-2280-7db5-9be9-18411454e558:M1",
+      "label": "M1 · Find the double-booking race"
+     },
+     "state": "active",
+     "why": "On the reading list: double-booking rules, section 4",
+     "version": 2,
+     "listed": true,
+     "reason": "double-booking rules, section 4"
+    }
+   ],
+   "readBy": [
+    {
+     "key": "r1",
+     "version": 2,
+     "label": "M1 · Find the double-booking race · attempt 1",
+     "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+     "moduleRef": "M1",
+     "at": "2026-11-01T08:00:00Z"
+    }
+   ],
+   "receipts": [
+    "rc_7f3a2c"
+   ]
+  },
+  "f-inter": {
+   "id": "f-inter",
+   "name": "Inter-4.0.zip",
+   "kind": "archive",
+   "sniffed": "Font archive · 18 files",
+   "mime": "application/zip",
+   "owner": {
+    "missionId": "01a17770-2280-7db5-9be9-18411454e558"
+   },
+   "versions": [
+    {
+     "v": 1,
+     "at": "2026-10-30T10:05:00Z",
+     "by": "you",
+     "sizeBytes": 4823449,
+     "sha256": "a160fb980d0c61cabf4426f7de99bcaeac2f8268fc4a29d216778c9ecfaea727",
+     "current": true
+    }
+   ],
+   "facts": {
+    "licence": "SIL OFL 1.1, from rsms.me/inter",
+    "contents": [
+     "Inter-Regular.woff2",
+     "Inter-Medium.woff2",
+     "Inter-SemiBold.woff2",
+     "Inter-Bold.woff2",
+     "InterVariable.woff2",
+     "LICENSE.txt"
+    ]
+   },
+   "links": [
+    {
+     "key": "l1",
+     "dest": {
+      "kind": "repo",
+      "id": "01a17770-2280-7db5-9be9-18411454e558",
+      "label": "Repo · public/fonts/inter"
+     },
+     "state": "active",
+     "why": "Committed and tested",
+     "version": 1,
+     "path": "public/fonts/inter",
+     "licence": "SIL OFL 1.1, from rsms.me/inter"
+    }
+   ],
+   "readBy": [],
+   "receipts": [
+    "rc_7f3a2c"
+   ]
+  }
+ },
+ "clientFiles": {
+  "01a100fd-de80-73fb-b3d1-fa439f3a8218": {
+   "kit": [
+    "f-logo",
+    "f-colors",
+    "f-hero"
+   ],
+   "other": [
+    "f-purged"
+   ]
+  },
+  "01a11070-f280-7405-be02-939daa1426cd": {
+   "kit": [
+    "f-gts-logo"
+   ],
+   "other": [
+    "f-handbook"
+   ]
+  },
+  "01a1250a-6280-754c-b300-e8b9b805cb26": {
+   "kit": [
+    "f-harbor-logo"
+   ],
+   "other": []
+  }
+ },
+ "missionFiles": {
+  "01a1912f-ee80-709f-891e-7d29547e91a0": {
+   "gate0": [
+    "f-req",
+    "f-sitemap"
+   ],
+   "unlinked": [
+    "f-moodboard"
+   ]
+  },
+  "01a1b016-1680-7ea7-9b27-8f75c199eac7": {
+   "gate0": [
+    "f-dispatch",
+    "f-faq"
+   ],
+   "unlinked": []
+  },
+  "01a17770-2280-7db5-9be9-18411454e558": {
+   "gate0": [
+    "f-rules"
+   ],
+   "unlinked": []
+  }
+ },
+ "readingList": {
+  "01a1912f-ee80-709f-891e-7d29547e91a0:M1": {
+   "used": 12000,
+   "cap": 60000
+  },
+  "01a1912f-ee80-709f-891e-7d29547e91a0:M2": {
+   "used": 31000,
+   "cap": 60000
+  },
+  "01a1912f-ee80-709f-891e-7d29547e91a0:M3": {
+   "used": 38000,
+   "cap": 60000
+  },
+  "01a1912f-ee80-709f-891e-7d29547e91a0:M4": {
+   "used": 22000,
+   "cap": 60000
+  },
+  "01a1912f-ee80-709f-891e-7d29547e91a0:M5": {
+   "used": 9000,
+   "cap": 60000
+  }
+ },
+ "offered": {
+  "01a11070-f280-7405-be02-939daa1426cd": [
+   "f-gts-logo",
+   "f-handbook"
+  ],
+  "01a100fd-de80-73fb-b3d1-fa439f3a8218": [
+   "f-logo",
+   "f-colors",
+   "f-hero"
+  ]
+ },
+ "rerender": {
+  "01a1912f-ee80-709f-891e-7d29547e91a0": {
+   "files": [
+    "f-logo",
+    "f-colors",
+    "f-moodboard"
+   ],
+   "at": "2026-11-10T08:50:00Z"
+  }
+ },
+ "batch": {
+  "01a1912f-ee80-709f-891e-7d29547e91a0": {
+   "at": "2026-11-10T21:10:00Z",
+   "pending": 2
+  }
+ },
+ "receiptInputs": {
+  "01a17770-2280-7db5-9be9-18411454e558": [
+   {
+    "fileId": "f-harbor-logo",
+    "version": 1,
+    "dest": "Brand kit, repo public/brand/logo.svg"
+   },
+   {
+    "fileId": "f-rules",
+    "version": 2,
+    "dest": "M1 reading list"
+   },
+   {
+    "fileId": "f-inter",
+    "version": 1,
+    "dest": "Repo public/fonts/inter · SIL OFL 1.1"
+   }
+  ]
+ },
+ "tray": [
+  {
+   "id": "t-1",
+   "itemId": "u-4",
+   "name": "walkthrough.mp4",
+   "kind": "video",
+   "sizeBytes": 1503238554,
+   "sentBy": "avel_os",
+   "progress": 0.63,
+   "state": "uploading",
+   "reconnects": 1,
+   "dest": {
+    "kind": "inbox"
+   }
+  }
+ ]
+}

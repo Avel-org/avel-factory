@@ -1,3 +1,5 @@
+> **Superseded by CR-W29** (Nov 17, 2026): the control room now comes from the design export; see `docs/design/CR-W29 The control room from the design export.md`.
+
 # UI contract: the shell layout (frontend sprint-02)
 
 Zero, 2026-11-08. **Revision 2, for Brennan's one review.** Replaces `app-shell.md`; follows `docs/design/AVEL Shell Layout brief v1.9.md` with Int's calls (S14, S15). Companion: `kit-v1.9.md`. Decisions: sprint-02's `decisions.md`.

@@ -1,0 +1,9 @@
+{
+  "_note": "Routes API routes.md lists under \"Proposed, not counted\". A gap note may name one; no screen calls one. Taken from docs/design/API routes.md, contract 1.0.0.",
+  "routes": [
+    { "method": "GET", "path": "/api/rooms", "inputKeys": ["state"], "from": "Page map, gap 4" },
+    { "method": "GET", "path": "/api/notifications", "inputKeys": [], "from": "CR-24, CR-25" },
+    { "method": "GET", "path": "/api/missions/{missionId}/previews", "inputKeys": [], "from": "CR-25" },
+    { "method": "POST", "path": "/api/receipts/{receiptId}/shares", "inputKeys": [], "from": "CR-25" }
+  ]
+}

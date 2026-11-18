@@ -14,6 +14,9 @@ WezTerm pane ($WEZTERM_PANE), so tools/wezterm/avel.lua can badge the right tab:
   { "<pane id>": { "name": "SOAP T-B3-build a1", "state": "waiting", "since": "...", "msg": "..." } }
 The name comes from $AVEL_SEAT (set by the seat or by scripts/agent.sh).
 
+In a dispatch, the stop event also raises $AVEL_DONE_FLAG once the report is final (mark_done), so
+scripts/agent.sh can end the finished session instead of leaving it open for someone to close.
+
 A hook must never get in a session's way: every failure is swallowed and it always exits 0.
 Nothing from the hook input is stored except the notification's message, cut to 200 characters.
 """
@@ -40,8 +43,47 @@ def git_common_dir(cwd):
     return path if os.path.isabs(path) else os.path.normpath(os.path.join(cwd, path))
 
 
+def finished(report, kind):
+    """True when the dispatch's report is final: it has a status line, and unless this is a review
+    (a reviewer's report stays uncommitted) it is committed with nothing uncommitted on top."""
+    try:
+        with open(report, encoding="utf-8") as f:
+            if not any(line.lower().startswith("status:") for line in f):
+                return False
+    except OSError:
+        return False
+    if kind == "review":
+        return True
+    here = os.path.dirname(report)
+    name = os.path.basename(report)
+    run = lambda *a: subprocess.run(["git", *a], cwd=here, capture_output=True, text=True, timeout=5)
+    return bool(run("log", "-1", "--format=%H", "--", name).stdout.strip()) and not run(
+        "status", "--porcelain", "--", name
+    ).stdout.strip()
+
+
+def mark_done(event):
+    """For a dispatch (scripts/agent.sh sets $AVEL_DONE_FLAG): a turn that ends with the report final
+    raises the flag, and agent.sh ends the session shortly after. Any new turn or tool call lowers it."""
+    flag = os.environ.get("AVEL_DONE_FLAG")
+    if not flag:
+        return
+    if event == "stop" and finished(os.environ.get("AVEL_REPORT", ""), os.environ.get("AVEL_KIND", "")):
+        with open(flag, "w") as f:
+            f.write(datetime.now(timezone.utc).isoformat(timespec="seconds") + "\n")
+    elif event in ("start", "prompt", "tool"):
+        try:
+            os.remove(flag)
+        except OSError:
+            pass
+
+
 def main():
     event = sys.argv[1] if len(sys.argv) > 1 else ""
+    try:
+        mark_done(event)
+    except Exception:
+        pass
     pane = os.environ.get("WEZTERM_PANE")
     if not pane or (event not in STATE and event != "end"):
         return  # not in WezTerm, or an event we don't track

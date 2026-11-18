@@ -315,10 +315,13 @@ def load_plan(lane, sprint, roster):
 
 
 def territory_clashes(plans):
-    """Tickets that may run together never share a file: builder paths and test paths, across every plan given."""
+    """Tickets that may run together never share a file: builder paths and test paths, across every plan given.
+    A merged ticket (its build report on main, ticket_merged) can't run again, so it clashes with nothing."""
     owned = []
     for plan in plans:
         for t in plan["ticket"]:
+            if ticket_merged(t["id"]):
+                continue
             for p in t["may_change"]:
                 owned.append((t["id"], "builds", p))
             for p in t["tests"]["paths"]:

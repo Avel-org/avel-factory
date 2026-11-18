@@ -1,0 +1,24 @@
+{
+  "_note": "CR-34 (One upload inbox, revision 2) is proposed, not in contract 1.0.0. These are the names the upload screens assume, from the CR-34 prompt (Nov 15, 2026). The screens run on src/mock/uploads.json and call nothing. Remove entries as they land in @avel/contract.",
+  "source": "CR-34 One upload inbox, rev 2 (prompt attached Nov 15, 2026)",
+  "routes": [],
+  "routesNote": "CR-34 rev 2 as given doesn't list its routes; none are assumed or called. The prototype needs: create an upload (resumable), list the inbox, file an inbox item to destinations, discard, get a file with versions, links, readers and receipts, upload a new version, unlink, purge with a reason.",
+  "fields": [
+    "StatusDto.inboxCount",
+    "Upload.state: uploading | reconnecting | hashing | scanning | stored | held",
+    "Upload.scanStatus: scanning | clean | flagged",
+    "Upload.flag { code, reason }",
+    "InboxItem { id, name, sniffedType, sizeBytes, sentBy: you | client | osa | avel_os, createdAt, expiresAt (14 days), suggestion { dests[], why, by: rules | canon } }",
+    "File { id, owner, versions[] { v, sha256, sizeBytes, at, by }, facts, links[], readBy[], receipts[], purged { at, reason } }",
+    "FileLink { dest { kind: client | mission | module | library | repo, id }, state: waiting | active | refused | removed, why, version, reason, listed, range, licence, path, replace }",
+    "Module reading list { used, cap } in tokens",
+    "Dispatch package re-render { at, fileIds[] }",
+    "Receipt.inputs[] { fileId, version, sha256, dest }"
+  ],
+  "errors": [
+    "UPLOAD_LIMIT",
+    "UPLOAD_HASH_MISMATCH",
+    "UPLOAD_FLAGGED"
+  ],
+  "events": []
+}

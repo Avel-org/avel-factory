@@ -23,8 +23,6 @@ describe("T-F1-05: no raw HTML, no classic zod", () => {
 
   it("apps/web/src exists and has the files this ticket adds", () => {
     const names = files.map((f) => relative(src, f));
-    expect(names).toContain("home/HomeView.tsx");
-    expect(names).toContain("home/load-home.ts");
     expect(names).toContain("data/client.ts");
     expect(names).toContain("lib/utils.ts");
     expect(names.some((n) => n.startsWith("routes/__root"))).toBe(true);

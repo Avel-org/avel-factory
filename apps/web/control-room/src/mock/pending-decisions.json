@@ -1,0 +1,845 @@
+{
+  "_note": "Route 52, GET /api/pending-decisions: the 10-kind PendingDecisionDto union of contract 1.0.0. Text follows the contract's plain templates. Checkpoint, plan finalize and release items are added by the page as those become due, in the same shape.",
+  "items": [
+    {
+      "expiresAt": "2026-11-11T10:12:00Z",
+      "evidence": [
+        {
+          "label": "Last failure",
+          "value": "The spring code test, on both vendors",
+          "detailRef": "trace:m4-retry3"
+        },
+        {
+          "label": "AI cost",
+          "value": "92% of the module cap",
+          "detailRef": "module:spring-m4"
+        },
+        {
+          "label": "Canon’s proposal",
+          "value": "Pricing rules and checkout UI as two parts"
+        }
+      ],
+      "reasonRequired": {
+        "approve": true,
+        "reject": true
+      },
+      "rejectable": true,
+      "unlocks": "The launch analytics part",
+      "previous": null,
+      "kind": "proposal",
+      "ref": "proposal:01a1a60b-4980-70d5-a523-4525cd77fb38",
+      "owner": "factory",
+      "mission": {
+        "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "name": "Spring launch site",
+        "kind": "client",
+        "clientName": "Blume Studio"
+      },
+      "createdAt": "2026-11-04T10:12:00Z",
+      "asOfSeq": 3007,
+      "plain": {
+        "title": "A part stopped and needs your call: Checkout and pricing rules",
+        "why": "It failed the same check three times, the last on a second vendor. Canon proposes splitting it into two smaller parts.",
+        "ifYouApprove": "The factory carries out the option you choose.",
+        "ifYouReject": "Nothing changes, and the part stays where it is.",
+        "returned": null
+      },
+      "target": {
+        "proposalId": "01a1a60b-4980-70d5-a523-4525cd77fb38",
+        "proposalKind": "parked",
+        "subjectKey": "M4",
+        "moduleRunId": "01a1a60b-0000-7000-8000-000000000304",
+        "version": 3,
+        "choices": [
+          {
+            "choice": "replan",
+            "label": "Split it in two",
+            "consequence": "It becomes two parts, each with a fresh module cap. Launch analytics waits on both.",
+            "effect": "approve",
+            "recommended": true
+          },
+          {
+            "choice": "keep",
+            "label": "Keep it parked",
+            "consequence": "It stays parked. Launch analytics can’t start, so the deadline is at risk.",
+            "effect": "reject",
+            "recommended": false
+          }
+        ],
+        "decidable": true
+      },
+      "budget": null
+    },
+    {
+      "expiresAt": "2026-11-13T09:05:00Z",
+      "evidence": [
+        {
+          "label": "AI cost",
+          "value": "87% of its cap",
+          "detailRef": "module:spring-m3"
+        },
+        {
+          "label": "Tests",
+          "value": "14 of 15 pass",
+          "detailRef": "attempt:spring-m3-r1"
+        },
+        {
+          "label": "Without it",
+          "value": "The room parks at the cap"
+        }
+      ],
+      "reasonRequired": {
+        "approve": true,
+        "reject": true
+      },
+      "rejectable": true,
+      "unlocks": null,
+      "previous": {
+        "ref": "proposal:01a1b01a-aa5f-7000-8000-000000000031",
+        "verdict": "approved",
+        "optionLabel": "Raise the cap by 20%",
+        "boundVersion": "1",
+        "decidedAt": "2026-11-06T08:30:00Z",
+        "reason": "Worth finishing the retry.",
+        "tookEffect": false
+      },
+      "kind": "proposal",
+      "ref": "proposal:01a1b01a-aa60-77a5-a283-b024793da0db",
+      "owner": "metering",
+      "mission": {
+        "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "name": "Spring launch site",
+        "kind": "client",
+        "clientName": "Blume Studio"
+      },
+      "createdAt": "2026-11-06T09:05:00Z",
+      "asOfSeq": 3014,
+      "plain": {
+        "title": "A part needs more AI budget: Signup and spring code",
+        "why": "One test is left on its first retry, and its AI budget is nearly spent.",
+        "ifYouApprove": "The factory carries out the option you choose.",
+        "ifYouReject": "Nothing changes, and the part stays where it is.",
+        "returned": "You approved version 1. An agent changed it to version 2 before it took effect, so your decision no longer applies."
+      },
+      "target": {
+        "proposalId": "01a1b01a-aa60-77a5-a283-b024793da0db",
+        "proposalKind": "budget_increase",
+        "subjectKey": "M3",
+        "moduleRunId": "01a1b01a-0000-7000-8000-000000000303",
+        "version": 2,
+        "choices": [
+          {
+            "choice": "raise",
+            "label": "Raise the cap by 40%",
+            "consequence": "The part keeps going with a higher AI cap. The mission stays inside its AI budget.",
+            "effect": "approve",
+            "recommended": true
+          },
+          {
+            "choice": "park",
+            "label": "Keep the cap",
+            "consequence": "It parks at the cap and moves to a rethink on the next try.",
+            "effect": "reject",
+            "recommended": false
+          }
+        ],
+        "decidable": true
+      },
+      "costImpact": {
+        "micros": 6000000,
+        "estimated": true
+      },
+      "budget": {
+        "scope": "module",
+        "moduleRef": "M3",
+        "fromMicros": 15000000,
+        "toMicros": 21000000
+      }
+    },
+    {
+      "expiresAt": "2026-11-16T11:20:00Z",
+      "evidence": [
+        {
+          "label": "Package",
+          "value": "zod 3.23, MIT",
+          "detailRef": "dependency:zod"
+        },
+        {
+          "label": "Known advisories",
+          "value": "None"
+        },
+        {
+          "label": "Without it",
+          "value": "Hand-written checks in three files"
+        }
+      ],
+      "reasonRequired": {
+        "approve": true,
+        "reject": true
+      },
+      "rejectable": true,
+      "unlocks": null,
+      "previous": null,
+      "kind": "proposal",
+      "ref": "proposal:01a1c009-5700-7100-97fb-7bdb3111b999",
+      "owner": "factory",
+      "mission": {
+        "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "name": "Spring launch site",
+        "kind": "client",
+        "clientName": "Blume Studio"
+      },
+      "createdAt": "2026-11-09T11:20:00Z",
+      "asOfSeq": 3021,
+      "plain": {
+        "title": "An agent asks for a new dependency: Signup and spring code",
+        "why": "The builder wants a small, well-known library to check the signup form.",
+        "ifYouApprove": "The factory carries out the option you choose.",
+        "ifYouReject": "Nothing changes, and the part stays where it is.",
+        "returned": null
+      },
+      "target": {
+        "proposalId": "01a1c009-5700-7100-97fb-7bdb3111b999",
+        "proposalKind": "dependency",
+        "subjectKey": "M3:zod",
+        "moduleRunId": "01a1b01a-0000-7000-8000-000000000303",
+        "version": 1,
+        "choices": [
+          {
+            "choice": "allow",
+            "label": "Allow zod",
+            "consequence": "It’s added to the project and to this client’s allow-list.",
+            "effect": "approve",
+            "recommended": true
+          },
+          {
+            "choice": "refuse",
+            "label": "Not allowed",
+            "consequence": "The builder writes the checks by hand. The retry may take longer.",
+            "effect": "reject",
+            "recommended": false
+          }
+        ],
+        "decidable": true
+      },
+      "budget": null
+    },
+    {
+      "expiresAt": "2026-11-12T14:30:00Z",
+      "evidence": [
+        {
+          "label": "Result",
+          "value": "Pass: 11 of 12 acceptance examples verified",
+          "detailRef": "receipt:rc_7f3a2c"
+        },
+        {
+          "label": "Known limit",
+          "value": "The date picker is 2px off in Safari 17. You accepted it on Nov 7.",
+          "detailRef": "finding:f-6"
+        },
+        {
+          "label": "Proof",
+          "value": "The hash check passed",
+          "detailRef": "receipt:rc_7f3a2c:hash"
+        }
+      ],
+      "reasonRequired": {
+        "approve": true,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": "Release",
+      "previous": null,
+      "kind": "pass_approval",
+      "ref": "pass_approval:01a17770-2280-7db5-9be9-18411454e558",
+      "owner": "gate",
+      "mission": {
+        "id": "01a17770-2280-7db5-9be9-18411454e558",
+        "name": "Booking fix",
+        "kind": "client",
+        "clientName": "Harbor Dental"
+      },
+      "createdAt": "2026-11-05T14:30:00Z",
+      "asOfSeq": 3028,
+      "plain": {
+        "title": "Accept a passing result for Booking fix",
+        "why": "Everything passed, with 1 known limit you'd ship with.",
+        "ifYouApprove": "You can release it as passing rather than verified.",
+        "ifYouReject": "It goes back for more work.",
+        "returned": null
+      },
+      "target": {
+        "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+        "receiptId": "01a1ac1d-0000-7000-8000-00000000c7f3",
+        "receiptHash": "sha256:7f3a2c9e0000000000000000000000000000000000000000000000000000b14d",
+        "verdictCaps": [
+          "The date picker is 2px off in Safari 17"
+        ]
+      }
+    },
+    {
+      "expiresAt": "2026-11-17T07:36:00Z",
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": "0.1 What it is",
+      "previous": null,
+      "kind": "checkpoint_question",
+      "ref": "checkpoint_question:01a1c2d4-6a00-7b21-9d4e-1c6f7a8b9c01",
+      "owner": "onboarding",
+      "mission": {
+        "id": "01a1c2d4-5e80-7a11-8c3d-0b5e6f7a8b9c",
+        "name": "Field app",
+        "kind": null,
+        "clientName": null
+      },
+      "createdAt": "2026-11-10T07:36:00Z",
+      "asOfSeq": 3035,
+      "plain": {
+        "title": "Is this a client project, or an internal template?",
+        "why": "Canon needs this before the scope can be approved (0.1 What it is).",
+        "ifYouApprove": "Canon takes your answer and carries on.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "questionId": "01a1c2d4-6a00-7b21-9d4e-1c6f7a8b9c01",
+        "rowVersion": 1,
+        "code": "Q-0.1a",
+        "text": "Is this a client project, or an internal template?",
+        "subject": {
+          "checkpoint": "0.1",
+          "moduleRef": null,
+          "risk": null,
+          "label": "0.1 What it is"
+        },
+        "blocking": true,
+        "options": [
+          {
+            "id": "template",
+            "label": "Internal template",
+            "consequence": "It ships to the templates repo, and you publish it to Templates once it’s verified."
+          },
+          {
+            "id": "client",
+            "label": "Client project",
+            "consequence": "Canon asks which client it’s for next."
+          },
+          {
+            "id": "internal",
+            "label": "Internal tool",
+            "consequence": "It’s AVEL’s own software, built like a client project with you as the client."
+          }
+        ],
+        "recommended": "template",
+        "why": "You described a starter every field-service client would begin from, and no client is attached.",
+        "after": null
+      }
+    },
+    {
+      "expiresAt": "2026-11-17T07:36:00Z",
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": "0.1 What it is",
+      "previous": null,
+      "kind": "checkpoint_question",
+      "ref": "checkpoint_question:01a1c2d4-6a01-7b21-9d4e-1c6f7a8b9c02",
+      "owner": "onboarding",
+      "mission": {
+        "id": "01a1c2d4-5e80-7a11-8c3d-0b5e6f7a8b9c",
+        "name": "Field app",
+        "kind": null,
+        "clientName": null
+      },
+      "createdAt": "2026-11-10T07:36:30Z",
+      "asOfSeq": 3042,
+      "plain": {
+        "title": "Which client is it for?",
+        "why": "Canon needs this before the scope can be approved (0.1 What it is).",
+        "ifYouApprove": "Canon takes your answer and carries on.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "questionId": "01a1c2d4-6a01-7b21-9d4e-1c6f7a8b9c02",
+        "rowVersion": 1,
+        "code": "Q-0.1b",
+        "text": "Which client is it for?",
+        "subject": {
+          "checkpoint": "0.1",
+          "moduleRef": null,
+          "risk": null,
+          "label": "0.1 What it is"
+        },
+        "blocking": true,
+        "options": [
+          {
+            "id": "gts",
+            "label": "GTS Diesel",
+            "consequence": "Canon attaches the project to GTS Diesel. Their rules and knowledge apply, and it ships to their repo."
+          },
+          {
+            "id": "blume",
+            "label": "Blume Studio",
+            "consequence": "Canon attaches the project to Blume Studio. Their rules and knowledge apply, and it ships to their repo."
+          }
+        ],
+        "recommended": null,
+        "why": "Your two most recent clients. Type a name to start a new one.",
+        "after": {
+          "ref": "checkpoint_question:01a1c2d4-6a00-7b21-9d4e-1c6f7a8b9c01",
+          "choice": "client"
+        }
+      }
+    },
+    {
+      "expiresAt": "2026-11-15T16:40:00Z",
+      "evidence": [
+        {
+          "label": "Fleet sheet",
+          "value": "40 of 62 drivers use personal phones",
+          "detailRef": "upload:fleet-sheet"
+        },
+        {
+          "label": "Company SSO",
+          "value": "Adds an identity-provider part"
+        }
+      ],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": "Driver sign-in",
+      "previous": null,
+      "kind": "checkpoint_question",
+      "ref": "checkpoint_question:01a1bc07-f300-7d0e-bca5-24eacf65a194",
+      "owner": "onboarding",
+      "mission": {
+        "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "name": "Fleet portal",
+        "kind": "client",
+        "clientName": "GTS Diesel"
+      },
+      "createdAt": "2026-11-08T16:40:00Z",
+      "asOfSeq": 3049,
+      "plain": {
+        "title": "Should drivers sign in with SMS codes or with company SSO?",
+        "why": "Canon needs this before the scope can be approved (Driver sign-in).",
+        "ifYouApprove": "Canon takes your answer and carries on.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "questionId": "01a1bc07-f300-7d0e-bca5-24eacf65a194",
+        "rowVersion": 1,
+        "code": "Q-0.2",
+        "text": "Should drivers sign in with SMS codes or with company SSO?",
+        "subject": {
+          "checkpoint": "0.2",
+          "moduleRef": "M1",
+          "risk": null,
+          "label": "Driver sign-in"
+        },
+        "blocking": true,
+        "options": [
+          {
+            "id": "sms",
+            "label": "Use SMS codes",
+            "consequence": "Canon drafts the sign-in part with SMS codes and carries on with the breakdown."
+          },
+          {
+            "id": "sso",
+            "label": "Use company SSO",
+            "consequence": "Canon adds an identity-provider part and asks for its details."
+          }
+        ],
+        "recommended": "sms",
+        "why": "40 of 62 drivers use personal phones, from GTS’ fleet sheet.",
+        "after": null
+      }
+    },
+    {
+      "expiresAt": "2026-11-16T16:44:00Z",
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "checkpoint_question",
+      "ref": "checkpoint_question:01a1bc07-f301-7a10-9c11-2b9f1c0de001",
+      "owner": "onboarding",
+      "mission": {
+        "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "name": "Fleet portal",
+        "kind": "client",
+        "clientName": "GTS Diesel"
+      },
+      "createdAt": "2026-11-08T16:44:00Z",
+      "asOfSeq": 3056,
+      "plain": {
+        "title": "Old dispatch texts: run both for a week, or switch off at launch?",
+        "why": "This shapes 0.2 risks.",
+        "ifYouApprove": "Canon takes your answer and carries on.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "questionId": "01a1bc07-f301-7a10-9c11-2b9f1c0de001",
+        "rowVersion": 1,
+        "code": "Q-0.2b",
+        "text": "Old dispatch texts: run both for a week, or switch off at launch?",
+        "subject": {
+          "checkpoint": "0.2",
+          "moduleRef": null,
+          "risk": "Dispatchers keep texting jobs during the switch",
+          "label": "0.2 risks"
+        },
+        "blocking": false,
+        "options": [
+          {
+            "id": "overlap",
+            "label": "Run both for a week",
+            "consequence": "Canon adds a one-week overlap to the dispatcher board and a risk to watch."
+          },
+          {
+            "id": "switch",
+            "label": "Switch off at launch",
+            "consequence": "Canon adds a launch-day notice to the dispatcher board and drops the overlap."
+          }
+        ],
+        "recommended": "overlap",
+        "why": "Dispatchers text jobs to drivers today, so a week of overlap means no job is missed.",
+        "after": null
+      }
+    },
+    {
+      "expiresAt": "2026-11-16T16:45:00Z",
+      "evidence": [],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "checkpoint_question",
+      "ref": "checkpoint_question:01a1bc07-f302-7b20-8d22-3c0e2d1ef002",
+      "owner": "onboarding",
+      "mission": {
+        "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "name": "Fleet portal",
+        "kind": "client",
+        "clientName": "GTS Diesel"
+      },
+      "createdAt": "2026-11-08T16:45:00Z",
+      "asOfSeq": 3063,
+      "plain": {
+        "title": "Delivery photos: one at every stop, or only for damaged goods?",
+        "why": "This shapes Job detail and photos.",
+        "ifYouApprove": "Canon takes your answer and carries on.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "questionId": "01a1bc07-f302-7b20-8d22-3c0e2d1ef002",
+        "rowVersion": 1,
+        "code": "Q-0.2c",
+        "text": "Delivery photos: one at every stop, or only for damaged goods?",
+        "subject": {
+          "checkpoint": "0.2",
+          "moduleRef": "M3",
+          "risk": null,
+          "label": "Job detail and photos"
+        },
+        "blocking": false,
+        "options": [
+          {
+            "id": "damaged",
+            "label": "Only for damaged goods",
+            "consequence": "Canon keeps the job page at its current size and notes the rule."
+          },
+          {
+            "id": "every",
+            "label": "Every stop",
+            "consequence": "Canon adds an offline photo queue to the job page: 2 more scenarios, about a quarter of a module cap."
+          }
+        ],
+        "recommended": "damaged",
+        "why": "The fleet sheet doesn’t say, and GTS only asked about damage claims.",
+        "after": null
+      }
+    },
+    {
+      "expiresAt": null,
+      "evidence": [
+        {
+          "label": "Pull request",
+          "value": "#147 in avel/factory"
+        }
+      ],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "factory_change",
+      "ref": "factory_change:147",
+      "owner": "rules",
+      "mission": null,
+      "createdAt": "2026-11-12T06:10:00.000Z",
+      "asOfSeq": 3070,
+      "plain": {
+        "title": "Factory change: Commit convention v1.1 (rules version 14)",
+        "why": "A change to the factory's rule, reviewed before it's merged.",
+        "ifYouApprove": "It's merged, and new work uses it from now on.",
+        "ifYouReject": "It isn't merged. Work in progress isn't affected.",
+        "returned": null
+      },
+      "target": {
+        "changeId": "147",
+        "prNumber": 147,
+        "headSha": "9e4b7c1000000000000000000000000000000000",
+        "url": "https://github.com/avel/factory/pull/147",
+        "area": "rule",
+        "evalRun": null
+      }
+    },
+    {
+      "expiresAt": null,
+      "evidence": [
+        {
+          "label": "Pull request",
+          "value": "#142 in avel/factory"
+        }
+      ],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "factory_change",
+      "ref": "factory_change:142",
+      "owner": "roster",
+      "mission": null,
+      "createdAt": "2026-11-09T09:00:00.000Z",
+      "asOfSeq": 3077,
+      "plain": {
+        "title": "Factory change: Run the accessibility reviewer on Sonnet 5.5",
+        "why": "A change to the factory's roster, reviewed before it's merged.",
+        "ifYouApprove": "It's merged, and new work uses it from now on.",
+        "ifYouReject": "It isn't merged. Work in progress isn't affected.",
+        "returned": null
+      },
+      "target": {
+        "changeId": "142",
+        "prNumber": 142,
+        "headSha": "51ac0d2000000000000000000000000000000000",
+        "url": "https://github.com/avel/factory/pull/142",
+        "area": "roster",
+        "evalRun": null
+      }
+    },
+    {
+      "expiresAt": null,
+      "evidence": [
+        {
+          "label": "Files",
+          "value": "31 files under docs/agent-dispatch/spring-launch"
+        },
+        {
+          "label": "Repo",
+          "value": "blume-studio/spring-launch, branch mission/spring-launch"
+        }
+      ],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "dispatch_package_commit",
+      "ref": "dispatch_package_commit:01a1912f-ee80-709f-891e-7d29547e91a0",
+      "owner": "integrator",
+      "mission": {
+        "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "name": "Spring launch site",
+        "kind": "client",
+        "clientName": "Blume Studio"
+      },
+      "createdAt": "2026-11-09T15:00:00Z",
+      "asOfSeq": 3084,
+      "plain": {
+        "title": "Add the Spring launch site work instructions to the Blume Studio repo",
+        "why": "The instructions the agents work from are ready to keep with the client's code.",
+        "ifYouApprove": "They're added to the project's branch in one commit.",
+        "ifYouReject": null,
+        "returned": null
+      },
+      "target": {
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "packageHash": "sha256:d4e1a9c0d4e1a9c0d4e1a9c0d4e1a9c0d4e1a9c0d4e1a9c0d4e1a9c0d4e1a9c0"
+      }
+    },
+    {
+      "expiresAt": null,
+      "evidence": [
+        {
+          "label": "Pull request",
+          "value": "#149 in avel/factory"
+        },
+        {
+          "label": "Tried on",
+          "value": "24 past tasks, 3 runs each"
+        }
+      ],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": false,
+      "unlocks": null,
+      "previous": null,
+      "kind": "factory_change",
+      "ref": "factory_change:149",
+      "owner": "knowledge",
+      "mission": null,
+      "createdAt": "2026-11-12T08:30:00.000Z",
+      "asOfSeq": 3091,
+      "plain": {
+        "title": "Factory change: tdd-writer 3.3, property-based test prompts",
+        "why": "A change to the factory's skill, reviewed before it's merged.",
+        "ifYouApprove": "It's merged, and new work uses it from now on.",
+        "ifYouReject": "It isn't merged. Work in progress isn't affected.",
+        "returned": null
+      },
+      "target": {
+        "changeId": "149",
+        "prNumber": 149,
+        "headSha": "c3f0a7e000000000000000000000000000000000",
+        "url": "https://github.com/avel/factory/pull/149",
+        "area": "skill",
+        "evalRun": {
+          "id": "01a1d600-0000-7000-8000-000000000001",
+          "stage": "targeted",
+          "set": "role",
+          "aim": "improve",
+          "state": "done",
+          "headSha": "c3f0a7e000000000000000000000000000000000",
+          "tasks": 24,
+          "repeats": 3,
+          "primary": {
+            "metric": "first_attempt_pass",
+            "baseline": 0.77,
+            "candidate": 0.83,
+            "interval": {
+              "low": 0.01,
+              "high": 0.11
+            }
+          },
+          "verdict": "improved",
+          "plain": "Passed first try more often on 24 past tasks: 83% against 77%."
+        }
+      }
+    },
+    {
+      "expiresAt": null,
+      "evidence": [
+        {
+          "label": "Lead",
+          "value": "Referred by Blume Studio on Nov 8"
+        },
+        {
+          "label": "Asked about",
+          "value": "Online booking for 3 therapists"
+        }
+      ],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": true,
+      "unlocks": null,
+      "previous": null,
+      "kind": "followup_send",
+      "ref": "followup_send:01a1d300-0000-7000-8000-000000000801",
+      "owner": "pipeline",
+      "mission": null,
+      "createdAt": "2026-11-10T07:00:00Z",
+      "asOfSeq": 3098,
+      "plain": {
+        "title": "Send a follow-up to Northside Physio",
+        "why": "You send this yourself: copy it, send it, then mark it as sent.",
+        "ifYouApprove": "It's recorded as sent by you.",
+        "ifYouReject": "It isn't sent, and no reminder follows.",
+        "returned": null
+      },
+      "target": {
+        "followupId": "01a1d300-0000-7000-8000-000000000801",
+        "draftHash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "channel": "copy",
+        "draft": "Hi Ana, thanks for the chat on Friday. The booking template we talked about fits three therapists well. Want to pick a time this week to go through it?"
+      }
+    },
+    {
+      "expiresAt": null,
+      "evidence": [
+        {
+          "label": "Last delivery",
+          "value": "Price sheet audit, closed Oct 7"
+        },
+        {
+          "label": "Waiting",
+          "value": "Two dependency updates"
+        }
+      ],
+      "reasonRequired": {
+        "approve": false,
+        "reject": false
+      },
+      "rejectable": true,
+      "unlocks": null,
+      "previous": null,
+      "kind": "upkeep_offer",
+      "ref": "upkeep_offer:01a1d300-0000-7000-8000-000000000802",
+      "owner": "pipeline",
+      "mission": null,
+      "createdAt": "2026-11-11T07:00:00Z",
+      "asOfSeq": 3105,
+      "plain": {
+        "title": "Send an upkeep offer to Blume Studio",
+        "why": "You send this yourself: copy it, send it, then mark it as sent.",
+        "ifYouApprove": "It's recorded as sent by you.",
+        "ifYouReject": "It isn't sent, and no reminder follows.",
+        "returned": null
+      },
+      "target": {
+        "followupId": "01a1d300-0000-7000-8000-000000000802",
+        "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+        "signals": [
+          "Price sheet audit closed 5 weeks ago",
+          "Two dependency updates waiting"
+        ],
+        "draftHash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "channel": "copy",
+        "draft": "Hi Mara, want us to keep the price sheet and the site up to date each month? We'd check them every few weeks and send you what changed."
+      }
+    }
+  ],
+  "nextCursor": null
+}

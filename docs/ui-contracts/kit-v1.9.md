@@ -1,3 +1,5 @@
+> **Superseded by CR-W29** (Nov 17, 2026): the control room now comes from the design export; see `docs/design/CR-W29 The control room from the design export.md`.
+
 # UI contract: v1.9 on the kit, the approval page and the styles (frontend sprint-02)
 
 Zero, 2026-11-08. Status: **revision 1, for Brennan's one review, with `shell-layout.md`.**

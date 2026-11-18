@@ -1,0 +1,125 @@
+/* Sheets, drawers and side panels: one motion and one anatomy (better-ui).
+   Enter 300ms, exit 150ms, both ease-out, as transitions on [data-open] so a reversal mid-way retargets.
+   A drawer slides fully out because where it goes means something. Under reduced motion: opacity only.
+   Scroll stays inside the sheet. A grab handle marks the drag area. */
+
+/* ---------------------------------------------------------------- the shared bottom sheet */
+.sh {
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 100%;
+  transition-property: translate, opacity, visibility;
+  transition-duration: 150ms, 150ms, 0s;
+  transition-delay: 0s, 0s, 150ms;
+  transition-timing-function: ease-out;
+  overscroll-behavior: contain;
+}
+.sh[data-open] {
+  visibility: visible;
+  opacity: 1;
+  translate: 0 0;
+  transition-duration: 300ms, 200ms, 0s;
+  transition-delay: 0s;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1), ease-out, linear;
+}
+.sh[data-dragging], .lib-sheet[data-dragging] { transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .sh, .sh[data-open] { translate: 0 0; }
+}
+.sh-handle {
+  flex: none;
+  position: relative;
+  height: 20px;
+  cursor: grab;
+  touch-action: none;
+}
+.sh-handle::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 36px;
+  height: 4px;
+  margin-left: -18px;
+  border-radius: 2px;
+  background: var(--av-hairline-strong);
+}
+[data-sheet-drag] { touch-action: none; }
+.sh [data-sheet-drag]:not(.sh-handle) { cursor: grab; }
+
+/* scrims fade with the sheet and never catch taps while closed */
+.fb-scrim, .kbd-scrim {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease-out;
+}
+.fb-scrim[data-open], .kbd-scrim[data-open] { opacity: 1; pointer-events: auto; transition-duration: 300ms; }
+
+/* ---------------------------------------------------------------- filters sheet */
+.fb-sheet.sh { animation: none; }
+.fb-sheet .fb-sheet-head { padding-top: 4px; }
+.fb-sheet-body { overscroll-behavior: contain; }
+
+/* ---------------------------------------------------------------- navigation drawer (phone and narrow) */
+.lib-sheet {
+  transition-property: transform, visibility;
+  transition-duration: 150ms, 0s;
+  transition-delay: 0s, 150ms;
+  transition-timing-function: ease-out;
+  overscroll-behavior: contain;
+  overflow-y: auto;
+}
+.lib-sheet[data-open] {
+  transition-duration: 300ms, 0s;
+  transition-delay: 0s;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1), linear;
+}
+.lib-sheet-scrim { transition-duration: 150ms; }
+.lib-sheet-scrim[data-open] { transition-duration: 300ms; }
+@media (prefers-reduced-motion: reduce) {
+  .lib-sheet { transform: none; opacity: 0; transition-property: opacity, visibility; }
+  .lib-sheet[data-open] { opacity: 1; }
+}
+.lib-sheet .lib-rail-head { cursor: grab; }
+
+/* ---------------------------------------------------------------- the palette and keys */
+.cmdk-list, .keys { overscroll-behavior: contain; }
+.cmdk-cancel { display: none; }
+@media (pointer: coarse), (max-width: 719px) {
+  .cmdk-esc { display: none; }
+  .cmdk-cancel { display: inline-flex; align-items: center; height: 44px; padding: 0 4px 0 8px; margin-right: -8px; border: none; background: none; font: inherit; font-size: 16px; color: var(--av-accent-text, var(--av-accent)); cursor: pointer; }
+}
+
+/* ---------------------------------------------------------------- Library browse sheet */
+.kbd-side[data-open] .kbd-side-body { display: none !important; }
+.kbd-browse[aria-expanded="true"] > .lucide:last-child { transform: none !important; }
+.kbd-scrim { position: fixed; inset: 0; z-index: calc(var(--z-modal, 400) - 1); background: var(--av-scrim, rgb(0 0 0 / 0.32)); }
+.kbd-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-modal, 400); display: flex; flex-direction: column; max-height: 86dvh; border-radius: 16px 16px 0 0; background: var(--color-app-float, var(--av-faceplate)); box-shadow: var(--av-shadow-overlay, var(--av-shadow-popover)); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.kbd-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 12px 8px 20px; }
+.kbd-sheet-head h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--av-ink); }
+.kbd-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 12px; padding: 0 12px 16px; }
+.kbd-sheet-body > * { flex-shrink: 0; }
+@media (min-width: 720px) { .kbd-sheet { left: 50%; right: auto; width: 560px; margin-left: -280px; } }
+
+/* ---------------------------------------------------------------- pinned decision bar (phone) */
+@media (max-width: 760px) {
+  .cr-pin { padding-top: 0; transition-property: translate, padding; transition-duration: 200ms; transition-timing-function: ease-out; }
+  .cr-pin-grip { display: grid; gap: 0; margin: 0 -16px; padding: 0 8px 0 16px; touch-action: none; cursor: grab; }
+  .cr-pin-handle { justify-self: center; width: 36px; height: 4px; margin: 6px 0 2px; border-radius: 2px; background: var(--av-hairline-strong); }
+  .cr-pin-grip .cr-pin-text { align-items: center; min-height: 32px; }
+  .cr-pin-tuck { flex: none; margin-left: auto; display: inline-grid; place-items: center; width: 44px; height: 44px; margin-top: -6px; margin-bottom: -6px; border: none; border-radius: 12px; background: none; color: var(--av-muted); cursor: pointer; }
+  .cr-pin-tuck:focus-visible { outline: 2px solid var(--av-focus-ring); outline-offset: -4px; }
+  .cr-pin[data-tucked] { gap: 0; padding-bottom: 8px; }
+  .cr-pin[data-tucked] .cr-pin-title { font-weight: 500; }
+  .cr-pin [hidden] { display: none !important; }
+}
+
+/* ---------------------------------------------------------------- prototype controls: enters with a transition-like rise, exits at once */
+.cr-dock-panel { animation: none; }
+@media (prefers-reduced-motion: no-preference) {
+  @starting-style { .cr-dock-panel { opacity: 0; translate: 0 12px; } }
+  .cr-dock-panel { transition-property: opacity, translate; transition-duration: 300ms; transition-timing-function: ease-out; }
+}
+@media (pointer: coarse), (max-width: 719px) {
+  .cmdk .cmdk-esc, .cmdk .cmdk-kbd { display: none; }
+}
