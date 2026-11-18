@@ -71,7 +71,7 @@ The design is frozen. Implement it as written. If code shows a doc is wrong or m
 
 - Follow the 14-step build order, one step at a time. A step is done only when its "done when" tests pass against real Postgres.
 - **Start every step by stating which docs and tables it touches and the test plan,** then build.
-- **Step 1 runs in this order:** spike 1 (Effect at the edge) → the server shell, middleware, database errors, idempotency and the `Db` service (items 1 to 4) → tests 10 and 11 against a small `Jobs` interface → spike 2 (DBOS) → the jobs engine that won → the rest of Step 1 (auth, step-up, CLI login, activity log, events, the factory repo loader, CI). No sample route and no approval page (CR-31); spans aren't part of Step 1.
+- **Step 1 runs in this order** (Javaris's build order, Nov 17): spike 1 (Effect at the edge) → the server shell, middleware, database errors, idempotency and the `Db` service (items 1 to 4) → auth, step-up and CLI login, with the activity log on their writes (items 5 to 8) → tests 10 and 11 against a small `Jobs` interface → spike 2 (DBOS) → the jobs engine that won → the rest of Step 1 (event consumers, the factory repo loader, CI). No sample route and no approval page (CR-31); spans aren't part of Step 1.
 - Port from avel-server only what `Port inventory.md` says, in its stated form (CR-30 moves the clock, ids and logger to "with changes").
 - Keep generated artifacts in sync: `pnpm --filter @avel/docs generate` rewrites `docs/generated/erd.md` and `openapi.json`, and `pnpm --filter @avel/docs drift` checks `DATABASE.md` against the schema. CI fails on either.
 - **Don't commit or push unless the operator asks.**
