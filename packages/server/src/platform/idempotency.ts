@@ -34,7 +34,8 @@ export class Idempotency extends Context.Service<
     ) => Effect.Effect<Begun, IdempotencyKeyReused | IdempotencyInProgress | TokenReplayed>;
     /**
      * Stores the request's answer. A sensitive one (it carries a secret or token) stores no
-     * response, so its replay is refused rather than answered.
+     * response, so its replay is refused rather than answered. A row that is no longer in
+     * progress is left as it is.
      */
     readonly complete: (
       principal: string,
@@ -82,8 +83,19 @@ export const IdempotencyLive = Layer.effect(
                   .returning({ key: idempotencyKeys.key }),
               );
               if (claimed.length > 0) return undefined;
+              // node-postgres reads jsonb 'null' and SQL NULL alike, so SQL tells them apart.
               const [live] = yield* Effect.promise(() =>
-                tx.select().from(idempotencyKeys).where(thisKey(principal, key)),
+                tx
+                  .select({
+                    route: idempotencyKeys.route,
+                    bodySha256: idempotencyKeys.bodySha256,
+                    status: idempotencyKeys.status,
+                    httpStatus: idempotencyKeys.httpStatus,
+                    response: idempotencyKeys.response,
+                    sensitive: sql<boolean>`${idempotencyKeys.response} is null`,
+                  })
+                  .from(idempotencyKeys)
+                  .where(thisKey(principal, key)),
               );
               return live;
             }),
@@ -100,7 +112,7 @@ export const IdempotencyLive = Layer.effect(
             message: errorMap.IDEMPOTENCY_IN_PROGRESS.message,
           });
         }
-        if (row.response === null) {
+        if (row.sensitive) {
           return yield* new TokenReplayed({ message: errorMap.TOKEN_REPLAYED.message });
         }
         return { _tag: "Replay", status: row.httpStatus, response: row.response } as const;
@@ -129,7 +141,8 @@ export const IdempotencyLive = Layer.effect(
                     ? null
                     : sql`${JSON.stringify(response ?? null)}::jsonb`,
                 })
-                .where(thisKey(principal, key)),
+                // Only the request still running sets the answer: never a completed row.
+                .where(and(thisKey(principal, key), eq(idempotencyKeys.status, "in_progress"))),
             );
           }),
         )
