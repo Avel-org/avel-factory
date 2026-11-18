@@ -1,0 +1,24 @@
+{
+  "files": {
+    "DISPATCH-PROMPTS.md": "11e1c36011245c601acf6da56e07eb48e0eeb25e7e21ba6d51c619afc6f4ff56",
+    "DISPATCH.md": "bca4464ba778e1b5e35ad63a5e471217c6c42b650f9a6fdb8afd967f50176580",
+    "agent-rigg-t-b10-review.md": "f73eaf61c96fd1f011a8828922faa7339388c9e3e9fd79da95260e5128384819",
+    "agent-rigg-t-b10-test-unit.md": "763722d66e98d8436af1cd8b1293a9eb61ef39b892e406531c029cfcf0016c7f",
+    "agent-rigg-t-b11-review.md": "ca78765dd37de3982d827fbc78ac3ddd1e248d0a6169d388e21834eb8f860f60",
+    "agent-rigg-t-b11-test-unit.md": "4cc7dbe43826df112a218a9971146e79274fbdfd737e73161deed382e61778d1",
+    "agent-rigg-t-b8-review.md": "edf665727e08e276fcee6dcf217f591c16781ba7bcd5c8db6534f19ab031cb1b",
+    "agent-rigg-t-b8-test-unit.md": "160a6f4a6c845a5fa47a21ceb563a028842c1f4a0c043a6848e82f35b2c3cd4e",
+    "agent-rigg-t-b9-review.md": "ff745d3a45f6851420b3a54dd6e4b60f4b6eb5c8d71779181f61e8b4d39aaf21",
+    "agent-rigg-t-b9-test-unit.md": "f259ade039875391dde473ba217f9046cf19696def6387062aae5ebc6f5c0870",
+    "agent-soap-t-b10-build.md": "4db21167cd7ee972de5db28c032c91c7313ea559fb8b14a532cd3a8a27843864",
+    "agent-soap-t-b11-build.md": "44c24542f6921fb9b6ce56fb755f9e7414f663ed83393db9e8bec6e4cb7bdec6",
+    "agent-soap-t-b8-build.md": "04714321d67a319c20f5e4a1e191565605175a1f0037f98f2dd1f068be46d41f",
+    "agent-soap-t-b9-build.md": "6cad9d5d322fbf94be5d58deba7656bac500a4eedc040df5023f25ba184b2690",
+    "codebase-analysis.md": "524fe3c3063fbdff9a46307c6de9e1db3b97a81455e9e32079ab60c019af4999"
+  },
+  "lane": "backend",
+  "packageSha256": "e096f32ab84229e7eaf8d664ab6f0700e98ba7ca24ab6a08605a7500d31dbe5c",
+  "plan_sha256": "1f8f19394922060cc6283f6f4557a6d02a83a15429b9f0eda1ee7429c56bc396",
+  "renderer": "avel-render 2",
+  "sprint": "sprint-03"
+}

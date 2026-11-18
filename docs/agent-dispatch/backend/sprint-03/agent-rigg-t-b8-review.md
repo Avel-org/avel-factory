@@ -1,0 +1,196 @@
+---
+doc: agent-rigg-t-b8-review
+ticket: T-B8
+lane: backend
+sprint: sprint-03
+agent: rigg
+seat: checker
+kind: review
+role: review
+rigor: full
+model: opus
+branch: t/B8-platform-hardening
+checkout: detached
+after: [agent-soap-t-b8-build]
+depends_on: []
+report: docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review-completion.md
+---
+
+
+# T-B8 · review · Rigg: Platform hardening and the middleware services: safe defect logs, pool timeouts, an idempotency store and rate limits
+
+<!-- Rendered by scripts/render.py from plan.toml. Never edit this file: change the plan, re-render, commit, and start a new attempt. -->
+
+| | |
+| --- | --- |
+| Lane | backend · lead Axis |
+| Sprint | sprint-03 · Step 1 |
+| Ticket | T-B8 · rigor full |
+| Dispatch | review · Rigg (checker) · model opus |
+| Works on | a detached checkout of `t/B8-platform-hardening`'s head |
+| Done when | CI is green and the acceptance tests pass. Nothing else (C1, C3). |
+
+## 1. Identity
+
+You are **Rigg** (`.claude/agents/rigg.md`). Lead: Axis. Builder: Soap. Checker: Rigg.
+
+You review the builder's work on this ticket, from the diff and this document only (G1). You change no code.
+
+## 2. Context: read these first, in order
+
+1. `.claude/agents/rigg.md`: who you are, and your always and never
+2. `AGENTS.md`: the rules for the code itself
+3. `docs/design/Build rules.md`: how work moves from a ticket to main; cite rules by ID
+4. `docs/agent-dispatch/backend/sprint-03/codebase-analysis.md`: the codebase in short
+5. `docs/design/Step 0 and Step 1 plan.md`: Step 1 items 2 (middleware order), 4 (idempotency), 5 (Better Auth), 6 (step-up), 7 (CLI login), 8 (activity log); the rate limits; tests 2, 4, 5, 7, 8, 9, 13
+6. `docs/design/CR-31 Step 1 without the sample route and approval page.md`: how tests 2, 4 and 5 are proved on the CLI login routes
+7. `docs/design/Backend modules and build plan.md`: section 8: auth decisions, the order inside Step 1, Breach's attacks; module table: platform owns Better Auth's tables, cli_sessions, step_up_grants, idempotency_keys; audit owns activity_log
+8. `docs/design/API routes.md`: routes 1 to 5 and the rules on every write
+9. `docs/design/Build rules.md`: C4 (full rigor), E5 (dependencies), E6 (no secrets), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6
+10. `docs/agent-dispatch/backend/sprint-02/findings/t-b3-rigg-01.md`: why the defect log carries Drizzle's params (a DrizzleQueryError's message is the query and its params)
+11. `packages/server/src/platform/db/db.ts`: T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping
+12. `packages/server/src/platform/effect-handler.ts`: line 76 logs Cause.pretty for a defect; read only
+13. `packages/server/src/platform/logger.ts`: the JSON logger that writes the cause; read only
+14. `packages/server/src/platform/db/errors.ts`: the FK split reads Postgres's English message (t-b3-rigg-02); read only
+15. `packages/db/src/schema/platform.ts`: idempotency_keys: (principal, key), route, body_sha256, status in_progress or completed, http_status, response, expires_at
+16. `packages/contract/src/errors.ts`: IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS, TOKEN_REPLAYED, TOO_MANY_REQUESTS
+17. `docs/design/DATABASE.md`: idempotency_keys and its purge (after expires_at); a response carrying a secret or token is never stored
+18. `packages/server/test/platform-hardening/**`: the locked acceptance tests: they define done
+19. `docs/agent-dispatch/backend/sprint-03/agent-soap-t-b8-build-completion.md`: the builder's completion report
+20. `docs/review/security-checklist.md`: full rigor: work through it item by item
+21. `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review.md`: this document: follow it exactly
+
+## 3. Domain
+
+**Goal:** A database outage or a bad query can't hang a request, crash the server or put a query's values in the log, and the idempotency store and rate limiter the next routes need exist.
+
+**Refs:**
+- Axis's T-B4 second review: P2s (a) Drizzle params in the defect log, (d) pool timeouts ((e), the pool's error handler, is fixed in T-B4 a3 after t-b4-rigg-01)
+- t-b3-rigg-02 (lc_messages) and t-b3-rigg-03 (body.message)
+- Step 0 and Step 1 plan, Step 1 items 2.4 and 4, and the rate limits section
+- AGENTS.md, Writing Effect rules 4, 5 and 6
+
+**Notes from the lead:**
+- Defect log, fixed at the source in db.ts: no DrizzleQueryError leaves the Db service. An unmapped one is re-raised as a defect carrying only the pg error's code and message (or the query text without params), so effectHandler's log of the cause never holds a bound value. effect-handler.ts and logger.ts don't change
+- Pool: connect timeout and statement timeout come from Config (DATABASE_CONNECT_TIMEOUT_MS, DATABASE_STATEMENT_TIMEOUT_MS) with defaults of 5 s and 30 s. A connect that times out reaches the caller as a defect (500), not a hang, and the request's interruption still ends it. (The pool's error listener is already in from T-B4)
+- lc_messages: the Db layer checks `show lc_messages` once when it's built and fails to build (a defect at boot) unless it is C, POSIX or starts with en, because the FK split reads English text
+- Idempotency store (Step 1 item 4) as an Effect service over idempotency_keys, through Db, with time from Clock. begin(principal, key, route, bodySha256) gives one of: new (row inserted in_progress, expires in 24 hours), replay (completed with the same route and body: the stored status and response), reused (another body or route: IdempotencyKeyReused, 409), in progress (IdempotencyInProgress, 409). complete(principal, key, status, response, { sensitive }) stores the response, or for a sensitive response stores no response and marks it so a replay fails with TokenReplayed (409). An expired row counts as absent. It is wired into routes in T-B10 and T-B11, not here
+- Rate limiter (item 2.4): an in-memory Effect service, a fixed window per (name, key), limits from Config with the plan's defaults (sign-in 5 a minute per email and per IP; device-login starts 5 a minute; webhook 60 a minute), time from Clock. Over the limit is TooManyRequests (429). It is applied in T-B9 and T-B10, not here
+- New tagged errors get their rows in platform/errors.ts: IdempotencyKeyReused, IdempotencyInProgress, TokenReplayed, TooManyRequests
+- No new dependency. No route changes, no app.ts change
+
+## 4. Tasks
+
+### T-B8-01: check: a defect thrown by a Drizzle query is logged with the request ID and the pg error's code, and the log line contains no bound value ('params:' and the inserted value are absent); the response is a 500 whose body has the contract's message (body.message equals errorMap's text) and no database text
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B8-02: check: with Postgres unreachable (a closed port), withTransaction fails as a defect within the configured connect timeout instead of hanging, and the request's interruption ends it
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B8-03: check: a statement longer than the configured statement timeout ends as a defect, and the pool client is released
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B8-04: check: building the Db layer against a server whose lc_messages isn't English fails with a message naming lc_messages (set it per database for the test)
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B8-05: check: idempotency: a first begin is new; after complete, the same key, route and body replays the stored status and response; another body is 409 IDEMPOTENCY_KEY_REUSED; a second begin before complete is 409 IDEMPOTENCY_IN_PROGRESS; one principal's key never answers another's
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B8-06: check: idempotency: a sensitive response is never stored (the row has no response) and its replay is 409 TOKEN_REPLAYED; a key older than 24 hours (TestClock) is treated as new
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B8-07: check: rate limit: the 6th call in a minute for one key is 429 TOO_MANY_REQUESTS; another key isn't affected; after the window (TestClock) it passes again
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B8-R: the rules
+
+- The diff stays inside the build's territory (Part 5) and touches no locked test (A3, H6).
+- `AGENTS.md` and the build rules hold (E1 to E18): cite the section a finding breaks.
+- No secret anywhere in the diff, tests, logs or report (E6).
+- Full rigor: every item of `docs/review/security-checklist.md`, marked checked, failed or not reached.
+
+## 5. Territory
+
+**You change no file** except your report and findings, both left uncommitted:
+- `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review-completion.md`
+- `docs/agent-dispatch/backend/sprint-03/findings/t-b8-rigg-NN.md`, one per finding
+
+**The build's territory**, for checking the diff:
+- `packages/server/src/platform/db/db.ts`
+- `packages/server/src/platform/errors.ts`
+- `packages/server/src/platform/idempotency.ts`
+- `packages/server/src/platform/rate-limit.ts`
+
+**Never change, whatever the task says:**
+- `packages/server/src/platform/db/errors.ts`
+- `packages/server/src/platform/app.ts`
+- `packages/server/src/platform/effect-handler.ts`
+- `packages/server/src/platform/logger.ts`
+- `packages/server/package.json`
+- `packages/db/**`
+- `packages/contract/**`
+- `apps/web/*/**`
+- `apps/web/.*`
+- `apps/web/*.{ts,tsx,js,mjs,cjs,css,html,md,yaml,yml,toml}`
+- `apps/web/{tsconfig,components,biome}.json`
+- `.claude/**`, `.agents/**`, `docs/agent-dispatch/**` (except your report), `scripts/agents/**`, the kit scripts, `.env*`
+
+**Owned by other tickets in this sprint** (stay out; the other lane never shares a file with yours):
+
+| Ticket | Kind | Paths |
+| --- | --- | --- |
+| T-B10 | builds | `packages/server/src/platform/step-up/**`, `packages/server/src/platform/cli/**`, `packages/server/src/audit/**`, `packages/server/src/platform/router.ts`, `packages/server/src/main.ts` |
+| T-B10 | tests | `packages/server/test/cli-login/**` |
+| T-B11 | builds | `packages/contract-mock/src/**`, `packages/contract/src/minified.ts`, `packages/contract/src/index.ts`, `packages/contract/scripts/**` |
+| T-B11 | tests | `packages/contract-mock/test/auth.test.ts`, `packages/contract/test/minified-router.test.ts` |
+| T-B9 | builds | `packages/server/src/platform/auth/**`, `packages/server/src/platform/app.ts`, `packages/server/src/platform/effect-handler.ts`, `packages/server/src/seed.ts`, `packages/server/package.json`, `pnpm-lock.yaml` |
+| T-B9 | tests | `packages/server/test/auth/**` |
+
+## 6. Execution protocol: review
+
+1. You're on a detached checkout of the builder's result. Get the diff: `git diff $(git merge-base main HEAD)...HEAD`.
+2. Read the builder's report, then the diff, then the locked tests. You don't see the builder's session (G1).
+3. Run Part 7's commands yourself. A red command is a finding.
+4. Write each finding to its own file under `findings/`: severity (P0 to P3, G3), evidence (a file and line, a failing command, or a rule ID), what you expected, and the check that would catch it.
+5. List what you checked and what you couldn't reach. Leave everything uncommitted.
+
+## 7. Completion
+
+**Verification** (run every one, in order, and paste the results into your report):
+
+```sh
+pnpm build
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm --filter @avel/server test
+pnpm --filter @avel/server typecheck
+pnpm --filter @avel/server check:effect
+pnpm build && pnpm typecheck && pnpm lint && pnpm test
+```
+
+**Your report:** `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review-completion.md`. Its first lines are:
+
+```
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+verdict: pass | changes | block
+ticket: T-B8
+```
+
+Then these sections:
+- Pre-flight: each verification command and its result
+- Findings: one line each, with its severity and its file under findings/
+- Checked: what you checked, and against which rule
+- Not reached: what you couldn't check, and why
+- Messages received: every instruction OSA relayed, who it came from, and what you did with it (followed, or refused and why); "None" if there were none (CR-37)
+
+## Activation prompt
+
+> You are Rigg, the backend checker on the AVEL build team (`.claude/agents/rigg.md`). Your lead is Axis. Your task is ticket T-B8, "Platform hardening and the middleware services: safe defect logs, pool timeouts, an idempotency store and rate limits": the review dispatch. Your whole briefing is `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review.md`. Read it in full, then its Context in order, before you change anything. You're on a detached checkout of the builder's result. Review the diff against the ticket, the locked tests and the rules. Every finding cites evidence and a severity. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review-completion.md`, left uncommitted. Don't push.
