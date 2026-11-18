@@ -65,12 +65,13 @@ These stay as they are: `foundation.test.ts`, `gitignore.test.ts`, `hygiene.test
 
 ## The plan
 
-`docs/agent-dispatch/frontend/sprint-07` to `sprint-10`, one ticket each, because each ticket changes files the next one changes (B7), as T-F5 and T-F6 did. They run in order:
+`docs/agent-dispatch/frontend/sprint-07` to `sprint-11`, one ticket each, because each ticket changes files the next one changes (B7), as T-F5 and T-F6 did. They run in order:
 
 1. **T-F7:** the control room runs at `/`, and the old shell is gone.
 2. **T-F8:** `/` loads each page's code when it opens, and is held to 220 KB of JavaScript (decision 6, as amended).
 3. **T-F9:** every screen shows and passes WCAG 2.2 AA.
-4. **T-F10:** the rules hold.
+4. **T-F11** (sprint-10, added Nov 17, Javaris: "Approve T-F11"): the web's end-to-end tests run in CI. No Playwright test ran in CI before it, although H4 and F6 require them.
+5. **T-F10** (sprint-11, moved from sprint-10 so that the sprints follow the run order): the rules hold.
 
 The wiring sprint follows, in the handoff's port order, starting with sign-in.
 
