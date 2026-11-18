@@ -6,7 +6,7 @@ Nov 17, 2026 · drafted by Zero for @javaris · frontend lane · touches Build r
 
 ## What
 
-`apps/web` stops building the control room screen by screen. Instead, it carries the design export (`avel-control-room`, Javaris's Claude Design project: React JSX, its 29 stylesheets and its sample world) unchanged, and shows every screen from it at `/`. The shell `apps/web` built so far (T-F2's frame, rail, header and tab bar) is removed.
+`apps/web` stops building the control room screen by screen. Instead, it carries the design export (`avel-control-room`, Javaris's Claude Design project: React JSX, its 28 stylesheets and its sample world) unchanged, and shows every screen from it at `/`. The shell `apps/web` built so far (T-F2's frame, rail, header and tab bar) is removed.
 
 - **The source:** `C:\Users\javar\Desktop\avel-control-room` (in WSL, `/mnt/c/Users/javar/Desktop/avel-control-room`): 221 files, about 35,600 lines. Its `handoff/` folder is already in the repo, byte for byte, as `docs/ui-reference/control-room-handoff/`.
 - **Where it lands:** `apps/web/control-room/`, holding the export's `src/`, `contract/` and `tools/check-contract.mjs` at their own relative paths. It leaves out `node_modules/`, `dist/`, `scratch/`, `index.html` and the npm and prettier files. Its `tests/e2e/` scripts aren't copied: the checker ports them as Playwright tests in `apps/web/e2e/`.
@@ -34,7 +34,7 @@ Javaris, Nov 17: "remove the app shell; we're going to use the design UI from th
 - **E14 (shell and sign-in before any page):** the export comes with every page at once, so sign-in follows the port. Sign-in (`docs/ui-contracts/login.md`, full rigor, C4) is the first ticket of the wiring sprint, before any screen talks to the API.
 - **E16:** see decision 6. The budget test measures everything `/` loads before Decisions is interactive, not only what the server's HTML preloads. A client-only page would otherwise pass while loading far more.
 - **Server rendering:** `/` renders on the client only (`ssr: false`), because the export reads `window` and `location.hash` from its first line. T-F1 and T-F2's "the server's HTML carries the shell" retires with the shell. A skeleton paints until the app boots.
-- **Styles:** at `/`, the export's 29 stylesheets, in `src/main.jsx`'s order, are the only global styles. T-F1's `tokens.css` and `app.css` stay in the repo, and their tests stay, but `/` doesn't load them: Tailwind's preflight would change the export's look.
+- **Styles:** at `/`, the export's 28 stylesheets (every CSS file `src/main.jsx` imports), in its order, are the only global styles. T-F1's `tokens.css` and `app.css` stay in the repo, and their tests stay, but `/` doesn't load them: Tailwind's preflight would change the export's look.
 - **`docs/ui-contracts/shell-layout.md` and `kit-v1.9.md`** are superseded by the export itself and by `docs/ui-reference/control-room-design-fidelity.md` (once that lands on main). Each gets a line at the top saying so, in T-F7's PR (E7).
 
 ## The locked tests that retire
@@ -45,7 +45,9 @@ The checker deletes these in T-F7's tests dispatch, in its own commit, under thi
 - **T-F1:** `apps/web/test/home-loader.test.ts`, `home-loader-states.test.ts`, `home-view.test.ts`, and `apps/web/e2e/home.spec.ts`, `states.spec.ts`. These cover the old home over route 52, which the export's Decisions replaces.
 - **`apps/web/e2e/budget.spec.ts`** changes rather than retires: it measures what decision 6 and E16 above say.
 
-These stay as they are: `foundation.test.ts`, `gitignore.test.ts`, `hygiene.test.ts` (no `innerHTML` and no classic zod, which now covers the export too), and `e2e/support/*`. `apps/web/src/data/client.ts` stays for the wiring sprint.
+These stay as they are: `foundation.test.ts`, `gitignore.test.ts`, `hygiene.test.ts` (no `innerHTML` and no classic zod, which now covers the export too), and `e2e/support/*`.
+
+**Amendment (Nov 17), accepted by Javaris** (to OSA: "approve the amendment, run it"): `hygiene.test.ts` stays, except that its first test, "apps/web/src exists and has the files this ticket adds", drops its two `src/home` lines. Its `data/client.ts`, `lib/utils.ts` and `routes/__root` checks, and every other test in the file, stay. The checker's edit is in T-F7's commit a04d7a9, together with the retired tests' deletion. `apps/web/src/data/client.ts` stays for the wiring sprint.
 
 ## What doesn't bend
 
@@ -66,6 +68,8 @@ These stay as they are: `foundation.test.ts`, `gitignore.test.ts`, `hygiene.test
 4. **T-F10:** the rules hold.
 
 The wiring sprint follows, in the handoff's port order, starting with sign-in.
+
+**Correction (Nov 17):** the export loads 28 stylesheets, not 29. The 29th entry in `src/styles/` is the `fonts/` folder. The rendered sprint-07 task docs still say 29, kept rather than re-rendered mid-ticket. T-F7's tests count what `main.jsx` imports.
 
 ## Open questions
 

@@ -1,0 +1,235 @@
+/* Navigation pass (Nov 14): one breadcrumb, compact tabs everywhere, the phone dock, and Canon's turn.
+   Loaded last. Sizes 12/13/14/16, weights 400/500/600. */
+
+/* ================================================================ breadcrumbs: one system */
+/* Every page below the top level shows its whole path in the top bar: links for each step up, the
+   last item is where you are (plain text). Top-level pages show none: their title says it. */
+.lib-crumbs { min-width: 0; }
+.lib-crumb-list { display: flex; align-items: center; gap: 2px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.lib-crumb-item { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.lib-crumb-item:not(:last-child) { flex: 0 1 auto; max-width: 220px; }
+.lib-crumb-item:last-child { flex: 0 1 auto; }
+.lib-crumb-sep { display: inline-flex; flex: none; opacity: 0.6; }
+.lib-crumb-sep svg { width: 14px; height: 14px; }
+.lib-crumb {
+  display: inline-block; min-width: 0; max-width: 100%; padding: 2px 6px; border-radius: 6px;
+  font-size: 13px; line-height: 20px; font-weight: 400; color: var(--av-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.lib-crumb-item:first-child .lib-crumb { margin-left: -6px; }
+a.lib-crumb:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) { a.lib-crumb:hover { color: var(--av-ink); background: color-mix(in oklab, var(--av-ink) 5%, transparent); } }
+.lib-crumb[aria-current="page"] { color: var(--av-ink); font-weight: 500; }
+/* long names shrink with an ellipsis only when the bar runs out of room; each keeps a tooltip */
+
+/* ================================================================ tabs: compact, everywhere */
+/* Page tabs: smaller, closer, an underline only on the one you're on. */
+.cr-mast-tabs { gap: 0; margin-top: 12px; margin-left: -8px; }
+.cr-mast-tab { height: 34px; padding: 0 8px; font-size: 13px; line-height: 20px; border-radius: 8px 8px 0 0; }
+.cr-mast-tab[aria-current]::after { left: 8px; right: 8px; height: 2px; border-radius: 2px; background: var(--av-ink); }
+@media (hover: hover) and (pointer: fine) { .cr-mast-tab:not([aria-current]):not([data-off]):hover { background: color-mix(in oklab, var(--av-ink) 4%, transparent); } }
+@media (max-width: 760px) {
+  .cr-mast-tabs {
+    margin: 10px -16px 0; padding: 0 12px; scroll-padding-inline: 24px; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 24px), transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 24px), transparent);
+  }
+  .cr-mast-tabs::-webkit-scrollbar { display: none; }
+  .cr-mast-tab { height: 40px; padding: 0 9px; font-size: 13px; }
+}
+/* Segmented switches (Rooms / Canvas, Write / Preview, Show, layouts, kinds): one compact size. */
+.lib-seg, .lib-screen-tabs { padding: 2px; gap: 2px; border-radius: 9px; }
+.lib-seg-btn, .lib-screen-tab { height: 26px; padding: 0 10px; border-radius: 7px; font-size: 13px; gap: 6px; }
+.lib-seg-btn svg, .lib-screen-tab svg { width: 14px; height: 14px; }
+.tpd-group-tabs { gap: 2px; padding: 2px; border-radius: 9px; background: color-mix(in oklab, var(--av-ink) 5%, transparent); width: max-content; max-width: 100%; }
+.tpd-group-tab { height: 26px; padding: 0 10px; border-radius: 7px; box-shadow: none; font-size: 12px; font-weight: 500; }
+.tpd-group-tab[aria-selected="true"] { background: var(--av-chip); box-shadow: var(--av-shadow-raised); }
+.cr-seg-form .lib-seg-btn { height: 26px; padding: 0 10px; }
+@media (max-width: 760px) {
+  .lib-seg-btn, .lib-screen-tab { height: 30px; }
+}
+/* The Library's Browse control on a phone: a compact row, not a big pill. */
+@media (max-width: 760px) {
+  .kbd-browse { min-height: 40px !important; padding-top: 0; padding-bottom: 0; border-radius: 12px; }
+  .kbd-browse-label { display: inline-flex !important; flex-direction: row !important; align-items: baseline; gap: 6px; }
+  .kbd-browse small { font-size: 12px; line-height: 16px; }
+}
+
+/* ================================================================ the phone dock */
+/* A floating bar above the page, with a cobalt lens that slides to where you are. Items keep their
+   labels; their live states replace numbers. */
+.dock-lens, .dock-ring, .dock-pip, .dock-eq, .dock-dot { display: none; }
+@media (max-width: 760px) {
+  .lib-tabbar.dock {
+    left: 10px; right: 10px; bottom: calc(8px + env(safe-area-inset-bottom)); top: auto;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; padding: 6px;
+    border: 0; border-radius: 22px;
+    background: color-mix(in oklab, var(--av-float, #fff) 80%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.75), 0 0 0 1px rgb(20 28 52 / 0.08), 0 18px 40px -16px rgb(20 28 52 / 0.38);
+  }
+  [data-theme="night"] .lib-tabbar.dock {
+    background: rgb(28 29 34 / 0.78);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.85);
+  }
+  /* the lens is only a short cobalt line over the current tab: no tile, no fill */
+  .dock-lens {
+    display: block; position: absolute; z-index: 0; top: 6px; bottom: 6px; left: 6px; width: calc((100% - 12px) / 5);
+    pointer-events: none; background: none; box-shadow: none;
+    transform: translateX(calc(var(--at, 0) * 100%));
+    transition: transform 460ms cubic-bezier(0.2, 0.9, 0.25, 1.12);
+  }
+  .dock-lens::before {
+    content: ""; position: absolute; top: -6px; left: 50%; width: 20px; height: 2px; margin-left: -10px; border-radius: 0 0 2px 2px;
+    background: var(--color-accent); box-shadow: 0 0 10px color-mix(in oklab, var(--color-accent) 70%, transparent);
+  }
+  .dock-tab {
+    position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    min-width: 0; min-height: 54px; padding: 0 2px; border-radius: 16px; font-size: 12px; line-height: 16px; font-weight: 500;
+    color: var(--av-muted); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .dock-tab[aria-current], .dock-tab[data-here] { color: var(--av-ink); }
+  .dock-ic { position: relative; display: grid; place-items: center; width: 24px; height: 24px; color: inherit; transition: transform 160ms var(--m-ease-out, ease); }
+  .dock-tab[aria-current] .dock-ic { color: var(--color-accent-text); }
+  .dock-tab:active .dock-ic { transform: scale(0.9); }
+  .dock-ic > svg:not(.dock-ring) { width: 20px; height: 20px; }
+  .dock-ring { display: block; position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; transform: rotate(-90deg); pointer-events: none; }
+  .dock-ring circle { fill: none; stroke-width: 2; stroke-linecap: round; }
+  .dock-ring circle:first-child { stroke: color-mix(in oklab, var(--av-ink) 10%, transparent); }
+  .dock-ring circle:last-child { stroke: var(--color-accent); transition: stroke-dasharray 600ms var(--m-ease-out, ease); }
+  .dock-pip {
+    display: block; position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--av-float, #fff);
+  }
+  [data-theme="night"] .dock-pip { box-shadow: 0 0 0 2px rgb(28 29 34); }
+  .dock-pip[data-tone="needs"] { background: var(--av-needs); }
+  .dock-pip[data-tone="needs"]::after {
+    content: ""; position: absolute; inset: -3px; border-radius: 50%;
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--av-needs) 40%, transparent); animation: tn-breathe 2.4s ease-in-out infinite;
+  }
+  .dock-pip[data-tone="ready"] { background: var(--av-verified); }
+  .dock-eq { display: flex; align-items: flex-end; gap: 1.5px; position: absolute; right: -9px; bottom: 1px; height: 8px; }
+  .dock-eq i { display: block; width: 2px; border-radius: 1px; background: var(--av-verified); }
+  .dock-eq i:nth-child(1) { height: 4px; } .dock-eq i:nth-child(2) { height: 8px; } .dock-eq i:nth-child(3) { height: 6px; }
+  .dock .dock-l { display: inline-flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; min-width: 0; }
+  .dock-lt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dock-dot { display: block; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--dot); }
+  .dock .tn-orb { width: 24px; height: 24px; border-radius: 50%; background: color-mix(in oklab, var(--color-accent) 12%, transparent); }
+  .lib-tabbar.dock .lib-tab-badge { display: none; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .dock-lens, .dock-ring circle:last-child { transition: none; }
+  .dock-pip[data-tone="needs"]::after { animation: none; }
+}
+
+/* ================================================================ Canon's turn */
+/* The chat header carries Canon's presence: his orb moves the way he's working (reading scans,
+   checking links up, writing flows, filing shapes, waiting breathes), with the word and the step. */
+.cv-chat-head { align-items: center; flex-wrap: wrap; row-gap: 6px; }
+.cv-presence {
+  display: inline-flex; align-items: center; gap: 8px; min-width: 0; height: 32px; padding: 0 12px 0 6px; margin-left: auto; margin-right: 12px;
+  border-radius: 999px; font-size: 13px; line-height: 20px; color: var(--av-muted);
+  background: color-mix(in oklab, var(--av-ink) 5%, transparent);
+  transition: background-color 240ms ease, box-shadow 240ms ease;
+}
+.cv-presence[data-turn="canon"] {
+  color: var(--av-ink);
+  background: color-mix(in oklab, var(--color-accent) 10%, var(--tr-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 22%, transparent), 0 6px 16px -10px color-mix(in oklab, var(--color-accent) 60%, transparent);
+}
+.cv-presence .tn-orb { width: 22px; height: 22px; border-radius: 50%; background: var(--tr-surface); }
+.cv-presence-w { font-weight: 500; white-space: nowrap; }
+.cv-presence[data-turn="canon"] .cv-presence-w {
+  background: linear-gradient(90deg, var(--color-accent-text) 0 40%, color-mix(in oklab, var(--color-accent-text) 40%, transparent) 50%, var(--color-accent-text) 60% 100%) 0 0 / 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: tr-shimmer 2s linear infinite;
+}
+.cv-presence-l { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
+.cv-presence[data-turn="canon"] .cv-presence-l[data-lead] { color: var(--color-accent-text); font-weight: 500; }
+.cv-clock { font-size: 12px; color: var(--av-muted); font-variant-numeric: tabular-nums; }
+/* the turn inside the message: the steps as they happen, then one folded line */
+.cv-turn { margin: 2px 0 6px; }
+.cv-turn-sum {
+  appearance: none; display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; border: 0; border-radius: 6px; cursor: pointer;
+  font: inherit; font-size: 12px; font-weight: 500; color: var(--av-muted); background: color-mix(in oklab, var(--av-ink) 5%, transparent);
+}
+.cv-turn-sum svg { width: 12px; height: 12px; }
+.cv-turn-sum:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .cv-turn-sum:hover { color: var(--av-ink); } }
+.cv-trace { position: relative; list-style: none; margin: 8px 0 4px; padding: 0; display: grid; gap: 6px; }
+.cv-trace::before { content: ""; position: absolute; left: 9px; top: 10px; bottom: 10px; width: 2px; background: color-mix(in oklab, var(--av-ink) 12%, transparent); }
+.cv-turn[data-live] .cv-trace::before { background: linear-gradient(var(--color-accent), color-mix(in oklab, var(--av-ink) 12%, transparent)); }
+.cv-trace > li { position: relative; display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 10px; align-items: center; min-height: 20px; font-size: 13px; line-height: 20px; color: var(--av-muted); }
+.cv-trace > li .tn { z-index: 1; }
+.cv-trace > li[data-st="running"] { color: var(--av-ink); font-weight: 500; }
+.cv-trace > li[data-st="todo"] { color: color-mix(in oklab, var(--av-ink) 40%, transparent); }
+.cv-trace > li[data-st="todo"] .tn::before { width: 10px; height: 10px; }
+.cv-turn[data-live] .cv-trace > li { animation: tr-arrive 320ms var(--m-ease-out, ease) both; }
+.cv-turn[data-live] .cv-trace > li:nth-child(2) { animation-delay: 40ms; }
+.cv-turn[data-live] .cv-trace > li:nth-child(3) { animation-delay: 80ms; }
+.cv-turn[data-live] .cv-trace > li:nth-child(4) { animation-delay: 120ms; }
+@media (max-width: 760px) {
+  .cv-presence { order: 3; margin: 0; flex-basis: 100%; max-width: 100%; }
+  .cv-presence-l { max-width: none; flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cv-presence[data-turn="canon"] .cv-presence-w { animation: none; color: var(--color-accent-text); background: none; }
+  .cv-turn[data-live] .cv-trace > li { animation: none; }
+}
+
+/* ================================================================ the reason box, only where it's needed */
+/* When the main answer needs no reason, the box is one slim line; it opens up when you use it. */
+.cr-why-field[data-optional] .cr-why-input { min-height: 44px; height: 44px; resize: none; transition: height 180ms var(--m-ease-out, ease); }
+.cr-why-field[data-optional]:focus-within .cr-why-input, .cr-why-field[data-optional]:not([data-empty]) .cr-why-input { height: 88px; }
+.cr-why-field[data-optional][data-empty]:not(:focus-within) .cr-why-foot { display: none; }
+@media (prefers-reduced-motion: reduce) { .cr-why-field[data-optional] .cr-why-input { transition: none; } }
+
+/* ================================================================ empty states (Rico UI scenes) */
+/* One look everywhere a page, panel or search has nothing to show: the instrument-panel scene, a title,
+   one line, at most one action. The scene is decorative; the words carry the meaning. */
+.es { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 28px 24px 32px; }
+.es[data-size="sm"] { padding: 12px 16px 16px; gap: 4px; }
+.es-art { display: block; max-width: 100%; height: auto; margin-bottom: 6px; }
+.es-t { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--av-ink); }
+.es[data-size="sm"] .es-t { font-size: 14px; line-height: 20px; }
+.es-m { margin: 0; max-width: 46ch; font-size: 14px; line-height: 20px; color: var(--av-muted); text-wrap: pretty; }
+.es-a { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+.op-empty, .rcp-empty { padding: 0 !important; text-align: center; }
+.kbd-empty { padding: 0 !important; }
+.rcp-empty .es { padding: 40px 24px; }
+.cr-dp-clear-tile { display: none; }
+/* page-level states keep their own title and actions; the scene replaces the old icon tile */
+.av-state > .es-art { margin: 0 auto 10px; }
+.av-state[data-compact="true"] > .es-art { margin-bottom: 4px; }
+.cmdk-none { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px; text-align: center; }
+.cmdk-none p { margin: 0; }
+.cr-panel-empty-art { list-style: none; padding: 4px 0 8px !important; }
+.av-err > .es-art { margin: 0 0 8px; }
+@media (max-width: 760px) {
+  .es { padding: 20px 16px 24px; }
+  .es:not([data-size="sm"]) .es-art { width: 200px; height: 150px; }
+  .es-a .av-btn { min-height: 44px; }
+}
+
+
+/* polish: with breadcrumbs in the top bar there's no eyebrow row, so the project header's actions sit on the
+   title's own line on every width (they used to float alone above the title on tablets) */
+@media (min-width: 761px) {
+  .cr-mast-head[data-kind="project"] { grid-template-areas: "title side" "gates gates" "lead lead" !important; }
+  .cr-mast-head[data-kind="project"] > .cr-mast-side { grid-row: 1 !important; grid-area: side !important; align-self: center; }
+}
+
+/* polish: the phone's decision bar floats like the dock, just above it, instead of running edge to edge
+   under it; toasts and the undo snack clear both */
+@media (max-width: 760px) {
+  .cr-pin {
+    left: 10px; right: 10px; bottom: calc(82px + env(safe-area-inset-bottom, 0px)); padding: 12px 14px;
+    border: 0; border-radius: 20px;
+    background: color-mix(in oklab, var(--av-float, #fff) 86%, transparent);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 0 0 1px rgb(20 28 52 / 0.08), 0 16px 36px -16px rgb(20 28 52 / 0.38);
+  }
+  [data-theme="night"] .cr-pin { background: rgb(28 29 34 / 0.86); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.85); }
+  html[data-focus] .cr-pin { left: 0; right: 0; bottom: 0; border-radius: 20px 20px 0 0; }
+  .lib-toast-wrap, .dec-snack { bottom: calc(84px + env(safe-area-inset-bottom)); }
+  body:has(.cr-pin) .dec-snack, body:has(.cr-pin) .lib-toast-wrap { bottom: calc(82px + 140px + env(safe-area-inset-bottom, 0px)); }
+}

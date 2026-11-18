@@ -1,0 +1,192 @@
+{
+  "_note": "CR-29 (proposed), behind the osa flag. Shapes are assumptions: see contract/cr-29-assumed.json.",
+  "briefs": {
+    "proposal:01a1a60b-4980-70d5-a523-4525cd77fb38": {
+      "ref": "proposal:01a1a60b-4980-70d5-a523-4525cd77fb38",
+      "boundVersion": 3,
+      "summary": "Checkout failed its tests three times on the same pricing rule. The rule in the plan contradicts the price sheet Mara sent.",
+      "evidence": [
+        "Tests: 9 of 14 pass; all 5 failures are the bundle rule",
+        "Price sheet v3 says bundles stack; the plan says they don't"
+      ],
+      "recommendation": "replan",
+      "confidence": "high",
+      "risk": "If the plan was right, the replan costs a day and the price sheet needs a second look with Mara.",
+      "reasonDraft": "The plan's bundle rule contradicts Mara's price sheet; replan from the sheet.",
+      "writtenAt": "2026-11-12T07:40:00Z",
+      "superseded": false
+    },
+    "proposal:01a1b01a-aa60-77a5-a283-b024793da0db": {
+      "ref": "proposal:01a1b01a-aa60-77a5-a283-b024793da0db",
+      "boundVersion": 1,
+      "summary": "The signup part needs more of its AI cap to finish the spring code checks.",
+      "evidence": [
+        "Used most of its cap on retries of one scenario",
+        "Two attempts left before it parks"
+      ],
+      "recommendation": "raise",
+      "confidence": "medium",
+      "risk": "If the retries keep failing, the extra cap is spent on the same problem.",
+      "reasonDraft": "The spring code checks are nearly through; one more round should land it.",
+      "writtenAt": "2026-11-12T07:40:00Z",
+      "superseded": false
+    },
+    "proposal:01a1c009-5700-7100-97fb-7bdb3111b999": {
+      "ref": "proposal:01a1c009-5700-7100-97fb-7bdb3111b999",
+      "boundVersion": 1,
+      "summary": "The agent wants zod to validate the signup form. The repo already uses it in two places.",
+      "evidence": [
+        "zod is in package.json of the shared module",
+        "No new licence: MIT"
+      ],
+      "recommendation": "allow",
+      "confidence": "high",
+      "risk": "Low: it's already a dependency elsewhere in the repo.",
+      "reasonDraft": "Already used in the repo; no new licence or size cost.",
+      "writtenAt": "2026-11-12T07:40:00Z",
+      "superseded": false
+    },
+    "pass_approval:01a17770-2280-7db5-9be9-18411454e558": {
+      "ref": "pass_approval:01a17770-2280-7db5-9be9-18411454e558",
+      "boundVersion": "sha256:7f3a2c9e0000000000000000000000000000000000000000000000000000b14d",
+      "summary": "Booking fix passed, capped at pass by one accepted finding: a 2 px date picker offset on Safari 17.",
+      "evidence": [
+        "11 of 12 acceptance examples verified",
+        "The 12th is the accepted cosmetic finding",
+        "Priya agreed to it"
+      ],
+      "recommendation": "approve",
+      "confidence": "high",
+      "risk": "If Priya changes her mind, the offset ships and needs a follow-up fix.",
+      "reasonDraft": "Cosmetic only, agreed with Priya; everything else verified.",
+      "writtenAt": "2026-11-12T07:40:00Z",
+      "superseded": false
+    },
+    "checkpoint_question:01a1bc07-f300-7d0e-bca5-24eacf65a194": {
+      "ref": "checkpoint_question:01a1bc07-f300-7d0e-bca5-24eacf65a194",
+      "boundVersion": 1,
+      "summary": "GTS drivers share phones between shifts, and their IT team hasn't set up SSO for the depot.",
+      "evidence": [
+        "Dale's notes: shared phones on night shift",
+        "No identity provider named in the fleet sheet"
+      ],
+      "recommendation": "ask_client",
+      "confidence": "low",
+      "risk": "Choosing SMS now may need redoing if GTS adds SSO this year.",
+      "reasonDraft": null,
+      "writtenAt": "2026-11-12T07:40:00Z",
+      "superseded": false
+    },
+    "factory_change:149": {
+      "ref": "factory_change:149",
+      "boundVersion": "c3f0a7e000000000000000000000000000000000",
+      "summary": "tdd-writer 3.3 adds property-based test prompts. On 24 past tasks it passed first try more often.",
+      "evidence": [
+        "Eval run: 83% against 77% first try",
+        "Ran on the PR's current head"
+      ],
+      "recommendation": "approve",
+      "confidence": "medium",
+      "risk": "The gain is small; the interval starts just above zero.",
+      "reasonDraft": null,
+      "writtenAt": "2026-11-12T07:40:00Z",
+      "superseded": false
+    },
+    "followup_send:01a1d300-0000-7000-8000-000000000801": {
+      "ref": "followup_send:01a1d300-0000-7000-8000-000000000801",
+      "boundVersion": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "summary": "Ana asked about online booking for three therapists on Friday. The draft points her at the booking template.",
+      "evidence": [
+        "Referred by Blume Studio on Nov 8",
+        "No reply needed from her yet"
+      ],
+      "recommendation": "approve",
+      "confidence": "high",
+      "risk": "Low: it's a short, friendly note.",
+      "reasonDraft": null,
+      "writtenAt": "2026-11-12T07:40:00Z",
+      "superseded": false
+    }
+  },
+  "tasks": {
+    "items": [
+      {
+        "id": "01a1d800-0000-7000-8000-000000000001",
+        "subject": {
+          "kind": "proposal",
+          "ref": "proposal:01a1a60b-4980-70d5-a523-4525cd77fb38",
+          "label": "Checkout and pricing rules"
+        },
+        "request": "Check Mara's price sheet v3 against the plan's bundle rule and tell me which is right.",
+        "state": "done",
+        "result": "The price sheet is right: bundles stack. The plan copied the old v2 rule.",
+        "links": [
+          "/decisions/proposal:01a1a60b-4980-70d5-a523-4525cd77fb38"
+        ],
+        "createdAt": "2026-11-12T07:10:00Z",
+        "updatedAt": "2026-11-12T07:38:00Z"
+      },
+      {
+        "id": "01a1d800-0000-7000-8000-000000000002",
+        "subject": {
+          "kind": "mission",
+          "ref": "mission:01a11070-f280-7405-be02-939daa1426cd",
+          "label": "Fleet portal"
+        },
+        "request": "Draft a note to Dale asking whether the depot will have SSO this year.",
+        "state": "working",
+        "result": null,
+        "links": [],
+        "createdAt": "2026-11-13T08:55:00Z",
+        "updatedAt": "2026-11-13T09:02:00Z"
+      }
+    ],
+    "nextCursor": null
+  },
+  "activity": [
+    {
+      "at": "2026-11-12T07:40:00Z",
+      "actor": "OSA",
+      "actorKind": "assistant",
+      "kind": "decision",
+      "mission": "Spring launch site",
+      "action": "Wrote a brief for the Checkout and pricing rules proposal",
+      "reason": null
+    },
+    {
+      "at": "2026-11-12T07:38:00Z",
+      "actor": "OSA",
+      "actorKind": "assistant",
+      "kind": "decision",
+      "mission": "Spring launch site",
+      "action": "Finished a task: checked the price sheet against the plan",
+      "reason": null
+    },
+    {
+      "at": "2026-11-10T07:00:00Z",
+      "actor": "OSA",
+      "actorKind": "assistant",
+      "kind": "decision",
+      "mission": null,
+      "action": "Drafted a follow-up to Northside Physio",
+      "reason": null
+    }
+  ],
+  "focus": {
+    "ref": "proposal:01a1a60b-4980-70d5-a523-4525cd77fb38",
+    "label": "Checkout and pricing rules",
+    "setBy": "assistant",
+    "at": "2026-11-12T07:38:00Z"
+  },
+  "status": {
+    "terminal": {
+      "attached": true,
+      "lastSeenAt": "2026-11-13T09:02:00Z"
+    },
+    "assistant": {
+      "session": "active",
+      "spendUsed": 11400000,
+      "spendCap": 30000000
+    }
+  }
+}

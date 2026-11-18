@@ -1,0 +1,245 @@
+/* Finish pass (Nov 13): the Library's layout, a sidebar without numbers, labels with more taste,
+   and the smallest polishes found by eye and by scratch/clip-audit.cjs. Loaded last. */
+
+/* ================================================================ sidebar: plain counts */
+/* The count is back as a clear number: no pill, no colour, no glow. The project's own dot on the left
+   is the only dot in the row. Phase words ("Scoping", "Draft") lose their tile too. */
+.lib-nav-count {
+  flex: none; margin-left: 4px; min-width: 16px; text-align: right;
+  font-size: 12px; line-height: 16px; font-weight: 500; font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--av-ink) 62%, transparent);
+}
+.lib-nav-item[aria-current] .lib-nav-count { color: var(--av-ink); }
+.lib-rail[data-collapsed] .lib-nav-count { position: absolute; top: 2px; right: 4px; margin: 0; min-width: 0; font-size: 12px; line-height: 14px; }
+.lib-nav-meta, [data-theme="night"] .lib-nav-meta { margin-left: 4px; padding: 0; height: auto; background: none !important; box-shadow: none !important; border: 0; color: var(--av-muted); }
+.lib-nav-meta + .lib-nav-count { margin-left: 8px; }
+
+/* ================================================================ labels with more taste */
+/* Kind chips (Proposal, Work instructions, Role skill...) are soft filled pills, not boxes. */
+.av-tag:not([data-tone]) {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--av-ink) 6%, transparent);
+  color: color-mix(in oklab, var(--av-ink) 80%, transparent);
+  border-radius: 6px;
+}
+[data-theme="night"] .av-tag:not([data-tone]) { background: rgb(255 255 255 / 0.07); color: rgb(236 236 240 / 0.86); }
+/* Status tags keep their tone, lose the hard edge, and sit on a softer pill. */
+html:not([data-theme="night"]) .av-tag[data-tone]:not([data-tone="needs"]) { border-color: transparent; border-radius: 6px; }
+.av-tag[data-tone="proposed"] { border-color: color-mix(in oklab, var(--color-accent) 40%, transparent); }
+
+/* Section labels inside a card (Evidence, If you approve): quiet and medium, the rule above them is enough. */
+.cr-hero-label { color: var(--av-muted); font-weight: 500; }
+/* "Next up" carries the heartbeat: it's the one thing on the page that waits on you now. */
+.cr-hero-k { display: inline-flex; align-items: center; gap: 8px; }
+.cr-hero-k::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent-text); box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 20%, transparent); }
+[data-theme="night"] .cr-hero-k::before { background: var(--color-accent); }
+
+/* Key and value pairs: the key small and quiet, the value at reading size, a steady gap. */
+.cr-dc-facts dt, .kbd-details dt { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--av-muted); }
+.cr-dc-facts dd, .kbd-details dd { margin: 2px 0 0; font-size: 14px; line-height: 20px; color: var(--av-ink); }
+.kbd-details dd + dt { margin-top: 12px; }
+
+/* Column headers: quiet, one line, a firmer rule under them. */
+.cr-mt-headrow [role="columnheader"], .kbd-results thead th, .lib-screen thead th {
+  font-size: 12px; line-height: 16px; font-weight: 500; color: var(--av-muted); white-space: nowrap;
+}
+.cr-mt-headrow { box-shadow: inset 0 -1px 0 var(--av-hairline-strong); }
+
+/* Panel titles read as titles; their counts are quiet. Group labels everywhere match. */
+.cr-panel-title { letter-spacing: 0; }
+.kbd-sec-label, .lib-nav-group, .cr-gates-k, .cr-mast-eyebrow { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--av-muted); letter-spacing: 0; }
+
+/* ================================================================ the Library */
+/* Search: just the magnifier and the field; the label is there for screen readers only. */
+.kbd-find {
+  height: 40px; gap: 10px; padding: 0 6px 0 14px; border-radius: 12px; cursor: text;
+  background: color-mix(in oklab, var(--av-ink) 4%, transparent);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+.kbd-find > svg { flex: none; color: var(--av-muted); transition: color 160ms ease, transform 160ms var(--m-ease-out, ease); }
+@media (hover: hover) and (pointer: fine) { .kbd-find:hover { background: color-mix(in oklab, var(--av-ink) 6%, transparent); } }
+.kbd-find:focus-within {
+  background: var(--av-float);
+  box-shadow: inset 0 0 0 1px var(--av-hairline-strong), 0 6px 16px -10px rgb(16 24 40 / 0.28);
+}
+.kbd-find:focus-within > svg { color: var(--av-ink); transform: scale(1.06); }
+[data-theme="night"] .kbd-find { background: rgb(255 255 255 / 0.05); }
+[data-theme="night"] .kbd-find:focus-within { background: rgb(255 255 255 / 0.08); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14), 0 8px 20px -12px rgb(0 0 0 / 0.8); }
+@media (max-width: 760px) { .kbd-find { height: 44px; border-radius: 999px; } }
+
+/* Rail: the same plates and cobalt edge as the main sidebar; no counts. */
+.kbd-cat { min-height: 36px; border-radius: 10px; gap: 12px; padding: 0 10px; transition: background-color 120ms ease, color 120ms ease; }
+.kbd-cat { position: relative; }
+.kbd-cat[aria-current="page"] { background: transparent; box-shadow: none; }
+.kbd-cat[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 2px; border-radius: 2px; background: var(--color-accent-text); }
+[data-theme="night"] .kbd-cat[aria-current="page"]::before { background: var(--color-accent); }
+.kbd-cat[aria-current="page"] .lucide { color: var(--color-accent-text); }
+.kbd-items a[aria-current="page"] { color: var(--av-ink); font-weight: 500; }
+.kbd-sec-label { margin: 0 0 6px 10px; }
+.kbd-sec { margin-top: 4px; }
+.kbd-release { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--av-muted); padding: 0 10px; }
+
+/* Overview hero: the release as a chip, three stat cards, actions with room. */
+.kbd-hero .kbd-lede { margin-top: 10px; max-width: 62ch; }
+.kbd-pin { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 4px 12px; border-radius: 999px; font-size: 12px; line-height: 20px; background: color-mix(in oklab, var(--av-ink) 5%, transparent); color: var(--av-muted); }
+.kbd-pin svg { color: var(--color-accent-text); }
+.kbd-stats.kbd-statcards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 720px; margin: 24px 0 0; }
+.kbd-stats .kbd-statcard {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "ic n" "ic l"; column-gap: 14px; align-items: center;
+  padding: 16px; border-radius: 14px; background: var(--av-faceplate);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 0 0 1px rgb(16 24 40 / 0.06), 0 12px 28px -18px rgb(16 24 40 / 0.22);
+}
+[data-theme="night"] .kbd-stats .kbd-statcard { background: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.01)), var(--color-app-panel); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 1px rgb(255 255 255 / 0.06), 0 16px 32px -20px rgb(0 0 0 / 0.75); }
+.kbd-statcard .kbd-stat-ic { grid-area: ic; }
+.kbd-statcard dd { grid-area: n; margin: 0; font-size: 20px; line-height: 28px; font-weight: 500; color: var(--av-ink); font-feature-settings: "tnum"; }
+.kbd-statcard dt { grid-area: l; font-size: 13px; line-height: 18px; color: var(--av-muted); }
+.kbd-stat-ic, .kbd-card-ic {
+  display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px;
+  background: color-mix(in oklab, var(--color-accent) 10%, var(--av-chip)); color: var(--color-accent-text);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 18%, transparent);
+}
+.kbd-hero-actions { margin-top: 20px; }
+
+/* Sections: a heading that runs a hairline to the edge, then a grid of cards. */
+.kbd-home { gap: 36px; }
+.kbd-home-sec .kbd-h2, .kbd-two .kbd-h2 { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; font-size: 16px; font-weight: 500; }
+.kbd-home-sec .kbd-h2::after, .kbd-two .kbd-h2::after { content: ""; flex: 1; height: 1px; background: var(--av-hairline); }
+.kbd-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.kbd-card {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "ic main n";
+  column-gap: 14px; align-items: start; height: 100%; box-sizing: border-box; padding: 16px; border-radius: 14px;
+  color: var(--av-ink); text-decoration: none !important; background: var(--av-faceplate);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 0 0 1px rgb(16 24 40 / 0.06), 0 1px 2px rgb(16 24 40 / 0.04);
+  transition: box-shadow 160ms ease, transform 160ms var(--m-ease-out, ease);
+}
+[data-theme="night"] .kbd-card { background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.01)), var(--color-app-panel); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px rgb(255 255 255 / 0.06); }
+.kbd-card-ic { grid-area: ic; }
+.kbd-card-main { grid-area: main; display: grid; gap: 4px; min-width: 0; }
+.kbd-card-main b { font-size: 14px; line-height: 20px; font-weight: 500; }
+.kbd-card-main span { font-size: 13px; line-height: 20px; color: var(--av-muted); text-wrap: pretty; }
+.kbd-card-n { grid-area: n; align-self: start; padding: 0 8px; height: 22px; display: inline-flex; align-items: center; border-radius: 6px; font-size: 12px; color: var(--av-muted); background: color-mix(in oklab, var(--av-ink) 5%, transparent); white-space: nowrap; }
+.kbd-card-go { position: absolute; right: 16px; bottom: 14px; color: var(--color-accent-text); opacity: 0; transform: translateX(-4px); transition: opacity 160ms ease, transform 160ms var(--m-ease-out, ease); }
+@media (hover: hover) and (pointer: fine) {
+  .kbd-card:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 0 0 1px color-mix(in oklab, var(--color-accent) 30%, transparent), 0 14px 30px -18px rgb(16 24 40 / 0.35); }
+  [data-theme="night"] .kbd-card:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 1px color-mix(in oklab, var(--color-accent) 40%, transparent), 0 18px 36px -20px rgb(0 0 0 / 0.8); }
+  .kbd-card:hover .kbd-card-go { opacity: 1; transform: translateX(0); }
+}
+.kbd-card:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+.kbd-two { gap: 32px; }
+@media (max-width: 760px) {
+  .kbd-stats.kbd-statcards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .kbd-stats .kbd-statcard { grid-template-columns: minmax(0, 1fr); grid-template-areas: "ic" "n" "l"; grid-template-rows: auto auto 1fr; align-items: start; row-gap: 6px; padding: 12px; }
+  .kbd-statcard .kbd-stat-ic { width: 30px; height: 30px; border-radius: 8px; }
+  .kbd-cards { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .kbd-home { gap: 28px; }
+}
+
+/* ================================================================ the smallest polishes */
+/* A project's open findings: the file path sits on its own line instead of being cut at the edge. */
+section:has(> .cr-panel-head #ov-f) .cr-mini-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "tag name" ". route";
+  row-gap: 2px; padding-top: 10px; padding-bottom: 10px;
+}
+section:has(> .cr-panel-head #ov-f) .cr-mini-row > .av-tag { grid-area: tag; }
+section:has(> .cr-panel-head #ov-f) .cr-mini-row-name { grid-area: name; min-width: 0; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; line-height: 20px; }
+section:has(> .cr-panel-head #ov-f) .cr-mini-row-state { grid-area: route; min-width: 0; justify-self: start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--av-muted); }
+/* the decision card's project line wraps on a phone instead of running off the card */
+@media (max-width: 760px) {
+  .cr-dc-proj { flex-wrap: wrap; white-space: normal; row-gap: 2px; }
+  .cr-proof-chip { white-space: nowrap; flex: none; }
+}
+/* numbers in tables and counts line up */
+.cr-mt-row, .kbd-results td, .cr-dc-facts dd { font-variant-numeric: tabular-nums; }
+/* links inside running text keep a calm underline, cobalt on hover */
+.op-note a, .kbd-lede a, .cr-mast-lead a { text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in oklab, currentColor 35%, transparent); }
+@media (hover: hover) { .op-note a:hover, .kbd-lede a:hover, .cr-mast-lead a:hover { color: var(--color-accent-text); text-decoration-color: currentColor; } }
+/* empty-state and helper copy never runs wider than reads well */
+.op-note, .cr-hint, .op-p { max-width: 72ch; }
+/* the retry ladder's note wraps to two lines rather than being cut off mid-word */
+.cr-ladder small { white-space: normal; overflow: visible; text-overflow: clip; line-height: 16px; display: block; }
+/* activity times never split "2:12" from "AM" */
+.cr-act li { grid-template-columns: 100px minmax(0, 1fr); }
+.cr-act-when { white-space: nowrap; }
+/* open findings: the tag sits on the first line of the name, not floating in the middle */
+section:has(> .cr-panel-head #ov-f) .cr-mini-row { align-items: start; }
+section:has(> .cr-panel-head #ov-f) .cr-mini-row > .av-tag { margin-top: -1px; }
+/* phone hero: the expiry rides on the first line beside "Next up", the project gets its own line */
+@media (max-width: 760px) {
+  .cr-hero-top > .cr-dc-exp { order: 1; }
+  .cr-hero-top > .cr-dc-proj { order: 2; flex-basis: 100%; }
+}
+
+/* ================================================================ daylight: light mode with the night's taste */
+/* Night works because it has depth: a lit floor, machines that sit above it, and colour that comes
+   from where the work is. Daylight gets the same three things, tuned for paper: a cool wash over a
+   warm floor, cards that are whiter than the floor with a long soft shadow, and the cobalt as light
+   rather than paint. Only colours and shadows change; layout and motion are untouched. */
+html:not([data-theme="night"]) {
+  --d-card: linear-gradient(180deg, #ffffff 0, #fcfcfb 140px, #fbfaf9 100%);
+  --d-ring: rgb(20 28 52 / 0.07);
+  --d-drop: 0 1px 2px rgb(20 28 52 / 0.05), 0 18px 40px -22px rgb(28 40 90 / 0.26);
+  --d-lit: inset 0 1px 0 rgb(255 255 255 / 0.95);
+}
+/* the room around the floor: a slightly cooler, softly lit shell */
+html:not([data-theme="night"]) body {
+  background:
+    radial-gradient(800px 500px at 0% 0%, rgb(255 255 255 / 0.55), transparent 70%),
+    linear-gradient(180deg, #ebeaeb 0%, #e6e4e3 100%) fixed;
+}
+/* the floor: warm paper, a cobalt wash from where the live work is, a hint of violet opposite, the dot grid */
+html:not([data-theme="night"]) .cr-canvas {
+  background-color: #f2f1ef;
+  background-image:
+    radial-gradient(1000px 460px at 82% -10%, color-mix(in oklab, var(--av-accent) 12%, transparent), transparent 70%),
+    radial-gradient(760px 380px at 4% 110%, color-mix(in oklab, #7c5cff 6%, transparent), transparent 70%),
+    radial-gradient(color-mix(in oklab, var(--av-ink) 5.5%, transparent) 1px, transparent 1.4px);
+  background-size: auto, auto, 24px 24px;
+  background-position: 0 0, 0 0, 12px 12px;
+  box-shadow: 0 0 0 1px rgb(20 28 52 / 0.06), 0 24px 60px -40px rgb(28 40 90 / 0.3);
+}
+/* the machines: whiter than the floor, a lit top edge, a hairline, and a long soft shadow */
+html:not([data-theme="night"]):not([data-depth="glass"]) :is(.lib-card, .kbd-stats .kbd-statcard, .kbd-card) {
+  background: var(--d-card);
+  box-shadow: var(--d-lit), 0 0 0 1px var(--d-ring), var(--d-drop);
+}
+@media (hover: hover) and (pointer: fine) {
+  html:not([data-theme="night"]) .kbd-card:hover { box-shadow: var(--d-lit), 0 0 0 1px color-mix(in oklab, var(--av-accent) 32%, transparent), 0 2px 4px rgb(20 28 52 / 0.05), 0 22px 44px -22px color-mix(in oklab, var(--av-accent) 40%, transparent); }
+}
+/* the next decision is the one machine that's lit: a cobalt-tinted edge and a cobalt shadow */
+html:not([data-theme="night"]):not([data-depth="glass"]) .cr-hero {
+  background: var(--d-card);
+  box-shadow:
+    var(--d-lit),
+    0 0 0 1px color-mix(in oklab, var(--av-accent) 20%, var(--d-ring)),
+    0 2px 4px rgb(20 28 52 / 0.05),
+    0 28px 60px -30px color-mix(in oklab, var(--av-accent) 38%, transparent);
+}
+/* the status pills and search in the top bar sit on the floor as small raised plates */
+@media (min-width: 761px) {
+html:not([data-theme="night"]) .cr-pulse,
+html:not([data-theme="night"]) .cr-head-right .cr-search {
+  background: rgb(255 255 255 / 0.72);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 0 0 1px var(--d-ring), 0 4px 10px -6px rgb(20 28 52 / 0.18);
+}
+}
+html:not([data-theme="night"]) .cr-acct, html:not([data-theme="night"]) .lib-rail .cr-avatar-btn {
+  background: linear-gradient(180deg, #ffffff, #fafaf9);
+}
+/* tags breathe a little colour instead of sitting flat */
+html:not([data-theme="night"]) .av-tag[data-tone]:not([data-tone="needs"]) { background: color-mix(in oklab, currentColor 9%, #ffffff); }
+html:not([data-theme="night"]) .av-tag:not([data-tone]) { background: color-mix(in oklab, var(--av-ink) 7%, transparent); }
+/* buttons: secondary ones are white plates like the cards */
+html:not([data-theme="night"]) .av-btn[data-variant="secondary"] {
+  background: linear-gradient(180deg, #ffffff, #fafaf9);
+}
+/* the Library's soft field and chips sit a touch whiter on the brighter floor */
+html:not([data-theme="night"]) .kbd-find:not(:focus-within) { background: rgb(255 255 255 / 0.6); box-shadow: inset 0 0 0 1px var(--d-ring); }
+html:not([data-theme="night"]) .kbd-pin { background: rgb(255 255 255 / 0.7); box-shadow: inset 0 0 0 1px var(--d-ring); }
+
+/* the current link: no tile, no fill, no shadow. A short cobalt bar on the left, the blue icon and
+   the darker medium-weight label mark it. The bar still slides from link to link. */
+.lib-nav-indicator, [data-theme="night"] .lib-nav-indicator { background: transparent !important; box-shadow: none !important; }
+.lib-nav-indicator::before { display: block; content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 2px; border-radius: 2px; background: var(--color-accent-text); }
+[data-theme="night"] .lib-nav-indicator::before { background: var(--color-accent); }
+.lib-rail[data-collapsed] .lib-nav-indicator::before { left: -2px; }

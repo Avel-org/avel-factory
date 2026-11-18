@@ -1,0 +1,1681 @@
+{
+  "_readme": "Sample knowledge base and templates for /library and /templates. Shapes follow 'AVEL Library and Templates' (the doc): fields marked there as change-request items (content, usage, roles, history, template scope, portfolio fields) are proposed, not in packages/contract yet.",
+  "release": {
+    "version": "kb-2026.11.1",
+    "factory": "Factory 3",
+    "commit": "9c41d2a"
+  },
+  "entries": [
+    {
+      "kind": "knowledge",
+      "slug": "stripe-checkout",
+      "type": "Worked example",
+      "layer": "stack",
+      "stack": "next",
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "4.0.0",
+      "updatedAt": "2026-11-03",
+      "title": "Stripe checkout with webhooks and idempotency keys",
+      "description": "Checkout sessions, signed webhooks and idempotency keys, in the order a builder writes them.",
+      "source": "Written up from a retry pair on Spring launch site, M3",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "test-unit",
+        "review-security"
+      ],
+      "backedBy": [
+        "Spring launch site",
+        "Booking fix",
+        "Control room",
+        "Price sheet audit"
+      ],
+      "usage": {
+        "selected": 41,
+        "searched": 9,
+        "firstTry": 82,
+        "findings": 1
+      },
+      "content": "## When to use it\nAny checkout that takes a card through Stripe.\n\n## Worked example\n```ts src/lib/checkout.ts\nconst key = `checkout:${cart.id}:${cart.version}`;\nconst session = await stripe.checkout.sessions.create(\n  { mode: \"payment\", line_items: toLineItems(cart) },\n  { idempotencyKey: key },\n);\n```\n\n> [!WARNING] Never create the order on the success redirect. Order state changes only in the signed webhook.\n\n## Why it's written this way\n- The idempotency key is built from the cart's id and version, so a retried request can't charge twice.\n- The webhook handler checks the signature before reading the body.\n- Order state changes only in the webhook, never on the redirect.\n\n## Common mistakes\n- Creating the order on the success redirect. A closed tab loses it.\n- Reusing one key for a changed cart.",
+      "history": [
+        [
+          "4.0.0",
+          "Payment Element v3",
+          "2026-11-03",
+          139
+        ],
+        [
+          "3.2.0",
+          "Signature check moved first",
+          "2026-10-12",
+          121
+        ],
+        [
+          "3.0.0",
+          "First version",
+          "2026-09-20",
+          104
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000001"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "locked-test-drift",
+      "type": "Lesson",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.1.0",
+      "updatedAt": "2026-11-05",
+      "title": "When a locked test outlives the plan",
+      "description": "A locked test written from an older brief fails a correct build. Escalate a test dispute instead of retrying.",
+      "source": "Closeout lesson from Spring launch site, M4 (parked after retry 3)",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "test-unit",
+        "test-e2e",
+        "review-spec"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 18,
+        "searched": 4,
+        "firstTry": 71,
+        "findings": 0
+      },
+      "content": "## The signal\nThe same locked test fails on two vendors, and the failure matches the plan's wording, not a bug.\n\n## What to do\n1. Stop retrying. A third try won't pass a test that asks for the wrong thing.\n2. File a test dispute with the plan line and the test line side by side.\n3. Brennan rules. Acceptance tests come to the operator.\n\n> [!TIP] A dispute costs nothing to file. A fourth retry costs about a quarter of a module cap.\n\n## Example\nM4's test expected a captcha; the plan said honeypot. Three retries used 87% of the module cap before the dispute.",
+      "history": [
+        [
+          "1.1.0",
+          "Adds the two-vendor signal",
+          "2026-11-05",
+          141
+        ],
+        [
+          "1.0.0",
+          "First version",
+          "2026-10-30",
+          133
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000002"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "gts-language",
+      "type": "Domain fact",
+      "layer": "client",
+      "stack": null,
+      "client": "GTS Diesel",
+      "template": null,
+      "status": "proposed",
+      "version": "0.1.0",
+      "updatedAt": "2026-11-09",
+      "title": "How GTS Diesel talks about its work",
+      "description": "Yard, stop, run sheet and the office's planning day, as Marco says them.",
+      "source": "Canon, Fleet portal onboarding (checkpoint 0.1)",
+      "license": "Client: GTS Diesel",
+      "roles": [
+        "canon",
+        "builder",
+        "test-e2e"
+      ],
+      "backedBy": [
+        "Fleet portal"
+      ],
+      "usage": {
+        "selected": 0,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0
+      },
+      "content": "## Words\n- **Yard:** one of two depots, north and south. The north yard has no signal.\n- **Stop:** one delivery or pickup on a driver's day.\n- **Run sheet:** a driver's stops for one day, in order.\n\n| Word | Means | Not |\n|---|---|---|\n| Yard | One of two depots | A customer site |\n| Stop | One delivery or pickup | A route |\n| Run sheet | A driver's stops for one day | The office plan |\n\n## Their day\nThe office plans tomorrow every afternoon. Drivers only see today.",
+      "history": [
+        [
+          "0.1.0",
+          "Proposed by Canon",
+          "2026-11-09",
+          null
+        ]
+      ],
+      "pr": 146,
+      "itemId": "01a1d500-0000-7000-8000-000000000003"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "landing-page-cms-model",
+      "type": "Pattern",
+      "layer": "stack",
+      "stack": "astro",
+      "client": null,
+      "template": "landing-page",
+      "status": "approved",
+      "version": "2.0.0",
+      "updatedAt": "2026-11-02",
+      "title": "The landing page's content model",
+      "description": "How the scaffold's CMS collections are laid out, and where a new section goes.",
+      "source": "Written up from the AVEL website project",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "test-unit",
+        "canon"
+      ],
+      "backedBy": [
+        "Spring launch site",
+        "Price sheet audit"
+      ],
+      "usage": {
+        "selected": 0,
+        "searched": 12,
+        "firstTry": 88,
+        "findings": 0
+      },
+      "content": "## Collections\n- `sections/` one file per page section, ordered by `order`.\n- `plans/` the pricing plans, with `price` in cents.\n\n## The schema\n```ts src/content/config.ts\nconst plans = defineCollection({\n  schema: z.object({\n    name: z.string(),\n    price: z.number().int(), // cents, never a float\n    features: z.array(z.string()),\n  }),\n});\n```\n\n## Adding a section\n1. Add a file in `sections/` with a new `order`.\n2. Add its component in `src/components/sections/`.\n3. The page picks it up; no route change.\n\n> [!TIP] Reordering the page is a content change: edit `order` in the section's file. No build, no PR.",
+      "history": [
+        [
+          "2.0.0",
+          "Plans moved to their own collection",
+          "2026-11-02",
+          138
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000004"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "landing-page-auth",
+      "type": "Pattern",
+      "layer": "stack",
+      "stack": "astro",
+      "client": null,
+      "template": "landing-page",
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-10-28",
+      "title": "How the landing page signs people in",
+      "description": "The scaffold's optional sign-in: magic links, session cookies and where to extend it.",
+      "source": "Written up from the AVEL website project",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "test-e2e"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 0,
+        "searched": 5,
+        "firstTry": 80,
+        "findings": 0
+      },
+      "content": "## How it works\n`src/lib/auth.ts` sends a magic link and sets an HTTP-only session cookie.\n\n```ts src/lib/auth.ts\nexport async function sendMagicLink(email: string) {\n  const token = await issueToken(email);\n  await mail.send(email, linkFor(token));\n}\n```\n\n## Extending it\nAdd a role to `session.roles`; never read the cookie in a component.\n\n> [!WARNING] The cookie is HTTP-only on purpose. Reading it in a component breaks the job check.",
+      "history": [
+        [
+          "1.0.0",
+          "First version",
+          "2026-10-28",
+          131
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000005"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "wcag-form-errors",
+      "type": "Checklist",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.2.0",
+      "updatedAt": "2026-10-20",
+      "title": "Form errors that every reader can find",
+      "description": "WCAG 2.2 AA for form errors: placement, wording, focus and announcements.",
+      "source": "WCAG 2.2, written up for reviewers",
+      "license": "W3C, paraphrased",
+      "roles": [
+        "builder",
+        "review-a11y-perf",
+        "test-e2e"
+      ],
+      "backedBy": [
+        "Control room",
+        "Booking fix"
+      ],
+      "usage": {
+        "selected": 27,
+        "searched": 3,
+        "firstTry": 79,
+        "findings": 2
+      },
+      "content": "- [ ] Each error sits under its field and is linked with `aria-describedby`.\n- [ ] The message says what's wrong and how to fix it.\n- [ ] After a failed submit, focus moves to the first invalid field.\n- [ ] Errors are announced with `role=\"alert\"`.",
+      "history": [
+        [
+          "1.2.0",
+          "Adds focus after submit",
+          "2026-10-20",
+          118
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000006"
+    },
+    {
+      "kind": "skills",
+      "slug": "tdd-writer",
+      "type": "Role skill",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "active",
+      "version": "3.2.0",
+      "updatedAt": "2026-11-02",
+      "title": "Write failing tests first",
+      "description": "Writes failing tests from EARS requirements and given/when/then scenarios before any code.",
+      "source": "Written",
+      "license": "AVEL",
+      "roles": [
+        "test-unit",
+        "test-e2e"
+      ],
+      "backedBy": [
+        "Spring launch site",
+        "Booking fix",
+        "Control room"
+      ],
+      "usage": {
+        "selected": 64,
+        "searched": 0,
+        "firstTry": 77,
+        "findings": 3
+      },
+      "content": "---\nname: tdd-writer\ndescription: Write failing tests from the module's requirements before any code exists.\n---\n\n1. Read the module's requirements and scenarios in the task doc.\n2. Write one test per scenario. Each must fail for the right reason.\n3. Run them and paste the failure lines into your report.",
+      "history": [
+        [
+          "3.2.0",
+          "Adds Playwright scenario scaffolds",
+          "2026-11-02",
+          137
+        ],
+        [
+          "3.1.0",
+          "Splits unit and e2e prompts",
+          "2026-10-28",
+          130
+        ]
+      ],
+      "pr": 149,
+      "itemId": "01a1d500-0000-7000-8000-000000000007"
+    },
+    {
+      "kind": "skills",
+      "slug": "ui-ux-pro-max",
+      "type": "Stack skill",
+      "layer": "stack",
+      "stack": "web",
+      "client": null,
+      "template": null,
+      "status": "active",
+      "version": "2.15.0",
+      "updatedAt": "2026-11-04",
+      "title": "UI and UX rules",
+      "description": "Accessibility, touch, layout, type, motion and charts rules, with a pre-delivery checklist.",
+      "source": "Imported from nextlevelbuilder/ui-ux-pro-max-skill (MIT)",
+      "license": "MIT",
+      "roles": [
+        "builder",
+        "review-a11y-perf"
+      ],
+      "backedBy": [
+        "Control room"
+      ],
+      "usage": {
+        "selected": 22,
+        "searched": 0,
+        "firstTry": 84,
+        "findings": 1
+      },
+      "content": "---\nname: ui-ux-pro-max\ndescription: UI and UX rules for web, mobile and desktop.\n---\n\nWork the categories in priority order: accessibility, touch, performance, layout, navigation, style, type and colour, motion, forms, charts.",
+      "history": [
+        [
+          "2.15.0",
+          "Imported",
+          "2026-11-04",
+          140
+        ]
+      ],
+      "pr": null,
+      "origin": {
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+        "version": "2.15.0",
+        "license": "MIT",
+        "changes": 0,
+        "note": "Rules edition: the full rule set and checklist, without the upstream search tool"
+      },
+      "itemId": "01a1d500-0000-7000-8000-000000000008"
+    },
+    {
+      "kind": "skills",
+      "slug": "a11y-review",
+      "type": "Role skill",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "active",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-08",
+      "title": "Accessibility review",
+      "description": "Reviews WCAG 2.2 AA: contrast, targets, focus order and labels.",
+      "source": "Written",
+      "license": "AVEL",
+      "roles": [
+        "review-a11y-perf"
+      ],
+      "backedBy": [],
+      "usage": {
+        "selected": 0,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0
+      },
+      "content": "---\nname: a11y-review\ndescription: Review a module against WCAG 2.2 AA.\n---\n\nCheck contrast, target size, focus order and accessible names. Cite the criterion in each finding.",
+      "history": [
+        [
+          "1.0.0",
+          "First version, in PR #142",
+          "2026-11-08",
+          null
+        ]
+      ],
+      "pr": 142,
+      "itemId": "01a1d500-0000-7000-8000-000000000009"
+    },
+    {
+      "kind": "rules",
+      "slug": "no-new-deps-without-approval",
+      "type": "Rule",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "active",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-01",
+      "title": "No new dependency without a request",
+      "description": "A new package opens a dependency request for the operator instead of landing.",
+      "source": "Written",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "review-backend",
+        "review-frontend"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 51,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0,
+        "fired": 3
+      },
+      "content": "id: no-new-deps-without-approval\nscope: global\ncheck: lockfile-diff\nfail_when: a package is added that isn't in the approved list\nmessage: File a dependency request instead.",
+      "history": [
+        [
+          "1.0.0",
+          "First version",
+          "2026-11-01",
+          108
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000010"
+    },
+    {
+      "kind": "rules",
+      "slug": "secrets-never-in-repo",
+      "type": "Rule",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "active",
+      "version": "1.2.0",
+      "updatedAt": "2026-11-02",
+      "title": "Secrets never in the repo",
+      "description": "Secrets come from the room's vault; Gate 2 fails on any committed secret.",
+      "source": "Written",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "review-security"
+      ],
+      "backedBy": [
+        "Booking fix",
+        "Control room"
+      ],
+      "usage": {
+        "selected": 64,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0,
+        "fired": 1
+      },
+      "content": "id: secrets-never-in-repo\nscope: global\ncheck: secret-scan\nfail_when: a high-entropy string or known key shape is committed\nmessage: Read it from the vault.",
+      "history": [
+        [
+          "1.2.0",
+          "Adds known key shapes",
+          "2026-11-02",
+          122
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000011"
+    },
+    {
+      "kind": "rules",
+      "slug": "astro-no-client-js-by-default",
+      "type": "Rule",
+      "layer": "stack",
+      "stack": "astro",
+      "client": null,
+      "template": "landing-page",
+      "status": "active",
+      "version": "1.0.0",
+      "updatedAt": "2026-10-28",
+      "title": "No client JavaScript by default",
+      "description": "Astro components ship no client JS unless the plan names the island.",
+      "source": "Written",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "review-frontend"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 12,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0,
+        "fired": 2
+      },
+      "content": "id: astro-no-client-js-by-default\nscope: stack/astro\ncheck: astro-islands\nfail_when: a client:* directive isn't named in the plan\nmessage: Name the island in the plan or render it on the server.",
+      "history": [
+        [
+          "1.0.0",
+          "First version",
+          "2026-10-28",
+          131
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000012"
+    },
+    {
+      "kind": "guide",
+      "slug": "how-the-library-works",
+      "type": "Guide",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-10",
+      "title": "How the library works",
+      "description": "What the agents learn from, how an entry reaches them, and how to change one.",
+      "source": "Written",
+      "license": "AVEL",
+      "roles": [
+        "canon",
+        "builder",
+        "test-unit",
+        "review-spec"
+      ],
+      "backedBy": [],
+      "usage": {
+        "selected": 0,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0
+      },
+      "content": "## What's in it\nThe library holds three kinds of thing. **Knowledge** is what an agent reads: worked examples, patterns, correction pairs, checklists, lessons, decision records and domain facts. **Skills** teach an agent how to do one kind of work. **Rules** are checks that must pass.\n\n## Entry types\n| Type | What it holds | Who reads it |\n|---|---|---|\n| Worked example | Real code that passed, explained | Builders |\n| Pattern | When to reach for an approach, and its cost | Builders, Canon |\n| Correction pair | What failed, what passed, and why | Builders, reviewers |\n| Checklist | What a reviewer checks, item by item | Reviewers |\n| Lesson | Something the factory learned the hard way | Everyone |\n| Decision record | A choice made once, so no one asks again | Canon, builders |\n| Domain fact | A client's words, rules and history | Canon, builders |\n\n## Layers\n- **Global:** works for any stack and any client.\n- **Stack:** one language or framework, such as Astro or React.\n- **Client:** one client's language, rules and past decisions. It never reaches another client's projects.\n- **Template:** how a template's scaffold works. Builders, test writers and Canon pull it on projects built from that template.\n\n## How an entry reaches an agent\n1. Code picks entries for each task doc by work kind, stack, domain and client, within a fixed token budget.\n2. Agents can also search the library while they work. Every search is logged.\n3. A project pins one knowledge release when it's finalized, and keeps it until it closes.\n\n## Changing an entry\n1. Open the entry and choose **Propose a change**.\n2. Edit it, review the diff, and file the factory PR.\n3. The PR waits for you in Decisions. Merging it adds the change to the next knowledge release.\n\n## Where new entries come from\nRetry pairs, review findings fixed with a regression test, searches that found nothing, and reasons you give more than once. They arrive in Decisions as candidates, never straight into the library.\n\n## What an entry looks like\n```yaml knowledge/stripe-checkout.yaml\nslug: stripe-checkout\ntype: worked-example\nlayer: stack\nstack: next\nroles: [builder, unit-test-writer, security-reviewer]\nversion: 4.0.0\n```",
+      "history": [
+        [
+          "1.0.0",
+          "First version",
+          "2026-11-10",
+          null
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000013"
+    },
+    {
+      "kind": "guide",
+      "slug": "commit-convention",
+      "type": "Guide",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "proposed",
+      "version": "1.1.0",
+      "updatedAt": "2026-11-12",
+      "title": "Commit convention",
+      "description": "How every commit is written: the type, the first word, the scope and the trailers. Version 1.1 is proposed.",
+      "source": "Written",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "test-unit",
+        "test-e2e",
+        "review-spec"
+      ],
+      "backedBy": [],
+      "usage": {
+        "selected": 0,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0
+      },
+      "content": "## The shape\nEvery commit, yours, an agent's or the integrator's, is written the same way. Receipts and audit read it, the contract version comes from it, and release notes are built from it.\n\n```text commit message\ntype(scope)!: verb + what changes, 72 characters or less\n\nWhy this change. Wrap at 100 characters.\n\nChecked: how it was proven\nTrailer-Key: value\n```\n\n## Picking the type\nAsk one question: **would the person using it notice?**\n\n| Notice? | Type | Release note | Contract version |\n| --- | --- | --- | --- |\n| Yes, something new | `feat` | Added | minor |\n| Yes, something broken now works | `fix` | Fixed | patch |\n| Yes, it's faster or lighter | `perf` | Faster | patch |\n| Yes, an earlier change is undone | `revert` | Undone | patch |\n| No, cleaner code, same behavior | `refactor` | Hidden | none |\n| No, tests, docs, build or CI | `test`, `docs`, `build`, `ci` | Hidden | none |\n| Still no fit | `chore`, with a line saying why | Hidden | none |\n\nA `!` after the scope makes it **Breaking**: the contract goes up a major version, and the `BREAKING CHANGE:` line becomes the note.\n\n> [!WARNING]\n> `chore` is refused on mission branches, and a `refactor` may not change a locked test's expectations. If behavior changed, it's a `fix` or a `feat`.\n\n## The first word\nImperative and lowercase, from this list: `add`, `remove`, `show`, `hide`, `let`, `stop`, `keep`, `refuse`, `allow`, `require`, `rename`, `move`, `split`, `merge`, `replace`, `speed up`, `bump`, `document`, `test`, `revert`.\n\n```diff\n- feat(web/release): receipt page\n+ feat(web/release): show the proof check on the receipt\n- fix(server/gate): override bug\n+ fix(server/gate): refuse an override on gate 5\n- chore(M3): cleanup\n+ refactor(M3): split the price rule loader\n```\n\nIDs, file names and ticket numbers go in trailers, never in the summary.\n\n## Scopes\n| Scope | After the slash |\n| --- | --- |\n| `web`, `server` | The module: `web/decisions`, `server/gate` |\n| `contract`, `db`, `cli`, `mock` | Nothing: the package alone |\n| `design`, `docs`, `repo`, `deps` | Nothing |\n| `M1`, `M2`, … | Mission branches only |\n| Factory repo | `skills`, `kb`, `rules`, `templates`, `roster`, `factory-yaml`, `canon` |\n\n## Trailers\n| Trailer | Meaning | Who writes it |\n| --- | --- | --- |\n| `Checked` | How it was proven: `vitest web/decisions`, `manual on iPhone 15` | You on `feat`, `fix`, `perf`; the runner on agent commits |\n| `Project-Kind` | `client` or `internal` | The runner and integrator |\n| `Reverts` | The SHA being undone | Whoever reverts |\n| `Refs`, `Closes`, `Finding` | A CR, doc or finding | Anyone |\n| `Mission`, `Module`, `Agent`, `Dispatch`, `Attempt`, `Factory-Commit` | Where the commit came from | The runner, automatically |\n| `Task`, `Requirement`, `Scenario` | What the agent served | The agent |\n\n## Internal and client projects\nCanon's first question decides it.\n\n| | Client project | Internal project |\n| --- | --- | --- |\n| Convention | The client's own, if their repo has one, plus our trailers | Always this one |\n| `Project-Kind` | `client` | `internal` |\n| Release notes | Offered to the client at delivery | For you only |\n\n## Examples\n```text Your commit (squashed PR)\nfeat(web/decisions): show what changed when an approval is stale\n\nA 409 now refetches the decision and shows the new version beside the one\nyou opened, instead of a generic error.\n\nChecked: mock, stale-version scenario\nRefs: CR-W2\n```\n\n```text An agent's commit on a mission branch\nfeat(M2): let customers request a quote from the landing page\n\nTask: M2-T3\nRequirement: R7\nScenario: S12\nChecked: 6 locked tests pass\nProject-Kind: client\nMission: gts-landing\nModule: M2\nAgent: Leon\nDispatch: D-42\nAttempt: a2\nFactory-Commit: 4e1c9a0\n```\n\n```text A revert\nrevert(web/kit): bring back the old button height\n\nReverts: 4e1c9a0\nChecked: screenshot matrix\n```\n\n## How it's enforced\n| Where | How |\n| --- | --- |\n| Your machine | commitlint in the `commit-msg` hook that `avel link` installs |\n| Pull requests | CI checks the PR title; merges are squash only |\n| Agent attempts | The `commits:` rule in `avel check`, rules version 14; Gate 3 fails a badly formed commit |\n| Integration commits | The integrator writes them from the module's goal and its trailers |\n",
+      "history": [
+        [
+          "1.1.0",
+          "Proposed: one question picks the type, a verb list, Checked and Project-Kind trailers, no chore on mission branches",
+          "2026-11-12",
+          147
+        ],
+        [
+          "1.0.0",
+          "First version: Conventional Commits with AVEL scopes and trailers",
+          "2026-11-03",
+          null
+        ]
+      ],
+      "pr": 147,
+      "itemId": "01a1d500-0000-7000-8000-000000000014"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "offline-form-retry",
+      "type": "Correction pair",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-09",
+      "title": "Keep the form when the network drops",
+      "description": "A failed submit keeps what the person typed and says how to retry, instead of a generic error.",
+      "source": "Retry pair on Spring launch site, M3",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "test-e2e"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 6,
+        "searched": 2,
+        "firstTry": 100,
+        "findings": 0
+      },
+      "content": "## Before\n```ts Before: the form forgets\ncatch (e) {\n  setError(\"Something went wrong\");\n}\n```\n\n## After\n```ts After: the form keeps your work\ncatch (e) {\n  setError(\"You're offline. Your details are kept; try again.\");\n  keepValues(form);\n}\n```\n\n## The change\n```diff\n catch (e) {\n-  setError(\"Something went wrong\");\n+  setError(\"You're offline. Your details are kept; try again.\");\n+  keepValues(form);\n }\n```\n\n## Why\n- A generic error gives the person nothing to do next.\n- Clearing the form after a network failure loses their work.\n- The locked test M3-R1-S2 checks both the message and the kept values.",
+      "history": [
+        [
+          "1.0.0",
+          "Written up from the retry pair",
+          "2026-11-09",
+          144
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000015"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "annual-pricing-discount",
+      "type": "Correction pair",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-07",
+      "title": "Annual prices apply the discount",
+      "description": "The annual price is the monthly price × 12 minus the plan's annual discount, rounded once.",
+      "source": "Review finding F-6 on Spring launch site, M2",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "review-spec"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 3,
+        "searched": 1,
+        "firstTry": 100,
+        "findings": 0
+      },
+      "content": "## Before\n```ts\nannual = monthly * 12\n```\n\n## After\n```ts\nannual = Math.round(monthly * 12 * (1 - plan.annualDiscount))\n```\n\n## Why\nThe pricing table showed the monthly figure × 12, so annual plans looked more expensive than they were. Round once, at the end, so cents don't drift.",
+      "history": [
+        [
+          "1.0.0",
+          "Written up from F-6",
+          "2026-11-07",
+          143
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000016"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "intl-not-date-libraries",
+      "type": "Decision record",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-08",
+      "title": "Use Intl, not a date library",
+      "description": "Format and compare dates with the platform's Intl and Temporal APIs. Date libraries are refused.",
+      "source": "Your reasons on three dependency requests",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "review-frontend",
+        "review-backend"
+      ],
+      "backedBy": [
+        "Spring launch site",
+        "Booking fix",
+        "Control room"
+      ],
+      "usage": {
+        "selected": 9,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0
+      },
+      "content": "## Decision\nBuilders format dates with `Intl.DateTimeFormat` and compare them with `Temporal` where it's available. Requests for dayjs, date-fns or luxon are refused.\n\n## Why\n- The platform covers every case the factory has met so far.\n- One fewer dependency per project, and one fewer way to get time zones wrong.\n\n## Background\nRefused three times, on three projects, with the same reason. Repeated reasons become decision records.",
+      "history": [
+        [
+          "1.0.0",
+          "Written up from repeated reasons",
+          "2026-11-08",
+          145
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000017"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "budget-before-retry-2",
+      "type": "Lesson",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-06",
+      "title": "Check the budget before retry 2",
+      "description": "Retry 2 costs about as much as the first attempt. If the module has less than that left, ask first.",
+      "source": "Closeout lesson from Spring launch site, M3",
+      "license": "AVEL",
+      "roles": [
+        "builder"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 4,
+        "searched": 0,
+        "firstTry": null,
+        "findings": 0
+      },
+      "content": "## The signal\nA module on retry 1 with less than a quarter of its cap left.\n\n## What happens without it\nRetry 2 starts, hits the module cap halfway, and parks. You pay for half a retry and still get a parked proposal.\n\n## What to do\nThe scheduler raises a budget proposal before retry 2 when the remaining budget is under one attempt cap.",
+      "history": [
+        [
+          "1.0.0",
+          "First version",
+          "2026-11-06",
+          null
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000018"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "asvs-l1-auth-checklist",
+      "type": "Checklist",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.1.0",
+      "updatedAt": "2026-10-24",
+      "title": "Sign-in that passes ASVS Level 1",
+      "description": "What Zane checks on any module that signs people in, from OWASP ASVS Level 1.",
+      "source": "OWASP ASVS 4.0.3, paraphrased for reviewers",
+      "license": "OWASP, paraphrased",
+      "roles": [
+        "builder",
+        "review-security"
+      ],
+      "backedBy": [
+        "Booking fix",
+        "Control room"
+      ],
+      "usage": {
+        "selected": 14,
+        "searched": 2,
+        "firstTry": 72,
+        "findings": 3
+      },
+      "content": "- [ ] Passwords, if any, are at least 12 characters and checked against breached lists.\n- [ ] Sign-in, reset and magic-link routes are rate-limited.\n- [ ] Session cookies are HTTP-only, Secure and SameSite.\n- [ ] A reset link works once and expires within an hour.\n- [ ] Errors don't say whether an account exists.",
+      "history": [
+        [
+          "1.1.0",
+          "First version",
+          "2026-10-24",
+          null
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000019"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "zod-form-validation",
+      "type": "Worked example",
+      "layer": "stack",
+      "stack": "next",
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-09",
+      "title": "Validate a form on the server with zod",
+      "description": "One schema validates the form in the browser and again on the server, with errors per field.",
+      "source": "Written up after the zod dependency was approved",
+      "license": "AVEL",
+      "roles": [
+        "builder",
+        "test-unit"
+      ],
+      "backedBy": [
+        "Spring launch site"
+      ],
+      "usage": {
+        "selected": 2,
+        "searched": 3,
+        "firstTry": 100,
+        "findings": 0
+      },
+      "content": "## The schema\n```ts\nexport const Signup = z.object({\n  name: z.string().trim().min(1, \"Enter your name\"),\n  email: z.email(\"Enter an email like name@studio.com\"),\n});\n```\n\n## On the server\n```ts\nconst parsed = Signup.safeParse(await request.json());\nif (!parsed.success) return fieldErrors(parsed.error);\n```\n\n## Why it's written this way\n- The messages say how to fix the field, not just that it's wrong.\n- The server never trusts the browser's check.",
+      "history": [
+        [
+          "1.0.0",
+          "First version",
+          "2026-11-09",
+          null
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000020"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "module-boundaries",
+      "type": "Pattern",
+      "layer": "global",
+      "stack": null,
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.2.0",
+      "updatedAt": "2026-10-30",
+      "title": "Split modules along file territories",
+      "description": "Modules that run at the same time never share files. Split by territory, not by feature words.",
+      "source": "Gate 2 rejections on two projects",
+      "license": "AVEL",
+      "roles": [
+        "canon",
+        "builder"
+      ],
+      "backedBy": [
+        "Control room",
+        "Booking fix"
+      ],
+      "usage": {
+        "selected": 11,
+        "searched": 1,
+        "firstTry": 81,
+        "findings": 0
+      },
+      "content": "## When to use it\nAt checkpoint 0.2, when Canon breaks a project into modules.\n\n## The pattern\n- Give each module its own folders to write in.\n- Put shared types in the foundation module, M0, so later modules only read them.\n- If two modules must touch one file, make one depend on the other.\n\n## In the plan\n```yaml plan.yaml\nmodules:\n  - ref: M0\n    owns: [src/lib/types/, src/styles/]\n  - ref: M2\n    owns: [src/components/pricing/]\n    after: [M0]   # reads the shared types, never writes them\n```\n\n## Trade-offs\nMore dependencies mean fewer modules run at once. Gate 1 refuses overlapping territories, so the trade is made at planning time, not at merge time.",
+      "history": [
+        [
+          "1.2.0",
+          "First version",
+          "2026-10-30",
+          null
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000021"
+    },
+    {
+      "kind": "knowledge",
+      "slug": "harbor-booking-domain",
+      "type": "Domain fact",
+      "layer": "client",
+      "stack": null,
+      "client": "Harbor Dental",
+      "template": null,
+      "status": "approved",
+      "version": "1.0.0",
+      "updatedAt": "2026-10-18",
+      "title": "How Harbor Dental books appointments",
+      "description": "Slots, holds and reminders, in Harbor Dental's own words.",
+      "source": "Canon, Booking fix onboarding",
+      "license": "Client: Harbor Dental",
+      "roles": [
+        "canon",
+        "builder",
+        "test-e2e"
+      ],
+      "backedBy": [
+        "Booking fix"
+      ],
+      "usage": {
+        "selected": 8,
+        "searched": 2,
+        "firstTry": 88,
+        "findings": 0
+      },
+      "content": "## Words\n- **Slot:** 30 minutes on one chair.\n- **Hold:** a slot kept for 90 seconds while someone books it.\n- **Recall:** a check-up booked six months ahead.\n\n## Rules\n- A patient can hold one slot at a time.\n- Reminders go out 48 hours and 2 hours before.",
+      "history": [
+        [
+          "1.0.0",
+          "First version",
+          "2026-10-18",
+          null
+        ]
+      ],
+      "pr": null,
+      "itemId": "01a1d500-0000-7000-8000-000000000022"
+    },
+    {
+      "kind": "skills",
+      "slug": "react-tanstack-performance",
+      "type": "Stack skill",
+      "layer": "stack",
+      "stack": "react",
+      "client": null,
+      "template": null,
+      "status": "approved",
+      "version": "1.3.0",
+      "updatedAt": "2026-11-05",
+      "title": "React and TanStack performance",
+      "description": "Waterfalls, bundle size and re-renders in React 19 with TanStack Router and Query.",
+      "source": "Imported, then edited",
+      "license": "MIT",
+      "roles": [
+        "builder",
+        "review-a11y-perf"
+      ],
+      "backedBy": [
+        "Control room"
+      ],
+      "usage": {
+        "selected": 17,
+        "searched": 0,
+        "firstTry": 83,
+        "findings": 1
+      },
+      "content": "---\nname: react-tanstack-performance\ndescription: Keep React and TanStack apps fast: no request waterfalls, small bundles, few re-renders.\n---\n\n1. Load route data in the loader, in parallel.\n2. Split by route; never import a whole icon set.\n3. Derive state during render instead of syncing it in an effect.",
+      "history": [
+        [
+          "1.3.0",
+          "First version",
+          "2026-11-05",
+          null
+        ]
+      ],
+      "pr": null,
+      "origin": {
+        "repo": null,
+        "version": null,
+        "license": "MIT",
+        "changes": 1,
+        "note": null
+      },
+      "itemId": "01a1d500-0000-7000-8000-000000000023"
+    }
+  ],
+  "templates": [
+    {
+      "slug": "landing-page",
+      "name": "Landing page",
+      "version": "3",
+      "status": "active",
+      "package": "Landing page",
+      "pitch": "A marketing site with a hero, pricing, a CMS and analytics.",
+      "bestFor": "Launches, studios and small products",
+      "stack": [
+        "Astro 5",
+        "Tailwind 4",
+        "Vitest",
+        "Playwright"
+      ],
+      "preview": "landing",
+      "source": "AVEL website",
+      "commit": "e0cf4e7899c676801a2f56617885e135ab605d94",
+      "updatedAt": "2026-11-02",
+      "stats": {
+        "built": 3,
+        "firstTry": 76,
+        "costLow": 38,
+        "costHigh": 46,
+        "days": 2,
+        "findingsPer": 1.3
+      },
+      "whatYouGet": [
+        [
+          "Hero and layout",
+          "Responsive, design-system tokens"
+        ],
+        [
+          "Pricing table",
+          "Plans from the CMS"
+        ],
+        [
+          "Signup form",
+          "Emails the studio, rate-limited"
+        ],
+        [
+          "Analytics events",
+          "On every call to action"
+        ]
+      ],
+      "screens": [
+        "Home",
+        "Pricing",
+        "Signup",
+        "Phone"
+      ],
+      "builtWith": [
+        [
+          "Spring launch site",
+          "Blume Studio",
+          "running",
+          null,
+          null,
+          29
+        ],
+        [
+          "Price sheet audit",
+          "Blume Studio",
+          "closed",
+          "2026-10-14",
+          75,
+          41
+        ],
+        [
+          "AVEL website",
+          "AVEL",
+          "verified",
+          "2026-09-30",
+          78,
+          38
+        ]
+      ],
+      "rules": [
+        "astro-no-client-js-by-default",
+        "no-new-deps-without-approval",
+        "secrets-never-in-repo"
+      ],
+      "skills": [
+        "tdd-writer",
+        "ui-ux-pro-max"
+      ],
+      "guide": "landing-page-cms-model",
+      "plan": [
+        [
+          "M0",
+          "Foundation: layout, tokens, CI",
+          "frontend",
+          0,
+          0
+        ],
+        [
+          "M1",
+          "Hero and page layout",
+          "frontend",
+          1,
+          8
+        ],
+        [
+          "M2",
+          "Pricing table",
+          "frontend",
+          1,
+          7
+        ],
+        [
+          "M3",
+          "Signup form that emails the studio",
+          "api",
+          2,
+          10
+        ],
+        [
+          "M4",
+          "Analytics events",
+          "frontend",
+          3,
+          6
+        ]
+      ],
+      "tree": [
+        "src/",
+        "src/components/",
+        "src/components/sections/Hero.astro",
+        "src/components/sections/Pricing.astro",
+        "src/content/sections/",
+        "src/content/plans/",
+        "src/content/config.ts",
+        "src/lib/auth.ts",
+        "src/pages/index.astro",
+        "astro.config.mjs",
+        "package.json"
+      ],
+      "files": {
+        "src/lib/auth.ts": "export async function sendMagicLink(email: string) {\n  const token = await issueToken(email);\n  await mail.send(email, linkFor(token));\n}\n\nexport function readSession(request: Request) {\n  return sessions.get(cookie(request, \"avel_session\"));\n}",
+        "src/pages/index.astro": "---\nimport Hero from \"../components/sections/Hero.astro\";\nimport { getCollection } from \"astro:content\";\nconst sections = await getCollection(\"sections\");\n---\n<Hero />\n{sections.map((s) => <Section {...s.data} />)}",
+        "astro.config.mjs": "import { defineConfig } from \"astro/config\";\nexport default defineConfig({ output: \"static\" });",
+        "src/content/config.ts": "import { defineCollection, z } from \"astro:content\";\n\nconst sections = defineCollection({\n  schema: z.object({ title: z.string(), order: z.number(), body: z.string() }),\n});\n\n// plans change often, so they live in the CMS, not in code\nconst plans = defineCollection({\n  schema: z.object({\n    name: z.string(),\n    priceMonthly: z.number(),\n    features: z.array(z.string()),\n    highlighted: z.boolean().default(false),\n  }),\n});\n\nexport const collections = { sections, plans };"
+      },
+      "versions": [
+        [
+          "3",
+          "2026-11-02",
+          "Analytics module optional",
+          2
+        ],
+        [
+          "2",
+          "2026-10-10",
+          "Plans moved to the CMS",
+          1
+        ],
+        [
+          "1",
+          "2026-09-01",
+          "First version from the AVEL website",
+          0
+        ]
+      ],
+      "url": "landing.preview.avelco.dev",
+      "docs": {
+        "overview": "The scaffold for a marketing site: a hero, a pricing table that reads plans from the CMS, a signup form that emails the studio, and analytics on every call to action. It ships no client JavaScript by default, so the first screen is fast on any phone.",
+        "use": [
+          "A launch or product page that sells one thing",
+          "A studio site whose plans and copy change often",
+          "Content an editor updates without a deploy"
+        ],
+        "avoid": [
+          "Accounts, roles or dashboards: start from Admin portal",
+          "Time slots or bookings: start from Booking flow",
+          "A shop with a cart: that's a custom package"
+        ],
+        "quickstart": [
+          {
+            "title": "Canon picks it at 0.3",
+            "text": "When the brief fits, Canon proposes this template in Mission and roster. Approving 0.3 records it in the plan.",
+            "code": {
+              "lang": "yaml",
+              "title": "plan.yaml",
+              "code": "template: landing-page@3\ncommit: e0cf4e7\nmodules: [M1, M2, M3, M4]  # M0 is already in the scaffold"
+            }
+          },
+          {
+            "title": "Finalize pins the commit",
+            "text": "Builders start from exactly these files, never from main. A newer template version doesn't move a project that's already running."
+          },
+          {
+            "title": "Content goes in the CMS",
+            "text": "Sections and plans are content collections, so a price change never needs a build.",
+            "code": {
+              "lang": "ts",
+              "title": "src/content/config.ts",
+              "code": "const plans = defineCollection({\n  schema: z.object({ name: z.string(), priceMonthly: z.number() }),\n});"
+            }
+          },
+          {
+            "title": "Gate 4 checks the first screen",
+            "text": "Ready to merge needs the first screen under 2.5 s on Fast 4G and the signup form tested end to end."
+          }
+        ],
+        "notes": [
+          {
+            "tone": "warning",
+            "text": "Don't add a client-side framework to a section. The rule astro-no-client-js-by-default fails the job check, and Gate 3 parks the module."
+          }
+        ],
+        "manifest": "name: landing-page\nversion: 3\npackage: landing-page\nstack: [astro@5, tailwind@4, vitest, playwright]\n\nmodules:\n  - ref: M1\n    goal: Hero and page layout\n    kind: frontend\n  - ref: M2\n    goal: Pricing table\n    kind: frontend\n  - ref: M3\n    goal: Signup form that emails the studio\n    kind: api\n  - ref: M4\n    goal: Analytics events\n    kind: frontend\n    optional: true   # since v3\n\nrules:\n  - astro-no-client-js-by-default\n  - no-new-deps-without-approval\n  - secrets-never-in-repo\n\nquality:\n  first_screen_ms: 2500   # Fast 4G\n  a11y: wcag-2.2-aa",
+        "annotations": {
+          "src/": "Everything the builders touch",
+          "src/components/sections/Hero.astro": "Headline, sub-head and one call to action",
+          "src/components/sections/Pricing.astro": "Renders the plans collection, one card per plan",
+          "src/content/sections/": "Page copy, one file per section",
+          "src/content/plans/": "Plans and prices, edited in the CMS",
+          "src/content/config.ts": "Schemas for the two content collections",
+          "src/lib/auth.ts": "Magic-link sign-in for the studio's editors",
+          "src/pages/index.astro": "The page: sections in the order the CMS gives",
+          "astro.config.mjs": "Static output, Tailwind, sitemap",
+          "package.json": "Pinned versions; new packages need approval"
+        },
+        "keyFiles": [
+          [
+            "src/pages/index.astro",
+            "The whole page. Sections come from the CMS in order, so reordering the page is a content change."
+          ],
+          [
+            "src/content/config.ts",
+            "What an editor can change. Builders add fields here before they use them in a section."
+          ],
+          [
+            "src/lib/auth.ts",
+            "Sign-in for editors only. Visitors never sign in. Sessions live in a signed cookie named avel_session."
+          ],
+          [
+            "astro.config.mjs",
+            "Static output by default. Switching a page to server rendering is a decision record, not a config tweak."
+          ]
+        ]
+      }
+    },
+    {
+      "slug": "booking-flow",
+      "name": "Booking flow",
+      "version": "2",
+      "status": "active",
+      "package": "Booking",
+      "pitch": "Slots, bookings, reminders and a staff view, safe under double-booking.",
+      "bestFor": "Clinics, salons and service shops",
+      "stack": [
+        "Next 16",
+        "Postgres",
+        "Drizzle",
+        "Playwright"
+      ],
+      "preview": "booking",
+      "source": "Studio booking demo",
+      "commit": "2d8ef3291c0aa4a8b19f04b0d8c8d0e7f2d1a6b3",
+      "updatedAt": "2026-11-06",
+      "stats": {
+        "built": 2,
+        "firstTry": 81,
+        "costLow": 52,
+        "costHigh": 61,
+        "days": 3,
+        "findingsPer": 0.5
+      },
+      "whatYouGet": [
+        [
+          "Slot calendar",
+          "Opening hours and blocked times"
+        ],
+        [
+          "Booking with a lock",
+          "No double bookings"
+        ],
+        [
+          "Reminders",
+          "Email and SMS"
+        ],
+        [
+          "Staff view",
+          "Today's bookings by person"
+        ]
+      ],
+      "screens": [
+        "Calendar",
+        "Book a slot",
+        "Staff day",
+        "Phone"
+      ],
+      "builtWith": [
+        [
+          "Studio booking demo",
+          "AVEL",
+          "verified",
+          "2026-10-02",
+          80,
+          52
+        ],
+        [
+          "Harbor reminders",
+          "Harbor Dental",
+          "delivered",
+          "2026-10-28",
+          82,
+          61
+        ]
+      ],
+      "rules": [
+        "no-new-deps-without-approval",
+        "secrets-never-in-repo"
+      ],
+      "skills": [
+        "tdd-writer"
+      ],
+      "guide": null,
+      "plan": [
+        [
+          "M0",
+          "Foundation: app shell, auth, CI",
+          "frontend",
+          0,
+          0
+        ],
+        [
+          "M1",
+          "Slots and opening hours",
+          "data",
+          1,
+          9
+        ],
+        [
+          "M2",
+          "Booking with a slot lock",
+          "api",
+          2,
+          12
+        ],
+        [
+          "M3",
+          "Reminders",
+          "services",
+          2,
+          8
+        ],
+        [
+          "M4",
+          "Staff day view",
+          "frontend",
+          3,
+          7
+        ]
+      ],
+      "tree": [
+        "app/",
+        "app/book/page.tsx",
+        "app/staff/page.tsx",
+        "db/schema.ts",
+        "lib/locks.ts",
+        "package.json"
+      ],
+      "files": {
+        "lib/locks.ts": "export async function withSlotLock(slotId: string, fn: () => Promise<void>) {\n  const lock = await db.locks.acquire(slotId, { ttlSeconds: 90 });\n  try { await fn(); } finally { await lock.release(); }\n}",
+        "db/schema.ts": "import { pgTable, uuid, timestamp, text, uniqueIndex } from \"drizzle-orm/pg-core\";\n\nexport const slots = pgTable(\"slots\", {\n  id: uuid(\"id\").primaryKey().defaultRandom(),\n  staffId: uuid(\"staff_id\").notNull(),\n  startsAt: timestamp(\"starts_at\", { withTimezone: true }).notNull(),\n});\n\nexport const bookings = pgTable(\n  \"bookings\",\n  {\n    id: uuid(\"id\").primaryKey().defaultRandom(),\n    slotId: uuid(\"slot_id\").notNull().references(() => slots.id),\n    email: text(\"email\").notNull(),\n  },\n  // one booking per slot, enforced by the database, not by the app\n  (t) => [uniqueIndex(\"bookings_slot_once\").on(t.slotId)],\n);"
+      },
+      "versions": [
+        [
+          "2",
+          "2026-11-06",
+          "Slot lock moved into the foundation",
+          1
+        ],
+        [
+          "1",
+          "2026-10-01",
+          "First version from the studio booking demo",
+          1
+        ]
+      ],
+      "url": "booking.preview.avelco.dev",
+      "docs": {
+        "overview": "Slots, bookings, reminders and a staff day view for a service business. Double-booking is impossible by construction: the database allows one booking per slot, and the app takes a short lock before it writes.",
+        "use": [
+          "Clinics, salons and studios that book by the hour",
+          "Staff who need today's list on a phone",
+          "Reminders by email or SMS"
+        ],
+        "avoid": [
+          "Paid tickets or seat maps: that's a custom package",
+          "Marketing pages: start from Landing page"
+        ],
+        "quickstart": [
+          {
+            "title": "Canon picks it at 0.3",
+            "text": "Proposed when the brief mentions appointments, slots or opening hours.",
+            "code": {
+              "lang": "yaml",
+              "title": "plan.yaml",
+              "code": "template: booking-flow@2\ncommit: 2d8ef32\nmodules: [M1, M2, M3, M4]"
+            }
+          },
+          {
+            "title": "Opening hours come first",
+            "text": "M1 turns opening hours into slots. Booking (M2) waits on it, so both run in order, never side by side."
+          },
+          {
+            "title": "The lock is already there",
+            "text": "Since v2 the slot lock lives in the foundation, so M2 only calls it.",
+            "code": {
+              "lang": "ts",
+              "title": "app/book/actions.ts",
+              "code": "await withSlotLock(slotId, () => db.insert(bookings).values({ slotId, email }));"
+            }
+          }
+        ],
+        "notes": [
+          {
+            "tone": "note",
+            "text": "Times are stored in UTC and shown in the business's own time zone. The domain fact for Harbor Dental covers its two locations."
+          }
+        ],
+        "manifest": "name: booking-flow\nversion: 2\npackage: booking\nstack: [next@16, postgres, drizzle, playwright]\n\nmodules:\n  - ref: M1\n    goal: Slots and opening hours\n    kind: data\n  - ref: M2\n    goal: Booking with a slot lock\n    kind: api\n    after: [M1]\n  - ref: M3\n    goal: Reminders\n    kind: services\n  - ref: M4\n    goal: Staff day view\n    kind: frontend\n\nrules:\n  - no-new-deps-without-approval\n  - secrets-never-in-repo",
+        "annotations": {
+          "app/book/page.tsx": "The public booking page",
+          "app/staff/page.tsx": "Today's bookings for staff, phone first",
+          "db/schema.ts": "Slots and bookings, one booking per slot",
+          "lib/locks.ts": "The short advisory lock taken before a booking is written",
+          "package.json": "Pinned versions; new packages need approval"
+        },
+        "keyFiles": [
+          [
+            "db/schema.ts",
+            "The rule that matters lives in the database: a unique index allows one booking per slot."
+          ],
+          [
+            "lib/locks.ts",
+            "Takes a Postgres advisory lock for the slot, so two people pressing Book at once get a clear answer instead of an error."
+          ]
+        ]
+      }
+    },
+    {
+      "slug": "admin-portal",
+      "name": "Admin portal",
+      "version": "1",
+      "status": "draft",
+      "package": "Portal",
+      "pitch": "Sign-in, roles, data tables and settings for an internal team.",
+      "bestFor": "Back offices and partner portals",
+      "stack": [
+        "TanStack Start",
+        "React 19",
+        "Tailwind 4",
+        "oRPC"
+      ],
+      "preview": "portal",
+      "source": "Partner portal pilot",
+      "commit": "c117a27b5e2f0d19a3c4b8e6f7a9d0c1b2e3f4a5",
+      "updatedAt": "2026-11-08",
+      "stats": {
+        "built": 0,
+        "firstTry": null,
+        "costLow": null,
+        "costHigh": null,
+        "days": null,
+        "findingsPer": null
+      },
+      "whatYouGet": [
+        [
+          "Sign-in and roles",
+          "Invite, roles, sessions"
+        ],
+        [
+          "Data tables",
+          "Sort, filter, page"
+        ],
+        [
+          "Settings",
+          "Profile and team"
+        ],
+        [
+          "Audit log",
+          "Who changed what"
+        ]
+      ],
+      "screens": [
+        "Overview",
+        "Table",
+        "Settings",
+        "Phone"
+      ],
+      "builtWith": [
+        [
+          "Partner portal pilot",
+          "AVEL",
+          "verified",
+          "2026-10-20",
+          70,
+          64
+        ]
+      ],
+      "rules": [
+        "no-new-deps-without-approval",
+        "secrets-never-in-repo"
+      ],
+      "skills": [
+        "tdd-writer",
+        "ui-ux-pro-max"
+      ],
+      "guide": null,
+      "plan": [
+        [
+          "M0",
+          "Foundation: shell, auth, CI",
+          "frontend",
+          0,
+          0
+        ],
+        [
+          "M1",
+          "Roles and invites",
+          "api",
+          1,
+          10
+        ],
+        [
+          "M2",
+          "Data tables",
+          "frontend-components",
+          1,
+          9
+        ],
+        [
+          "M3",
+          "Settings",
+          "frontend",
+          2,
+          6
+        ]
+      ],
+      "tree": [
+        "src/routes/",
+        "src/routes/__root.tsx",
+        "src/routes/index.tsx",
+        "src/kit/",
+        "package.json"
+      ],
+      "files": {},
+      "versions": [
+        [
+          "1",
+          "2026-11-08",
+          "Draft, in PR #145",
+          0
+        ]
+      ],
+      "pr": 145,
+      "url": "portal.preview.avelco.dev",
+      "docs": {
+        "overview": "Sign-in, roles, data tables and settings for an internal team, on the same stack as this control room. It's a draft: projects can start from it once its factory PR merges.",
+        "use": [
+          "Back offices and partner portals",
+          "Teams with two or three roles",
+          "Lists people sort, filter and export"
+        ],
+        "avoid": [
+          "Public sites: start from Landing page",
+          "Anything a client's customers sign in to: that's a custom package"
+        ],
+        "quickstart": [
+          {
+            "title": "Wait for PR #145",
+            "text": "The draft is in Decisions. Once it merges, Canon can propose it at 0.3."
+          }
+        ],
+        "notes": [
+          {
+            "tone": "warning",
+            "text": "Draft. The plan and the files may still change before v1."
+          }
+        ],
+        "manifest": "name: admin-portal\nversion: 1   # draft\npackage: portal\nstack: [tanstack-start, react@19, tailwind@4, orpc]\n\nmodules:\n  - ref: M1\n    goal: Roles and invites\n    kind: api\n  - ref: M2\n    goal: Data tables\n    kind: frontend-components\n  - ref: M3\n    goal: Settings\n    kind: frontend",
+        "annotations": {
+          "src/routes/": "File-based routes",
+          "src/routes/__root.tsx": "The shell: sidebar, header and the signed-in user",
+          "src/routes/index.tsx": "The landing route after sign-in",
+          "src/kit/": "Shared components: table, filters, sheet",
+          "package.json": "Pinned versions; new packages need approval"
+        },
+        "keyFiles": []
+      }
+    }
+  ],
+  "ready": [
+    {
+      "project": "Control room",
+      "client": "AVEL",
+      "delivered": "2026-11-08",
+      "receipt": "verified",
+      "package": "Portal",
+      "href": "#/missions/01a1347d-7680-7fc6-97d6-18511c87bf53",
+      "missionId": "01a1347d-7680-7fc6-97d6-18511c87bf53"
+    }
+  ],
+  "sources": {
+    "control-room": {
+      "project": "Control room",
+      "client": "AVEL",
+      "commit": "9f41c2a",
+      "receipt": "verified",
+      "package": "Portal",
+      "stack": [
+        "TanStack Start",
+        "React 19",
+        "Tailwind 4",
+        "oRPC"
+      ],
+      "rules": [
+        "no-new-deps-without-approval",
+        "secrets-never-in-repo"
+      ],
+      "skills": [
+        "tdd-writer",
+        "ui-ux-pro-max"
+      ],
+      "plan": [
+        [
+          "M0",
+          "Foundation: shell, auth, CI",
+          "frontend",
+          0,
+          0
+        ],
+        [
+          "M1",
+          "Decisions with one-tap approve",
+          "frontend",
+          1,
+          11
+        ],
+        [
+          "M2",
+          "Live view over the event stream",
+          "frontend",
+          1,
+          9
+        ],
+        [
+          "M3",
+          "Data tables with filters",
+          "frontend-components",
+          2,
+          8
+        ],
+        [
+          "M4",
+          "Settings and step-up",
+          "api",
+          2,
+          6
+        ]
+      ],
+      "tree": [
+        "src/",
+        "src/routes/",
+        "src/routes/__root.tsx",
+        "src/routes/index.tsx",
+        "src/kit/",
+        "src/kit/Sheet.tsx",
+        "src/kit/CodeBlock.tsx",
+        "src/lib/",
+        "src/lib/orpc.ts",
+        "src/lib/events.ts",
+        "package.json"
+      ],
+      "files": {
+        "src/routes/__root.tsx": "import { createRootRoute, Outlet } from \"@tanstack/react-router\";\nimport { Shell } from \"../kit/Shell\";\n\nexport const Route = createRootRoute({\n  component: () => (\n    <Shell>\n      <Outlet />\n    </Shell>\n  ),\n});",
+        "src/lib/orpc.ts": "import { createORPCClient } from \"@orpc/client\";\nimport { RPCLink } from \"@orpc/client/fetch\";\nimport type { contract } from \"@avel/contract\";\n\n// the only way the web talks to the backend: typed from packages/contract\nexport const client = createORPCClient<typeof contract>(\n  new RPCLink({ url: \"/api/rpc\", headers: () => ({ \"x-avel-client\": \"web\" }) }),\n);",
+        "src/lib/events.ts": "import { client } from \"./orpc\";\n\n// one stream per tab; screens subscribe to the kinds they show\nexport async function* missionEvents(missionId: string, signal: AbortSignal) {\n  for await (const e of await client.events.stream({ missionId }, { signal })) yield e;\n}",
+        "src/kit/Sheet.tsx": "export function Sheet({ open, onClose, children }: SheetProps) {\n  // focus moves in, the page behind goes inert, Escape closes, focus comes back\n  useSheet(ref, { open, onClose });\n  return open ? <div role=\"dialog\" aria-modal ref={ref}>{children}</div> : null;\n}"
+      },
+      "missionId": "01a1347d-7680-7fc6-97d6-18511c87bf53"
+    }
+  }
+}

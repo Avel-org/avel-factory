@@ -1,0 +1,250 @@
+/* The crew (src/kit/Crew.jsx): a project's agent team as a live tree. Sizes 12/13/14/16, weights 400/500. */
+
+.crew { position: relative; padding: 0; overflow: visible; margin-bottom: 16px; }
+.crew-top { display: flex; align-items: center; gap: 12px; padding: 14px 16px 6px; }
+.crew-picker { position: relative; }
+.crew-pick {
+  appearance: none; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border: 0; border-radius: 9px; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 500; color: var(--av-ink); background: color-mix(in oklab, var(--av-ink) 5%, transparent);
+}
+.crew-pick svg { width: 14px; height: 14px; color: var(--av-muted); }
+.crew-pick:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .crew-pick:not(.crew-pick-static):hover { background: color-mix(in oklab, var(--av-ink) 8%, transparent); } }
+.crew-pick-static { cursor: default; }
+.crew-menu {
+  position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; min-width: 300px; margin: 0; padding: 4px; list-style: none;
+  border-radius: 12px; background: var(--av-float); box-shadow: 0 0 0 1px var(--av-hairline), 0 18px 40px -16px rgb(16 24 40 / 0.35);
+  animation: cg-pop 160ms var(--m-ease-out, ease) both;
+}
+[data-theme="night"] .crew-menu { background: color-mix(in oklab, var(--color-app-panel) 92%, #fff 8%); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.8); }
+.crew-menu button {
+  appearance: none; width: 100%; display: grid; grid-template-columns: 8px minmax(0, 1fr) auto 14px; align-items: center; column-gap: 10px;
+  min-height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: none; cursor: pointer; font: inherit; font-size: 13px; color: var(--av-ink); text-align: left;
+}
+.crew-menu button:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) { .crew-menu button:hover { background: color-mix(in oklab, var(--av-ink) 5%, transparent); } }
+.crew-menu svg { width: 14px; height: 14px; color: var(--color-accent-text); }
+.crew-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot); }
+.crew-menu-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-menu-w { font-size: 12px; color: var(--av-muted); }
+.crew-count { margin-left: auto; display: inline-flex; gap: 10px; font-size: 13px; color: var(--av-muted); }
+.crew-count b { font-weight: 500; color: var(--av-muted); }
+.crew-count b[data-on] { color: var(--color-accent-text); }
+
+/* the Crew view takes the whole width */
+.cr-live[data-view="crew"] { grid-template-columns: minmax(0, 1fr) !important; }
+.cr-live[data-view="crew"] .cr-live-side { display: none; }
+
+/* ---------------------------------------------------------------- the tree */
+.crew-tree { --gap: 12px; --wire: color-mix(in oklab, var(--av-ink) 14%, transparent); padding: 14px 16px 18px; overflow: visible; }
+/* narrower than the tree: it scrolls sideways, with room below for an open card */
+@media (min-width: 761px) and (max-width: 1240px) { .crew-tree { overflow-x: auto; padding-bottom: 220px; margin-bottom: -200px; } }
+.crew-leadrow { display: flex; justify-content: center; position: relative; padding-bottom: 22px; }
+.crew-leadrow > .crew-cardwrap { width: min(260px, 100%); }
+.crew-leadrow[data-has]::after { content: ""; position: absolute; left: 50%; bottom: 0; width: 2px; height: 22px; margin-left: -1px; background: var(--wire); }
+.crew-cols { display: grid; grid-template-columns: repeat(var(--n), minmax(176px, 1fr)); gap: var(--gap); margin: 0; padding: 0; list-style: none; min-width: calc(var(--n) * 176px + (var(--n) - 1) * var(--gap)); }
+.crew-col { position: relative; padding-top: 20px; }
+/* the bus: each column draws its share of the line, and a stub down to its card */
+.crew-col::before { content: ""; position: absolute; top: 0; left: calc(-1 * var(--gap) / 2); right: calc(-1 * var(--gap) / 2); height: 2px; background: var(--wire); }
+.crew-col:first-child::before { left: 50%; }
+.crew-col:last-child::before { right: 50%; }
+.crew-col:only-child::before { display: none; }
+.crew-col::after { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 20px; margin-left: -1px; background: var(--wire); }
+/* the live column: its wire is cobalt and a pulse runs down to the card */
+.crew-col[data-st="working"]::after { background: linear-gradient(var(--color-accent), color-mix(in oklab, var(--color-accent) 50%, transparent)); }
+.crew-col[data-st="working"] > .crew-cardwrap::before {
+  content: ""; position: absolute; z-index: 2; top: -22px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%;
+  background: var(--color-accent); box-shadow: 0 0 8px var(--color-accent); animation: crew-flow 1.8s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+@keyframes crew-flow { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(20px); opacity: 0; } }
+
+/* sub-agents hang off the module on a rail, like the video's tree */
+.crew-subs { position: relative; display: grid; gap: 8px; margin: 0; padding: 10px 0 0 18px; list-style: none; }
+.crew-subs::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 22px; width: 2px; background: var(--wire); }
+.crew-subs > li { position: relative; }
+.crew-subs > li::before { content: ""; position: absolute; left: -10px; top: 22px; width: 10px; height: 2px; background: var(--wire); }
+.crew-subs > li[data-st="working"]::before, .crew-col[data-st="working"] .crew-subs::before { background: color-mix(in oklab, var(--color-accent) 55%, transparent); }
+
+/* ---------------------------------------------------------------- the card */
+.crew-cardwrap { position: relative; }
+.crew-card {
+  appearance: none; width: 100%; display: grid; gap: 6px; padding: 12px; border: 0; border-radius: 14px; text-align: left; cursor: pointer;
+  font: inherit; color: var(--av-ink); background: var(--d-card, var(--av-faceplate));
+  box-shadow: var(--d-lit, inset 0 1px 0 rgb(255 255 255 / 0.6)), 0 0 0 1px var(--d-ring, rgb(16 24 40 / 0.07)), 0 1px 2px rgb(16 24 40 / 0.04);
+  transition: box-shadow 180ms ease, transform 180ms var(--m-ease-out, ease);
+}
+[data-theme="night"] .crew-card { background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.01)), var(--color-app-panel); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 0 0 1px rgb(255 255 255 / 0.07); }
+.crew-card[data-sub] { padding: 10px; gap: 4px; border-radius: 12px; }
+.crew-card:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .crew-card:hover { transform: translateY(-1px); } }
+.crew-cardwrap[data-open] .crew-card { box-shadow: var(--d-lit, inset 0 1px 0 rgb(255 255 255 / 0.6)), 0 0 0 1.5px color-mix(in oklab, var(--color-accent) 45%, transparent), 0 10px 24px -14px rgb(16 24 40 / 0.35); }
+/* working: a cobalt edge and a soft glow that breathes; needs you: a cobalt edge, steady */
+.crew-card[data-st="working"] {
+  box-shadow: var(--d-lit, inset 0 1px 0 rgb(255 255 255 / 0.6)), 0 0 0 1px color-mix(in oklab, var(--color-accent) 38%, transparent), 0 10px 26px -14px color-mix(in oklab, var(--color-accent) 55%, transparent);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--color-accent) 6%, var(--tr-surface)), var(--tr-surface) 70%);
+  animation: crew-breathe 3.2s ease-in-out infinite;
+}
+[data-theme="night"] .crew-card[data-st="working"] { background: linear-gradient(180deg, color-mix(in oklab, var(--color-accent) 14%, var(--color-app-panel)), var(--color-app-panel) 75%); }
+@keyframes crew-breathe { 50% { box-shadow: var(--d-lit, inset 0 1px 0 rgb(255 255 255 / 0.6)), 0 0 0 1px color-mix(in oklab, var(--color-accent) 55%, transparent), 0 12px 32px -12px color-mix(in oklab, var(--color-accent) 70%, transparent); } }
+.crew-card[data-st="needs"] { box-shadow: var(--d-lit, inset 0 1px 0 rgb(255 255 255 / 0.6)), 0 0 0 1px color-mix(in oklab, var(--av-needs) 55%, transparent), 0 8px 20px -14px color-mix(in oklab, var(--av-needs) 60%, transparent); }
+.crew-card[data-st="idle"] { opacity: 0.86; }
+.crew-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
+.crew-ic {
+  display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; flex: none;
+  color: var(--av-ink); background: color-mix(in oklab, var(--av-ink) 6%, transparent);
+}
+.crew-card[data-sub] .crew-ic { width: 24px; height: 24px; border-radius: 7px; }
+.crew-card[data-st="working"] .crew-ic { color: var(--color-accent-text); background: color-mix(in oklab, var(--color-accent) 14%, transparent); }
+.crew-card[data-st="done"] .crew-ic { color: var(--av-verified); background: color-mix(in oklab, var(--av-verified) 12%, transparent); }
+.crew-who { display: grid; min-width: 0; line-height: 16px; }
+.crew-who b { font-size: 14px; line-height: 18px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-card[data-sub] .crew-who b { font-size: 13px; }
+.crew-who small { font-size: 12px; color: var(--av-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-pill { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; color: var(--av-muted); background: color-mix(in oklab, var(--av-ink) 6%, transparent); }
+.crew-pill svg { width: 12px; height: 12px; }
+
+
+.crew-pill[data-st="working"] { color: var(--color-accent-text); background: color-mix(in oklab, var(--color-accent) 13%, transparent); }
+.crew-pill[data-st="done"] { color: var(--av-verified); background: color-mix(in oklab, var(--av-verified) 12%, transparent); }
+.crew-pill[data-st="needs"] { color: var(--av-needs-text); background: var(--av-needs-tint); }
+.crew-pip { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.crew-role { font-size: 12px; line-height: 16px; color: var(--av-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-line { display: flex; align-items: center; min-width: 0; min-height: 20px; font-size: 13px; line-height: 20px; color: color-mix(in oklab, var(--av-ink) 78%, transparent); }
+.crew-line.kb-mono { font-size: 12px; color: var(--av-ink); }
+.crew-line-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-line[data-fresh] .crew-line-t { animation: tt-type 700ms steps(30, end) both; }
+.crew-line .tt-cursor { flex: none; width: 6px; height: 13px; }
+.crew-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
+.crew-bar-track { height: 4px; border-radius: 2px; background: color-mix(in oklab, var(--av-ink) 8%, transparent); overflow: hidden; }
+.crew-bar-fill { display: block; height: 100%; border-radius: 2px; background: var(--color-accent); transition: width 600ms var(--m-ease-out, ease); }
+.crew-card[data-st="done"] .crew-bar-fill { background: color-mix(in oklab, var(--av-ink) 30%, transparent); }
+.crew-bar-fill[data-hot] { background: linear-gradient(90deg, var(--color-accent), var(--av-needs)); }
+.crew-bar-n { font-size: 12px; color: var(--av-muted); font-variant-numeric: tabular-nums; }
+.crew-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.crew-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 12px; color: var(--av-muted); background: color-mix(in oklab, var(--av-ink) 5%, transparent); }
+
+/* ---------------------------------------------------------------- the details card */
+.crew-pop {
+  position: absolute; z-index: 25; top: calc(100% + 8px); left: 50%; width: 280px; margin-left: -140px; box-sizing: border-box; padding: 14px;
+  border-radius: 14px; background: var(--av-float); box-shadow: 0 0 0 1px var(--av-hairline), 0 18px 40px -16px rgb(16 24 40 / 0.35);
+  animation: cg-pop 160ms var(--m-ease-out, ease) both;
+}
+[data-theme="night"] .crew-pop { background: color-mix(in oklab, var(--color-app-panel) 92%, #fff 8%); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.8); }
+.crew-col:first-child .crew-pop { left: 0; margin-left: 0; }
+.crew-col:last-child .crew-pop { left: auto; right: 0; margin-left: 0; }
+.crew-pop-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 10px; padding-bottom: 10px; margin-bottom: 10px; box-shadow: inset 0 -1px 0 var(--av-hairline); }
+.crew-pop-head b { display: block; font-size: 14px; font-weight: 500; }
+.crew-pop-head small { display: block; font-size: 12px; line-height: 16px; color: var(--av-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-pop-x { appearance: none; display: inline-grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: none; color: var(--av-muted); cursor: pointer; }
+.crew-pop-x:focus-visible { outline: 2px solid var(--color-focus-ring); }
+.crew-pop-task { margin: 0 0 10px; font-size: 13px; line-height: 20px; color: var(--av-ink); }
+.crew-pop dl { margin: 0; display: grid; gap: 6px; }
+.crew-pop dl > div { display: flex; justify-content: space-between; gap: 12px; }
+.crew-pop dt { font-size: 13px; color: var(--av-muted); flex: none; }
+.crew-pop dd { margin: 0; font-size: 13px; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.crew-pop-btns { display: flex; gap: 8px; margin-top: 12px; }
+.crew-pop-btns .av-btn { flex: 1; justify-content: center; }
+
+/* ---------------------------------------------------------------- phone and tablet */
+@media (max-width: 760px) {
+  .crew-top { padding: 12px 12px 4px; flex-wrap: wrap; }
+  .crew-tree { padding: 10px 12px 14px; overflow: visible; }
+  .crew-leadrow > .crew-cardwrap { width: 100%; }
+  .crew-leadrow[data-has]::after { left: 22px; }
+  .crew-cols { grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 0; padding-left: 14px; position: relative; }
+  .crew-cols::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 30px; width: 2px; background: var(--wire); }
+  .crew-col { padding: 10px 0 0 12px; }
+  .crew-col::before { left: -6px; right: auto; width: 18px; top: 32px; }
+  .crew-col:first-child::before, .crew-col:last-child::before { left: -6px; right: auto; }
+  .crew-col:only-child::before { display: block; }
+  .crew-col::after { display: none; }
+  .crew-col[data-st="working"] > .crew-cardwrap::before { display: none; }
+  .crew-card { min-height: 44px; }
+  .crew-pop, .crew-col:first-child .crew-pop, .crew-col:last-child .crew-pop { position: relative; top: auto; left: auto; right: auto; width: auto; margin: 8px 0 0; }
+  .crew-menu { min-width: 0; width: calc(100vw - 48px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crew-card[data-st="working"], .crew-col[data-st="working"] > .crew-cardwrap::before, .crew-line[data-fresh] .crew-line-t, .crew-pop, .crew-menu { animation: none !important; }
+}
+
+/* sub cards: the status is an icon-sized pill so the role reads in full */
+.crew-card[data-sub] .crew-pill { padding: 0; width: 20px; justify-content: center; font-size: 0; }
+.crew-card[data-sub] .crew-pill[data-st="idle"]::before { content: ""; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid currentColor; box-sizing: border-box; }
+
+/* ---------------------------------------------------------------- polish: module cards lead with the module */
+.crew-mhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.crew-ref {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; color: var(--av-ink); background: color-mix(in oklab, var(--av-ink) 7%, transparent);
+}
+.crew-card[data-st="working"] .crew-ref { color: var(--color-accent-text); background: color-mix(in oklab, var(--color-accent) 14%, transparent); }
+.crew-mtitle {
+  font-size: 14px; line-height: 20px; font-weight: 500; color: var(--av-ink); min-height: 40px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-wrap: pretty;
+}
+.crew-agent { display: flex; align-items: center; gap: 6px; min-width: 0; padding-top: 2px; }
+.crew-agent .crew-ic { width: 22px; height: 22px; border-radius: 6px; }
+.crew-agent .crew-ic svg { width: 13px; height: 13px; }
+.crew-agent b { font-size: 13px; font-weight: 500; flex: none; }
+.crew-agent small { min-width: 0; font-size: 12px; color: var(--av-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crew-agent small::before { content: "· "; }
+/* the row of module cards lines up: same height, and their checkers start on the same line */
+@supports (grid-template-rows: subgrid) {
+  @media (min-width: 761px) {
+    .crew-cols { grid-template-rows: auto auto; }
+    .crew-col { display: grid; grid-row: span 2; grid-template-rows: subgrid; row-gap: 0; align-content: start; }
+    .crew-col > .crew-cardwrap { display: grid; }
+    .crew-col > .crew-cardwrap > .crew-card { align-content: start; height: 100%; box-sizing: border-box; }
+  }
+}
+/* sub cards: one line for who, one for what */
+.crew-card[data-sub] .crew-who small { white-space: nowrap; }
+/* the status pill's orb: centred in a 12px slot */
+.crew-pill .tn-orb { display: inline-grid; place-items: center; width: 12px; height: 12px; overflow: hidden; border-radius: 50%; }
+.crew-pill .tn-orb > * { transform: scale(0.6); transform-origin: 50% 50%; flex: none; }
+/* working: a cobalt dot with a ripple, readable at pill size */
+.crew-live { position: relative; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.crew-live::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0; animation: crew-ripple 1.8s ease-out infinite; }
+@keyframes crew-ripple { 0% { transform: scale(0.6); opacity: 0.7; } 100% { transform: scale(1.8); opacity: 0; } }
+/* the lead card is wider, so its role and model read in full */
+.crew-leadrow > .crew-cardwrap { width: min(320px, 100%); }
+/* a sub card's line may take two lines rather than cut off */
+.crew-card[data-sub] .crew-line-t { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.crew-card[data-sub] .crew-line { align-items: flex-start; }
+@media (prefers-reduced-motion: reduce) { .crew-live::after { animation: none; } }
+.crew-pop-head small { white-space: normal; overflow: visible; }
+.crew-pop dd.kb-mono { font-variant-numeric: tabular-nums; }
+/* one column on a phone: titles take only the lines they need */
+@media (max-width: 760px) { .crew-mtitle { min-height: 0; } }
+
+/* ---------------------------------------------------------------- Option 1: a clean checkpoint (CR-W28) */
+.cr-clean-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--av-verified-tint); color: var(--av-verified); }
+.cr-clean-tag svg { flex: none; }
+.cr-hero-col .cr-hero-label:has(.cr-clean-link) { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.cr-clean-link { font-size: 13px; font-weight: 500; color: var(--av-accent); text-underline-offset: 3px; }
+.cr-dq-meta b[data-tone="ok"] { color: var(--av-verified); font-weight: 500; }
+.cv-clean { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0; font-size: 13px; line-height: 20px; color: var(--av-ink); }
+.cv-clean-k { display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 999px; background: var(--av-verified-tint); color: var(--av-verified); font-weight: 500; }
+.cv-clean .cv-ready { flex-basis: 100%; }
+
+/* ---------------------------------------------------------------- bottleneck audit (Nov 14) */
+/* B1: the next item's title is brought into view after you decide; it clears the sticky top bar */
+.cr-hero { scroll-margin-top: 72px; }
+.cr-hero-title:focus:not(:focus-visible) { outline: none; }
+/* B2: on a long item the answer buttons sat below the fold on a laptop (y 1006 at 900 high).
+   The foot now stays at the bottom of the screen while the item is in view, like the phone pin. */
+@media (min-width: 761px) {
+  .cr-hero-foot { position: sticky; bottom: 0; z-index: 2; margin-inline: -20px; padding: 12px 20px; background: var(--av-faceplate); border-radius: 0 0 var(--radius-card) var(--radius-card); }
+}
+/* B3: the pass is accepted beside Release; the reason box is the same one Decisions uses */
+.op-pass-why { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 4px 10px; }
+.op-pass-input { grid-column: 1 / -1; box-sizing: border-box; width: 100%; min-height: 64px; padding: 10px 12px; border: 0; border-radius: 10px; background: var(--av-inset, var(--av-faceplate)); box-shadow: inset 0 0 0 1px var(--av-hairline-strong); font: inherit; font-size: 16px; line-height: 24px; color: var(--av-ink); resize: vertical; }
+.op-pass-input:focus-visible { outline: 2px solid var(--av-focus, var(--av-accent)); outline-offset: 2px; }
+@media (max-width: 760px) { .op-pass-why .cr-why-help { display: none; } }
+.op-release-bar .op-p .op-more { color: var(--av-accent); text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 760px) {
+  /* the pass bar sits over the receipt on a phone: keep it to what the decision needs */
+  .op-release-bar:has(#op-pass-why) .cr-dc-sends { display: none; }
+  .op-pass-input { min-height: 48px; }
+}

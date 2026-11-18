@@ -1,0 +1,14 @@
+{
+  "_note": "What each evidence line's detailRef opens: the referenced object, read when you tap Show proof.",
+  "details": {
+    "trace:m4-retry3": "checkout.spec.ts › applies spring code\n  expected total  54.00\n  received        60.00\n  at applyCode (src/pricing/applyCode.ts:41)",
+    "module:spring-m4": "M4 module cap   100%\n  initial    26%\n  retry 1    23%\n  retry 2    21%\n  retry 3    23%  second vendor\n  total      92%",
+    "module:spring-m3": "M3 cap   100%\n  used      87%\n  attempt retry 1, 41 min in",
+    "attempt:spring-m3-r1": "14 passed  1 failed\n  ✗ applies spring code to bundle",
+    "dependency:zod": "zod@3.23.8  MIT\n  advisories  0\n  size        12.1 kB gzip",
+    "receipt:rc_7f3a2c": "receipt rc_7f3a2c\n  verdict   pass\n  examples  11 of 12 verified\n  open      AE-7 date picker offset, Safari 17",
+    "finding:f-6": "F-6  ui  /book  accepted Nov 7\n  reason   Cosmetic, agreed with Priya.",
+    "receipt:rc_7f3a2c:hash": "sha256:7f3a2c9e…b14d   hash check passed\ncommit a41e9c2",
+    "upload:fleet-sheet": "fleet-sheet.xlsx  62 drivers\n  personal phone  40\n  company phone   22"
+  }
+}

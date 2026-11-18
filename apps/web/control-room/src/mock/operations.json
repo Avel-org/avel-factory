@@ -1,0 +1,1220 @@
+{
+  "_readme": "Sample data for the screens that need CR-W17 reads: packages, time, leads, receipts, findings history, factory versions and plans. Consistent with world.json. There's no business data here: payments, invoices and margin are private and stay out of the control room. Fields under _gaps are not in the contract yet.",
+  "_gaps": {
+    "leads": "CR-W17",
+    "timeline": "Proposed: one merged client timeline read",
+    "briefing": "Proposed: a server-written client briefing (CR-W9 style)"
+  },
+  "asOf": "2026-11-10T09:00:00Z",
+  "packages": [
+    {
+      "key": "landing-page",
+      "label": "Landing page"
+    },
+    {
+      "key": "stabilize",
+      "label": "Stabilize"
+    },
+    {
+      "key": "diagnostic",
+      "label": "Diagnostic"
+    },
+    {
+      "key": "feature",
+      "label": "Feature"
+    }
+  ],
+  "missionMeta": {
+    "01a1912f-ee80-709f-891e-7d29547e91a0": {
+      "packageKey": "landing-page",
+      "minutes": 210,
+      "planVersion": 3,
+      "planApprovedAt": "2026-11-01T10:00:00Z",
+      "requirements": 14,
+      "scenarios": 22
+    },
+    "01a1b016-1680-7ea7-9b27-8f75c199eac7": {
+      "packageKey": "feature",
+      "minutes": 55
+    },
+    "01a17770-2280-7db5-9be9-18411454e558": {
+      "packageKey": "stabilize",
+      "minutes": 140
+    },
+    "01a1ba62-ce80-7464-8a88-33e8742b6678": {
+      "packageKey": "feature",
+      "minutes": 0
+    },
+    "01a1347d-7680-7fc6-97d6-18511c87bf53": {
+      "packageKey": "custom",
+      "minutes": 600
+    },
+    "01a10624-3a80-7a29-9574-820ad7f8a09f": {
+      "packageKey": "diagnostic",
+      "minutes": 75
+    },
+    "01a1c2d4-5e80-7a11-8c3d-0b5e6f7a8b9c": {
+      "packageKey": null,
+      "minutes": 6
+    }
+  },
+  "receipts": {
+    "01a17770-2280-7db5-9be9-18411454e558": {
+      "id": "rc_7f3a2c",
+      "verdict": "pass",
+      "commit": "a41e9c2",
+      "hash": "sha256:e5b028c47407e99d3d00f18f969dc4a9401e7522ad28f5553f04dbb8c0efd1d0",
+      "issuedAt": "2026-11-05T14:30:00Z",
+      "proof": [
+        "All 214 tests pass on the exact commit Harbor Dental gets",
+        "11 of 12 acceptance examples verified; the 12th is the accepted finding",
+        "No security or accessibility findings open",
+        "Built from plan version 2, approved Oct 27"
+      ],
+      "accepted": [
+        {
+          "ref": "F-6",
+          "title": "Date picker is 2px off on Safari 17",
+          "reason": "Cosmetic, agreed with Priya"
+        }
+      ],
+      "minutes": 140,
+      "aiMicros": 22740000,
+      "agents": [
+        "Soap",
+        "Fenn",
+        "Zane",
+        "Brennan"
+      ],
+      "overrides": 0,
+      "passDecision": "pass_approval:01a17770-2280-7db5-9be9-18411454e558",
+      "delivery": "A pull request to harbor-dental/booking on GitHub",
+      "mission": "Booking fix",
+      "client": "Harbor Dental",
+      "plan": {
+        "version": 2,
+        "approvedAt": "2026-10-27T15:00:00Z"
+      },
+      "target": {
+        "repo": "harbor-dental/booking",
+        "branch": "avel/booking-fix",
+        "commit": "a41e9c2"
+      },
+      "modules": [
+        [
+          "M1",
+          "Find the double-booking race",
+          61
+        ],
+        [
+          "M2",
+          "Slot lock on booking",
+          88
+        ],
+        [
+          "M3",
+          "Reminders in the clinic's time zone",
+          65
+        ]
+      ],
+      "gates": [
+        [
+          "Scope",
+          "2026-10-27T15:00:00Z"
+        ],
+        [
+          "Pre-dispatch",
+          "2026-10-27T15:20:00Z"
+        ],
+        [
+          "Integration",
+          "2026-11-04T18:10:00Z"
+        ],
+        [
+          "Job check",
+          "2026-11-04T18:40:00Z"
+        ],
+        [
+          "Ready to merge",
+          "2026-11-05T13:55:00Z"
+        ],
+        [
+          "Close",
+          "2026-11-05T14:30:00Z"
+        ]
+      ],
+      "tests": {
+        "passed": 214,
+        "total": 214
+      },
+      "acceptance": {
+        "verified": 11,
+        "total": 12
+      },
+      "signature": {
+        "by": "Gate 5",
+        "key": "g5-2026-11",
+        "alg": "Ed25519"
+      },
+      "artifacts": [
+        {
+          "key": "tests",
+          "label": "Test report",
+          "file": "proof/tests.txt",
+          "lang": "text",
+          "proves": "All 214 tests pass on a41e9c2",
+          "content": "vitest run --reporter=summary\ncommit a41e9c2\n\n Test Files  38 passed (38)\n      Tests  214 passed (214)\n             unit 168 · integration 31 · e2e 15\n   Duration  48.21s",
+          "sha256": "10600fc543a4cab78c0dd107712c183261d8d84f71f7655448af0dfaf16756cf"
+        },
+        {
+          "key": "accept",
+          "label": "Acceptance examples",
+          "file": "proof/acceptance.json",
+          "lang": "json",
+          "proves": "11 of 12 verified, the 12th is the accepted finding F-6",
+          "content": "{\n  \"commit\": \"a41e9c2\",\n  \"examples\": [\n    {\n      \"id\": \"A-01\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-02\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-03\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-04\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-05\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-06\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-07\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-08\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-09\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-10\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-11\",\n      \"result\": \"verified\"\n    },\n    {\n      \"id\": \"A-12\",\n      \"result\": \"accepted\",\n      \"finding\": \"F-6\"\n    }\n  ]\n}",
+          "sha256": "eae9dc20f1216b2a4b9020b6e5478bb2a210742599d3b4d4b4583277ecd87e99"
+        },
+        {
+          "key": "security",
+          "label": "Security review",
+          "file": "proof/security.txt",
+          "lang": "text",
+          "proves": "No security findings open",
+          "content": "review-security · ASVS L1 · commit a41e9c2\n\nauth        pass\nsession     pass\ninput       pass\nsecrets     pass   (0 in repo)\n\nopen findings: 0",
+          "sha256": "c0b1c0b083dbdbef9542664bd96c43c75c5b98fa89be11e2e32cc2eba3dd84f1"
+        },
+        {
+          "key": "a11y",
+          "label": "Accessibility check",
+          "file": "proof/a11y.txt",
+          "lang": "text",
+          "proves": "No accessibility findings open",
+          "content": "axe-core 4.10 · WCAG 2.2 AA · 9 pages\n\nviolations   0\nincomplete   2  (reviewed by Zane)\n\nopen findings: 0",
+          "sha256": "ab4d5880bb14ab54021069f49c43400083ae023bf1fbf5af3f541a687a1b3859"
+        },
+        {
+          "key": "plan",
+          "label": "Plan pin",
+          "file": "proof/plan.yaml",
+          "lang": "yaml",
+          "proves": "Built from plan version 2, approved Oct 27",
+          "content": "plan: 2\napproved: 2026-10-27\nfactory: b7d2e11\nroster: 7\nmodules: [M1, M2, M3]",
+          "sha256": "b566b18840b22d7da9f1ac551defbcf13a18ecad9eee188a2251b66aa6a98941"
+        }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "id": "01a1f000-0000-7000-8000-000000000011",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "checkpointId": null,
+      "moduleRunId": "01a1e100-0000-7000-8000-000000000003",
+      "source": "review",
+      "sourceRole": "review-backend",
+      "checkId": "CK21",
+      "targetRef": "src/pricing/spring-code.ts",
+      "evidence": {
+        "summary": "Spring code applied twice on bundles",
+        "detail": "A bundle with two items took the spring discount twice in S14.",
+        "citedRequirements": [
+          "R8"
+        ],
+        "citedScenarios": [
+          "S14"
+        ]
+      },
+      "kind": "requirement",
+      "route": "rework",
+      "state": "open",
+      "tries": 1,
+      "reviewedCommit": null,
+      "reason": null,
+      "decidedByKind": null,
+      "decidedByUserId": null,
+      "decidedByAttemptId": null,
+      "fixedByCheck": null,
+      "decidedAt": null,
+      "createdAt": "2026-11-10T06:40:00Z",
+      "rowVersion": 1,
+      "updatedAt": "2026-11-10T06:40:00Z",
+      "moduleRef": "M3",
+      "citedRequirements": [
+        "R8"
+      ],
+      "citedScenarios": [
+        "S14"
+      ],
+      "cappedAtPass": false
+    },
+    {
+      "id": "01a1f000-0000-7000-8000-000000000009",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "checkpointId": null,
+      "moduleRunId": "01a1e100-0000-7000-8000-000000000003",
+      "source": "review",
+      "sourceRole": "review-security",
+      "checkId": "CK07",
+      "targetRef": "/signup",
+      "evidence": {
+        "summary": "Spring code accepted without a rate limit",
+        "detail": "POST /signup accepted 200 codes in 10 s.",
+        "citedRequirements": [
+          "R7"
+        ],
+        "citedScenarios": [
+          "S12"
+        ]
+      },
+      "kind": "security",
+      "route": "rework",
+      "state": "open",
+      "tries": 1,
+      "reviewedCommit": null,
+      "reason": null,
+      "decidedByKind": null,
+      "decidedByUserId": null,
+      "decidedByAttemptId": null,
+      "fixedByCheck": null,
+      "decidedAt": null,
+      "createdAt": "2026-11-09T19:02:00Z",
+      "rowVersion": 1,
+      "updatedAt": "2026-11-09T19:02:00Z",
+      "moduleRef": "M3",
+      "citedRequirements": [
+        "R7"
+      ],
+      "citedScenarios": [
+        "S12"
+      ],
+      "cappedAtPass": false
+    },
+    {
+      "id": "01a1f000-0000-7000-8000-000000000008",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "checkpointId": null,
+      "moduleRunId": "01a1e100-0000-7000-8000-000000000002",
+      "source": "review",
+      "sourceRole": "review-frontend",
+      "checkId": "CK12",
+      "targetRef": "/pricing",
+      "evidence": {
+        "summary": "Pricing grid overflows at 320px wide",
+        "detail": "The grid overflows at 320 px.",
+        "citedRequirements": [
+          "R4"
+        ],
+        "citedScenarios": [
+          "S8"
+        ]
+      },
+      "kind": "requirement",
+      "route": "rework",
+      "state": "fixed",
+      "tries": 2,
+      "reviewedCommit": null,
+      "reason": null,
+      "decidedByKind": "check",
+      "decidedByUserId": null,
+      "decidedByAttemptId": null,
+      "fixedByCheck": "S8b",
+      "decidedAt": "2026-11-07T11:30:00Z",
+      "createdAt": "2026-11-07T11:30:00Z",
+      "rowVersion": 2,
+      "updatedAt": "2026-11-07T11:30:00Z",
+      "moduleRef": "M2",
+      "citedRequirements": [
+        "R4"
+      ],
+      "citedScenarios": [
+        "S8"
+      ],
+      "cappedAtPass": false
+    },
+    {
+      "id": "01a1f000-0000-7000-8000-000000000007",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "checkpointId": null,
+      "moduleRunId": "01a1e100-0000-7000-8000-000000000002",
+      "source": "review",
+      "sourceRole": "review-a11y",
+      "checkId": "CK03",
+      "targetRef": "/",
+      "evidence": {
+        "summary": "Hero image has no text alternative",
+        "detail": "axe: image-alt on /.",
+        "citedRequirements": [
+          "R5"
+        ],
+        "citedScenarios": [
+          "S9"
+        ]
+      },
+      "kind": "requirement",
+      "route": "rework",
+      "state": "fixed",
+      "tries": 2,
+      "reviewedCommit": null,
+      "reason": null,
+      "decidedByKind": "check",
+      "decidedByUserId": null,
+      "decidedByAttemptId": null,
+      "fixedByCheck": "S9b",
+      "decidedAt": "2026-11-06T16:10:00Z",
+      "createdAt": "2026-11-06T16:10:00Z",
+      "rowVersion": 2,
+      "updatedAt": "2026-11-06T16:10:00Z",
+      "moduleRef": "M2",
+      "citedRequirements": [
+        "R5"
+      ],
+      "citedScenarios": [
+        "S9"
+      ],
+      "cappedAtPass": false
+    },
+    {
+      "id": "01a1f000-0000-7000-8000-000000000006",
+      "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+      "checkpointId": null,
+      "moduleRunId": "01a1e200-0000-7000-8000-000000000002",
+      "source": "review",
+      "sourceRole": "review-frontend",
+      "checkId": "CK12",
+      "targetRef": "/book",
+      "evidence": {
+        "summary": "Date picker is 2px off on Safari 17",
+        "detail": "Safari 17 screenshot diff, 2 px.",
+        "citedRequirements": [
+          "R3"
+        ],
+        "citedScenarios": [
+          "S5"
+        ]
+      },
+      "kind": "advisory",
+      "route": "receipt",
+      "state": "accepted",
+      "tries": 2,
+      "reviewedCommit": null,
+      "reason": "Cosmetic, agreed with Priya.",
+      "decidedByKind": "user",
+      "decidedByUserId": null,
+      "decidedByAttemptId": null,
+      "fixedByCheck": null,
+      "decidedAt": "2026-11-04T10:00:00Z",
+      "createdAt": "2026-11-04T10:00:00Z",
+      "rowVersion": 2,
+      "updatedAt": "2026-11-04T10:00:00Z",
+      "moduleRef": "M2",
+      "citedRequirements": [
+        "R3"
+      ],
+      "citedScenarios": [
+        "S5"
+      ],
+      "cappedAtPass": true
+    }
+  ],
+  "factoryVersions": [
+    {
+      "sha": "4e1c9a0",
+      "pr": 139,
+      "summary": "Roster 7: Leah reviews accessibility and performance",
+      "mergedAt": "2026-11-03T09:00:00Z",
+      "missions": 1
+    },
+    {
+      "sha": "b7d2e11",
+      "pr": 140,
+      "summary": "Library: import the UI and UX rules skill",
+      "mergedAt": "2026-11-04T12:00:00Z",
+      "missions": 0
+    },
+    {
+      "sha": "c03fa58",
+      "pr": 137,
+      "summary": "tdd-writer 3.2.0: Playwright scenario scaffolds",
+      "mergedAt": "2026-11-02T15:00:00Z",
+      "missions": 1
+    },
+    {
+      "sha": "9a8b7c6",
+      "pr": 133,
+      "summary": "Templates: landing page v3",
+      "mergedAt": "2026-10-30T10:00:00Z",
+      "missions": 1
+    }
+  ],
+  "openPrs": [
+    {
+      "number": 142,
+      "area": "roster",
+      "title": "Roster: run review-a11y on Sonnet 5.5",
+      "openedAt": "2026-11-09T09:00:00Z",
+      "href": "#/roster"
+    },
+    {
+      "number": 146,
+      "area": "knowledge",
+      "title": "GTS Diesel language: how they talk about their work",
+      "openedAt": "2026-11-09T12:00:00Z",
+      "href": "#/library/knowledge/gts-language"
+    },
+    {
+      "number": 145,
+      "area": "template",
+      "title": "Templates: admin portal v1 (draft)",
+      "openedAt": "2026-11-08T16:00:00Z",
+      "href": "#/templates/admin-portal"
+    },
+    {
+      "number": 142,
+      "area": "skill",
+      "title": "Accessibility review 1.0.0",
+      "openedAt": "2026-11-08T11:00:00Z",
+      "href": "#/library/skills/a11y-review",
+      "dup": true
+    }
+  ],
+  "timeline": [
+    {
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "at": "2026-10-03T09:00:00Z",
+      "kind": "client",
+      "text": "Added as a client"
+    },
+    {
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "at": "2026-10-10T10:00:00Z",
+      "kind": "canon",
+      "text": "Canon interviewed Mara for the price sheet audit"
+    },
+    {
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "at": "2026-10-14T15:00:00Z",
+      "kind": "receipt",
+      "text": "Price sheet audit delivered with a verified receipt"
+    },
+    {
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "at": "2026-10-28T17:00:00Z",
+      "kind": "call",
+      "text": "Call with Mara about a spring launch site (30 min)"
+    },
+    {
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "at": "2026-10-31T09:00:00Z",
+      "kind": "canon",
+      "text": "Canon interviewed Mara for the spring launch site"
+    },
+    {
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "at": "2026-11-08T17:00:00Z",
+      "kind": "referral",
+      "text": "Referred Northside Physio"
+    },
+    {
+      "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+      "at": "2026-11-10T08:12:00Z",
+      "kind": "decision",
+      "text": "You approved a focused fix for the signup and spring code part"
+    },
+    {
+      "clientId": "01a11070-f280-7405-be02-939daa1426cd",
+      "at": "2026-10-06T09:00:00Z",
+      "kind": "client",
+      "text": "Added as a client"
+    },
+    {
+      "clientId": "01a11070-f280-7405-be02-939daa1426cd",
+      "at": "2026-11-06T15:00:00Z",
+      "kind": "canon",
+      "text": "Canon started the fleet portal interview with Dale"
+    },
+    {
+      "clientId": "01a11070-f280-7405-be02-939daa1426cd",
+      "at": "2026-11-06T16:40:00Z",
+      "kind": "decision",
+      "text": "You approved checkpoint 0.1, the brief"
+    },
+    {
+      "clientId": "01a1250a-6280-754c-b300-e8b9b805cb26",
+      "at": "2026-10-10T09:00:00Z",
+      "kind": "client",
+      "text": "Added as a client"
+    },
+    {
+      "clientId": "01a1250a-6280-754c-b300-e8b9b805cb26",
+      "at": "2026-10-27T11:00:00Z",
+      "kind": "canon",
+      "text": "Canon interviewed Priya; plan approved"
+    },
+    {
+      "clientId": "01a1250a-6280-754c-b300-e8b9b805cb26",
+      "at": "2026-11-05T14:30:00Z",
+      "kind": "receipt",
+      "text": "Booking fix passed with one accepted finding"
+    },
+    {
+      "clientId": "01a1250a-6280-754c-b300-e8b9b805cb26",
+      "at": "2026-11-07T10:00:00Z",
+      "kind": "decision",
+      "text": "You accepted the Safari 17 date picker finding"
+    },
+    {
+      "clientId": "01a1c100-0000-7000-8000-000000000a01",
+      "at": "2026-11-08T17:00:00Z",
+      "kind": "referral",
+      "text": "First contact, referred by Blume Studio"
+    },
+    {
+      "clientId": "01a1c100-0000-7000-8000-000000000a01",
+      "at": "2026-11-10T07:00:00Z",
+      "kind": "decision",
+      "text": "Follow-up drafted"
+    },
+    {
+      "clientId": "01a1c100-0000-7000-8000-000000000a02",
+      "at": "2026-10-20T15:00:00Z",
+      "kind": "client",
+      "text": "First contact"
+    },
+    {
+      "clientId": "01a1c100-0000-7000-8000-000000000a02",
+      "at": "2026-11-02T18:00:00Z",
+      "kind": "client",
+      "text": "Closed as lost: timing"
+    }
+  ],
+  "activity": [
+    {
+      "at": "2026-11-10T08:12:30Z",
+      "actor": "Javaris",
+      "kind": "decision",
+      "mission": "Spring launch site",
+      "action": "Approved: run M3 retry 1 as a focused fix",
+      "reason": "Only one test failing; a focused fix is enough.",
+      "actorKind": "user"
+    },
+    {
+      "at": "2026-11-10T01:40:00Z",
+      "actor": "Javaris",
+      "kind": "decision",
+      "mission": "Fleet portal",
+      "action": "Approved checkpoint 0.1, the brief",
+      "reason": "Matches the call with Dale on Nov 6.",
+      "actorKind": "user"
+    },
+    {
+      "at": "2026-11-09T19:02:00Z",
+      "actor": "Integrator",
+      "kind": "gate",
+      "mission": "Spring launch site",
+      "action": "Rejected the M3 integration commit at gate 3",
+      "reason": null,
+      "actorKind": "system"
+    },
+    {
+      "at": "2026-11-09T18:30:00Z",
+      "actor": "Zane",
+      "kind": "finding",
+      "mission": "Spring launch site",
+      "action": "Filed F-9: spring code accepted without a rate limit",
+      "reason": null,
+      "actorKind": "agent"
+    },
+    {
+      "at": "2026-11-09T12:00:00Z",
+      "actor": "Javaris",
+      "kind": "factory",
+      "mission": null,
+      "action": "Opened factory PR #146: GTS Diesel language",
+      "reason": null,
+      "actorKind": "user"
+    },
+    {
+      "at": "2026-11-09T09:00:00Z",
+      "actor": "Javaris",
+      "kind": "factory",
+      "mission": null,
+      "action": "Opened factory PR #142: roster change",
+      "reason": null,
+      "actorKind": "user"
+    },
+    {
+      "at": "2026-11-07T10:00:00Z",
+      "actor": "Javaris",
+      "kind": "decision",
+      "mission": "Booking fix",
+      "action": "Accepted finding F-6 on Safari 17",
+      "reason": "Cosmetic, agreed with Priya.",
+      "actorKind": "user"
+    },
+    {
+      "at": "2026-11-05T14:30:00Z",
+      "actor": "Gate",
+      "kind": "gate",
+      "mission": "Booking fix",
+      "action": "Issued receipt rc_7f3a2c: pass",
+      "reason": null,
+      "actorKind": "system"
+    },
+    {
+      "at": "2026-11-03T09:00:00Z",
+      "actor": "Javaris",
+      "kind": "factory",
+      "mission": null,
+      "action": "Merged factory PR #139: roster 7",
+      "reason": null,
+      "actorKind": "user"
+    },
+    {
+      "at": "2026-11-01T10:00:00Z",
+      "actor": "Javaris",
+      "kind": "decision",
+      "mission": "Spring launch site",
+      "action": "Finalized plan version 3",
+      "reason": null,
+      "actorKind": "user"
+    }
+  ],
+  "planModules": {
+    "01a1912f-ee80-709f-891e-7d29547e91a0": {
+      "M1": {
+        "kind": "data",
+        "req": 3,
+        "scn": 4,
+        "goal": "An editor can change every page's copy without a deploy"
+      },
+      "M2": {
+        "kind": "frontend",
+        "req": 3,
+        "scn": 5,
+        "goal": "A visitor sees the hero and the product grid on any screen"
+      },
+      "M3": {
+        "kind": "frontend",
+        "req": 3,
+        "scn": 5,
+        "goal": "A visitor can sign up and gets the spring discount code"
+      },
+      "M4": {
+        "kind": "api",
+        "req": 3,
+        "scn": 5,
+        "goal": "Checkout applies the spring code once, with the right price"
+      },
+      "M5": {
+        "kind": "services",
+        "req": 2,
+        "scn": 3,
+        "goal": "The owner sees which channel brought each signup"
+      }
+    }
+  },
+  "moduleRuns": {
+    "01a1912f-ee80-709f-891e-7d29547e91a0": {
+      "M1": {
+        "territory": [
+          "src/content/",
+          "src/lib/cms.ts"
+        ],
+        "req": 3,
+        "scn": 5,
+        "tests": "18 of 18",
+        "attempts": [
+          {
+            "key": "a1",
+            "label": "Initial",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-03T09:00:00Z",
+            "minutes": 34,
+            "costMicros": 4100000,
+            "result": "landed",
+            "summary": "Content collections and the CMS client; 18 tests pass",
+            "steps": [
+              {
+                "t": "09:00",
+                "kind": "read",
+                "text": "reading DISPATCH.md and the M1 task doc"
+              },
+              {
+                "t": "09:02",
+                "kind": "cmd",
+                "text": "› pnpm test src/content"
+              },
+              {
+                "t": "09:02",
+                "kind": "fail",
+                "text": "✗ 6 failing (tests written first)"
+              },
+              {
+                "t": "09:14",
+                "kind": "edit",
+                "text": "editing src/content/config.ts  +42"
+              },
+              {
+                "t": "09:21",
+                "kind": "edit",
+                "text": "editing src/lib/cms.ts  +61"
+              },
+              {
+                "t": "09:30",
+                "kind": "cmd",
+                "text": "› pnpm test src/content"
+              },
+              {
+                "t": "09:31",
+                "kind": "pass",
+                "text": "✓ 18 passed"
+              },
+              {
+                "t": "09:34",
+                "kind": "done",
+                "text": "handed to review"
+              }
+            ]
+          },
+          {
+            "key": "a1r",
+            "label": "Review",
+            "agent": "Zane",
+            "role": "reviewer",
+            "model": "gpt-6",
+            "startedAt": "2026-11-03T09:35:00Z",
+            "minutes": 9,
+            "costMicros": 2100000,
+            "result": "pass",
+            "summary": "No findings; job check passed",
+            "steps": [
+              {
+                "t": "09:35",
+                "kind": "read",
+                "text": "reading the diff: 4 files, +188 −0"
+              },
+              {
+                "t": "09:41",
+                "kind": "pass",
+                "text": "no findings against the plan's 3 requirements"
+              },
+              {
+                "t": "09:44",
+                "kind": "done",
+                "text": "job check passed, merged as 3c9d1e0"
+              }
+            ]
+          }
+        ],
+        "findings": [],
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000001"
+      },
+      "M2": {
+        "territory": [
+          "src/components/sections/",
+          "src/pages/index.astro"
+        ],
+        "req": 3,
+        "scn": 5,
+        "tests": "21 of 21",
+        "attempts": [
+          {
+            "key": "a1",
+            "label": "Initial",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-04T10:00:00Z",
+            "minutes": 40,
+            "costMicros": 7200000,
+            "result": "failed",
+            "summary": "2 tests failed: the product grid broke at 320px",
+            "steps": [
+              {
+                "t": "10:00",
+                "kind": "read",
+                "text": "reading the M2 task doc"
+              },
+              {
+                "t": "10:05",
+                "kind": "edit",
+                "text": "editing src/components/sections/Grid.astro  +77"
+              },
+              {
+                "t": "10:31",
+                "kind": "cmd",
+                "text": "› pnpm test e2e/grid.spec.ts"
+              },
+              {
+                "t": "10:33",
+                "kind": "fail",
+                "text": "✗ grid overflows at 320px (2 failed)"
+              },
+              {
+                "t": "10:40",
+                "kind": "done",
+                "text": "budget for this attempt spent; retry 1 queued"
+              }
+            ]
+          },
+          {
+            "key": "a2",
+            "label": "Retry 1 · focused fix",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-04T10:45:00Z",
+            "minutes": 18,
+            "costMicros": 2600000,
+            "result": "landed",
+            "summary": "Grid uses minmax; 21 tests pass",
+            "steps": [
+              {
+                "t": "10:45",
+                "kind": "read",
+                "text": "reading the two failing tests"
+              },
+              {
+                "t": "10:52",
+                "kind": "edit",
+                "text": "editing src/components/sections/Grid.astro  +6 −4"
+              },
+              {
+                "t": "10:58",
+                "kind": "cmd",
+                "text": "› pnpm test e2e/grid.spec.ts"
+              },
+              {
+                "t": "10:59",
+                "kind": "pass",
+                "text": "✓ 21 passed"
+              },
+              {
+                "t": "11:03",
+                "kind": "done",
+                "text": "merged as 8b20f4a"
+              }
+            ]
+          }
+        ],
+        "findings": [
+          "01a1f000-0000-7000-8000-000000000008",
+          "01a1f000-0000-7000-8000-000000000007"
+        ],
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000002"
+      },
+      "M3": {
+        "territory": [
+          "src/components/signup/",
+          "src/pricing/applyCode.ts"
+        ],
+        "req": 4,
+        "scn": 6,
+        "tests": "14 of 15",
+        "decision": "proposal:01a1b01a-aa60-77a5-a283-b024793da0db",
+        "attempts": [
+          {
+            "key": "a1",
+            "label": "Initial",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-10T07:20:00Z",
+            "minutes": 48,
+            "costMicros": 9680000,
+            "result": "failed",
+            "summary": "3 tests failed on bundles; the spring code applied twice",
+            "steps": [
+              {
+                "t": "07:20",
+                "kind": "read",
+                "text": "reading the M3 task doc and the locked tests"
+              },
+              {
+                "t": "07:31",
+                "kind": "edit",
+                "text": "editing src/components/signup/Form.astro  +96"
+              },
+              {
+                "t": "07:52",
+                "kind": "edit",
+                "text": "editing src/pricing/applyCode.ts  +38"
+              },
+              {
+                "t": "08:02",
+                "kind": "cmd",
+                "text": "› pnpm test checkout/signup.spec.ts"
+              },
+              {
+                "t": "08:03",
+                "kind": "fail",
+                "text": "✗ 12 passed, 3 failed: bundle totals"
+              },
+              {
+                "t": "08:08",
+                "kind": "done",
+                "text": "attempt cap reached; retry 1 queued as a focused fix"
+              }
+            ]
+          },
+          {
+            "key": "a2",
+            "label": "Retry 1 · focused fix",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-10T08:14:00Z",
+            "minutes": 41,
+            "costMicros": 3420000,
+            "capMicros": 4000000,
+            "result": "running",
+            "summary": "One failing test left: the bundle discount",
+            "steps": [
+              {
+                "t": "08:14",
+                "kind": "read",
+                "text": "reading the 3 failing tests"
+              },
+              {
+                "t": "08:20",
+                "kind": "cmd",
+                "text": "› git diff --stat"
+              },
+              {
+                "t": "08:21",
+                "kind": "read",
+                "text": "reading src/pricing/bundles.ts"
+              },
+              {
+                "t": "08:33",
+                "kind": "cmd",
+                "text": "› pnpm test checkout/signup.spec.ts"
+              },
+              {
+                "t": "08:34",
+                "kind": "fail",
+                "text": "✗ applies spring code to bundle: expected 2 line items, received 1"
+              },
+              {
+                "t": "08:40",
+                "kind": "cmd",
+                "text": "› rg \"applyCode\" src/pricing"
+              },
+              {
+                "t": "08:44",
+                "kind": "edit",
+                "text": "editing src/pricing/applyCode.ts  +18 −6"
+              },
+              {
+                "t": "08:47",
+                "kind": "cmd",
+                "text": "› pnpm tsc --noEmit"
+              },
+              {
+                "t": "08:47",
+                "kind": "pass",
+                "text": "no type errors"
+              },
+              {
+                "t": "08:52",
+                "kind": "cmd",
+                "text": "› pnpm test checkout/signup.spec.ts -t bundle"
+              },
+              {
+                "t": "08:53",
+                "kind": "fail",
+                "text": "✗ bundle discount applied twice"
+              },
+              {
+                "t": "08:55",
+                "kind": "edit",
+                "text": "editing src/pricing/applyCode.ts  +4 −9"
+              }
+            ],
+            "live": [
+              {
+                "t": "",
+                "kind": "cmd",
+                "text": "› pnpm test checkout/signup.spec.ts -t bundle"
+              },
+              {
+                "t": "",
+                "kind": "pass",
+                "text": "✓ applies spring code to bundle"
+              },
+              {
+                "t": "",
+                "kind": "cmd",
+                "text": "› pnpm test checkout/signup.spec.ts"
+              },
+              {
+                "t": "",
+                "kind": "pass",
+                "text": "✓ 15 passed"
+              },
+              {
+                "t": "",
+                "kind": "read",
+                "text": "writing the attempt report"
+              },
+              {
+                "t": "",
+                "kind": "done",
+                "text": "handed to review"
+              }
+            ]
+          }
+        ],
+        "findings": [
+          "01a1f000-0000-7000-8000-000000000011",
+          "01a1f000-0000-7000-8000-000000000009"
+        ],
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000003"
+      },
+      "M4": {
+        "territory": [
+          "src/pricing/rules/",
+          "src/components/checkout/"
+        ],
+        "req": 5,
+        "scn": 8,
+        "tests": "9 of 14",
+        "decision": "proposal:01a1a60b-4980-70d5-a523-4525cd77fb38",
+        "attempts": [
+          {
+            "key": "a1",
+            "label": "Initial",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-06T09:00:00Z",
+            "minutes": 44,
+            "costMicros": 4400000,
+            "result": "failed",
+            "summary": "5 tests failed: rule order",
+            "steps": [
+              {
+                "t": "09:00",
+                "kind": "read",
+                "text": "reading the M4 task doc"
+              },
+              {
+                "t": "09:40",
+                "kind": "fail",
+                "text": "✗ 9 passed, 5 failed"
+              },
+              {
+                "t": "09:44",
+                "kind": "done",
+                "text": "retry 1 queued"
+              }
+            ]
+          },
+          {
+            "key": "a2",
+            "label": "Retry 1 · focused fix",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-06T10:00:00Z",
+            "minutes": 30,
+            "costMicros": 3200000,
+            "result": "failed",
+            "summary": "Still 5 failing",
+            "steps": [
+              {
+                "t": "10:00",
+                "kind": "edit",
+                "text": "editing src/pricing/rules/order.ts  +22 −10"
+              },
+              {
+                "t": "10:28",
+                "kind": "fail",
+                "text": "✗ 9 passed, 5 failed"
+              },
+              {
+                "t": "10:30",
+                "kind": "done",
+                "text": "retry 2 queued as a rethink"
+              }
+            ]
+          },
+          {
+            "key": "a3",
+            "label": "Retry 2 · rethink",
+            "agent": "Mara",
+            "role": "builder",
+            "model": "gpt-6",
+            "startedAt": "2026-11-06T11:00:00Z",
+            "minutes": 38,
+            "costMicros": 3600000,
+            "result": "failed",
+            "summary": "A second vendor hit the same wall",
+            "steps": [
+              {
+                "t": "11:00",
+                "kind": "read",
+                "text": "reading the plan and both attempt reports"
+              },
+              {
+                "t": "11:35",
+                "kind": "fail",
+                "text": "✗ 9 passed, 5 failed"
+              },
+              {
+                "t": "11:38",
+                "kind": "done",
+                "text": "retry 3 queued"
+              }
+            ]
+          },
+          {
+            "key": "a4",
+            "label": "Retry 3 · last try",
+            "agent": "Leon",
+            "role": "builder",
+            "model": "claude-opus-5",
+            "startedAt": "2026-11-06T13:00:00Z",
+            "minutes": 22,
+            "costMicros": 2600000,
+            "result": "parked",
+            "summary": "Parked: the module is too big for one job. Canon proposes splitting it",
+            "steps": [
+              {
+                "t": "13:00",
+                "kind": "read",
+                "text": "reading three failed attempts"
+              },
+              {
+                "t": "13:20",
+                "kind": "fail",
+                "text": "✗ same 5 tests"
+              },
+              {
+                "t": "13:22",
+                "kind": "done",
+                "text": "parked; a re-plan is proposed"
+              }
+            ]
+          }
+        ],
+        "findings": [],
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000004"
+      },
+      "M5": {
+        "territory": [
+          "src/lib/analytics.ts"
+        ],
+        "req": 2,
+        "scn": 3,
+        "tests": "—",
+        "attempts": [],
+        "findings": [],
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000005"
+      }
+    }
+  }
+}

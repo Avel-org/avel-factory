@@ -1,0 +1,105 @@
+/* Who a project is for: client or internal (Canon's Q-0.1, CR-W22) */
+
+/* New project: what happens to "who it's for" */
+.np-for { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px; border: 1px solid var(--av-hairline); border-radius: 8px; background: var(--av-faceplate); }
+.np-for-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--av-accent-tint); color: var(--av-accent); }
+.np-for-t { margin: 0 0 2px; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--av-ink); }
+.np-for .av-btn { align-self: center; }
+@media (max-width: 560px) {
+  .np-for { grid-template-columns: 32px minmax(0, 1fr); }
+  .np-for .av-btn { grid-column: 2; justify-self: start; }
+}
+
+/* Projects list: "Internal" where a client's name would be */
+.op-for[data-for="internal"] { color: var(--av-ink); font-weight: 500; }
+
+/* Clients: the line that says where internal projects went */
+.op-note { margin: 12px 4px 0; font-size: 13px; line-height: 20px; color: var(--av-muted); }
+.op-note a { color: var(--av-accent); text-decoration: underline; text-underline-offset: 2px; }
+
+/* The brief: a section Canon hasn't filled yet */
+.cv-sec dd.cv-sec-empty { color: var(--av-muted); font-size: 13px; }
+
+/* A checkpoint Canon hasn't drafted yet */
+.cv-drafting { margin: 0; padding: 24px 0 8px; font-size: 14px; line-height: 20px; color: var(--av-muted); }
+
+/* Decisions, contract 1.0.0: the parts every kind shares and the parts only one kind has */
+.cr-hero-why { margin: 4px 0 0; font-size: 14px; line-height: 20px; color: var(--av-muted); }
+.cr-dc-back { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; background: var(--av-needs-tint, var(--av-faceplate)); border: 1px solid var(--av-hairline); font-size: 13px; line-height: 20px; color: var(--av-ink); }
+.cr-dc-back svg { margin-top: 4px; flex: none; }
+.cr-dc-back small { display: block; color: var(--av-muted); font-size: 13px; }
+.cr-dc-unlocks { display: flex; gap: 6px; align-items: center; margin: 4px 0 12px; font-size: 13px; color: var(--av-muted); }
+.cr-dc-facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px 16px; margin: 12px 0 0; padding: 12px; border: 1px solid var(--av-hairline); border-radius: 8px; }
+.cr-dc-facts dt { font-size: 12px; line-height: 16px; color: var(--av-muted); }
+.cr-dc-facts dd { margin: 2px 0 0; font-size: 13px; line-height: 20px; color: var(--av-ink); overflow-wrap: anywhere; }
+.cr-dc-draft { margin: 12px 0 0; padding: 12px; border-radius: 8px; background: var(--av-faceplate); border: 1px solid var(--av-hairline); }
+.cr-dc-draft-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--av-muted); }
+.cr-dc-draft p { margin: 6px 0 0; font-size: 14px; line-height: 22px; color: var(--av-ink); white-space: pre-wrap; }
+.cr-dc-sends { margin: 12px 0 0; font-size: 12px; color: var(--av-muted); }
+.cr-dc-sends summary { cursor: pointer; min-height: 24px; display: inline-flex; align-items: center; }
+.cr-dc-sends p { margin: 6px 0; }
+.cr-dc-sends pre { margin: 0; padding: 8px 12px; border-radius: 6px; background: var(--av-faceplate); font: 12px/18px var(--av-font-mono, ui-monospace, monospace); overflow-x: auto; color: var(--av-ink); }
+.cr-done-sent { display: block; font-family: var(--av-font-mono, ui-monospace, monospace); font-size: 12px; color: var(--av-muted); }
+
+/* CR-29: OSA's brief on a decision */
+.cr-brief { margin: 12px 0 0; padding: 12px; border-radius: 8px; border: 1px dashed var(--av-hairline-strong, var(--av-hairline)); background: var(--av-faceplate); }
+.cr-brief header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cr-brief-k { font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--av-ink); }
+.cr-brief-stale { font-size: 12px; color: var(--av-needs, var(--av-muted)); }
+.cr-brief p { margin: 6px 0 0; font-size: 14px; line-height: 20px; color: var(--av-ink); }
+.cr-brief ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 20px; color: var(--av-muted); }
+.cr-brief-rec b { font-weight: 500; }
+.cr-brief-note { font-size: 12px !important; color: var(--av-muted) !important; }
+.cr-brief[data-stale] { opacity: 0.8; }
+
+/* Clients, CR-W17 pipeline (contract 1.0.0) */
+.op-stages { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; padding: 0; list-style: none; }
+.op-stages li { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 10px; border: 1px solid var(--av-hairline); border-radius: 8px; background: var(--av-faceplate); }
+.op-stages b { font-variant-numeric: tabular-nums; color: var(--av-ink); }
+.op-lead-form { display: grid; gap: 12px; padding: 16px; margin: 0 0 12px; max-width: 560px; }
+.op-lead-form .cr-error, .op-close-lead .cr-error { margin: -6px 0 0; font-size: 13px; color: var(--av-stopped); }
+.op-brief-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.op-close-lead { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin-top: 8px; }
+.op-accept { display: grid; gap: 6px; margin-top: 8px; max-width: 520px; }
+.op-accept-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* CR-29 OSA bar (behind the osa flag) */
+.osa { display: grid; gap: 8px; padding: 10px 12px; margin: 0 0 16px; border: 1px solid var(--av-hairline); border-radius: 12px; background: var(--av-faceplate); font-size: 14px; }
+.osa-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.osa-who { display: inline-flex; align-items: center; gap: 6px; }
+.osa-icon { display: inline-flex; color: var(--av-accent); }
+.osa-sub { color: var(--av-muted); font-size: 13px; }
+.osa-focus { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; }
+.osa-focus a { color: var(--av-accent); }
+.osa-acts { display: inline-flex; gap: 8px; margin-left: auto; }
+.osa[data-paused="true"] .osa-icon { color: var(--av-muted); }
+.osa-note { margin: 0; font-size: 13px; color: var(--av-muted); }
+.osa-ask { display: grid; gap: 6px; }
+.osa-ask-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.osa-tasks { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.osa-tasks li { display: flex; align-items: flex-start; gap: 8px; }
+.osa-task-main { display: grid; gap: 2px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.osa-task-res { color: var(--av-ink); }
+.osa-task-link { color: var(--av-accent); font-size: 13px; }
+.osa-spend { display: inline-flex; align-items: center; gap: 8px; }
+.osa-meter { display: inline-block; width: 120px; height: 6px; border-radius: 3px; background: var(--av-hairline); overflow: hidden; }
+.osa-meter i { display: block; height: 100%; background: var(--av-accent); }
+.osa-spend[data-high="true"] .osa-meter i { background: var(--av-needs-text); }
+
+/* CR-29 terminal-attached view (Appendix C): what's happening now lives in the terminal */
+.lib-screen[data-term="attached"] [data-ui="LiveCanvas"],
+.lib-screen[data-term="attached"] [data-ui="EventRiver"],
+.lib-screen[data-term="attached"] [data-ui="EventsDrawer"],
+.lib-screen[data-term="attached"] [data-ui="RoomTerminal"],
+.lib-screen[data-term="attached"] .mdp-feed { display: none; }
+.op-osa-tag { margin-left: 6px; vertical-align: 1px; }
+.op-wait-link { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: baseline; }
+.op-wait-k { white-space: nowrap; color: var(--av-muted); font-size: 13px; }
+.op-accept > .av-btn, .op-accept-acts .av-btn { justify-self: start; width: auto; }
+.osa-fold { justify-self: start; padding: 4px 0; min-height: 24px; border: 0; background: none; font: inherit; font-size: 13px; color: var(--av-ink); cursor: pointer; text-align: left; }
+.osa-fold:hover { text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 640px) {
+  .osa { padding: 8px 10px; margin-bottom: 12px; }
+  .osa-mine { display: none; }
+  .osa-acts { margin-left: 0; width: 100%; justify-content: space-between; }
+}

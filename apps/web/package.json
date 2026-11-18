@@ -21,7 +21,8 @@
     "clsx": "2.1.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "tailwind-merge": "3.7.0"
+    "tailwind-merge": "3.7.0",
+    "thinking-orbs": "0.3.2"
   },
   "devDependencies": {
     "@avel/contract-mock": "workspace:*",

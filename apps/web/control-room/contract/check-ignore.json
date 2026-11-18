@@ -1,0 +1,7 @@
+{
+  "_note": "Strings that look like contract calls but aren't: sample code inside Library entries and template docs. Each entry names the file and the text, and why.",
+  "ignore": [
+    { "file": "src/mock/library.json", "match": "plan.annualDiscount", "why": "A pricing helper in a template's sample code" },
+    { "file": "src/mock/library.json", "match": "/api/rpc", "why": "A template's own oRPC endpoint, in its sample code" }
+  ]
+}

@@ -1,0 +1,60 @@
+/* The gate bar under a project's title: six gates as one track, read left to right.
+   A passed gate is a full green bar, the gate you're at fills as its work lands, and later gates are empty.
+   Names show on desk; on a phone the numbers stay and the current gate's name moves to the summary. */
+
+.cr-gates { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 16px; }
+.cr-mast-head[data-kind="project"] .cr-gates { flex-wrap: wrap; margin-top: 12px; }
+.cr-gates-k { padding-top: 2px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--av-muted); }
+.cr-gates-list { flex: 0 1 760px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; min-width: 0; margin: 0; padding: 0; list-style: none; border-radius: 0; box-shadow: none; overflow: visible; }
+.cr-gates-list li { display: block; min-width: 0; }
+
+.cr-gate { position: relative; display: grid; gap: 6px; height: auto; padding: 2px 0 0; border: 0 !important; border-radius: 4px; background: none !important; box-shadow: none !important; color: var(--av-muted); text-decoration: none; filter: none !important; }
+.cr-gate-l { display: flex; align-items: center; gap: 4px; min-width: 0; padding: 0 2px; font-size: 12px; line-height: 16px; white-space: nowrap; }
+.cr-gate-l .lucide { flex: none; }
+.cr-gate-n { flex: none; font: 500 12px/16px var(--av-font-mono); }
+.cr-gate-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.cr-gate-bar { position: relative; display: block; height: 4px; border-radius: 2px; background: var(--av-hairline-strong); overflow: hidden; }
+.cr-gate-bar i { position: absolute; inset: 0; border-radius: inherit; background: var(--av-accent); transform-origin: left center; scale: var(--fill, 0) 1; }
+
+.cr-gate[data-st="pass"] { color: var(--av-verified); }
+.cr-gate[data-st="pass"] .cr-gate-name { color: var(--av-muted); }
+.cr-gate[data-st="pass"] .cr-gate-bar i { background: var(--av-verified-solid, var(--av-verified)); }
+.cr-gate[data-st="fail"], .cr-gate[data-st="fail"] .cr-gate-name { color: var(--av-stopped); }
+.cr-gate[data-st="fail"] .cr-gate-bar i { background: var(--av-stopped-solid, var(--av-stopped)); }
+.cr-gate[data-current] { color: var(--av-ink); }
+.cr-gate[data-current] .cr-gate-name { color: var(--av-ink); font-weight: 500; }
+
+@media (hover: hover) and (pointer: fine) {
+  .cr-gate:hover .cr-gate-name, .cr-gate:hover .cr-gate-n { color: var(--av-ink); }
+  .cr-gate:hover .cr-gate-bar { background: var(--av-faint, var(--av-hairline-strong)); }
+}
+.cr-gate:focus-visible { outline: 2px solid var(--av-focus-ring); outline-offset: 3px; }
+
+.cr-gates-sum { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; margin: 0 !important; font-size: 12px; line-height: 16px; color: var(--av-muted); white-space: normal; padding-top: 2px; }
+.cr-gates-sum b { color: var(--av-ink); font-weight: 500; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  /* the summary already says "Gate 2 …", so the label goes and the summary leads */
+  .cr-gates { gap: 6px; }
+  .cr-gates-k { display: none; }
+  .cr-gates-sum { flex: 1 1 100%; padding-top: 0; }
+  .cr-gates-list { flex: 1 1 100%; gap: 3px; }
+  .cr-gate-name { display: none; }
+  .cr-gate::after { inset: -8px -1px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cr-gate-bar i { transition: scale 400ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease-out; }
+}
+@media (forced-colors: active) {
+  .cr-gate-bar { border: 1px solid CanvasText; }
+  .cr-gate-bar i { background: Highlight; }
+}
+
+/* phone: when the project menu is the only control, it sits at the title's right instead of on a row of its own */
+@media (max-width: 760px) {
+  .cr-mast-head[data-kind="project"] { position: relative; }
+  .cr-mast-head[data-kind="project"] .cr-mast-side:not(:has(.cr-watch-btn)):has(.cr-ctl) { position: absolute; top: -6px; right: -8px; margin: 0; }
+  .cr-mast-head[data-kind="project"]:has(.cr-mast-side:not(:has(.cr-watch-btn)) .cr-ctl) h1 { padding-right: 44px; }
+}

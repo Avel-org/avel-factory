@@ -1,0 +1,738 @@
+{
+  "_readme": "Sample Gate 0 sessions, shaped like the onboarding tables: messages, facts (source and status), checkpoints with sections, rubric results and questions. Facts inside checkpoint sections, topic coverage and the journey are CR-W18.",
+  "01a1b016-1680-7ea7-9b27-8f75c199eac7": {
+    "stage": "breakdown",
+    "status": "blocked_on_you",
+    "progressPct": 38,
+    "promptVersion": "canon-v14",
+    "minutes": 55,
+    "canonSpentMicros": 3180000,
+    "startedAt": "2026-11-06T15:00:00Z",
+    "uploads": [
+      {
+        "id": "up-1",
+        "name": "fleet-sheet.xlsx",
+        "parse": "parsed",
+        "pages": 1
+      }
+    ],
+    "repo": {
+      "name": "gts-diesel/ops-app",
+      "commit": "9f2a1c7",
+      "read": "Read at 0.1"
+    },
+    "topics": [
+      ["Problem", "clear"],
+      ["Outcome", "clear"],
+      ["Scope and no-gos", "clear"],
+      ["Deadline", "clear"],
+      ["Core flows", "clear"],
+      ["Data and integrations", "partial"],
+      ["Quality targets", "partial"],
+      ["Edge cases", "clear"],
+      ["Existing assets", "clear"],
+      ["Acceptance", "clear"]
+    ],
+    "messages": [
+      {
+        "seq": 0,
+        "role": "opener",
+        "text": "Hi Javaris. I'm Canon. I'll ask one question at a time, twelve at most, then draft each checkpoint for you to approve. Who is this for, and what goes wrong for them today?",
+        "at": "2026-11-06T15:00:00Z"
+      },
+      {
+        "seq": 1,
+        "role": "operator",
+        "text": "GTS Diesel's drivers. They get jobs by text from the dispatcher and lose track of them. Photos of finished work go over WhatsApp and never reach the office.",
+        "at": "2026-11-06T15:02:00Z"
+      },
+      {
+        "seq": 2,
+        "role": "canon",
+        "text": "How will you know it worked? Pick the measure that matters most.",
+        "options": [
+          "A driver finds the next job fast",
+          "Photos reach the office the same day",
+          "Fewer calls to the dispatcher"
+        ],
+        "recommended": 0,
+        "answer": "A driver finds the next job fast",
+        "at": "2026-11-06T15:03:00Z"
+      },
+      {
+        "seq": 3,
+        "role": "operator",
+        "relayed": true,
+        "text": "Dale said: “If a driver can't find the job in ten seconds, he'll call me instead.”",
+        "at": "2026-11-06T15:05:00Z"
+      },
+      {
+        "seq": 4,
+        "role": "canon",
+        "text": "Is there an app or repo already, or does this start from nothing?",
+        "options": ["Existing app", "Starts from nothing"],
+        "answer": "Existing app",
+        "at": "2026-11-06T15:06:00Z"
+      },
+      {
+        "seq": 5,
+        "role": "operator",
+        "text": "Their ops app, gts-diesel/ops-app. I've connected it read-only. The driver list is in the sheet I uploaded.",
+        "attach": "fleet-sheet.xlsx",
+        "at": "2026-11-06T15:09:00Z"
+      },
+      {
+        "seq": 6,
+        "role": "canon",
+        "text": "I've drafted 0.1, the brief, from your answers and the sheet. Two facts came from the sheet and are marked proposed until you approve.",
+        "system": "Checkpoint 0.1 drafted",
+        "at": "2026-11-06T15:31:00Z"
+      },
+      {
+        "seq": 7,
+        "role": "system",
+        "text": "You approved 0.1 Brief.",
+        "at": "2026-11-07T09:12:00Z"
+      },
+      {
+        "seq": 8,
+        "role": "canon",
+        "text": "Breakdown is drafting. One thing blocks the sign-in module: should drivers sign in with SMS codes or with company SSO?",
+        "question": "Q-0.2",
+        "options": ["Use SMS codes", "Use company SSO"],
+        "recommended": 0,
+        "why": "40 of 62 drivers use personal phones, from the fleet sheet. SSO would add an identity-provider module.",
+        "blocking": true,
+        "at": "2026-11-08T16:40:00Z",
+        "ack": [
+          "SMS codes it is. M1 now signs drivers in with a one-time code, and I’ve dropped the identity-provider work. 0.2 is no longer blocked.",
+          "Company SSO, then. I’ve added an identity-provider module to 0.2; I’ll need GTS’s SSO provider before 0.4."
+        ]
+      },
+      {
+        "seq": 9,
+        "role": "canon",
+        "text": "Two smaller ones for 0.2 while you’re here. Neither blocks it: should the old dispatch texts run alongside for a week?",
+        "question": "Q-0.2b",
+        "at": "2026-11-08T16:44:00Z",
+        "recommended": 0,
+        "ack": [
+          "A week of overlap. I’ve added it to M4 and kept the risk in 0.2 so we watch it.",
+          "Switch off at launch. I’ve added a launch-day notice to M4 and closed the overlap risk."
+        ],
+        "options": ["Run both for a week", "Switch off at launch"]
+      },
+      {
+        "seq": 10,
+        "role": "canon",
+        "text": "And do drivers take a delivery photo at every stop, or only for damaged goods?",
+        "question": "Q-0.2c",
+        "at": "2026-11-08T16:45:00Z",
+        "recommended": 0,
+        "ack": [
+          "Only for damaged goods. M3 stays at 4 scenarios.",
+          "A photo at every stop. M3 gains the offline photo queue: 2 more scenarios, about a quarter of a module cap."
+        ],
+        "options": ["Only for damaged goods", "Every stop"]
+      }
+    ],
+    "checkpoints": [
+      {
+        "key": "0.1",
+        "name": "Brief",
+        "state": "approved",
+        "version": 1,
+        "approvedAt": "2026-11-07T09:12:00Z",
+        "sections": [
+          {
+            "k": "What it is",
+            "lines": [
+              {
+                "t": "A client project for GTS Diesel. Their contacts own the acceptance examples, and it ships to gts-diesel/ops-app.",
+                "src": "said",
+                "msg": 1
+              }
+            ]
+          },
+          {
+            "k": "Problem",
+            "lines": [
+              {
+                "t": "Drivers get jobs by text and lose track of them. Photos of finished work go over WhatsApp and never reach the office.",
+                "src": "said",
+                "msg": 1
+              }
+            ]
+          },
+          {
+            "k": "Users",
+            "lines": [
+              {
+                "t": "62 drivers, 40 of them on personal phones, and 2 dispatchers.",
+                "src": "uploaded",
+                "from": "fleet-sheet.xlsx, sheet 1",
+                "status": "confirmed"
+              }
+            ]
+          },
+          {
+            "k": "Outcome and how we'll measure it",
+            "lines": [
+              {
+                "t": "A driver finds today's next job in under 10 seconds.",
+                "src": "relayed",
+                "msg": 3
+              },
+              {
+                "t": "The office has photos for every closed job the same day.",
+                "src": "said",
+                "msg": 2
+              }
+            ]
+          },
+          {
+            "k": "Scope",
+            "lines": [
+              {
+                "t": "Today's jobs, job detail with photos, job status, a dispatcher board.",
+                "src": "said",
+                "msg": 1
+              }
+            ]
+          },
+          {
+            "k": "No-gos",
+            "lines": [
+              {
+                "t": "No invoicing, no route planning, no customer portal.",
+                "src": "said",
+                "msg": 5
+              }
+            ]
+          },
+          {
+            "k": "Deadline",
+            "lines": [
+              {
+                "t": "10 days from plan approval, the Feature package's deadline.",
+                "src": "inferred",
+                "status": "confirmed"
+              }
+            ]
+          },
+          {
+            "k": "Constraints",
+            "lines": [
+              {
+                "t": "Works on 4G in the yard, on phones from 2019 on.",
+                "src": "said",
+                "msg": 5
+              }
+            ]
+          },
+          {
+            "k": "Risks",
+            "lines": [
+              {
+                "t": "Signal is patchy at job sites, so photos must queue and send later.",
+                "src": "inferred",
+                "status": "confirmed"
+              }
+            ]
+          },
+          {
+            "k": "Acceptance examples",
+            "lines": [
+              {
+                "t": "Given a driver with 3 jobs today, when they open the portal, then the next job is first.",
+                "src": "said",
+                "msg": 2
+              },
+              {
+                "t": "Given no signal, when a driver adds a photo, then it sends when signal returns.",
+                "src": "inferred",
+                "status": "confirmed"
+              }
+            ]
+          },
+          {
+            "k": "Existing assets",
+            "lines": [
+              {
+                "t": "gts-diesel/ops-app at 9f2a1c7: TanStack Start, Postgres.",
+                "src": "repo",
+                "from": "package.json"
+              }
+            ]
+          },
+          {
+            "k": "Open questions",
+            "lines": [
+              {
+                "t": "How drivers sign in. Moved to 0.2 as a question for you.",
+                "src": "inferred",
+                "status": "confirmed"
+              }
+            ]
+          },
+          {
+            "k": "Package, for now",
+            "lines": [
+              {
+                "t": "Feature shipped: one scoped feature in an existing app, inside 10 days.",
+                "src": "inferred",
+                "status": "confirmed"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "0.2",
+        "name": "Breakdown",
+        "state": "draft",
+        "version": 1,
+        "blockedBy": ["Q-0.2", "B10"],
+        "modules": [
+          {
+            "ref": "M0",
+            "title": "Smoke test of the existing app",
+            "kind": "infra",
+            "deps": [],
+            "req": 1,
+            "scn": 1,
+            "wave": 0
+          },
+          {
+            "ref": "M1",
+            "title": "Driver sign-in",
+            "kind": "api",
+            "deps": ["M0"],
+            "req": 2,
+            "scn": 4,
+            "wave": 1,
+            "blocked": "Waits on Q-0.2"
+          },
+          {
+            "ref": "M2",
+            "title": "Today's jobs",
+            "kind": "frontend",
+            "deps": ["M1"],
+            "req": 3,
+            "scn": 5,
+            "wave": 2
+          },
+          {
+            "ref": "M3",
+            "title": "Job detail and photos",
+            "kind": "frontend",
+            "deps": ["M2"],
+            "req": 3,
+            "scn": 6,
+            "wave": 3
+          },
+          {
+            "ref": "M4",
+            "title": "Dispatcher board",
+            "kind": "frontend",
+            "deps": ["M2"],
+            "req": 2,
+            "scn": 3,
+            "wave": 3
+          }
+        ],
+        "levels": [
+          ["Unit", 9],
+          ["Integration", 6],
+          ["End to end", 4]
+        ],
+        "rubric": [
+          {
+            "id": "B1",
+            "t": "Every requirement maps to a module, and every module to a requirement",
+            "r": "pass"
+          },
+          {
+            "id": "B4",
+            "t": "No dependency cycles; waves computed from dependencies",
+            "r": "pass"
+          },
+          {
+            "id": "B5",
+            "t": "No-gos are listed",
+            "r": "pass"
+          },
+          {
+            "id": "B7",
+            "t": "Critical path (4 waves at 6 at once) fits 10 days",
+            "r": "advisory",
+            "note": "Advisory until 10 Feature missions are measured"
+          },
+          {
+            "id": "B9",
+            "t": "Every acceptance example maps to an acceptance scenario",
+            "r": "pass"
+          },
+          {
+            "id": "B10",
+            "t": "Every quality target has a number and a check",
+            "r": "fail",
+            "note": "“Works on 4G” has no number. Suggest: first screen under 2.5 s on Fast 4G."
+          },
+          {
+            "id": "M4",
+            "t": "M3: photo upload has no failure scenario for a full phone",
+            "r": "finding",
+            "by": "Brennan"
+          }
+        ],
+        "risks": ["Offline photo queue on old Android phones", "Dispatchers keep texting jobs during the switch"]
+      },
+      {
+        "key": "0.3",
+        "name": "Mission and roster",
+        "state": "locked",
+        "version": 1,
+        "package": {
+          "name": "Feature shipped",
+          "price": 3000000000,
+          "why": "One scoped feature in an existing app (ops-app), inside the 10-day deadline. Not a Stabilize: nothing is broken today.",
+          "deadline": "10 days from finalize"
+        },
+        "template": {
+          "match": null,
+          "note": "No Feature template matches a driver portal yet."
+        },
+        "checks": [
+          "Unit and integration tests",
+          "End to end: 4 browser scenarios",
+          "Accessibility (axe)",
+          "Speed (Lighthouse): first screen under 2.5 s on Fast 4G",
+          "Security review at ASVS L2 for M1: sign-in handles phone numbers"
+        ],
+        "roster": [
+          {
+            "ref": "M0",
+            "build": "Atlas",
+            "tests": "Nemi",
+            "e2e": "Fenn",
+            "spec": "Brennan",
+            "security": null
+          },
+          {
+            "ref": "M1",
+            "build": "Axis",
+            "tests": "Nemi",
+            "e2e": "Fenn",
+            "spec": "Brennan",
+            "security": "Zane"
+          },
+          {
+            "ref": "M2",
+            "build": "Leon",
+            "tests": "Nemi",
+            "e2e": "Fenn",
+            "spec": "Brennan",
+            "security": null
+          },
+          {
+            "ref": "M3",
+            "build": "Leon",
+            "tests": "Nemi",
+            "e2e": "Fenn",
+            "spec": "Brennan",
+            "security": null
+          },
+          {
+            "ref": "M4",
+            "build": "Fantem",
+            "tests": "Nemi",
+            "e2e": "Fenn",
+            "spec": "Brennan",
+            "security": null
+          }
+        ],
+        "rosterVersion": 7,
+        "critical": "4 waves. About 6 working days at 6 jobs at once, inside the 10-day deadline.",
+        "budget": [
+          ["M0", 2.1],
+          ["M1", 7.4],
+          ["M2", 8.2],
+          ["M3", 10.4],
+          ["M4", 6.3]
+        ],
+        "reviewsUsd": 9.0
+      },
+      {
+        "key": "0.4",
+        "name": "Context",
+        "state": "locked",
+        "version": 1,
+        "analysis": {
+          "commit": "9f2a1c7",
+          "stack": "TanStack Start, React 19, Drizzle, Postgres",
+          "build": "pnpm build",
+          "test": "pnpm test",
+          "lint": "pnpm lint",
+          "standing": "AGENTS.md found"
+        },
+        "readiness": {
+          "state": "partial",
+          "reason": "No browser test runner in the repo. M0 adds Playwright, so e2e checks run from wave 2."
+        },
+        "territories": [
+          ["M0", "e2e/, playwright.config.ts"],
+          ["M1", "src/auth/driver/**"],
+          ["M2", "src/routes/jobs/index.tsx, src/jobs/list/**"],
+          ["M3", "src/routes/jobs/$jobId.tsx, src/jobs/photos/**"],
+          ["M4", "src/routes/board/**"]
+        ],
+        "sources": [
+          {
+            "ref": "M1",
+            "need": "SMS provider account owner's name",
+            "have": "Dale Ortiz, GTS Diesel (Twilio)",
+            "ok": true
+          },
+          {
+            "ref": "M3",
+            "need": "Photo rules: size, count, what the office needs",
+            "have": null,
+            "ok": false,
+            "ask": "Leon needs GTS's photo rules for M3"
+          },
+          {
+            "ref": "M4",
+            "need": "Today's dispatcher sheet",
+            "have": "dispatch-board.png",
+            "ok": true
+          }
+        ]
+      },
+      {
+        "key": "final",
+        "name": "Finalize",
+        "state": "locked"
+      }
+    ]
+  },
+  "01a1912f-ee80-709f-891e-7d29547e91a0": {
+    "stage": "finalized",
+    "status": "finalized",
+    "progressPct": 100,
+    "minutes": 41,
+    "canonSpentMicros": 2860000,
+    "messagesN": 14,
+    "startedAt": "2026-10-31T09:00:00Z",
+    "finalizedAt": "2026-11-01T10:00:00Z",
+    "pinned": {
+      "plan": 3,
+      "factory": "4e1c9a0",
+      "roster": 7,
+      "template": "Landing page v3"
+    },
+    "checkpoints": [
+      {
+        "key": "0.1",
+        "name": "Brief",
+        "state": "approved",
+        "approvedAt": "2026-10-31T11:20:00Z",
+        "summary": "A spring launch page with signup and a discount code. Measure: 300 signups in 2 weeks."
+      },
+      {
+        "key": "0.2",
+        "name": "Breakdown",
+        "state": "approved",
+        "approvedAt": "2026-11-01T08:40:00Z",
+        "summary": "5 modules, 14 requirements, 22 scenarios. Every code check passed."
+      },
+      {
+        "key": "0.3",
+        "name": "Mission and roster",
+        "state": "approved",
+        "approvedAt": "2026-11-01T09:15:00Z",
+        "summary": "Landing page package from the Landing page v3 template. Estimate 41% of the AI budget; every module inside its cap."
+      },
+      {
+        "key": "0.4",
+        "name": "Context",
+        "state": "approved",
+        "approvedAt": "2026-11-01T09:50:00Z",
+        "summary": "New repo from the template scaffold. Readiness: ready. Territories don't overlap."
+      },
+      {
+        "key": "final",
+        "name": "Finalize",
+        "state": "approved",
+        "approvedAt": "2026-11-01T10:00:00Z",
+        "summary": "Plan version 3 approved. The deadline clock started; due Nov 20."
+      }
+    ]
+  },
+  "01a17770-2280-7db5-9be9-18411454e558": {
+    "stage": "finalized",
+    "status": "finalized",
+    "progressPct": 100,
+    "minutes": 24,
+    "canonSpentMicros": 1410000,
+    "messagesN": 9,
+    "startedAt": "2026-10-28T14:00:00Z",
+    "finalizedAt": "2026-10-29T10:30:00Z",
+    "pinned": {
+      "plan": 2,
+      "factory": "c03fa58",
+      "roster": 6,
+      "template": null
+    },
+    "checkpoints": [
+      {
+        "key": "0.1",
+        "name": "Brief",
+        "state": "approved",
+        "approvedAt": "2026-10-28T15:10:00Z",
+        "summary": "Double bookings in Harbor Dental's booking flow. Measure: no double booking under 50 parallel requests."
+      },
+      {
+        "key": "0.2",
+        "name": "Breakdown",
+        "state": "approved",
+        "approvedAt": "2026-10-29T09:00:00Z",
+        "summary": "2 chains with traces, pinning tests first. Every code check passed."
+      },
+      {
+        "key": "0.3",
+        "name": "Mission and roster",
+        "state": "approved",
+        "approvedAt": "2026-10-29T09:40:00Z",
+        "summary": "Stabilize package. Estimate 14% of the AI budget."
+      },
+      {
+        "key": "0.4",
+        "name": "Context",
+        "state": "approved",
+        "approvedAt": "2026-10-29T10:20:00Z",
+        "summary": "harbor-dental/booking pinned at a41e9c2's parent. Readiness: ready."
+      },
+      {
+        "key": "final",
+        "name": "Finalize",
+        "state": "approved",
+        "approvedAt": "2026-10-29T10:30:00Z",
+        "summary": "Plan version 2 approved. Due Nov 13."
+      }
+    ]
+  },
+  "01a1c2d4-5e80-7a11-8c3d-0b5e6f7a8b9c": {
+    "stage": "discovery",
+    "status": "active",
+    "progressPct": 4,
+    "promptVersion": "canon-v14",
+    "minutes": 6,
+    "canonSpentMicros": 140000,
+    "startedAt": "2026-11-10T07:30:00Z",
+    "uploads": [],
+    "repo": null,
+    "messages": [
+      {
+        "seq": 0,
+        "role": "opener",
+        "text": "Hi Javaris. I'm Canon. I'll ask one question at a time, twelve at most, then draft each checkpoint for you to approve. What's this project, and what goes wrong today?",
+        "at": "2026-11-10T07:30:00Z"
+      },
+      {
+        "seq": 1,
+        "role": "operator",
+        "text": "Every field-service client asks for the same screens: today's jobs, a job page with photos, job status and an office board. I want one starter for it that new projects begin from.",
+        "at": "2026-11-10T07:33:00Z"
+      },
+      {
+        "seq": 2,
+        "role": "canon",
+        "text": "Before anything else: is this a client project, or an internal template?",
+        "question": "Q-0.1a",
+        "options": ["Internal template", "Client project", "Internal tool"],
+        "recommended": 0,
+        "why": "You described a starter that future field-service clients begin from, and no client is attached.",
+        "blocking": true,
+        "at": "2026-11-10T07:36:00Z",
+        "ack": [
+          "An internal template, then. You're the client on this one: you write the acceptance examples, it ships to avel/templates, and once it's delivered with a verified receipt you can publish it to Templates. Next: which kinds of client should start from it first?",
+          "A client project, then. Which client? Pick one, or type a new name.",
+          "An internal tool, then: AVEL’s own software, built like a client project with you as the client. It ships to an AVEL repo. Next: what has to work on day one?"
+        ]
+      },
+      {
+        "seq": 3,
+        "role": "canon",
+        "text": "Which client is it for?",
+        "question": "Q-0.1b",
+        "options": ["GTS Diesel", "Blume Studio"],
+        "recommended": 0,
+        "why": "Your two most recent clients. Type a name to start a new one.",
+        "blocking": true,
+        "at": "2026-11-10T07:36:30Z",
+        "ack": [
+          "GTS Diesel it is. Their rules and knowledge apply from here. Next: how will they know it worked?",
+          "Blume Studio it is. Their rules and knowledge apply from here. Next: how will they know it worked?"
+        ]
+      }
+    ],
+    "checkpoints": [
+      {
+        "key": "0.1",
+        "name": "Brief",
+        "state": "draft",
+        "version": 1,
+        "needsAudience": true,
+        "sections": [
+          {
+            "k": "What it is",
+            "lines": []
+          },
+          {
+            "k": "Problem",
+            "lines": [
+              {
+                "t": "Every field-service client asks for the same screens, and each project builds them again.",
+                "src": "said",
+                "msg": 1,
+                "status": "proposed"
+              }
+            ]
+          },
+          {
+            "k": "Scope",
+            "lines": [
+              {
+                "t": "Today's jobs, a job page with photos, job status and an office board, as one starter.",
+                "src": "said",
+                "msg": 1,
+                "status": "proposed"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "0.2",
+        "name": "Breakdown",
+        "state": "locked"
+      },
+      {
+        "key": "0.3",
+        "name": "Mission and roster",
+        "state": "locked"
+      },
+      {
+        "key": "0.4",
+        "name": "Context",
+        "state": "locked"
+      },
+      {
+        "key": "final",
+        "name": "Finalize",
+        "state": "locked"
+      }
+    ]
+  }
+}

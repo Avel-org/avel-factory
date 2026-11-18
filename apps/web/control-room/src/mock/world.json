@@ -1,0 +1,2229 @@
+{
+  "_readme": "Sample world for the AVEL control room, in contract 1.0.0's shapes: UUIDv7 ids, ISO times, AI cost in micro-dollars (shown only against its cap), lists as { items, nextCursor }. Route 52's pending decisions are in pending-decisions.json.",
+  "_gaps": {
+    "GET /api/rooms?state=running": "Gap 4, proposed: running rooms across missions. The rooms below stand in for it.",
+    "Agent output in events": "Not an event in 1.0.0: the module page and Live read it from the trace stream (route 64, view=steps)."
+  },
+  "clients": {
+    "items": [
+      {
+        "id": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+        "name": "Blume Studio",
+        "kind": "client",
+        "contacts": [
+          {
+            "name": "Mara Lind",
+            "email": "mara@blume.studio",
+            "role": "Owner"
+          }
+        ],
+        "createdAt": "2026-10-03T09:00:00.000Z",
+        "status": "active",
+        "archivedAt": null,
+        "proofConsentAt": "2026-10-14T16:00:00Z",
+        "rowVersion": 1,
+        "updatedAt": "2026-10-03T09:00:00.000Z"
+      },
+      {
+        "id": "01a11070-f280-7405-be02-939daa1426cd",
+        "name": "GTS Diesel",
+        "kind": "client",
+        "contacts": [
+          {
+            "name": "Dale Ortiz",
+            "email": "dale@gtsdiesel.com",
+            "role": "Operations"
+          }
+        ],
+        "createdAt": "2026-10-06T09:00:00.000Z",
+        "status": "active",
+        "archivedAt": null,
+        "proofConsentAt": null,
+        "rowVersion": 1,
+        "updatedAt": "2026-10-06T09:00:00.000Z"
+      },
+      {
+        "id": "01a1250a-6280-754c-b300-e8b9b805cb26",
+        "name": "Harbor Dental",
+        "kind": "client",
+        "contacts": [
+          {
+            "name": "Priya Shah",
+            "email": "priya@harbordental.care",
+            "role": "Practice manager"
+          }
+        ],
+        "createdAt": "2026-10-10T09:00:00.000Z",
+        "status": "active",
+        "archivedAt": null,
+        "proofConsentAt": null,
+        "rowVersion": 1,
+        "updatedAt": "2026-10-10T09:00:00.000Z"
+      },
+      {
+        "id": "01a0f6b1-2680-7fb3-b441-bccf333e2573",
+        "name": "AVEL",
+        "kind": "internal",
+        "contacts": [
+          {
+            "name": "Javaris",
+            "email": "javaris@avel.dev",
+            "role": "Operator"
+          }
+        ],
+        "createdAt": "2026-10-01T09:00:00.000Z",
+        "status": "active",
+        "archivedAt": null,
+        "proofConsentAt": null,
+        "rowVersion": 1,
+        "updatedAt": "2026-10-01T09:00:00.000Z"
+      },
+      {
+        "id": "01a1c100-0000-7000-8000-000000000a01",
+        "name": "Northside Physio",
+        "kind": "client",
+        "contacts": [
+          {
+            "name": "Ana Reyes",
+            "role": "Clinic manager"
+          }
+        ],
+        "createdAt": "2026-11-08T17:00:00.000Z",
+        "status": "lead",
+        "archivedAt": null,
+        "proofConsentAt": null,
+        "rowVersion": 1,
+        "updatedAt": "2026-11-08T17:00:00.000Z"
+      },
+      {
+        "id": "01a1c100-0000-7000-8000-000000000a02",
+        "name": "Lakeside Auto",
+        "kind": "client",
+        "contacts": [
+          {
+            "name": "Tom Becker",
+            "role": "Owner"
+          }
+        ],
+        "createdAt": "2026-10-20T15:00:00.000Z",
+        "status": "lost",
+        "archivedAt": null,
+        "proofConsentAt": null,
+        "rowVersion": 1,
+        "updatedAt": "2026-10-20T15:00:00.000Z"
+      }
+    ],
+    "nextCursor": null
+  },
+  "missions": {
+    "items": [
+      {
+        "id": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+        "state": "running",
+        "displayState": "running",
+        "packageKey": "landing-page",
+        "budgetMicros": 150000000,
+        "reservedMicros": 0,
+        "spentMicros": 61420000,
+        "createdAt": "2026-10-31T09:00:00.000Z",
+        "updatedAt": "2026-11-03T09:00:00.000Z",
+        "name": "Spring launch site",
+        "clientName": "Blume Studio",
+        "needsYouCount": 3,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "running",
+          "pending",
+          "pending"
+        ],
+        "kind": "client",
+        "deadline": {
+          "dueAt": "2026-11-21T00:00:00.000Z",
+          "startedAt": "2026-11-01T15:00:00.000Z",
+          "paused": false,
+          "pausedSince": null,
+          "pausedFor": null,
+          "atRisk": true
+        },
+        "clientMain": {
+          "pinnedCommit": "3f1a7d2000000000000000000000000000000000",
+          "latestCommit": null,
+          "moved": false
+        },
+        "modules": {
+          "total": 5,
+          "landed": 2,
+          "running": 1,
+          "parked": 1
+        },
+        "runningDispatches": 1,
+        "lastEventAt": "2026-11-03T09:00:00.000Z"
+      },
+      {
+        "id": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "clientId": "01a11070-f280-7405-be02-939daa1426cd",
+        "state": "onboarding",
+        "displayState": "blocked_on_you",
+        "packageKey": null,
+        "budgetMicros": 150000000,
+        "reservedMicros": 0,
+        "spentMicros": 3180000,
+        "createdAt": "2026-11-06T09:00:00.000Z",
+        "updatedAt": "2026-11-09T09:00:00.000Z",
+        "name": "Fleet portal",
+        "clientName": "GTS Diesel",
+        "needsYouCount": 1,
+        "onboardingStep": 2,
+        "gateStrip": [
+          "running",
+          "pending",
+          "pending",
+          "pending",
+          "pending",
+          "pending"
+        ],
+        "kind": "client",
+        "deadline": {
+          "dueAt": null,
+          "startedAt": null,
+          "paused": false,
+          "pausedSince": null,
+          "pausedFor": null,
+          "atRisk": false
+        },
+        "clientMain": {
+          "pinnedCommit": null,
+          "latestCommit": null,
+          "moved": false
+        },
+        "modules": {
+          "total": 0,
+          "landed": 0,
+          "running": 0,
+          "parked": 0
+        },
+        "runningDispatches": 0,
+        "lastEventAt": "2026-11-09T09:00:00.000Z"
+      },
+      {
+        "id": "01a1c2d4-5e80-7a11-8c3d-0b5e6f7a8b9c",
+        "clientId": null,
+        "state": "onboarding",
+        "displayState": "blocked_on_you",
+        "packageKey": null,
+        "budgetMicros": 150000000,
+        "reservedMicros": 0,
+        "spentMicros": 140000,
+        "createdAt": "2026-11-10T07:30:00.000Z",
+        "updatedAt": "2026-11-10T07:36:00.000Z",
+        "name": "Field app",
+        "clientName": null,
+        "needsYouCount": 1,
+        "onboardingStep": 1,
+        "gateStrip": [
+          "running",
+          "pending",
+          "pending",
+          "pending",
+          "pending",
+          "pending"
+        ],
+        "kind": null,
+        "deadline": {
+          "dueAt": null,
+          "startedAt": null,
+          "paused": false,
+          "pausedSince": null,
+          "pausedFor": null,
+          "atRisk": false
+        },
+        "clientMain": {
+          "pinnedCommit": null,
+          "latestCommit": null,
+          "moved": false
+        },
+        "modules": {
+          "total": 0,
+          "landed": 0,
+          "running": 0,
+          "parked": 0
+        },
+        "runningDispatches": 0,
+        "lastEventAt": "2026-11-10T07:36:00.000Z"
+      },
+      {
+        "id": "01a17770-2280-7db5-9be9-18411454e558",
+        "clientId": "01a1250a-6280-754c-b300-e8b9b805cb26",
+        "state": "awaiting_release",
+        "displayState": "awaiting_release",
+        "packageKey": null,
+        "budgetMicros": 150000000,
+        "reservedMicros": 0,
+        "spentMicros": 22740000,
+        "createdAt": "2026-10-26T09:00:00.000Z",
+        "updatedAt": "2026-10-29T09:00:00.000Z",
+        "name": "Booking fix",
+        "clientName": "Harbor Dental",
+        "needsYouCount": 1,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ],
+        "kind": "client",
+        "deadline": {
+          "dueAt": "2026-11-14T00:00:00.000Z",
+          "startedAt": "2026-11-01T15:00:00.000Z",
+          "paused": false,
+          "pausedSince": null,
+          "pausedFor": null,
+          "atRisk": false
+        },
+        "clientMain": {
+          "pinnedCommit": "3f1a7d2000000000000000000000000000000000",
+          "latestCommit": "c91e0b4000000000000000000000000000000000",
+          "moved": true
+        },
+        "modules": {
+          "total": 4,
+          "landed": 4,
+          "running": 0,
+          "parked": 0
+        },
+        "runningDispatches": 0,
+        "lastEventAt": "2026-10-29T09:00:00.000Z"
+      },
+      {
+        "id": "01a1ba62-ce80-7464-8a88-33e8742b6678",
+        "clientId": "01a11070-f280-7405-be02-939daa1426cd",
+        "state": "draft",
+        "displayState": "draft",
+        "packageKey": null,
+        "budgetMicros": 150000000,
+        "reservedMicros": 0,
+        "spentMicros": 0,
+        "createdAt": "2026-11-08T09:00:00.000Z",
+        "updatedAt": "2026-11-11T09:00:00.000Z",
+        "name": "Parts catalogue",
+        "clientName": "GTS Diesel",
+        "needsYouCount": 0,
+        "onboardingStep": 1,
+        "gateStrip": [
+          "pending",
+          "pending",
+          "pending",
+          "pending",
+          "pending",
+          "pending"
+        ],
+        "kind": "client",
+        "deadline": {
+          "dueAt": null,
+          "startedAt": null,
+          "paused": false,
+          "pausedSince": null,
+          "pausedFor": null,
+          "atRisk": false
+        },
+        "clientMain": {
+          "pinnedCommit": null,
+          "latestCommit": null,
+          "moved": false
+        },
+        "modules": {
+          "total": 0,
+          "landed": 0,
+          "running": 0,
+          "parked": 0
+        },
+        "runningDispatches": 0,
+        "lastEventAt": "2026-11-11T09:00:00.000Z"
+      },
+      {
+        "id": "01a1347d-7680-7fc6-97d6-18511c87bf53",
+        "clientId": "01a0f6b1-2680-7fb3-b441-bccf333e2573",
+        "state": "delivered",
+        "displayState": "delivered",
+        "packageKey": null,
+        "budgetMicros": 150000000,
+        "reservedMicros": 0,
+        "spentMicros": 118900000,
+        "createdAt": "2026-10-13T09:00:00.000Z",
+        "updatedAt": "2026-10-16T09:00:00.000Z",
+        "name": "Control room",
+        "clientName": "AVEL",
+        "needsYouCount": 0,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ],
+        "kind": "internal",
+        "deadline": {
+          "dueAt": null,
+          "startedAt": null,
+          "paused": false,
+          "pausedSince": null,
+          "pausedFor": null,
+          "atRisk": false
+        },
+        "clientMain": {
+          "pinnedCommit": null,
+          "latestCommit": null,
+          "moved": false
+        },
+        "modules": {
+          "total": 6,
+          "landed": 6,
+          "running": 0,
+          "parked": 0
+        },
+        "runningDispatches": 0,
+        "lastEventAt": "2026-10-16T09:00:00.000Z"
+      },
+      {
+        "id": "01a10624-3a80-7a29-9574-820ad7f8a09f",
+        "clientId": "01a100fd-de80-73fb-b3d1-fa439f3a8218",
+        "state": "closed",
+        "displayState": "closed",
+        "packageKey": null,
+        "budgetMicros": 150000000,
+        "reservedMicros": 0,
+        "spentMicros": 9400000,
+        "createdAt": "2026-10-04T09:00:00.000Z",
+        "updatedAt": "2026-10-07T09:00:00.000Z",
+        "name": "Price sheet audit",
+        "clientName": "Blume Studio",
+        "needsYouCount": 0,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ],
+        "kind": "client",
+        "deadline": {
+          "dueAt": null,
+          "startedAt": null,
+          "paused": false,
+          "pausedSince": null,
+          "pausedFor": null,
+          "atRisk": false
+        },
+        "clientMain": {
+          "pinnedCommit": null,
+          "latestCommit": null,
+          "moved": false
+        },
+        "modules": {
+          "total": 3,
+          "landed": 3,
+          "running": 0,
+          "parked": 0
+        },
+        "runningDispatches": 0,
+        "lastEventAt": "2026-10-07T09:00:00.000Z"
+      }
+    ],
+    "nextCursor": null
+  },
+  "status": {
+    "_note": "Route 104, GET /api/status (StatusDto, contract 1.0.0). needsYouCount follows the decision events; the page keeps it in step.",
+    "slots": {
+      "busy": 1,
+      "total": 6
+    },
+    "needsYouCount": 11,
+    "alerts": [
+      {
+        "key": "parked:01a1912f-ee80-709f-891e-7d29547e91a0:M4",
+        "kind": "parked",
+        "severity": "stopped",
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "plain": "Checkout and pricing rules stopped and needs your call",
+        "since": "2026-11-04T10:12:00Z"
+      },
+      {
+        "key": "deadline_risk:01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "kind": "deadline_risk",
+        "severity": "heads_up",
+        "missionId": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+        "plain": "Fleet portal may miss its date",
+        "since": "2026-11-10T06:00:00Z"
+      }
+    ],
+    "stallAfterMs": 600000,
+    "lastSeq": 3091,
+    "at": "2026-11-10T09:00:00Z"
+  },
+  "factoryPrs": {
+    "items": [
+      {
+        "number": 147,
+        "title": "Rules: commit convention v1.1 (rules version 14)",
+        "state": "open",
+        "openedAt": "2026-11-12T06:10:00.000Z"
+      },
+      {
+        "number": 142,
+        "title": "Roster: run review-a11y on Sonnet 5.5",
+        "state": "open",
+        "openedAt": "2026-11-09T09:00:00.000Z"
+      }
+    ],
+    "nextCursor": null
+  },
+  "decidedToday": [
+    {
+      "ref": "proposal:01a19f20-1100-7000-8000-000000000030",
+      "title": "Run M3 retry 1 as a focused fix",
+      "mission": "Spring launch site",
+      "choice": "Approved",
+      "reason": "Only one test failing; a focused fix is enough.",
+      "at": "2026-11-10T08:12:00Z"
+    },
+    {
+      "ref": "checkpoint:01a1b016-1680-7ea7-9b27-8f75c19901",
+      "title": "Approve checkpoint 0.1, the brief",
+      "mission": "Fleet portal",
+      "choice": "Approved",
+      "reason": "Matches the call with Dale on Nov 6.",
+      "at": "2026-11-10T07:40:00Z"
+    },
+    {
+      "ref": "proposal:01a19f20-1100-7000-8000-000000000029",
+      "title": "Accept finding F-6 on Safari 17",
+      "mission": "Booking fix",
+      "choice": "Approved",
+      "reason": "Cosmetic, agreed with Priya.",
+      "at": "2026-11-09T17:05:00Z"
+    }
+  ],
+  "modules": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+    "items": [
+      {
+        "ref": "M1",
+        "title": "Content model and CMS",
+        "state": "landed",
+        "ladderStep": 0,
+        "fixRounds": 0,
+        "reviewRounds": 1,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ],
+        "landedCommit": "3c9d1e0",
+        "budgetMicros": 15000000,
+        "spentMicros": 6200000,
+        "dependsOn": []
+      },
+      {
+        "ref": "M2",
+        "title": "Hero and product grid",
+        "state": "landed",
+        "ladderStep": 1,
+        "fixRounds": 1,
+        "reviewRounds": 2,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass",
+          "pass"
+        ],
+        "landedCommit": "8b20f4a",
+        "budgetMicros": 15000000,
+        "spentMicros": 9800000,
+        "dependsOn": [
+          "M1"
+        ]
+      },
+      {
+        "ref": "M3",
+        "title": "Signup and spring code",
+        "state": "running",
+        "ladderStep": 1,
+        "fixRounds": 1,
+        "reviewRounds": 0,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "running",
+          "pending",
+          "pending"
+        ],
+        "landedCommit": null,
+        "budgetMicros": 15000000,
+        "spentMicros": 13100000,
+        "dependsOn": [
+          "M1"
+        ]
+      },
+      {
+        "ref": "M4",
+        "title": "Checkout and pricing rules",
+        "state": "parked",
+        "ladderStep": 4,
+        "fixRounds": 3,
+        "reviewRounds": 0,
+        "gateStrip": [
+          "pass",
+          "pass",
+          "pass",
+          "fail",
+          "pending",
+          "pending"
+        ],
+        "landedCommit": null,
+        "budgetMicros": 15000000,
+        "spentMicros": 13800000,
+        "dependsOn": [
+          "M2"
+        ]
+      },
+      {
+        "ref": "M5",
+        "title": "Launch analytics",
+        "state": "waiting_dependency",
+        "ladderStep": 0,
+        "fixRounds": 0,
+        "reviewRounds": 0,
+        "gateStrip": [
+          "pending",
+          "pending",
+          "pending",
+          "pending",
+          "pending",
+          "pending"
+        ],
+        "landedCommit": null,
+        "budgetMicros": 15000000,
+        "spentMicros": 0,
+        "dependsOn": [
+          "M3",
+          "M4"
+        ]
+      }
+    ]
+  },
+  "rooms": {
+    "_gap": "Running rooms across missions: gap 4, proposed.",
+    "items": [
+      {
+        "id": "01a1c485-6940-7007-a0ae-d235d1270f72",
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "module": "M3",
+        "role": "builder",
+        "agent": "Leon",
+        "model": "claude-opus-5",
+        "attempt": "retry_1",
+        "attemptLabel": "Retry 1 · focused fix",
+        "slot": 1,
+        "state": "running",
+        "costMicros": 3420000,
+        "capMicros": 4000000,
+        "startedAt": "2026-11-10T08:14:00Z",
+        "elapsedMin": 41,
+        "lastEventSec": 12,
+        "lines": [
+          "› pnpm test checkout/signup.spec.ts",
+          "✓ applies a valid code to a single item",
+          "✓ rejects an expired code",
+          "✗ applies spring code to bundle",
+          "  expected 2 line items, received 1",
+          "✓ 14 passed  ✗ 1 failed",
+          "› rg \"applyCode\" src/pricing",
+          "src/pricing/applyCode.ts:41  export function applyCode(cart, code)",
+          "editing src/pricing/applyCode.ts  +18 −6",
+          "› pnpm tsc --noEmit",
+          "no type errors",
+          "› pnpm test checkout/signup.spec.ts -t bundle",
+          "✗ applies spring code to bundle",
+          "  bundle discount applied twice",
+          "editing src/pricing/applyCode.ts  +4 −9"
+        ],
+        "history": [
+          "› git diff --stat",
+          " src/pricing/applyCode.ts | 24 ++++++++++++++------",
+          "› pnpm test checkout/signup.spec.ts -t \"spring code\"",
+          "  expected bundle total 54.00, received 60.00",
+          "reading src/pricing/bundles.ts"
+        ]
+      }
+    ],
+    "parked": [
+      {
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "module": "M4",
+        "role": "builder",
+        "attemptLabel": "Retry 3 · second vendor",
+        "reason": "Failed gate 3 on the same test as retries 1 and 2.",
+        "proposalRef": "proposal:01a1a60b-4980-70d5-a523-4525cd77fb38",
+        "parkedAt": "2026-11-04T10:10:00Z",
+        "lastLines": [
+          "› pnpm test catalogue/filter.spec.ts",
+          "✗ filters by two tags at once",
+          "  expected 3 products, received 7",
+          "gate 3 failed · same test as retries 1 and 2"
+        ]
+      }
+    ],
+    "queue": [
+      {
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "module": "M5",
+        "waitingOn": [
+          "M3",
+          "M4"
+        ]
+      }
+    ]
+  },
+  "events": [
+    {
+      "at": "2026-11-10T08:55:12Z",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "kind": "attempt",
+      "text": "M3 builder edited src/pricing/applyCode.ts",
+      "href": "#/missions/01a1912f-ee80-709f-891e-7d29547e91a0/live"
+    },
+    {
+      "at": "2026-11-10T08:54:40Z",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "kind": "attempt",
+      "text": "M3 tests: 14 passed, 1 failed",
+      "href": "#/missions/01a1912f-ee80-709f-891e-7d29547e91a0/live"
+    },
+    {
+      "at": "2026-11-10T08:41:03Z",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "kind": "dispatch",
+      "text": "M3 passed 80% of its attempt cap",
+      "href": "#/missions/01a1912f-ee80-709f-891e-7d29547e91a0/live"
+    },
+    {
+      "at": "2026-11-10T08:14:00Z",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "kind": "dispatch",
+      "text": "M3 retry 1 started in slot 1",
+      "href": "#/missions/01a1912f-ee80-709f-891e-7d29547e91a0/live"
+    },
+    {
+      "at": "2026-11-10T08:12:30Z",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "kind": "decision",
+      "text": "You approved a focused fix for M3",
+      "href": "#/"
+    },
+    {
+      "at": "2026-11-10T07:40:10Z",
+      "missionId": "01a1b016-1680-7ea7-9b27-8f75c199eac7",
+      "kind": "checkpoint",
+      "text": "Checkpoint 0.1 approved",
+      "href": "#/missions/01a1b016-1680-7ea7-9b27-8f75c199eac7/onboarding"
+    },
+    {
+      "at": "2026-11-10T06:25:49.083Z",
+      "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+      "kind": "dispatch",
+      "text": "M4 parked after retry 3 on a second vendor",
+      "href": "#/"
+    },
+    {
+      "at": "2026-11-09T17:05:00Z",
+      "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+      "kind": "finding",
+      "text": "F-6 accepted with a reason",
+      "href": "#/missions/01a17770-2280-7db5-9be9-18411454e558/findings"
+    },
+    {
+      "at": "2026-11-09T16:58:00Z",
+      "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+      "kind": "receipt",
+      "text": "Receipt rc_7f3a2c issued: pass",
+      "href": "#/missions/01a17770-2280-7db5-9be9-18411454e558/release"
+    }
+  ],
+  "integration": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+    "lane": {
+      "queued": 0,
+      "testing": 0,
+      "landed": 2,
+      "rejected": 1
+    },
+    "recent": [
+      {
+        "commit": "8b20f4a",
+        "module": "M2",
+        "state": "landed",
+        "at": "2026-11-07T15:20:00Z"
+      },
+      {
+        "commit": "e17c0b3",
+        "module": "M3",
+        "state": "rejected",
+        "note": "gate 3",
+        "at": "2026-11-10T08:09:00Z"
+      },
+      {
+        "commit": "3c9d1e0",
+        "module": "M1",
+        "state": "landed",
+        "at": "2026-11-05T11:48:00Z"
+      }
+    ]
+  },
+  "findings": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+    "items": [
+      {
+        "id": "01a1f000-0000-7000-8000-000000000011",
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "checkpointId": null,
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000003",
+        "source": "review",
+        "sourceRole": "review-backend",
+        "checkId": "CK21",
+        "targetRef": "src/pricing/spring-code.ts",
+        "evidence": {
+          "summary": "Spring code applied twice on bundles",
+          "detail": "A bundle with two items took the spring discount twice in S14.",
+          "citedRequirements": [
+            "R8"
+          ],
+          "citedScenarios": [
+            "S14"
+          ]
+        },
+        "kind": "requirement",
+        "route": "rework",
+        "state": "open",
+        "tries": 1,
+        "reviewedCommit": null,
+        "reason": null,
+        "decidedByKind": null,
+        "decidedByUserId": null,
+        "decidedByAttemptId": null,
+        "fixedByCheck": null,
+        "decidedAt": null,
+        "createdAt": "2026-11-10T06:40:00Z",
+        "rowVersion": 1,
+        "updatedAt": "2026-11-10T06:40:00Z",
+        "moduleRef": "M3",
+        "citedRequirements": [
+          "R8"
+        ],
+        "citedScenarios": [
+          "S14"
+        ],
+        "cappedAtPass": false
+      },
+      {
+        "id": "01a1f000-0000-7000-8000-000000000009",
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "checkpointId": null,
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000003",
+        "source": "review",
+        "sourceRole": "review-security",
+        "checkId": "CK07",
+        "targetRef": "/signup",
+        "evidence": {
+          "summary": "Spring code accepted without a rate limit",
+          "detail": "POST /signup accepted 200 codes in 10 s.",
+          "citedRequirements": [
+            "R7"
+          ],
+          "citedScenarios": [
+            "S12"
+          ]
+        },
+        "kind": "security",
+        "route": "rework",
+        "state": "open",
+        "tries": 1,
+        "reviewedCommit": null,
+        "reason": null,
+        "decidedByKind": null,
+        "decidedByUserId": null,
+        "decidedByAttemptId": null,
+        "fixedByCheck": null,
+        "decidedAt": null,
+        "createdAt": "2026-11-09T19:02:00Z",
+        "rowVersion": 1,
+        "updatedAt": "2026-11-09T19:02:00Z",
+        "moduleRef": "M3",
+        "citedRequirements": [
+          "R7"
+        ],
+        "citedScenarios": [
+          "S12"
+        ],
+        "cappedAtPass": false
+      },
+      {
+        "id": "01a1f000-0000-7000-8000-000000000008",
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "checkpointId": null,
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000002",
+        "source": "review",
+        "sourceRole": "review-frontend",
+        "checkId": "CK12",
+        "targetRef": "/pricing",
+        "evidence": {
+          "summary": "Pricing grid overflows at 320px wide",
+          "detail": "The grid overflows at 320 px.",
+          "citedRequirements": [
+            "R4"
+          ],
+          "citedScenarios": [
+            "S8"
+          ]
+        },
+        "kind": "requirement",
+        "route": "rework",
+        "state": "fixed",
+        "tries": 2,
+        "reviewedCommit": null,
+        "reason": null,
+        "decidedByKind": "check",
+        "decidedByUserId": null,
+        "decidedByAttemptId": null,
+        "fixedByCheck": "S8b",
+        "decidedAt": "2026-11-07T11:30:00Z",
+        "createdAt": "2026-11-07T11:30:00Z",
+        "rowVersion": 2,
+        "updatedAt": "2026-11-07T11:30:00Z",
+        "moduleRef": "M2",
+        "citedRequirements": [
+          "R4"
+        ],
+        "citedScenarios": [
+          "S8"
+        ],
+        "cappedAtPass": false
+      },
+      {
+        "id": "01a1f000-0000-7000-8000-000000000007",
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "checkpointId": null,
+        "moduleRunId": "01a1e100-0000-7000-8000-000000000002",
+        "source": "review",
+        "sourceRole": "review-a11y",
+        "checkId": "CK03",
+        "targetRef": "/",
+        "evidence": {
+          "summary": "Hero image has no text alternative",
+          "detail": "axe: image-alt on /.",
+          "citedRequirements": [
+            "R5"
+          ],
+          "citedScenarios": [
+            "S9"
+          ]
+        },
+        "kind": "requirement",
+        "route": "rework",
+        "state": "fixed",
+        "tries": 2,
+        "reviewedCommit": null,
+        "reason": null,
+        "decidedByKind": "check",
+        "decidedByUserId": null,
+        "decidedByAttemptId": null,
+        "fixedByCheck": "S9b",
+        "decidedAt": "2026-11-06T16:10:00Z",
+        "createdAt": "2026-11-06T16:10:00Z",
+        "rowVersion": 2,
+        "updatedAt": "2026-11-06T16:10:00Z",
+        "moduleRef": "M2",
+        "citedRequirements": [
+          "R5"
+        ],
+        "citedScenarios": [
+          "S9"
+        ],
+        "cappedAtPass": false
+      }
+    ],
+    "nextCursor": null
+  },
+  "activity": {
+    "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+    "items": [
+      {
+        "at": "2026-11-10T08:12:30Z",
+        "actor": "Javaris",
+        "action": "Approved a focused fix for M3",
+        "reason": "Only one test failing; a focused fix is enough."
+      },
+      {
+        "at": "2026-11-09T19:02:00Z",
+        "actor": "Integrator",
+        "action": "Rejected commit e17c0b3 (M3)",
+        "reason": "Gate 3 failed."
+      },
+      {
+        "at": "2026-11-07T15:20:00Z",
+        "actor": "Integrator",
+        "action": "Landed M2 at 8b20f4a",
+        "reason": "Gates 0 to 5 passed."
+      },
+      {
+        "at": "2026-11-06T09:05:00Z",
+        "actor": "Canon",
+        "action": "Proposed raising M3's cap by 40%",
+        "reason": "M3 near its module cap."
+      },
+      {
+        "at": "2026-11-05T11:48:00Z",
+        "actor": "Integrator",
+        "action": "Landed M1 at 3c9d1e0",
+        "reason": "Gates 0 to 5 passed."
+      }
+    ]
+  },
+  "timeline": {
+    "_gap": "Proposed with running rooms (gap 4): attempt history per slot.",
+    "windowMin": 120,
+    "slots": [
+      {
+        "slot": 1,
+        "bars": [
+          {
+            "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+            "module": "M3",
+            "role": "test writer",
+            "attempt": "Initial",
+            "from": 118,
+            "to": 97,
+            "outcome": "succeeded"
+          },
+          {
+            "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+            "module": "M3",
+            "role": "builder",
+            "attempt": "Initial",
+            "from": 95,
+            "to": 46,
+            "outcome": "failed",
+            "note": "gate 3"
+          },
+          {
+            "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+            "module": "M3",
+            "role": "builder",
+            "attempt": "Retry 1",
+            "from": 41,
+            "to": 0,
+            "outcome": "running"
+          }
+        ]
+      },
+      {
+        "slot": 2,
+        "bars": [
+          {
+            "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+            "module": "M4",
+            "role": "builder",
+            "attempt": "Retry 2",
+            "from": 120,
+            "to": 79,
+            "outcome": "failed",
+            "note": "gate 3"
+          },
+          {
+            "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+            "module": "M4",
+            "role": "builder",
+            "attempt": "Retry 3",
+            "from": 76,
+            "to": 36,
+            "outcome": "parked",
+            "note": "parked"
+          }
+        ]
+      },
+      {
+        "slot": 3,
+        "bars": [
+          {
+            "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+            "module": "M2",
+            "role": "reviewer",
+            "attempt": "Initial",
+            "from": 112,
+            "to": 90,
+            "outcome": "succeeded"
+          }
+        ]
+      },
+      {
+        "slot": 4,
+        "bars": [
+          {
+            "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+            "module": "M2",
+            "role": "review-a11y",
+            "attempt": "Initial",
+            "from": 106,
+            "to": 88,
+            "outcome": "succeeded"
+          }
+        ]
+      },
+      {
+        "slot": 5,
+        "bars": [
+          {
+            "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+            "module": "B1",
+            "role": "reviewer",
+            "attempt": "Initial",
+            "from": 64,
+            "to": 52,
+            "outcome": "succeeded"
+          }
+        ]
+      },
+      {
+        "slot": 6,
+        "bars": []
+      }
+    ]
+  },
+  "spendToday": {
+    "_gap": "Proposed: per-mission spend today as a share of the mission cap.",
+    "items": [
+      {
+        "missionId": "01a1912f-ee80-709f-891e-7d29547e91a0",
+        "pctOfCap": 9
+      },
+      {
+        "missionId": "01a17770-2280-7db5-9be9-18411454e558",
+        "pctOfCap": 1
+      }
+    ]
+  },
+  "library": {
+    "_note": "Routes 74, 78 and 82 (GET /api/library/skills, /api/library/kb-entries, /api/library/rules). Status and usedBy come from the factory version the item is pinned in.",
+    "skills": [
+      {
+        "name": "tdd-writer",
+        "version": "3.2.0",
+        "status": "active",
+        "usedBy": [
+          "Fenn",
+          "Rigg"
+        ],
+        "updatedAt": "2026-11-02T10:00:00.000Z",
+        "description": "Writes failing tests from EARS requirements and given/when/then scenarios before any code.",
+        "history": [
+          [
+            "3.2.0",
+            "Adds Playwright scenario scaffolds",
+            "2026-11-02T10:00:00.000Z"
+          ],
+          [
+            "3.1.0",
+            "Splits unit and e2e prompts",
+            "2026-11-28T09:00:00.000Z"
+          ]
+        ],
+        "pr": null,
+        "slug": "tdd-writer",
+        "layer": "role",
+        "type": "knowledge",
+        "source": "Yours",
+        "sha256": "78232774a0decdb68c57cefde7e03b2556988408bbda1c36e783b731fb6ef9bd",
+        "skillMd": [
+          "---",
+          "name: tdd-writer",
+          "version: 3.2.0",
+          "layer: role",
+          "---",
+          "",
+          "# tdd-writer",
+          "",
+          "Writes failing tests from EARS requirements and given/when/then scenarios before any code.",
+          "",
+          "## When to use",
+          "- The module’s work kind matches this skill",
+          "- The dispatch names it in its task doc",
+          "",
+          "## Steps",
+          "1. Read the task doc and the contract",
+          "2. Follow the checks listed in the plan",
+          "3. Cite a file, a line or a test for every claim",
+          "",
+          "## Never",
+          "- Change a locked test",
+          "- Touch files outside the module’s territory"
+        ]
+      },
+      {
+        "name": "react-component",
+        "version": "2.4.1",
+        "status": "active",
+        "usedBy": [
+          "Nemi",
+          "Atlas",
+          "Fantem",
+          "Leon",
+          "Ghost",
+          "Soap",
+          "Iyo"
+        ],
+        "updatedAt": "2026-11-05T10:00:00.000Z",
+        "description": "Builds accessible React components against the client design system.",
+        "history": [
+          [
+            "2.4.1",
+            "Fix focus ring tokens",
+            "2026-11-05T10:00:00.000Z"
+          ],
+          [
+            "2.4.0",
+            "Container queries by default",
+            "2026-11-01T10:00:00.000Z"
+          ]
+        ],
+        "pr": null,
+        "slug": "react-component",
+        "layer": "stack",
+        "type": "knowledge",
+        "source": "Yours",
+        "sha256": "54c78459d810753a3f40b6465bd9c5a55d5b82053f7ccad2012f869a571bff85",
+        "skillMd": [
+          "---",
+          "name: react-component",
+          "version: 2.4.1",
+          "layer: stack",
+          "---",
+          "",
+          "# react-component",
+          "",
+          "Builds accessible React components against the client design system.",
+          "",
+          "## When to use",
+          "- The module’s work kind matches this skill",
+          "- The dispatch names it in its task doc",
+          "",
+          "## Steps",
+          "1. Read the task doc and the contract",
+          "2. Follow the checks listed in the plan",
+          "3. Cite a file, a line or a test for every claim",
+          "",
+          "## Never",
+          "- Change a locked test",
+          "- Touch files outside the module’s territory"
+        ]
+      },
+      {
+        "name": "pricing-rules",
+        "version": "1.0.3",
+        "status": "active",
+        "usedBy": [
+          "Nemi",
+          "Atlas",
+          "Fantem",
+          "Leon",
+          "Ghost",
+          "Soap",
+          "Iyo",
+          "Zero",
+          "Axis",
+          "Brennan",
+          "Zane",
+          "Leah"
+        ],
+        "updatedAt": "2026-11-06T10:00:00.000Z",
+        "description": "Applies bundle and promo-code pricing with money in micro-dollars.",
+        "history": [
+          [
+            "1.0.3",
+            "Rounds per line, not per order",
+            "2026-11-06T10:00:00.000Z"
+          ]
+        ],
+        "pr": null,
+        "slug": "pricing-rules",
+        "layer": "domain",
+        "type": "knowledge",
+        "source": "Yours",
+        "sha256": "03f7a36d3c352282e9d2f9c69cf7d755a924af717798d7da11dd61ca0611608d",
+        "skillMd": [
+          "---",
+          "name: pricing-rules",
+          "version: 1.0.3",
+          "layer: domain",
+          "---",
+          "",
+          "# pricing-rules",
+          "",
+          "Applies bundle and promo-code pricing with money in micro-dollars.",
+          "",
+          "## When to use",
+          "- The module’s work kind matches this skill",
+          "- The dispatch names it in its task doc",
+          "",
+          "## Steps",
+          "1. Read the task doc and the contract",
+          "2. Follow the checks listed in the plan",
+          "3. Cite a file, a line or a test for every claim",
+          "",
+          "## Never",
+          "- Change a locked test",
+          "- Touch files outside the module’s territory"
+        ]
+      },
+      {
+        "name": "a11y-review",
+        "version": "1.6.0",
+        "status": "proposed",
+        "usedBy": [
+          "Leah"
+        ],
+        "updatedAt": "2026-11-09T10:00:00.000Z",
+        "description": "Reviews WCAG 2.2 AA: contrast, targets, focus order, labels.",
+        "history": [
+          [
+            "1.6.0",
+            "Target size 24px rule (PR #142)",
+            "2026-11-09T10:00:00.000Z"
+          ],
+          [
+            "1.5.2",
+            "Adds reduced-motion check",
+            "2026-11-03T10:00:00.000Z"
+          ]
+        ],
+        "pr": 142,
+        "slug": "a11y-review",
+        "layer": "role",
+        "type": "knowledge",
+        "source": "Yours",
+        "sha256": "078e19f73a25662a7f3bcb94260d34319ca39c573599ef3e959d0a8cd6b3fc95",
+        "skillMd": [
+          "---",
+          "name: a11y-review",
+          "version: 1.6.0",
+          "layer: role",
+          "---",
+          "",
+          "# a11y-review",
+          "",
+          "Reviews WCAG 2.2 AA: contrast, targets, focus order, labels.",
+          "",
+          "## When to use",
+          "- The module’s work kind matches this skill",
+          "- The dispatch names it in its task doc",
+          "",
+          "## Steps",
+          "1. Read the task doc and the contract",
+          "2. Follow the checks listed in the plan",
+          "3. Cite a file, a line or a test for every claim",
+          "",
+          "## Never",
+          "- Change a locked test",
+          "- Touch files outside the module’s territory"
+        ]
+      },
+      {
+        "name": "security-review",
+        "version": "2.1.0",
+        "status": "active",
+        "usedBy": [
+          "Zane",
+          "Breach"
+        ],
+        "updatedAt": "2026-11-04T10:00:00.000Z",
+        "description": "Checks auth, rate limits, input validation and secrets against ASVS L1.",
+        "history": [
+          [
+            "2.1.0",
+            "Rate-limit check on public forms",
+            "2026-11-04T10:00:00.000Z"
+          ]
+        ],
+        "pr": null,
+        "slug": "security-review",
+        "layer": "role",
+        "type": "capability",
+        "source": "Yours",
+        "sha256": "5fe8ef8d2c8082f2a92a1d92352899c57912dd4169bb2b1aabe025bef0858dd5",
+        "skillMd": [
+          "---",
+          "name: security-review",
+          "version: 2.1.0",
+          "layer: role",
+          "---",
+          "",
+          "# security-review",
+          "",
+          "Checks auth, rate limits, input validation and secrets against ASVS L1.",
+          "",
+          "## When to use",
+          "- The module’s work kind matches this skill",
+          "- The dispatch names it in its task doc",
+          "",
+          "## Steps",
+          "1. Read the task doc and the contract",
+          "2. Follow the checks listed in the plan",
+          "3. Cite a file, a line or a test for every claim",
+          "",
+          "## Never",
+          "- Change a locked test",
+          "- Touch files outside the module’s territory"
+        ]
+      }
+    ],
+    "knowledge": [
+      {
+        "name": "stripe-checkout",
+        "version": "4.0.0",
+        "status": "active",
+        "usedBy": [
+          "builder"
+        ],
+        "updatedAt": "2026-11-03T10:00:00.000Z",
+        "description": "Checkout sessions, webhooks and idempotency keys.",
+        "history": [
+          [
+            "4.0.0",
+            "Payment Element v3",
+            "2026-11-03T10:00:00.000Z"
+          ]
+        ],
+        "pr": null
+      },
+      {
+        "name": "nextjs-app-router",
+        "version": "2.2.0",
+        "status": "active",
+        "usedBy": [
+          "builder",
+          "reviewer"
+        ],
+        "updatedAt": "2026-11-01T10:00:00.000Z",
+        "description": "Routing, server components and caching rules.",
+        "history": [
+          [
+            "2.2.0",
+            "Partial prerendering notes",
+            "2026-11-01T10:00:00.000Z"
+          ]
+        ],
+        "pr": null
+      },
+      {
+        "name": "zod-validation",
+        "version": "1.1.0",
+        "status": "draft",
+        "usedBy": [
+          "builder"
+        ],
+        "updatedAt": "2026-11-09T10:00:00.000Z",
+        "description": "Schema validation patterns for forms and API inputs.",
+        "history": [
+          [
+            "1.1.0",
+            "Draft for the zod request",
+            "2026-11-09T10:00:00.000Z"
+          ]
+        ],
+        "pr": null
+      }
+    ],
+    "rules": [
+      {
+        "name": "no-new-deps-without-approval",
+        "version": "1.0.0",
+        "status": "active",
+        "usedBy": [
+          "builder",
+          "reviewer"
+        ],
+        "updatedAt": "2026-11-01T10:00:00.000Z",
+        "description": "A new dependency opens a proposal for the operator.",
+        "history": [
+          [
+            "1.0.0",
+            "Initial",
+            "2026-11-01T10:00:00.000Z"
+          ]
+        ],
+        "pr": null
+      },
+      {
+        "name": "secrets-never-in-repo",
+        "version": "1.2.0",
+        "status": "active",
+        "usedBy": [
+          "all roles"
+        ],
+        "updatedAt": "2026-11-02T10:00:00.000Z",
+        "description": "Secrets come from the room vault; gate 2 fails on a match.",
+        "history": [
+          [
+            "1.2.0",
+            "Adds .env.example check",
+            "2026-11-02T10:00:00.000Z"
+          ]
+        ],
+        "pr": null
+      },
+      {
+        "name": "ears-requirements",
+        "version": "2.0.0",
+        "status": "active",
+        "usedBy": [
+          "Canon",
+          "test writer"
+        ],
+        "updatedAt": "2026-11-04T10:00:00.000Z",
+        "description": "Every requirement is written in EARS form.",
+        "history": [
+          [
+            "2.0.0",
+            "Event-driven pattern required",
+            "2026-11-04T10:00:00.000Z"
+          ]
+        ],
+        "pr": null
+      },
+      {
+        "name": "commit-convention",
+        "version": "1.3.0",
+        "status": "active",
+        "usedBy": [
+          "builder",
+          "integrator"
+        ],
+        "updatedAt": "2026-11-05T10:00:00.000Z",
+        "description": "Conventional commits with module ref and receipt hash.",
+        "history": [
+          [
+            "1.3.0",
+            "Adds receipt trailer",
+            "2026-11-05T10:00:00.000Z"
+          ]
+        ],
+        "pr": null
+      }
+    ],
+    "templates": [
+      {
+        "name": "landing-page",
+        "version": "5.1.0",
+        "status": "active",
+        "usedBy": [
+          "Canon"
+        ],
+        "updatedAt": "2026-11-02T10:00:00.000Z",
+        "description": "Package template: hero, content model, CMS, analytics.",
+        "history": [
+          [
+            "5.1.0",
+            "Analytics module optional",
+            "2026-11-02T10:00:00.000Z"
+          ]
+        ],
+        "pr": null,
+        "slug": "landing-page",
+        "title": "Landing Page",
+        "repo": "avel/template-landing-page",
+        "branch": "main",
+        "commit": "e0cf4e7899c676801a2f56617885e135ab605d94",
+        "readable": true,
+        "scope": "frontend",
+        "startingState": "greenfield",
+        "playbook": "Landing page · v4 · 6 gates",
+        "team": "Frontend launch",
+        "missions": [
+          "Spring launch site",
+          "Price sheet audit"
+        ]
+      },
+      {
+        "name": "booking-flow",
+        "version": "2.0.2",
+        "status": "active",
+        "usedBy": [
+          "Canon"
+        ],
+        "updatedAt": "2026-11-06T10:00:00.000Z",
+        "description": "Package template: availability, booking, reminders.",
+        "history": [
+          [
+            "2.0.2",
+            "Safari date picker fix",
+            "2026-11-06T10:00:00.000Z"
+          ]
+        ],
+        "pr": null,
+        "slug": "booking-flow",
+        "title": "Booking Flow",
+        "repo": "avel/template-booking-flow",
+        "branch": "main",
+        "commit": "2d8ef32975e2199a953b0fa21da7624ddcf62c6d",
+        "readable": true,
+        "scope": "full-stack",
+        "startingState": "brownfield",
+        "playbook": "Fix and extend · v2 · 6 gates",
+        "team": "Full stack",
+        "missions": [
+          "Booking fix"
+        ]
+      },
+      {
+        "name": "admin-portal",
+        "version": "1.0.0",
+        "status": "draft",
+        "usedBy": [
+          "Canon"
+        ],
+        "updatedAt": "2026-11-08T10:00:00.000Z",
+        "description": "Package template: roles, tables, audit log.",
+        "history": [
+          [
+            "1.0.0",
+            "First draft from Fleet portal",
+            "2026-11-08T10:00:00.000Z"
+          ]
+        ],
+        "pr": null,
+        "slug": "admin-portal",
+        "title": "Admin Portal",
+        "repo": "avel/template-admin-portal",
+        "branch": "main",
+        "commit": "c117a27bdd66b6ce9d9ad31c6f1553d9d1d07c73",
+        "readable": true,
+        "scope": "full-stack",
+        "startingState": "greenfield",
+        "playbook": "Portal · v1 · 6 gates",
+        "team": "Full stack",
+        "missions": []
+      }
+    ],
+    "_gap": "Proposed on skills: layer, type, source, sha256, skillMd. Proposed on templates: scope, startingState, repo, branch, commit, playbook, team, missions. Shapes follow avel-web (rulings 47 and 52)."
+  },
+  "roster": {
+    "_proposed": "Proposed shape. GET /api/roster returns { version, roster }; the inner roster shape is not fixed in the contract yet.",
+    "version": "roster-7",
+    "lastChange": {
+      "pr": 139,
+      "at": "2026-11-03T15:20:00Z"
+    },
+    "openPr": {
+      "number": 142,
+      "title": "Roster: run review-a11y on Sonnet 5.5",
+      "at": "2026-11-09T10:00:00Z"
+    },
+    "newer": {
+      "version": "roster-8",
+      "pr": 141,
+      "lines": [
+        [
+          "change",
+          "Fenn effort: high → medium"
+        ]
+      ]
+    },
+    "teams": [
+      {
+        "id": "factory",
+        "label": "Factory agents",
+        "note": "Work across missions"
+      },
+      {
+        "id": "frontend",
+        "label": "Frontend",
+        "note": "Zero leads"
+      },
+      {
+        "id": "backend",
+        "label": "Backend",
+        "note": "Axis leads"
+      },
+      {
+        "id": "review",
+        "label": "Reviewers",
+        "note": "Read-only; findings go back to the builder"
+      },
+      {
+        "id": "testing",
+        "label": "Testing",
+        "note": "Tests are written first and locked"
+      }
+    ],
+    "agents": [
+      {
+        "name": "Canon",
+        "team": "factory",
+        "kind": "onboards",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Runs Gate 0, interviews you, drafts checkpoints 0.1 to 0.4.",
+        "slots": [
+          "onboarding"
+        ],
+        "reviewedBy": [],
+        "skills": [],
+        "promptVersion": "p4.2",
+        "neverBuilds": true,
+        "tierOpen": true
+      },
+      {
+        "name": "Nemi",
+        "team": "factory",
+        "kind": "builds",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Builds the design system as each mission’s first module.",
+        "slots": [
+          "design-system"
+        ],
+        "reviewedBy": [
+          "Zero",
+          "Leah"
+        ],
+        "skills": [
+          "react-component",
+          "pricing-rules"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": false,
+        "tierOpen": false
+      },
+      {
+        "name": "Atlas",
+        "team": "factory",
+        "kind": "builds",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "medium",
+        "does": "Fix chains, CI, deploys, observability and docs. Opens Upkeep proposals between missions.",
+        "slots": [
+          "maintenance",
+          "infra",
+          "docs"
+        ],
+        "reviewedBy": [
+          "Axis"
+        ],
+        "skills": [
+          "react-component",
+          "pricing-rules"
+        ],
+        "promptVersion": "p4.2",
+        "neverBuilds": false,
+        "tierOpen": false
+      },
+      {
+        "name": "Zero",
+        "team": "frontend",
+        "kind": "leads",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Writes the UI contract per feature and reviews every frontend module against it.",
+        "slots": [
+          "ui-contract",
+          "review-frontend"
+        ],
+        "reviewedBy": [
+          "Brennan"
+        ],
+        "skills": [
+          "pricing-rules"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": true,
+        "tierOpen": true
+      },
+      {
+        "name": "Fantem",
+        "team": "frontend",
+        "kind": "builds",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Builds the shared components.",
+        "slots": [
+          "frontend-components"
+        ],
+        "reviewedBy": [
+          "Zero"
+        ],
+        "skills": [
+          "react-component",
+          "pricing-rules"
+        ],
+        "promptVersion": "p5.0",
+        "neverBuilds": false,
+        "tierOpen": false
+      },
+      {
+        "name": "Leon",
+        "team": "frontend",
+        "kind": "builds",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Builds the screens.",
+        "slots": [
+          "frontend"
+        ],
+        "reviewedBy": [
+          "Zero"
+        ],
+        "skills": [
+          "react-component",
+          "pricing-rules"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": false,
+        "tierOpen": false
+      },
+      {
+        "name": "Ghost",
+        "team": "frontend",
+        "kind": "builds",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "medium",
+        "does": "Builds the data layer.",
+        "slots": [
+          "frontend-data"
+        ],
+        "reviewedBy": [
+          "Zero"
+        ],
+        "skills": [
+          "react-component",
+          "pricing-rules"
+        ],
+        "promptVersion": "p4.2",
+        "neverBuilds": false,
+        "tierOpen": false
+      },
+      {
+        "name": "Axis",
+        "team": "backend",
+        "kind": "leads",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Writes the API contract per feature and reviews every backend module.",
+        "slots": [
+          "api-contract",
+          "review-backend"
+        ],
+        "reviewedBy": [
+          "Brennan"
+        ],
+        "skills": [
+          "pricing-rules"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": true,
+        "tierOpen": true
+      },
+      {
+        "name": "Soap",
+        "team": "backend",
+        "kind": "builds",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Builds the API and data.",
+        "slots": [
+          "api",
+          "data"
+        ],
+        "reviewedBy": [
+          "Axis"
+        ],
+        "skills": [
+          "react-component",
+          "pricing-rules"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": false,
+        "tierOpen": false
+      },
+      {
+        "name": "Iyo",
+        "team": "backend",
+        "kind": "builds",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Builds integrations.",
+        "slots": [
+          "services",
+          "ai"
+        ],
+        "reviewedBy": [
+          "Axis"
+        ],
+        "skills": [
+          "react-component",
+          "pricing-rules"
+        ],
+        "promptVersion": "p6.0",
+        "neverBuilds": false,
+        "tierOpen": false
+      },
+      {
+        "name": "Brennan",
+        "team": "review",
+        "kind": "checks",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Reviews against the spec. Rules on test disputes.",
+        "slots": [
+          "review-spec"
+        ],
+        "reviewedBy": [
+          "Zane"
+        ],
+        "skills": [
+          "pricing-rules"
+        ],
+        "promptVersion": "p6.1",
+        "neverBuilds": true,
+        "tierOpen": true
+      },
+      {
+        "name": "Zane",
+        "team": "review",
+        "kind": "checks",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Security against OWASP ASVS when a module handles login, payments, personal data or secrets.",
+        "slots": [
+          "review-security"
+        ],
+        "reviewedBy": [
+          "Brennan"
+        ],
+        "skills": [
+          "pricing-rules",
+          "security-review"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": true,
+        "tierOpen": true
+      },
+      {
+        "name": "Leah",
+        "team": "review",
+        "kind": "checks",
+        "model": "claude-sonnet-5",
+        "vendor": "Anthropic",
+        "effort": "medium",
+        "does": "Accessibility and performance.",
+        "slots": [
+          "review-a11y-perf"
+        ],
+        "reviewedBy": [
+          "Brennan"
+        ],
+        "skills": [
+          "pricing-rules"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": true,
+        "tierOpen": true,
+        "pr": {
+          "number": 142,
+          "model": "claude-sonnet-5.5"
+        }
+      },
+      {
+        "name": "Fenn",
+        "team": "testing",
+        "kind": "checks",
+        "model": "claude-sonnet-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Frontend tests, plus one exploratory pass per mission.",
+        "slots": [
+          "test-unit",
+          "test-e2e"
+        ],
+        "reviewedBy": [
+          "Brennan"
+        ],
+        "skills": [
+          "tdd-writer"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": true,
+        "tierOpen": true
+      },
+      {
+        "name": "Rigg",
+        "team": "testing",
+        "kind": "checks",
+        "model": "claude-sonnet-5",
+        "vendor": "Anthropic",
+        "effort": "medium",
+        "does": "Backend tests.",
+        "slots": [
+          "test-unit"
+        ],
+        "reviewedBy": [
+          "Brennan"
+        ],
+        "skills": [
+          "tdd-writer"
+        ],
+        "promptVersion": "p3.1",
+        "neverBuilds": true,
+        "tierOpen": true
+      },
+      {
+        "name": "Breach",
+        "team": "testing",
+        "kind": "checks",
+        "model": "claude-opus-5",
+        "vendor": "Anthropic",
+        "effort": "high",
+        "does": "Red team. Attacks the running app at Gate 4 and on modules with a security trigger.",
+        "slots": [
+          "red-team"
+        ],
+        "reviewedBy": [
+          "Zane"
+        ],
+        "skills": [
+          "security-review"
+        ],
+        "promptVersion": "p5.0",
+        "neverBuilds": true,
+        "tierOpen": true
+      }
+    ],
+    "workKinds": [
+      {
+        "kind": "design-system",
+        "agent": "Nemi",
+        "area": "frontend"
+      },
+      {
+        "kind": "frontend-components",
+        "agent": "Fantem",
+        "area": "frontend"
+      },
+      {
+        "kind": "frontend",
+        "agent": "Leon",
+        "area": "frontend"
+      },
+      {
+        "kind": "frontend-data",
+        "agent": "Ghost",
+        "area": "frontend"
+      },
+      {
+        "kind": "api",
+        "agent": "Soap",
+        "area": "backend"
+      },
+      {
+        "kind": "data",
+        "agent": "Soap",
+        "area": "backend"
+      },
+      {
+        "kind": "services",
+        "agent": "Iyo",
+        "area": "backend"
+      },
+      {
+        "kind": "ai",
+        "agent": "Iyo",
+        "area": "backend"
+      },
+      {
+        "kind": "maintenance",
+        "agent": "Atlas",
+        "area": "backend"
+      },
+      {
+        "kind": "infra",
+        "agent": "Atlas",
+        "area": "backend"
+      },
+      {
+        "kind": "docs",
+        "agent": "Atlas",
+        "area": "backend"
+      }
+    ],
+    "audit": "By area: Brennan (spec), Zane (security), Leah (a11y and perf), Rigg (backend tests)",
+    "roles": [
+      {
+        "role": "ui-contract",
+        "agent": "Zero"
+      },
+      {
+        "role": "review-frontend",
+        "agent": "Zero"
+      },
+      {
+        "role": "api-contract",
+        "agent": "Axis"
+      },
+      {
+        "role": "review-backend",
+        "agent": "Axis"
+      },
+      {
+        "role": "test-unit",
+        "agent": {
+          "frontend": "Fenn",
+          "backend": "Rigg"
+        }
+      },
+      {
+        "role": "test-e2e",
+        "agent": "Fenn"
+      },
+      {
+        "role": "review-spec",
+        "agent": "Brennan"
+      },
+      {
+        "role": "review-security",
+        "agent": "Zane"
+      },
+      {
+        "role": "review-a11y-perf",
+        "agent": "Leah"
+      },
+      {
+        "role": "red-team",
+        "agent": "Breach"
+      }
+    ],
+    "disputes": [
+      {
+        "from": "Brennan",
+        "ruler": "Zane"
+      },
+      {
+        "from": "Zane",
+        "ruler": "Brennan"
+      },
+      {
+        "from": "Breach",
+        "ruler": "Zane"
+      },
+      {
+        "from": "Zero",
+        "ruler": "Brennan"
+      },
+      {
+        "from": "Axis",
+        "ruler": "Brennan"
+      },
+      {
+        "from": "Leah",
+        "ruler": "Brennan"
+      }
+    ],
+    "lockedTests": "Brennan rules; acceptance tests need you",
+    "models": [
+      {
+        "id": "claude-opus-5",
+        "vendor": "Anthropic"
+      },
+      {
+        "id": "claude-sonnet-5.5",
+        "vendor": "Anthropic"
+      },
+      {
+        "id": "claude-sonnet-5",
+        "vendor": "Anthropic"
+      },
+      {
+        "id": "claude-haiku-5",
+        "vendor": "Anthropic"
+      },
+      {
+        "id": "gpt-5.2",
+        "vendor": "OpenAI"
+      },
+      {
+        "id": "gpt-5.2-codex",
+        "vendor": "OpenAI"
+      }
+    ],
+    "inFlight": [
+      {
+        "mission": "Spring launch site",
+        "state": "running",
+        "version": "roster-7"
+      },
+      {
+        "mission": "Fleet portal",
+        "state": "onboarding",
+        "version": "roster-7"
+      },
+      {
+        "mission": "Booking fix",
+        "state": "awaiting release",
+        "version": "roster-6"
+      }
+    ],
+    "open": [
+      "Model tiers for the leads, reviewers, test writers and Canon",
+      "Builder models: the roster doc (CR-7 to CR-11) puts builders on Opus; the agent system guide puts leads and security on Opus, builders and test writers on Sonnet. Sample data uses the roster doc.",
+      "Fenn’s default browsers and screen sizes",
+      "Leah’s budgets, and whether an accessibility miss blocks or caps the verdict at pass",
+      "Whether you see Zero’s UI contract before the build"
+    ]
+  },
+  "miosa": {
+    "_note": "MIOSA Developer plan limits (miosa.ai). Spend isn’t shown here: the control room shows usage against limits only.",
+    "plan": "Developer",
+    "sandboxesMax": 50,
+    "computersMax": 5,
+    "largestMachine": "4 vCPU / 8 GB",
+    "memTotalGb": 128,
+    "vcpuTotal": 64,
+    "size": {
+      "name": "small",
+      "vcpu": 2,
+      "memGb": 4
+    },
+    "_gap": "Proposed: which sandbox size each room runs on. Sample uses small."
+  }
+}

@@ -1,0 +1,332 @@
+/* Taste pass (Nov 13): the control room should feel like walking onto a live factory floor.
+   One rule holds it together: motion means something. A pulse means work is happening right now;
+   a sweep means an event just arrived; a still, amber dot means the stream stalled. Nothing loops
+   for decoration. Everything here is CSS (transform, opacity, gradients) and switches off under
+   prefers-reduced-motion, keeping the meaning (colour, edges, labels) visible.
+   Loaded last, after focus.css. The field section at the end replaces the old field anatomy. */
+
+:root {
+  --t-live: var(--av-verified-solid, var(--av-verified));
+  --t-stall: var(--av-needs-text, #b7791f);
+  --t-beam-a: var(--av-accent);
+  --t-beam-b: #7c5cff;
+  --t-beam-c: #22c3e6;
+  --t-floor-dot: color-mix(in oklab, var(--av-ink) 6%, transparent);
+  --t-glow: color-mix(in oklab, var(--av-accent) 35%, transparent);
+  --beat: 2.4s;
+}
+[data-theme="night"] {
+  --t-floor-dot: rgb(255 255 255 / 0.06);
+  --t-glow: color-mix(in oklab, var(--av-accent) 55%, transparent);
+  --t-beam-b: #9b84ff;
+  --t-beam-c: #4fd6f0;
+}
+
+/* ---------------------------------------------------------------- 7. the floor and the machines */
+/* The page is the factory floor: a faint dot grid that stays put while the work scrolls over it. */
+.cr-canvas {
+  background-image: radial-gradient(var(--t-floor-dot) 1px, transparent 1.4px);
+  background-size: 24px 24px;
+  background-position: 12px 12px;
+}
+/* 9. Night is the showpiece: a deep floor with a glow from where the live work is. */
+[data-theme="night"] .cr-canvas {
+  background-image:
+    radial-gradient(900px 420px at 78% -8%, color-mix(in oklab, var(--av-accent) 18%, transparent), transparent 70%),
+    radial-gradient(700px 360px at 8% 108%, color-mix(in oklab, var(--t-beam-b) 12%, transparent), transparent 70%),
+    radial-gradient(var(--t-floor-dot) 1px, transparent 1.4px);
+  background-size: auto, auto, 24px 24px;
+  background-position: 0 0, 0 0, 12px 12px;
+}
+/* Cards are the machines on it: a lit top edge, a hairline, and a long soft shadow under them. */
+html:not([data-depth="glass"]) .lib-card {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.65),
+    0 0 0 1px rgb(16 24 40 / 0.06),
+    0 1px 2px rgb(16 24 40 / 0.04),
+    0 14px 32px -18px rgb(16 24 40 / 0.22);
+}
+html[data-theme="night"]:not([data-depth="glass"]) .lib-card {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0) 160px), var(--color-app-panel);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 18px 40px -20px rgb(0 0 0 / 0.75);
+}
+/* rows you can open lift a little and show an accent edge, so the list reads as things you can pick up */
+@media (hover: hover) and (pointer: fine) {
+  .op-row, .cr-dq-row > button, .tpg-card { transition: background-color var(--m-fast, 150ms) ease, box-shadow var(--m-fast, 150ms) ease; }
+  a.op-row:hover { background: color-mix(in oklab, var(--av-accent) 4%, transparent); box-shadow: inset 2px 0 0 var(--av-accent); text-decoration: none; }
+}
+
+/* ---------------------------------------------------------------- 3. one heartbeat */
+/* Live things share one beat. It quickens with the rooms running (logic.js sets --beat) and stops
+   when the stream stalls. */
+.cr-pdot[data-pulse]::after { animation-duration: var(--beat); }
+[data-theme="night"] .cr-pdot[data-pulse] { box-shadow: 0 0 10px -1px var(--dot); }
+.lib-live-dot, .cr-acct-who .lib-live-dot { position: relative; }
+.lib-live-dot[data-on] { background: var(--t-live); }
+.lib-live-dot[data-on]::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%; background: var(--t-live); opacity: 0;
+}
+html[data-stream="stalled"] .lib-live-dot[data-on] { background: var(--t-stall); }
+html[data-stream="stalled"] .cr-pdot[data-pulse]::after,
+html[data-stream="offline"] .cr-pdot[data-pulse]::after,
+html[data-stream="reconnecting"] .cr-pdot[data-pulse]::after { animation: none; opacity: 0; }
+html[data-stream="stalled"] .cr-pulse-item .cr-pdot { box-shadow: 0 0 0 2px var(--t-stall); }
+
+/* ---------------------------------------------------------------- 4. the event sweep */
+/* A thin light crosses the top of the page when an event arrives (src/lib/live.js restarts it). */
+.cr-sweep { display: block; position: sticky; top: 0; height: 0; z-index: 40; pointer-events: none; }
+.cr-sweep::before {
+  content: ""; position: absolute; left: 0; top: 0; width: 38%; height: 2px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--t-beam-c), var(--t-beam-a), var(--t-beam-b), transparent);
+  transform: translateX(-100%);
+}
+
+/* ---------------------------------------------------------------- 5. gates as a conveyor */
+.cr-gate-bar i::after {
+  content: ""; position: absolute; inset: 0; opacity: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.75), transparent);
+  transform: translateX(-100%);
+}
+.cr-gate[data-current] .cr-gate-bar { box-shadow: 0 0 0 1px color-mix(in oklab, var(--av-accent) 25%, transparent); }
+[data-theme="night"] .cr-gate[data-current] .cr-gate-bar i { box-shadow: 0 0 10px var(--t-glow); }
+
+/* ---------------------------------------------------------------- 6. rooms that look busy */
+.cr-wroom { position: relative; overflow: hidden; }
+.cr-wroom:not([data-stall]):not([data-warn])::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 64px; pointer-events: none; opacity: 0;
+  background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--av-accent) 7%, transparent), transparent);
+}
+.cr-wroom[data-stall] { box-shadow: inset 3px 0 0 var(--av-stopped-solid, var(--av-stopped)), var(--av-shadow-faceplate); }
+.cr-wroom[data-warn] { box-shadow: inset 3px 0 0 var(--t-stall), var(--av-shadow-faceplate); }
+/* the agent's line carries a small working light while it's mid-step */
+.cr-wroom:not([data-stall]) .cr-wroom-mod::after {
+  content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 8px; border-radius: 50%;
+  vertical-align: 2px; background: var(--t-live);
+}
+
+/* ---------------------------------------------------------------- 8. status that glows */
+.av-tag[data-tone]:not([data-tone="proposed"]):not(:has(svg))::before {
+  content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in oklab, currentColor 16%, transparent);
+}
+.av-tag[data-tone="needs"]::before { box-shadow: 0 0 0 3px rgb(255 255 255 / 0.25); }
+[data-theme="night"] .av-tag[data-tone="verified"]::before,
+[data-theme="night"] .av-tag[data-tone="stopped"]::before,
+[data-theme="night"] .av-tag[data-tone="accent"]::before { box-shadow: 0 0 0 3px color-mix(in oklab, currentColor 18%, transparent), 0 0 8px currentColor; }
+
+/* night: the one primary action glows a little, so the eye lands on it */
+[data-theme="night"] .av-btn[data-variant="primary"] {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 0 0 1px color-mix(in oklab, var(--av-accent) 70%, black), 0 8px 24px -8px var(--t-glow);
+}
+
+/* ---------------------------------------------------------------- 13. type with a voice */
+/* Machine data reads as machine data: counts, refs and meta in the mono face, tabular. */
+.cr-panel-meta, .lib-nav-badge, .cr-pulse-item b, .cr-dmline-prog-k, .cr-slot-n {
+  font-family: var(--av-font-mono); font-feature-settings: "tnum";
+}
+/* titles take Inter's straighter alternates: a single-storey a, open digits */
+.cr-mast h1, .cr-hero h2, .cr-hero-t, .cr-dmline-sumt, .lib-screen h1 { font-feature-settings: "cv11", "ss01", "cv05"; }
+@media (min-width: 1024px) { .cr-dmline-sumt { font-size: 20px; line-height: 28px; font-weight: 500; } }
+.av-roll { display: inline-block; }
+
+/* ---------------------------------------------------------------- 11. approving feels physical */
+.cr-hero { transform-origin: 50% 0; transition: transform var(--m-fast, 150ms) var(--m-ease-out, ease), opacity var(--m-fast, 150ms) ease; }
+.cr-hero[data-state="deciding"] { transform: scale(0.985); }
+.dec-snack { overflow: hidden; }
+.dec-snack::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; transform-origin: left center;
+  background: linear-gradient(90deg, var(--t-beam-c), var(--av-accent));
+}
+
+/* ---------------------------------------------------------------- 14. quiet states with presence */
+.cr-dp-clear-tile.cr-rest { width: 96px; height: 48px; background: none; box-shadow: none; border-radius: 0; }
+.cr-dp-clear:has(.cr-rest) { grid-template-columns: 96px minmax(0, 1fr) auto; }
+@media (max-width: 760px) { .cr-dp-clear:has(.cr-rest) { grid-template-columns: 96px minmax(0, 1fr); } }
+.cr-rest svg { display: block; overflow: visible; }
+.cr-rest-belt { fill: var(--av-hairline-strong); }
+.cr-rest-m { fill: var(--av-field-fill); stroke: var(--av-hairline-strong); stroke-width: 1; }
+.cr-rest-l { fill: var(--t-live); }
+
+/* ================================================================ motion (all of it, opt-in) */
+@media (prefers-reduced-motion: no-preference) {
+  .lib-live-dot[data-on]::after { animation: t-beat var(--beat) var(--m-ease-out, ease-out) infinite; /* loop: the stream is live */ }
+  html[data-stream="stalled"] .lib-live-dot[data-on]::after,
+  html[data-stream="offline"] .lib-live-dot::after { animation: none; }
+
+  .cr-sweep[data-go]::before { animation: t-sweep 1.15s cubic-bezier(0.3, 0, 0.2, 1) both; }
+
+  /* the current gate: a light runs along its rail while the mission is at it */
+  .cr-gate[data-current] .cr-gate-bar i::after { animation: t-rail 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; /* loop: this gate is being worked */ }
+  /* a passed gate scans once as the page opens */
+  .cr-gate[data-st="pass"] .cr-gate-bar i::after { animation: t-rail 900ms cubic-bezier(0.4, 0, 0.2, 1) 300ms 1 both; }
+
+  .cr-wroom:not([data-stall]):not([data-warn])::after { animation: t-scan 3.6s linear infinite; /* loop: the room is building */ }
+  .cr-wroom:not([data-stall]) .cr-wroom-mod::after { animation: t-blink 1.4s ease-in-out infinite; /* loop: the agent is mid-step */ }
+
+  .cr-hero { animation: m-rise var(--m-base, 240ms) var(--m-ease-out, ease-out) both; }
+  .dec-snack::after { animation: t-drain 6s linear both; }
+  .av-roll[data-moving] { animation: t-lift 300ms var(--m-ease-out, ease-out); }
+
+  /* cards arrive in order, a beat apart */
+  .lib-screen .lib-card { animation: m-rise var(--m-base, 240ms) var(--m-ease-out, ease-out) both; }
+  .lib-screen .lib-card:nth-of-type(2) { animation-delay: 40ms; }
+  .lib-screen .lib-card:nth-of-type(3) { animation-delay: 80ms; }
+  .lib-screen .lib-card:nth-of-type(n + 4) { animation-delay: 120ms; }
+
+  .cr-rest-l { animation: t-breathe 4.2s ease-in-out infinite; /* loop: the factory idles */ }
+  .cr-rest-l2 { animation-delay: 1.4s; }
+  .cr-rest-l3 { animation-delay: 2.8s; }
+}
+@keyframes t-beat { 0% { transform: scale(0.5); opacity: 0.45; } 70%, 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes t-sweep { 0% { transform: translateX(-100%); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(265%); opacity: 0; } }
+@keyframes t-rail { 0% { transform: translateX(-100%); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateX(100%); opacity: 0; } }
+@keyframes t-scan { 0% { transform: translateY(-64px); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(520px); opacity: 0; } }
+@keyframes t-blink { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes t-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes t-lift { 0% { transform: translateY(0); } 40% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+@keyframes t-breathe { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+/* ================================================================ 1, 2. text boxes */
+/* One edge, never two. At rest a field is a soft filled well with a single hairline: no inner
+   shadow (that shadow was the second outline). Clicked into, a beam of light runs once around the
+   edge (accent, violet, cyan), settles as a thin accent edge, and a soft halo breathes while you
+   type: "this is where you are". An invalid field takes a red edge and gives one short shake.
+   On a phone, single-line fields and selects are pills and text areas are deep rounded wells.
+   Fields inside a frame (the Canon composer, search bars) leave the edge to the frame. */
+@property --f-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+:root {
+  --f-h: 40px;
+  --f-r: 12px;
+  --f-r-area: 12px;
+  --f-x: 14px;
+  --f-fill: #fbfaf9;
+  --f-fill-focus: #ffffff;
+  --f-edge: rgb(16 24 40 / 0.13);
+  --f-edge-hover: rgb(16 24 40 / 0.26);
+  /* focus is neutral: clicking a box never paints it blue. The edge darkens, a bright segment runs
+     once around it, the field lifts a little and a soft grey halo breathes while you type. */
+  --f-ring: rgb(16 24 40 / 0.5);
+  --f-beam-hi: rgb(16 24 40 / 0.78);
+  --f-beam-lo: rgb(16 24 40 / 0.32);
+  --f-halo: rgb(16 24 40 / 0.06);
+  --f-lift: 0 8px 20px -12px rgb(16 24 40 / 0.28);
+  --f-bad: var(--av-stopped-solid, var(--av-stopped));
+  --f-chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+[data-theme="night"] {
+  --f-fill: #1f2024;
+  --f-fill-focus: #232429;
+  --f-edge: rgb(255 255 255 / 0.12);
+  --f-edge-hover: rgb(255 255 255 / 0.24);
+  --f-ring: rgb(255 255 255 / 0.5);
+  --f-beam-hi: rgb(255 255 255 / 0.85);
+  --f-beam-lo: rgb(255 255 255 / 0.28);
+  --f-halo: rgb(255 255 255 / 0.06);
+  --f-lift: 0 10px 24px -12px rgb(0 0 0 / 0.7);
+}
+
+/* the fields themselves (not the ones inside a frame) */
+:is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]), textarea):not(.cd-row *):not(.av-filter-search *):not(.fb-search *):not(.kbd-find *):not(.cr-why-field *):not(.aie-prompt *):not(.cmdk *):not(.lib-rail-search *) {
+  box-sizing: border-box;
+  min-height: var(--f-h);
+  padding: 0 var(--f-x);
+  border: 1.5px solid transparent !important;
+  border-radius: var(--f-r);
+  background: linear-gradient(var(--f-fill), var(--f-fill)) padding-box, linear-gradient(var(--f-edge), var(--f-edge)) border-box !important;
+  box-shadow: none;
+  color: var(--av-ink);
+  font-size: 14px;
+  line-height: 20px;
+  outline: none !important;
+  transition: background var(--m-fast, 150ms) ease, box-shadow var(--m-base, 240ms) var(--m-ease-out, ease-out);
+}
+textarea:not(.cd-row *):not(.cr-why-field *):not(.aie-prompt *) { padding: 10px var(--f-x); line-height: 22px; resize: vertical; border-radius: var(--f-r-area); }
+@media (hover: hover) and (pointer: fine) {
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), textarea):not(.cd-row *):not(.av-filter-search *):not(.fb-search *):not(.kbd-find *):not(.cr-why-field *):not(.aie-prompt *):not(.cmdk *):not(.lib-rail-search *):hover:not(:focus) {
+    background: linear-gradient(var(--f-fill), var(--f-fill)) padding-box, linear-gradient(var(--f-edge-hover), var(--f-edge-hover)) border-box !important;
+  }
+}
+:is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), textarea):not(.cd-row *):not(.av-filter-search *):not(.fb-search *):not(.kbd-find *):not(.cr-why-field *):not(.aie-prompt *):not(.cmdk *):not(.lib-rail-search *):focus {
+  background:
+    linear-gradient(var(--f-fill-focus), var(--f-fill-focus)) padding-box,
+    conic-gradient(from var(--f-a), var(--f-beam-hi), var(--f-beam-lo) 30%, var(--f-beam-lo) 70%, var(--f-beam-hi)) border-box !important;
+  box-shadow: 0 0 0 4px var(--f-halo), var(--f-lift);
+}
+::placeholder { color: var(--av-subtle, var(--av-muted)); opacity: 1; }
+
+/* selects: same well and edge, drawn with a ring so the chevron stays */
+select:not(.cmdk *) {
+  box-sizing: border-box;
+  min-height: var(--f-h);
+  padding: 0 34px 0 var(--f-x) !important;
+  border: none !important;
+  border-radius: var(--f-r);
+  background: var(--f-fill) var(--f-chev) no-repeat right 12px center !important;
+  box-shadow: inset 0 0 0 1.5px var(--f-edge);
+  outline: none !important;
+  font-size: 14px;
+  transition: box-shadow var(--m-base, 240ms) var(--m-ease-out, ease-out);
+}
+@media (hover: hover) and (pointer: fine) { select:not(.cmdk *):hover:not(:focus) { box-shadow: inset 0 0 0 1.5px var(--f-edge-hover); } }
+select:not(.cmdk *):focus { box-shadow: inset 0 0 0 1.5px var(--f-ring), 0 0 0 4px var(--f-halo), var(--f-lift); background-color: var(--f-fill-focus) !important; }
+
+/* fields that sit in a frame: the frame takes the same single edge and the same halo */
+.av-filter-search, .fb-search, .kbd-find, .lib-rail-search, .cr-why-field {
+  box-shadow: inset 0 0 0 1.5px var(--f-edge) !important;
+  background: var(--f-fill) !important;
+}
+.av-filter-search:focus-within, .fb-search:focus-within, .kbd-find:focus-within, .cr-why-field:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--f-ring), 0 0 0 4px var(--f-halo), var(--f-lift) !important;
+  background: var(--f-fill-focus) !important;
+}
+.cd-row { box-shadow: 0 0 0 1.5px var(--f-edge), 0 1px 2px rgb(0 0 0 / 0.04), 0 10px 24px -12px rgb(0 0 0 / 0.18); }
+.cd-row:focus-within { box-shadow: 0 0 0 1.5px var(--f-ring), 0 0 0 5px var(--f-halo), 0 12px 28px -12px rgb(0 0 0 / 0.22) !important; }
+
+/* invalid: a red edge, a short shake, and the message below it in red */
+[aria-invalid="true"]:not(.cd-row *) {
+  background: linear-gradient(var(--f-fill), var(--f-fill)) padding-box, linear-gradient(var(--f-bad), var(--f-bad)) border-box !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--f-bad) 14%, transparent) !important;
+}
+
+/* spacing: label, field, hint, a steady rhythm */
+.cr-form { gap: 24px; padding: 24px; }
+.cr-fieldset { gap: 16px; }
+.cr-field { gap: 8px; }
+.cr-field > span { font-size: 13px; line-height: 18px; font-weight: 500; color: color-mix(in oklab, var(--av-ink) 82%, transparent); }
+.cr-field + .cr-hint, .cr-field + .cr-error { margin-top: -8px; }
+.cr-error { font-size: 13px; line-height: 18px; color: var(--f-bad); }
+.op-lead-form, .op-accept, .osa-ask, .op-close-lead { gap: 16px; }
+.op-accept { gap: 8px; }
+
+/* on a phone: pills and deep wells, a bigger target, the label sitting in from the curve */
+@media (max-width: 760px), (pointer: coarse) {
+  :root { --f-h: 48px; --f-x: 20px; --f-r: 999px; --f-r-area: 24px; }
+  select:not(.cmdk *) { background-position: right 18px center !important; padding-right: 42px !important; }
+  textarea:not(.cd-row *):not(.cr-why-field *):not(.aie-prompt *) { padding: 14px 20px; }
+  .av-filter-search, .fb-search, .kbd-find, .lib-rail-search { border-radius: 999px !important; min-height: 44px; padding-left: 16px; padding-right: 16px; }
+  .cr-why-field { border-radius: 24px; }
+  .cd-row { border-radius: 26px; padding: 6px 6px 6px 12px; }
+  .cr-field > span { padding-left: 6px; }
+  .cr-field + .cr-hint { padding-left: 6px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]), textarea):not(.cd-row *):not(.av-filter-search *):not(.fb-search *):not(.kbd-find *):not(.cr-why-field *):not(.aie-prompt *):not(.cmdk *):not(.lib-rail-search *):focus {
+    animation: f-beam 1.4s cubic-bezier(0.3, 0, 0.2, 1) 1 both, f-halo 2.8s ease-in-out 1.4s infinite; /* loop: while you type here */
+  }
+  select:not(.cmdk *):focus, .av-filter-search:focus-within, .fb-search:focus-within, .kbd-find:focus-within, .cr-why-field:focus-within, .cd-row:focus-within {
+    animation: f-ring 600ms var(--m-ease-out, ease-out) 1 both;
+  }
+  [aria-invalid="true"]:not(.cd-row *) { animation: f-shake 320ms ease-in-out 1; }
+}
+@keyframes f-beam {
+  0% { --f-a: 0deg; box-shadow: 0 0 0 0 var(--f-halo), var(--f-lift); }
+  45% { box-shadow: 0 0 0 7px var(--f-halo), var(--f-lift); }
+  100% { --f-a: 360deg; box-shadow: 0 0 0 4px var(--f-halo), var(--f-lift); }
+}
+@keyframes f-halo { 0%, 100% { box-shadow: 0 0 0 4px var(--f-halo), var(--f-lift); } 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--f-halo) 60%, transparent), var(--f-lift); } }
+@keyframes f-ring { 0% { filter: drop-shadow(0 0 0 transparent); } 40% { filter: drop-shadow(0 0 6px var(--f-halo)); } 100% { filter: drop-shadow(0 0 0 transparent); } }
+@keyframes f-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
