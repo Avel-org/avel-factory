@@ -31,6 +31,9 @@
 # Change after approval (Axis, Nov 18): t-b3-rigg-03 (a defect's body.message is the contract's text) moves from
 # T-B8 to T-B9. The fix is in effect-handler.ts, T-B9's file, and T-B8 may not change it. T-B8's own text is left
 # as rendered so its task docs don't change mid-ticket; its tests a2 drops that one assertion by Axis's ruling.
+# Change after approval (Axis, Nov 18, t-b11-rigg-01): T-B11's Territory gains packages/contract/package.json for one
+# ./minified subpath export (4 lines, Axis's A4). The contract's index loads zod and its locale (D58), so the web
+# can't take the minified router from it. The lock check holds post-lock commits to the Territory, A4 included.
 # Backlog, not in this sprint: T-B12 (sprint-04, first), CR-W30 B and C (after T-B10's step-up), the T-B5 relock P3 and t-b7-rigg-01 (lock-check tests), the contract-test timeout
 # (needs a CR and Zero), the declined db flake (CR-40). After T-B11: tests 10 and 11, spike 2 (DBOS), the jobs engine,
 # event consumers and the factory repo loader, which closes Step 1.
@@ -303,13 +306,13 @@ may_change = [
   "packages/contract/src/minified.ts",
   "packages/contract/src/index.ts",
   "packages/contract/scripts/**",
+  "packages/contract/package.json",
 ]
 must_not_change = [
   "packages/contract/src/routes/**",
   "packages/contract/src/dto/**",
   "packages/contract/src/errors.ts",
   "packages/contract/src/version.ts",
-  "packages/contract/package.json",
   "packages/contract-mock/package.json",
   "packages/server/**",
   "apps/web/**",

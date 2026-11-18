@@ -104,6 +104,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - `packages/contract/src/minified.ts`
 - `packages/contract/src/index.ts`
 - `packages/contract/scripts/**`
+- `packages/contract/package.json`
 - `docs/agent-dispatch/backend/sprint-03/agent-soap-t-b11-build-completion.md` (your report)
 
 **Locked: never change** (A3, F2):
@@ -115,7 +116,6 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - `packages/contract/src/dto/**`
 - `packages/contract/src/errors.ts`
 - `packages/contract/src/version.ts`
-- `packages/contract/package.json`
 - `packages/contract-mock/package.json`
 - `packages/server/**`
 - `apps/web/**`

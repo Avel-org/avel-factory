@@ -115,13 +115,13 @@ You review the builder's work on this ticket, from the diff and this document on
 - `packages/contract/src/minified.ts`
 - `packages/contract/src/index.ts`
 - `packages/contract/scripts/**`
+- `packages/contract/package.json`
 
 **Never change, whatever the task says:**
 - `packages/contract/src/routes/**`
 - `packages/contract/src/dto/**`
 - `packages/contract/src/errors.ts`
 - `packages/contract/src/version.ts`
-- `packages/contract/package.json`
 - `packages/contract-mock/package.json`
 - `packages/server/**`
 - `apps/web/**`

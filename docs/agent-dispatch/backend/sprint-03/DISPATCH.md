@@ -54,7 +54,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | T-B8 | `packages/server/src/platform/db/db.ts`, `packages/server/src/platform/errors.ts`, `packages/server/src/platform/idempotency.ts`, `packages/server/src/platform/rate-limit.ts` | `packages/server/test/platform-hardening/**` |
 | T-B9 | `packages/server/src/platform/auth/**`, `packages/server/src/platform/app.ts`, `packages/server/src/platform/effect-handler.ts`, `packages/server/src/seed.ts`, `packages/server/package.json`, `pnpm-lock.yaml` | `packages/server/test/auth/**` |
 | T-B10 | `packages/server/src/platform/step-up/**`, `packages/server/src/platform/cli/**`, `packages/server/src/audit/**`, `packages/server/src/platform/router.ts`, `packages/server/src/main.ts` | `packages/server/test/cli-login/**` |
-| T-B11 | `packages/contract-mock/src/**`, `packages/contract/src/minified.ts`, `packages/contract/src/index.ts`, `packages/contract/scripts/**` | `packages/contract-mock/test/auth.test.ts`, `packages/contract/test/minified-router.test.ts` |
+| T-B11 | `packages/contract-mock/src/**`, `packages/contract/src/minified.ts`, `packages/contract/src/index.ts`, `packages/contract/scripts/**`, `packages/contract/package.json` | `packages/contract-mock/test/auth.test.ts`, `packages/contract/test/minified-router.test.ts` |
 
 ## Merge order
 

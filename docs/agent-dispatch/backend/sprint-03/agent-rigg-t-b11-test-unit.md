@@ -112,7 +112,6 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - `packages/contract/src/dto/**`
 - `packages/contract/src/errors.ts`
 - `packages/contract/src/version.ts`
-- `packages/contract/package.json`
 - `packages/contract-mock/package.json`
 - `packages/server/**`
 - `apps/web/**`
