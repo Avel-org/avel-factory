@@ -797,14 +797,30 @@ def locked(plan, t):
 
 
 def report_status(plan, d, attempt=None):
-    """(status, verdict) from the newest report for this dispatch, or None."""
+    """(status, verdict) from the report of the dispatch's latest attempt, or None.
+
+    Only that attempt's own copy counts. An earlier attempt's report says nothing about the latest
+    (Nov 17: T-B3's build a2, killed by a crash, read as a1's test-dispute). Files in the reports
+    folder that aren't an attempt's copy are ignored.
+    """
     text = None
     sd = os.path.join(state_dir(), "reports")
     prefix = f"{plan['_lane']}-{plan['_sprint']}-{d['doc']}.a"
-    copies = sorted((f for f in os.listdir(sd) if f.startswith(prefix) and f.endswith(".md")),
-                    key=lambda f: int(re.search(r"\.a(\d+)\.md$", f).group(1)))
-    if copies:
-        with open(os.path.join(sd, copies[-1])) as f:
+    copies = {}
+    for f in (os.listdir(sd) if os.path.isdir(sd) else []):
+        m = re.fullmatch(re.escape(prefix) + r"(\d+)\.md", f)
+        if m:
+            copies[int(m.group(1))] = f
+    if attempt is None:
+        key = (plan["_lane"], plan["_sprint"], d["doc"])
+        attempt = max((a["attempt"] for a in read_attempts() if (a["lane"], a["sprint"], a["doc"]) == key),
+                      default=None)
+    if attempt is not None:
+        if attempt in copies:
+            with open(os.path.join(sd, copies[attempt])) as f:
+                text = f.read()
+    elif copies:
+        with open(os.path.join(sd, copies[max(copies)])) as f:
             text = f.read()
     elif d["kind"] != "review":
         out = git("show", f"{d['branch']}:{report_path(plan, d)}")

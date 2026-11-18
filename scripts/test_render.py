@@ -31,6 +31,7 @@ doc=$(grep -o 'docs/agent-dispatch/[^` ]*\.md' <<<"$last" | head -1 || true)
 report=$(grep -m1 '^report: ' "$doc" | cut -d' ' -f2)
 kind=$(grep -m1 '^kind: ' "$doc" | cut -d' ' -f2)
 echo "$@" > "$HOME/last-claude-args"
+[[ -n ${FAKE_NOOP:-} ]] && exit 0  # a session killed before it did any work
 printf 'status: %s\nverdict: pass\n' "${FAKE_STATUS:-done}" > "$report"
 if [[ $kind != review ]]; then git add "$report" && git commit -qm "report $kind" ; fi
 '''
@@ -378,6 +379,31 @@ class Flow(unittest.TestCase):
         out = r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", check=False)
         self.assertIn("the lead's call", out.stderr)
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit 2")  # a named retry
+        self.assertEqual(self.state("agent-rigg-t-b1-test-unit"), "done")
+
+    def test_an_attempt_that_wrote_no_report_isnt_given_the_last_ones(self):
+        # Nov 17: T-B3's build a2 was killed by a crash before doing any work. a1's report was still on
+        # the branch, agent.sh kept it as a2's, and --status read "test-dispute (a2)".
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", env={"FAKE_STATUS": "blocked"})
+        out = r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit 2", env={"FAKE_NOOP": "1"})
+        self.assertIn("no report from a2", out.stdout)
+        reports = os.path.join(r.root, ".git/avel/reports")
+        self.assertFalse(os.path.exists(os.path.join(reports, "backend-sprint-01-agent-rigg-t-b1-test-unit.a2.md")))
+        self.assertIn("no report (a2)", self.status())
+        # a3 writes its own report, and that one counts
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit 3")
+        self.assertEqual(self.state("agent-rigg-t-b1-test-unit"), "done")
+
+    def test_a_stray_file_in_the_reports_folder_is_ignored(self):
+        # Nov 17: a note named <doc>.a2.carried-over-a1-report.md made --status raise.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        with open(os.path.join(r.root, ".git/avel/reports",
+                               "backend-sprint-01-agent-rigg-t-b1-test-unit.a1.note.md"), "w") as f:
+            f.write("status: blocked\n")
         self.assertEqual(self.state("agent-rigg-t-b1-test-unit"), "done")
 
     def test_one_session_per_seat(self):
