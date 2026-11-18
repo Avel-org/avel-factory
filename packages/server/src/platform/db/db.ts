@@ -169,10 +169,13 @@ const idleClientErrorLogger =
     );
   };
 
+/** How long past the statement timeout node-postgres waits before it gives up on a query. */
+const QUERY_TIMEOUT_MARGIN_MS = 5_000;
+
 /**
  * Db on one node-postgres Pool, from DATABASE_URL; the pool ends with the layer. A connect gives
- * up after DATABASE_CONNECT_TIMEOUT_MS and a statement after DATABASE_STATEMENT_TIMEOUT_MS. The
- * build fails unless the database's lc_messages is English.
+ * up after DATABASE_CONNECT_TIMEOUT_MS and a statement after DATABASE_STATEMENT_TIMEOUT_MS (the
+ * client stops waiting 5 s later). The build fails unless the database's lc_messages is English.
  */
 export const DbLive = Layer.effect(
   Db,
@@ -191,6 +194,9 @@ export const DbLive = Layer.effect(
           connectionString: Redacted.value(url),
           connectionTimeoutMillis: connectTimeoutMs,
           statement_timeout: statementTimeoutMs,
+          // Client-side, a little past the server's: a connection that stops answering mid-query
+          // ends the query too, and checkIn destroys the client (t-b8-rigg-04).
+          query_timeout: statementTimeoutMs + QUERY_TIMEOUT_MARGIN_MS,
         }).on("error", onIdleClientError),
       ),
       (pool) =>
