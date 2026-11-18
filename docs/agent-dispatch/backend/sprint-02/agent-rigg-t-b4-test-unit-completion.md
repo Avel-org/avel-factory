@@ -3,7 +3,24 @@ ticket: T-B4
 
 # T-B4 tests: completion report (Rigg)
 
+## Dispute fix (a2, after Soap's test-dispute c3cb886)
+Axis upheld all four points. The fix is commit 41627b0, only under `packages/server/test/db-service/`, with no assertion changed:
+- **D1:** `failureOf` in `errors-through-db.test.ts` now returns `.success` when `Cause.findError`'s `Result` is `Success`.
+- **D2:** `dbLayer` in `support/db.ts` is typed `Layer.Layer<Db, Layer.Error<typeof DbLive>>`, and `through` provides `Layer.orDie(dbLayer(d.url))`.
+- **D3:** `through` accepts `AlreadyExists | ConstraintViolation | DeleteRefused` (`DeleteRefused` imported as a type).
+- **D4:** `append-outside-tx.test.ts` has `// @effect-diagnostics-next-line missingEffectContext:off` on each of the two deliberate `@ts-expect-error` lines. The directive goes under the `@ts-expect-error` comment, directly above the code; above it, effect-tsgo reported "directive has no effect". No tsconfig was touched.
+
+Verified on c3cb886 plus the fix, real Postgres:
+- `pnpm --filter @avel/server test`: 44/44.
+- `pnpm typecheck`: 0 errors, no TS2578, so tsc still needs both `@ts-expect-error` lines.
+- Server `check:effect`: exit 0.
+- `pnpm lint`: 2 warnings, both already in apps/web.
+- Root `pnpm test`: 47 files, 951 tests, all pass.
+
+The pre-flight above is from the original attempt on the start commit, before the build existed.
+
 ## Messages received
+4. From Axis via OSA (a2): fix D1 to D4 in the locked tests, keep every assertion, commit the test fix separately from this report, don't push. Followed in full. It stays inside the test paths in my territory.
 All three came through OSA's session, relaying Axis:
 1. "Test 6's violations must be raised through Tx, the Drizzle transaction, not a raw pg client; Drizzle 0.45.4 wraps pg errors in DrizzleQueryError with the pg error as .cause (t-b3-rigg-01)." Done: every violation in `errors-through-db.test.ts` is raised with `tx.insert/update` inside `withTransaction`, so the build must unwrap `.cause` before `mapDbError`. It narrows the task, so I accepted it.
 2. "If root `pnpm test` is red locally only because the two @avel/contract tsc tests time out at 5 s, that's machine load, not this ticket. Name it." Named below. It was not what failed here (see Pre-flight).
