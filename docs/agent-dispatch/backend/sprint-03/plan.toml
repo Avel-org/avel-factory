@@ -4,7 +4,7 @@
 # Render it:  scripts/render.py backend/sprint-03   (after approval), then commit the folder.
 #
 # Three tickets, each a full session, in Javaris's approved build order (Nov 17), one builder at a time (B7):
-#   T-B8  platform hardening and the middleware services (backlog a, b, c, d, e; Step 1 items 2 and 4)   ~75 min  full
+#   T-B8  platform hardening and the middleware services (backlog a, b, c, d; Step 1 items 2 and 4)   ~75 min  full
 #   T-B9  sign-in: Better Auth, the seed, lockout, and the caller (Step 1 item 5, test 7)                 ~90 min  full, new dependency
 #   T-B10 step-up and CLI login: routes 1 to 3 (items 6 and 7; tests 5, 8, 9)                             ~90 min  full
 # T-B11 (routes 4 and 5, the CLI session as a caller; tests 2 and 4, the rest of 9) opens sprint-04: render.py refuses
@@ -82,7 +82,7 @@ title = "Platform hardening and the middleware services: safe defect logs, pool 
 goal = "A database outage or a bad query can't hang a request, crash the server or put a query's values in the log, and the idempotency store and rate limiter the next routes need exist."
 rigor = "full"
 refs = [
-  "Axis's T-B4 second review: P2s (a) Drizzle params in the defect log, (d) pool timeouts, (e) the pool's error handler",
+  "Axis's T-B4 second review: P2s (a) Drizzle params in the defect log, (d) pool timeouts ((e), the pool's error handler, is fixed in T-B4 a3 after t-b4-rigg-01)",
   "t-b3-rigg-02 (lc_messages) and t-b3-rigg-03 (body.message)",
   "Step 0 and Step 1 plan, Step 1 items 2.4 and 4, and the rate limits section",
   "AGENTS.md, Writing Effect rules 4, 5 and 6",
@@ -121,7 +121,7 @@ verify = [
 ]
 notes = [
   "Defect log, fixed at the source in db.ts: no DrizzleQueryError leaves the Db service. An unmapped one is re-raised as a defect carrying only the pg error's code and message (or the query text without params), so effectHandler's log of the cause never holds a bound value. effect-handler.ts and logger.ts don't change",
-  "Pool: connect timeout and statement timeout come from Config (DATABASE_CONNECT_TIMEOUT_MS, DATABASE_STATEMENT_TIMEOUT_MS) with defaults of 5 s and 30 s. A connect that times out reaches the caller as a defect (500), not a hang, and the request's interruption still ends it. pool.on('error') logs through the logger and never crashes the process",
+  "Pool: connect timeout and statement timeout come from Config (DATABASE_CONNECT_TIMEOUT_MS, DATABASE_STATEMENT_TIMEOUT_MS) with defaults of 5 s and 30 s. A connect that times out reaches the caller as a defect (500), not a hang, and the request's interruption still ends it. (The pool's error listener is already in from T-B4)",
   "lc_messages: the Db layer checks `show lc_messages` once when it's built and fails to build (a defect at boot) unless it is C, POSIX or starts with en, because the FK split reads English text",
   "Idempotency store (Step 1 item 4) as an Effect service over idempotency_keys, through Db, with time from Clock. begin(principal, key, route, bodySha256) gives one of: new (row inserted in_progress, expires in 24 hours), replay (completed with the same route and body: the stored status and response), reused (another body or route: IdempotencyKeyReused, 409), in progress (IdempotencyInProgress, 409). complete(principal, key, status, response, { sensitive }) stores the response, or for a sensitive response stores no response and marks it so a replay fails with TokenReplayed (409). An expired row counts as absent. It is wired into routes in T-B10 and T-B11, not here",
   "Rate limiter (item 2.4): an in-memory Effect service, a fixed window per (name, key), limits from Config with the plan's defaults (sign-in 5 a minute per email and per IP; device-login starts 5 a minute; webhook 60 a minute), time from Clock. Over the limit is TooManyRequests (429). It is applied in T-B9 and T-B10, not here",
@@ -136,7 +136,6 @@ behaviours = [
   "a defect thrown by a Drizzle query is logged with the request ID and the pg error's code, and the log line contains no bound value ('params:' and the inserted value are absent); the response is a 500 whose body has the contract's message (body.message equals errorMap's text) and no database text",
   "with Postgres unreachable (a closed port), withTransaction fails as a defect within the configured connect timeout instead of hanging, and the request's interruption ends it",
   "a statement longer than the configured statement timeout ends as a defect, and the pool client is released",
-  "an idle pool client's error (its backend terminated with pg_terminate_backend) is logged and doesn't crash the process; the next withTransaction works",
   "building the Db layer against a server whose lc_messages isn't English fails with a message naming lc_messages (set it per database for the test)",
   "idempotency: a first begin is new; after complete, the same key, route and body replays the stored status and response; another body is 409 IDEMPOTENCY_KEY_REUSED; a second begin before complete is 409 IDEMPOTENCY_IN_PROGRESS; one principal's key never answers another's",
   "idempotency: a sensitive response is never stored (the row has no response) and its replay is 409 TOKEN_REPLAYED; a key older than 24 hours (TestClock) is treated as new",
