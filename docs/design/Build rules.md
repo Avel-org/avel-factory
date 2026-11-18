@@ -98,7 +98,7 @@ packages/server/test/db-errors.test.ts:
 CI is green and the acceptance tests pass. Nothing else.
 ```
 
-- **C2. Size:** about 60 minutes of agent work. If it's bigger, the lead splits it.
+- **C2. Size:** about 120 minutes of agent work. If it's bigger, the lead splits it. Javaris (Nov 17): plan fewer, bigger tickets that fill a session, not a stream of small PRs.
 - **C3. Done means the tests pass.** Polish that no test asks for isn't scheduled.
 - **C4. Full rigor** goes on any ticket touching:
   - sign-in, step-up or sessions;
@@ -125,7 +125,7 @@ CI is green and the acceptance tests pass. Nothing else.
 
   | Session | Turns | Time | Cost |
   | --- | --- | --- | --- |
-  | Builder or checker | 80 | 60 minutes | $4 ($8 on Opus) |
+  | Builder or checker | 150 | 120 minutes | $4 ($8 on Opus) |
   | Lead (planning or full-rigor review) | 60 | 45 minutes | $6 |
   | The whole build, per day | — | — | $75 |
 

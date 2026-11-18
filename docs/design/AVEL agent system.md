@@ -152,7 +152,7 @@ CI is green and the acceptance tests pass. Nothing else.
 
 Rules for tickets:
 
-- **Size:** about 60 minutes of agent work. If it is bigger, the lead splits it.
+- **Size:** about 120 minutes of agent work. If it is bigger, the lead splits it.
 - **Files listed:** two tickets running at the same time never share files.
 - **Done is defined by tests:** when the tests pass, the ticket is finished. Extra polish is not scheduled.
 - **No long specs:** a ticket plus the shared API contract is enough for internal screens.
