@@ -7,13 +7,13 @@ import { expect, test } from "@playwright/test";
 import { attachShot, expectNoViolations } from "./support/page";
 import { PREVIEW_PORT } from "./support/ports";
 
-// E16 as changed by CR-W29 decision 6: at most 350 KB of JavaScript for /, a warning over
-// 150 KB (T-F8 brings the limit back to 150 KB). Measured on the production build, gzipped,
+// E16 as changed by CR-W29 decision 6: at most 150 KB of JavaScript for /, a warning over
+// 130 KB (T-F8 brought the limit back to 150 KB). Measured on the production build, gzipped,
 // for everything / loads before the Decisions home is interactive, scripts fetched after
 // hydration included (the page is client-only, so the server's HTML names almost none).
 // KB means 1024 bytes here, not 1000.
-const LIMIT = 350 * 1024;
-const WARN = 150 * 1024;
+const LIMIT = 150 * 1024;
+const WARN = 130 * 1024;
 
 const root = join(import.meta.dirname, "..");
 
@@ -85,7 +85,7 @@ function startPreview(onSpawn: (child: ChildProcess) => void): Promise<ChildProc
   });
 }
 
-test.describe("T-F7-06: the production build (budget changed under CR-W29)", () => {
+test.describe("T-F8-01: the production build (budget back to 150 KB under CR-W29)", () => {
   test.describe.configure({ timeout: 300_000 });
   let preview: ChildProcess | undefined;
   let ready: Promise<void> | undefined;
@@ -111,7 +111,7 @@ test.describe("T-F7-06: the production build (budget changed under CR-W29)", () 
     preview?.kill();
   });
 
-  test("the JavaScript / loads before Decisions is interactive is at most 350 KB gzipped", async ({
+  test("the JavaScript / loads before Decisions is interactive is at most 150 KB gzipped", async ({
     page,
     request,
   }) => {
@@ -150,7 +150,7 @@ test.describe("T-F7-06: the production build (budget changed under CR-W29)", () 
     if (total > WARN) {
       test.info().annotations.push({
         type: "warning",
-        description: `JS is ${total} B gzipped, over 150 KB`,
+        description: `JS is ${total} B gzipped, over 130 KB`,
       });
       console.warn(`budget warning: ${total} B gzipped (over ${WARN})`);
     }
