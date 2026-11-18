@@ -33,6 +33,11 @@ Javaris, Nov 17: "remove the app shell; we're going to use the design UI from th
 - **E4 (strict TypeScript, Biome with no warnings):** `apps/web/control-room/**` is plain JSX, left out of `tsc` and Biome. One declaration file types the entry the TanStack route imports. Formatting with Biome would rewrite every line and bury the review, so it waits. "No `console.log`" still holds there, through a test. New code stays TypeScript and Biome-clean. This lasts until a later ticket brings the tree under both, or Javaris accepts the exemption as permanent.
 - **E14 (shell and sign-in before any page):** the export comes with every page at once, so sign-in follows the port. Sign-in (`docs/ui-contracts/login.md`, full rigor, C4) is the first ticket of the wiring sprint, before any screen talks to the API.
 - **E16:** see decision 6. The budget test measures everything `/` loads before Decisions is interactive, not only what the server's HTML preloads. A client-only page would otherwise pass while loading far more.
+
+**Amendment to decision 6 (Nov 17), accepted by Javaris** (to OSA: "220 KB now, 150 via wiring"): `/` is held to 220 KB gzipped from T-F8, and the limit is only ever lowered. 150 KB returns as the done-when of the wiring. If the wiring can't reach it, a CR decides with measured numbers.
+
+Why: T-F8 measured `/` at about 355 KB, and the floor once every other page's code loads on demand at about 205 to 215 KB. The framework alone is about 108 KB: React about 69 KB and TanStack Start and Router about 39 KB. `logic.js`, which holds every page's values, is about 40 KB. Splitting `logic.js` would reach about 170 to 180 KB. 150 would also need TanStack out of `/`, which reverses decision 4. Each screen's wiring ticket moves that screen's values out of `logic.js` and drops its mock data, so the wiring does that split one screen at a time.
+
 - **Server rendering:** `/` renders on the client only (`ssr: false`), because the export reads `window` and `location.hash` from its first line. T-F1 and T-F2's "the server's HTML carries the shell" retires with the shell. A skeleton paints until the app boots.
 - **Styles:** at `/`, the export's 28 stylesheets (every CSS file `src/main.jsx` imports), in its order, are the only global styles. T-F1's `tokens.css` and `app.css` stay in the repo, and their tests stay, but `/` doesn't load them: Tailwind's preflight would change the export's look.
 - **`docs/ui-contracts/shell-layout.md` and `kit-v1.9.md`** are superseded by the export itself and by `docs/ui-reference/control-room-design-fidelity.md` (once that lands on main). Each gets a line at the top saying so, in T-F7's PR (E7).
@@ -63,7 +68,7 @@ These stay as they are: `foundation.test.ts`, `gitignore.test.ts`, `hygiene.test
 `docs/agent-dispatch/frontend/sprint-07` to `sprint-10`, one ticket each, because each ticket changes files the next one changes (B7), as T-F5 and T-F6 did. They run in order:
 
 1. **T-F7:** the control room runs at `/`, and the old shell is gone.
-2. **T-F8:** `/` is back under 150 KB of JavaScript.
+2. **T-F8:** `/` loads each page's code when it opens, and is held to 220 KB of JavaScript (decision 6, as amended).
 3. **T-F9:** every screen shows and passes WCAG 2.2 AA.
 4. **T-F10:** the rules hold.
 
@@ -80,6 +85,6 @@ The wiring sprint follows, in the handoff's port order, starting with sign-in.
 
 - `/` shows the export's Decisions home, and every screen in its page registry opens by its `#/` route, looking as the export does.
 - T-F2's shell and T-F1's old home are gone, along with their tests.
-- `/` loads at most 150 KB of JavaScript, gzipped.
+- `/` loads at most 220 KB of JavaScript, gzipped, from T-F8 (decision 6, as amended), and 150 KB once the wiring is done.
 - axe finds no WCAG 2.2 AA violation on any screen.
 - `check-contract.mjs` and the no-money check run in `pnpm test`.
