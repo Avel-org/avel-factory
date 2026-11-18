@@ -2,7 +2,7 @@
 
 export function PageSkeleton({ vals }) {
   return (
-    <div className="lib-card cr-skel-card" data-ui="Skeleton" aria-busy="true" aria-label="Loading">
+    <div className="lib-card cr-skel-card" data-ui="Skeleton" role="status" aria-busy="true" aria-label="Loading">
       {" "}
       <div className="cr-skel-head">
         <span className="av-skel" data-skeleton="true" style={{ width: "180px", height: "14px" }}></span>

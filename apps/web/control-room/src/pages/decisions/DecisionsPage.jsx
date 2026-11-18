@@ -1,7 +1,8 @@
 // Compiled from the Claude Design export (AVEL Control Room). Edit freely: this is the source now.
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { css, list } from "../../lib/dc";
-import { EmptyState } from "../../kit/EmptyState";
+// The empty state art is only needed when the queue is empty (E16, T-F8).
+const EmptyState = lazy(() => import("../../kit/EmptyState").then((m) => ({ default: m.EmptyState })));
 
 export function DecisionsPage({ vals }) {
   const { decClear, decCount, decDone, decDoneCount, decRows, dp, hero, ic, queueTitle, rv } = vals;
@@ -518,6 +519,7 @@ export function DecisionsPage({ vals }) {
         {decClear ? (
           <>
             <section className="lib-card cr-panel">
+              <Suspense fallback={null}>
               <EmptyState
                 scene="nothing"
                 title="Nothing needs you"
@@ -530,6 +532,7 @@ export function DecisionsPage({ vals }) {
                 The factory is at rest. New decisions land here with what approving and rejecting will do, before you
                 tap.
               </EmptyState>
+              </Suspense>
             </section>
           </>
         ) : null}
