@@ -1,0 +1,276 @@
+# backend/sprint-03: the sprint's plan. Axis writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Rigg's tests, Soap's build, Rigg's review.
+# Check it:   scripts/render.py --check backend/sprint-03
+# Render it:  scripts/render.py backend/sprint-03   (after approval), then commit the folder.
+#
+# Three tickets, each a full session, in Javaris's approved build order (Nov 17), one builder at a time (B7):
+#   T-B8  platform hardening and the middleware services (backlog a, b, c, d, e; Step 1 items 2 and 4)   ~75 min  full
+#   T-B9  sign-in: Better Auth, the seed, lockout, and the caller (Step 1 item 5, test 7)                 ~90 min  full, new dependency
+#   T-B10 step-up and CLI login: routes 1 to 3 (items 6 and 7; tests 5, 8, 9)                             ~90 min  full
+# T-B11 (routes 4 and 5, the CLI session as a caller; tests 2 and 4, the rest of 9) opens sprint-04: render.py refuses
+# two tickets in one sprint that share a file, and it would share T-B10's cli/**, audit/** and router.ts.
+# Bigger tickets, per Javaris (Nov 17, via OSA): "lets stop merging and commiting small amounts".
+#
+# For Javaris, with this plan:
+# 1. Session limit: T-B9 and T-B10 likely run past scripts/agents/limits.json (60 min, 80 turns).
+#    Axis asks for 90 min and 120 turns for this sprint's build sessions. If you say no, each of the two
+#    splits in half (B9: auth and lockout / seed and caller; B10: step-up / CLI login).
+# 2. Step order (E9): AGENTS.md's Step 1 order puts tests 10 and 11 and spike 2 (DBOS) before auth.
+#    Your approved order puts auth, step-up and CLI login first, as Backend modules section 8 ("outside in") did.
+#    Approving this plan also approves that change. The one-line AGENTS.md edit is in this plan's PR.
+# 3. New dependency (E5): better-auth, MIT licence, in T-B9 only (the lockfile changes only there).
+#    AGENTS.md fixes Better Auth as the stack, and nothing in the workspace does email and password sessions.
+#    Soap pins an exact version at least two weeks old and reports its installed size.
+# 4. One open design point, for T-B10: routes 1 and 3 are called by the CLI before it has a session, but
+#    idempotency_keys.principal is a user or credential id (DATABASE.md). Axis proposes the device login's id as
+#    the principal for both. Route 3 already answers any replay with 409 TOKEN_REPLAYED and stores nothing.
+#    Say yes, or ask for a CR.
+# Backlog, not in this sprint: T-B11 (sprint-04, first), the T-B5 relock P3 and t-b7-rigg-01 (lock-check tests), the contract-test timeout
+# (needs a CR and Zero), the declined db flake (CR-40). After T-B11: tests 10 and 11, spike 2 (DBOS), the jobs engine,
+# event consumers and the factory repo loader, which closes Step 1.
+
+lane = "backend"
+sprint = "sprint-03"
+step = 1
+title = "Step 1, cycle 3: a hardened platform, sign-in, step-up and CLI login"
+goals = [
+  "Nothing the Db service does can hang a request, crash the process on a dropped connection, or log a query's values",
+  "The operator can sign in with email and password, a second account can't be made, and brute force locks out",
+  "The CLI can log in through a device code the operator approves with step-up",
+  "Every write in this sprint takes an Idempotency-Key, replays safely, and leaves one activity row",
+]
+done_when = [
+  "Step 0 and Step 1 plan, Step 1 test 5: the 6th device-login start in a minute (route 1) is 429",
+  "Step 1 test 7: the 11th failed sign-in in 15 minutes is locked out; sign-up is refused; nothing creates a second user",
+  "Step 1 test 8: a wrong password gets no grant; a grant reused, used for another action or target, from another session, or after 5 minutes is refused",
+  "Step 1 test 9, its first half: approval needs step-up; polling returns the session once; a replayed poll is 409 and never returns the token (expiry and revoke come with T-B11)",
+  "Step 1 test 13, for this sprint's writes: each leaves exactly one activity row",
+]
+sources = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 items 2 (middleware order), 4 (idempotency), 5 (Better Auth), 6 (step-up), 7 (CLI login), 8 (activity log); the rate limits; tests 2, 4, 5, 7, 8, 9, 13" },
+  { path = "docs/design/CR-31 Step 1 without the sample route and approval page.md", why = "how tests 2, 4 and 5 are proved on the CLI login routes" },
+  { path = "docs/design/Backend modules and build plan.md", why = "section 8: auth decisions, the order inside Step 1, Breach's attacks; module table: platform owns Better Auth's tables, cli_sessions, step_up_grants, idempotency_keys; audit owns activity_log" },
+  { path = "docs/design/API routes.md", why = "routes 1 to 5 and the rules on every write" },
+  { path = "docs/design/Build rules.md", why = "C4 (full rigor), E5 (dependencies), E6 (no secrets), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7.0.2, Biome, Vitest 5; Hono 4.13.16, oRPC 1.16.2, Zod 4, Effect 4.1.1 inside packages/server; Drizzle 0.45.4 and node-postgres 8.23.1; Postgres 17"
+layout = "packages/contract, packages/db (schema and migrations), packages/server (src/platform: app, effect-handler, errors, ids, logger, request-id; src/platform/db: db, tx, events, errors from T-B3 and T-B4), tools/repo-checks, apps/web"
+conventions = [
+  "AGENTS.md is the rulebook: API rules (DTOs, errors, writes, step-up, rate limits) and Writing Effect rules 1 to 10",
+  "packages/server/src/platform/errors.ts holds the one table from a tagged error to a contract code; a tag with no row doesn't compile through effectHandler (T-B1)",
+  "Db.withTransaction gives a program Tx and maps database violations to tagged errors (T-B3, T-B4); Events.append needs Tx",
+  "Tests run against real Postgres from scripts/pg-local.sh; test/db/support/database.ts makes a migrated database per file (T-B3)",
+]
+notes = [
+  "One builder at a time (B7): T-B8, then T-B9, then T-B10. Rigg writes the next ticket's tests while Soap builds, once the ticket it depends on is merged",
+  "All three are full rigor (C4: tokens, sign-in, step-up, sessions): Javaris merges, and Axis's second review follows the security checklist",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B8"
+slug = "platform-hardening"
+title = "Platform hardening and the middleware services: safe defect logs, pool timeouts, an idempotency store and rate limits"
+goal = "A database outage or a bad query can't hang a request, crash the server or put a query's values in the log, and the idempotency store and rate limiter the next routes need exist."
+rigor = "full"
+refs = [
+  "Axis's T-B4 second review: P2s (a) Drizzle params in the defect log, (d) pool timeouts, (e) the pool's error handler",
+  "t-b3-rigg-02 (lc_messages) and t-b3-rigg-03 (body.message)",
+  "Step 0 and Step 1 plan, Step 1 items 2.4 and 4, and the rate limits section",
+  "AGENTS.md, Writing Effect rules 4, 5 and 6",
+]
+depends_on = []
+may_change = [
+  "packages/server/src/platform/db/db.ts",
+  "packages/server/src/platform/errors.ts",
+  "packages/server/src/platform/idempotency.ts",
+  "packages/server/src/platform/rate-limit.ts",
+]
+must_not_change = [
+  "packages/server/src/platform/db/errors.ts",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/logger.ts",
+  "packages/server/package.json",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/agent-dispatch/backend/sprint-02/findings/t-b3-rigg-01.md", why = "why the defect log carries Drizzle's params (a DrizzleQueryError's message is the query and its params)" },
+  { path = "packages/server/src/platform/db/db.ts", why = "T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping" },
+  { path = "packages/server/src/platform/effect-handler.ts", why = "line 76 logs Cause.pretty for a defect; read only" },
+  { path = "packages/server/src/platform/logger.ts", why = "the JSON logger that writes the cause; read only" },
+  { path = "packages/server/src/platform/db/errors.ts", why = "the FK split reads Postgres's English message (t-b3-rigg-02); read only" },
+  { path = "packages/db/src/schema/platform.ts", why = "idempotency_keys: (principal, key), route, body_sha256, status in_progress or completed, http_status, response, expires_at" },
+  { path = "packages/contract/src/errors.ts", why = "IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS, TOKEN_REPLAYED, TOO_MANY_REQUESTS" },
+  { path = "docs/design/DATABASE.md", why = "idempotency_keys and its purge (after expires_at); a response carrying a secret or token is never stored" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Defect log, fixed at the source in db.ts: no DrizzleQueryError leaves the Db service. An unmapped one is re-raised as a defect carrying only the pg error's code and message (or the query text without params), so effectHandler's log of the cause never holds a bound value. effect-handler.ts and logger.ts don't change",
+  "Pool: connect timeout and statement timeout come from Config (DATABASE_CONNECT_TIMEOUT_MS, DATABASE_STATEMENT_TIMEOUT_MS) with defaults of 5 s and 30 s. A connect that times out reaches the caller as a defect (500), not a hang, and the request's interruption still ends it. pool.on('error') logs through the logger and never crashes the process",
+  "lc_messages: the Db layer checks `show lc_messages` once when it's built and fails to build (a defect at boot) unless it is C, POSIX or starts with en, because the FK split reads English text",
+  "Idempotency store (Step 1 item 4) as an Effect service over idempotency_keys, through Db, with time from Clock. begin(principal, key, route, bodySha256) gives one of: new (row inserted in_progress, expires in 24 hours), replay (completed with the same route and body: the stored status and response), reused (another body or route: IdempotencyKeyReused, 409), in progress (IdempotencyInProgress, 409). complete(principal, key, status, response, { sensitive }) stores the response, or for a sensitive response stores no response and marks it so a replay fails with TokenReplayed (409). An expired row counts as absent. It is wired into routes in T-B10 and T-B11, not here",
+  "Rate limiter (item 2.4): an in-memory Effect service, a fixed window per (name, key), limits from Config with the plan's defaults (sign-in 5 a minute per email and per IP; device-login starts 5 a minute; webhook 60 a minute), time from Clock. Over the limit is TooManyRequests (429). It is applied in T-B9 and T-B10, not here",
+  "New tagged errors get their rows in platform/errors.ts: IdempotencyKeyReused, IdempotencyInProgress, TokenReplayed, TooManyRequests",
+  "No new dependency. No route changes, no app.ts change",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/platform-hardening/**"]
+behaviours = [
+  "a defect thrown by a Drizzle query is logged with the request ID and the pg error's code, and the log line contains no bound value ('params:' and the inserted value are absent); the response is a 500 whose body has the contract's message (body.message equals errorMap's text) and no database text",
+  "with Postgres unreachable (a closed port), withTransaction fails as a defect within the configured connect timeout instead of hanging, and the request's interruption ends it",
+  "a statement longer than the configured statement timeout ends as a defect, and the pool client is released",
+  "an idle pool client's error (its backend terminated with pg_terminate_backend) is logged and doesn't crash the process; the next withTransaction works",
+  "building the Db layer against a server whose lc_messages isn't English fails with a message naming lc_messages (set it per database for the test)",
+  "idempotency: a first begin is new; after complete, the same key, route and body replays the stored status and response; another body is 409 IDEMPOTENCY_KEY_REUSED; a second begin before complete is 409 IDEMPOTENCY_IN_PROGRESS; one principal's key never answers another's",
+  "idempotency: a sensitive response is never stored (the row has no response) and its replay is 409 TOKEN_REPLAYED; a key older than 24 hours (TestClock) is treated as new",
+  "rate limit: the 6th call in a minute for one key is 429 TOO_MANY_REQUESTS; another key isn't affected; after the window (TestClock) it passes again",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B9"
+slug = "sign-in"
+title = "Sign-in: Better Auth with email and password for one operator, lockout, the seed, and the caller"
+goal = "The operator signs in with email and password; sign-up is off, a second user can't be made, brute force locks out, and every procedure knows who is calling."
+rigor = "full"
+refs = [
+  "Step 0 and Step 1 plan, Step 1 item 5 and test 7; the rate limits section (sign-in)",
+  "Backend modules and build plan, section 8 (auth decisions, Breach's attacks)",
+  "Build rules E5 (better-auth, approved in this plan) and E6",
+]
+depends_on = ["T-B8"]
+may_change = [
+  "packages/server/src/platform/auth/**",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/seed.ts",
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+]
+must_not_change = [
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/idempotency.ts",
+  "packages/server/src/platform/rate-limit.ts",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/design/Backend modules and build plan.md", why = "section 8: one operator, password sign-in and step-up, passkeys later, the password never in the repo; Breach's attacks" },
+  { path = "packages/db/src/schema", why = "users and the auth_* tables Better Auth uses through the Drizzle adapter (the names need a mapping: Step 1 plan, risks)" },
+  { path = "packages/server/src/platform/rate-limit.ts", why = "T-B8's limiter: sign-in is 5 a minute per email and per IP" },
+  { path = "packages/server/src/platform/app.ts", why = "where /api/auth/* mounts, outside the contract, in the middleware order" },
+  { path = "packages/server/src/platform/effect-handler.ts", why = "where the caller joins the request's services" },
+  { path = "docs/design/DATABASE.md", why = "users, auth_sessions, auth_accounts, auth_verifications; clients.kind and the one internal client (CR-13)" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "New dependency, approved in this plan (E5): better-auth, MIT. Pin an exact version at least two weeks old, and report its version and installed size. The lockfile changes only in this ticket",
+  "Email and password only. Sign-up is off. No GitHub sign-in, no passkeys (their table stays unused). Better Auth's tables are the schema's users and auth_* through the Drizzle adapter's name mapping; no schema change. If the schema can't hold what Better Auth needs, stop with needs-cr",
+  "Lockout: 10 failed sign-ins in 15 minutes locks the account for 15 minutes. Sign-in is also rate-limited at 5 a minute per email and per IP through T-B8's limiter",
+  "The seed (packages/server/src/seed.ts, run by hand on the host) creates the operator from AVEL_OPERATOR_EMAIL and AVEL_OPERATOR_PASSWORD and AVEL's internal client (CR-13), and is safe to run twice. The password is never in the repo; tests make a throwaway one. List the two variable names in the build report; Axis adds them to .env.example",
+  "The caller: a Caller service (the operator's user id and the session) resolved from the web session cookie, provided to every procedure through the request scope. No session means no Caller; routes that need one arrive in T-B10",
+  "The request scope also carries the client IP (for the sign-in limit) and the request's Idempotency-Key header, as services a procedure can read, so T-B10 needs no change to app.ts or effect-handler.ts",
+  "Cookies: httpOnly, Secure outside tests, SameSite=Lax; the session id rotates at sign-in (session fixation, Breach)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/auth/**"]
+behaviours = [
+  "the seeded operator signs in with the right password and gets a session cookie; a wrong password is refused with no session",
+  "sign-up is refused, and no route or a second seed run creates a second user (users count stays 1)",
+  "the 11th failed sign-in within 15 minutes is locked out even with the right password, and it unlocks after 15 minutes",
+  "the 6th sign-in attempt in a minute for one email is 429, and so is the 6th from one IP",
+  "a procedure run with the session cookie sees Caller with the operator's user id; without it there is no Caller; a procedure can read the request's Idempotency-Key header and client IP",
+  "the session id after sign-in differs from any session id the client presented before it (no fixation)",
+  "the seed is idempotent: run twice, one operator and one internal client",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B10"
+slug = "step-up-cli-login"
+title = "Step-up grants and CLI login: start a device login, approve it with step-up, poll for the session (routes 1 to 3)"
+goal = "The CLI logs in with a device code the operator approves in the web app with their password again, and gets its session exactly once."
+rigor = "full"
+refs = [
+  "Step 0 and Step 1 plan, Step 1 items 6 and 7, tests 5, 8 and 9; the rate limits section (CLI login)",
+  "API routes.md, routes 1 to 3 and the rules on every write",
+  "CR-31 (test 5 on route 1)",
+]
+depends_on = ["T-B9"]
+may_change = [
+  "packages/server/src/platform/step-up/**",
+  "packages/server/src/platform/cli/**",
+  "packages/server/src/audit/**",
+  "packages/server/src/platform/router.ts",
+  "packages/server/src/main.ts",
+]
+must_not_change = [
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/idempotency.ts",
+  "packages/server/src/platform/rate-limit.ts",
+  "packages/server/src/platform/auth/**",
+  "packages/server/package.json",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "packages/contract/src/routes/auth.ts", why = "routes 1 to 3, their inputs, outputs and the stepUp meta" },
+  { path = "docs/design/API routes.md", why = "routes 1 to 3; route 3 is never replayable and never returns the token twice" },
+  { path = "packages/db/src/schema", why = "step_up_grants, device_logins, cli_sessions (token stored as a hash), activity_log" },
+  { path = "packages/server/src/platform/idempotency.ts", why = "T-B8's store: every write takes an Idempotency-Key; route 3's response is sensitive" },
+  { path = "packages/server/src/platform/rate-limit.ts", why = "T-B8's limiter: 5 device-login starts a minute; polling no faster than every 5 seconds" },
+  { path = "packages/server/src/platform/auth", why = "T-B9's Caller and the password check step-up repeats" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Step-up (item 6): the operator's password again, for one action on one target, bound to the session; single-use, 5 minutes (Clock), consumed in one atomic update. Only credential actions ask; in this step that's route 2. How the web obtains a grant and how route 2 presents it: follow the contract's stepUp meta and API routes.md; if they don't say, stop with needs-cr",
+  "Route 1 (start): makes a device code and a short user code, rate-limited at 5 a minute (429). Route 2 (approve): needs the Caller and a valid step-up grant for this user code. Route 3 (poll): returns the session token once after approval, stores only its hash, polling faster than every 5 seconds is 429",
+  "Idempotency on every write through T-B8's store. Routes 1 and 3 have no session yet: their principal is the device login's id (Axis's proposal in this plan, pending Javaris). Route 3's response carries a token, so it's never stored and a replay is 409 TOKEN_REPLAYED",
+  "Activity log (item 8, audit module): every write in this ticket leaves exactly one activity_log row (who, what, target), in the same transaction as the change",
+  "DTOs through one mapper per object; outputs are validated against the contract (AGENTS.md API rules)",
+  "Routing: platform/router.ts composes the health router and routes 1 to 3; main.ts passes it to createApp. app.ts doesn't change",
+  "E13: each route gets its happy path with the DTO checked, the error body with requestId, and the idempotent replay",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/cli-login/**"]
+behaviours = [
+  "route 1: a start returns a device code and user code matching the DTO; the 6th start in a minute is 429 with the error body and requestId (Step 1 test 5)",
+  "step-up: a wrong password gets no grant; a grant works once; reused, used for another action or another target, from another session, or after 5 minutes (TestClock) it is 403 STEP_UP_REQUIRED (Step 1 test 8)",
+  "route 2: approval without a grant is 403 STEP_UP_REQUIRED; with one it approves the device login; two concurrent approvals of one user code approve once",
+  "route 3: before approval it says pending; after approval it returns the session token once, and cli_sessions stores only its hash; a replayed poll is 409 TOKEN_REPLAYED and never returns the token; polling faster than every 5 seconds is 429 (Step 1 test 9)",
+  "routes 1 to 3: a replay with the same key and body returns the first response (except route 3), a different body is 409 IDEMPOTENCY_KEY_REUSED",
+  "each write leaves exactly one activity_log row naming the action and target, and a failed write leaves none (Step 1 test 13)",
+]
