@@ -185,6 +185,9 @@ else
   # A finished session ends itself: the Stop hook (scripts/hooks/session.py) raises the flag once the
   # report is final, and 15 seconds later, if no new turn has lowered it, the session is closed.
   export AVEL_DONE_FLAG="$state/logs/$lane-$sprint-$doc.a$n.done" AVEL_KIND="$KIND"
+  # A report already on the branch (an earlier attempt's) isn't this attempt's: the hook compares against it.
+  AVEL_REPORT_START=$( [[ -f $wt/$REPORT ]] && sha256sum "$wt/$REPORT" | cut -d' ' -f1 || true )
+  export AVEL_REPORT_START
   rm -f "$AVEL_DONE_FLAG"
   (
     while sleep 5; do
