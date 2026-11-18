@@ -10,3 +10,4 @@ second line for the ticket ending (F2 relock), at the new tip. Lines are only ev
 
 <!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ abc1234 -->
 <!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ def5678 (F2 relock) -->
+- T-B8: packages/server/test/platform-hardening/support.ts, packages/server/test/platform-hardening/defect-log.test.ts, packages/server/test/platform-hardening/pool-timeouts.test.ts, packages/server/test/platform-hardening/backend-death.test.ts, packages/server/test/platform-hardening/lc-messages.test.ts, packages/server/test/platform-hardening/idempotency.test.ts, packages/server/test/platform-hardening/rate-limit.test.ts @ 3b5761192419e80761795caf1ac24b677721a369
