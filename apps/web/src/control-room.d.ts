@@ -1,4 +1,4 @@
-declare module "../../control-room/src/main" {
+declare module "*/control-room/src/main" {
   import type { ComponentType } from "react";
 
   export interface ControlRoomProps {

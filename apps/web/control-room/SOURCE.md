@@ -124,5 +124,5 @@ Copied byte for byte from `/mnt/c/Users/javar/Desktop/avel-control-room` (the de
 ## Changed for apps/web
 
 - `src/app/ControlRoom.jsx`: React 19 drops defaultProps, so the defaults are parameter defaults, and showDock defaults to import.meta.env.DEV so the Prototype dock shows only in a dev build.
-- `src/main.jsx`: apps/web's route mounts the control room, so this entry keeps the 29 stylesheets in the same order and exports ControlRoom instead of calling createRoot.
+- `src/main.jsx`: apps/web's route mounts the control room, so this entry keeps the 28 stylesheets in the same order and exports ControlRoom instead of calling createRoot.
 - `tools/check-contract.mjs`: the three console-log calls are process.stdout.write (none under control-room/); console.error is unchanged.
