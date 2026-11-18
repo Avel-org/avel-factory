@@ -78,7 +78,8 @@ notes = [
   "timeout-minutes: 30 for this job. No retries, no continue-on-error, no `|| true`: a red test makes the job red (H5)",
   "Leave the existing ci job's steps as they are",
   "Making the new job a required check is a branch-protection setting, which Javaris sets on GitHub. Say so in the report",
-  "If the suite fails in CI where it passes locally (a port, a missing browser dependency, the budget's figure), don't touch the tests or the config: report it with the run's log. The budget figure CI measures is the one that counts (CR-W29 decision 6): if it's over 220 KB, stop with needs-cr",
+  "If the suite fails in CI where it passes locally (a port, a missing browser dependency, the budget's figure), don't touch the tests or the config: report it with the run's log. The budget figure CI measures is the one that counts (CR-W29 decision 6): if it's over 220 KB, stop with needs-cr. Since T-F8, / is 225,154 B gzipped of 225,280 B, which is over the 200 KB warning, so the spec prints a \"budget warning: <n> B\" line. Copy the CI run's figure into the report and the PR text, as a number",
+  "Review, until T-B7 is on main (Axis's interim rule, adopted for this lane Nov 17): run `git diff main...HEAD --name-only` on the PR's full diff. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1 out-of-territory finding, even when CI's lock check passed",
 ]
 
 [ticket.tests]
