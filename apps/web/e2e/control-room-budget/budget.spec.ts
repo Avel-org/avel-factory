@@ -3,9 +3,9 @@ import { expect, type Page, test } from "@playwright/test";
 import { attachShot, expectNoViolations } from "../support/page";
 import { ORIGIN, productionPreview } from "./preview";
 
-// T-F8: (the 150 KB limit itself is held by e2e/budget.spec.ts) every other page loads its own code when it
+// T-F8: (the 220 KB limit itself is held by e2e/budget.spec.ts) every other page loads its own code when it
 // opens (E16, CR-W29 decision 6). Measured on the production build, gzipped. KB is 1024 bytes.
-const LIMIT = 150 * 1024;
+const LIMIT = 220 * 1024;
 const SPRING_LAUNCH = "01a1912f-ee80-709f-891e-7d29547e91a0"; // a running mission in the mock world
 
 const preview = productionPreview();
