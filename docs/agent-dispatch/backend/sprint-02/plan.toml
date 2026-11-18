@@ -3,15 +3,17 @@
 # Check it:   scripts/render.py --check backend/sprint-02
 # Render it:  scripts/render.py backend/sprint-02   (after approval), then commit the folder.
 #
-# Five tickets, about 4 hours 15 minutes of building, one builder at a time (B7):
+# Six tickets, about 5 hours of building, one builder at a time (B7):
 #   T-B2 dependencies and @effect/tsgo (CR-39)            ~45 min  standard
 #   T-B3 database errors to contract codes (Step 1 item 3)  ~50 min  full (platform/db)
 #   T-B4 the Db service, spike 1 check 2 (Step 1 test 6)    ~70 min  full (events and seq, C4)
 #   T-B5 lock-check hardening (T-B0 P2, P3; F2 relock)      ~60 min  standard
 #   T-B6 the contract's defect code (CR-38)                 ~20 min  standard, contract
+#   T-B7 lock check: the tests report after the lock        ~45 min  standard, after T-B5
 # T-B6: CR-38 accepted Nov 17, and Zero signed off (I3).
 # Spike 1 check 5 (the reaper under TestClock) moved to the jobs and events tests before spike 2 (Javaris, Nov 17).
 # If the cycle has to be shorter, T-B5 is the one to move.
+# T-B7: added Nov 17 from Zero's input on PR #30 (T-F7 red on H6 after a legitimate F2 cycle); Javaris approved it.
 
 lane = "backend"
 sprint = "sprint-02"
@@ -328,3 +330,51 @@ behaviours = [
   "CONTRACT_VERSION is 1.0.1",
   "the generated OpenAPI document lists INTERNAL_SERVER_ERROR as a 500 error code",
 ]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B7"
+slug = "lock-check-tests-report"
+title = "Lock check: the tests report may change after the lock, so an F2 cycle passes without a rebuild"
+goal = "A ticket that goes through a test-dispute and a relock passes the lock check as pushed, with no force-pushed rebuild of its branch."
+rigor = "standard"
+refs = ["Build rules H6 and F2", "Zero's input on PR #30 (T-F7), Nov 17", "Javaris, Nov 17: approve T-B7"]
+depends_on = ["T-B5"]
+may_change = ["tools/repo-checks/src/**"]
+must_not_change = [
+  "tools/repo-checks/package.json",
+  "tools/repo-checks/test/helpers.ts",
+  ".github/workflows/locks.yml",
+  "scripts/render.py",
+]
+context = [
+  { path = "tools/repo-checks/src/check-locks.ts", why = "the check as T-B5 left it: merges, the build doc by branch, the F2 relock line" },
+  { path = "tools/repo-checks/test/helpers.ts", why = "the locked interface (T-B0) and the scratch-repo helpers; read only" },
+  { path = "tools/repo-checks/test/locks-merges.test.ts", why = "T-B5's relock tests, which must still pass unchanged" },
+  { path = "docs/agent-dispatch/backend/sprint-02/agent-soap-t-b5-build.md", why = "a build doc's front matter: after: names the tests doc, whose own report: is the path to exempt" },
+  { path = "docs/design/Build rules.md", why = "F2 (the test-dispute, the checker's fix, the relock) and H6 (the lock check)" },
+]
+verify = [
+  "pnpm --filter @avel/repo-checks test",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "The exempt path: the build doc's after: names the tests task doc; that doc's report: front matter is the tests completion report. Exempt exactly that one path from the Territory and the lock, in every commit after the first lock sha. No other report, task doc or docs path is exempt",
+  "Why: the checker commits its report with the F2 fix, and the kit rewrites it to status done after the lock so a retry unblocks the waiting build. Today both turn the check red (PR #30: Fenn's report commits named 'outside the Territory')",
+  "A checker commit at or before a relock line's sha may change that line's locked paths plus the tests report, and nothing else. Any other file in it still fails and is named. T-B5's rules for the relock line itself don't change: a locks.md-only commit, the same paths or more, a sha that descends from the first",
+  "Builder commits are held to the Territory and the lock exactly as before. CI can't tell who changed the tests report, so the reviewer checks that file's history (F2)",
+  "The T-B0 interface in helpers.ts stays: same script, environment and messages. T-B5's tests pass unchanged",
+  "Reproduction for the fixture's shape: PR #30's pushed head 84bd7c2 (red on H6) against the rebuilt 7bcca95 (green). Both are in the local object store. Model the scratch repo on 84bd7c2's commit order; don't reference those shas from the test",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["tools/repo-checks/test/locks-tests-report.test.ts"]
+behaviours = [
+  "a T-F7-shaped history passes: lock, a builder commit, a checker commit changing the locked test and the tests report, a locks.md-only relock line at that sha, a commit changing only the tests report to status done, then builder commits inside the Territory",
+  "a commit after the lock that changes only the tests report passes, with or without a relock",
+  "a checker commit before the relock that changes the locked test and a file that is neither locked nor the tests report fails, and names that file",
+  "a builder commit that changes another report (the review report, or another ticket's tests report) still fails and names it",
+  "a builder commit that changes a locked test after the relock still fails and names the file, even when the same commit also changes the tests report",
+]
+
