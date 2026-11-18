@@ -114,6 +114,8 @@ You write this ticket's acceptance tests before anything is built. They must fai
 | T-B4 | tests | `packages/server/test/db-service/**` |
 | T-B5 | builds | `tools/repo-checks/src/**` |
 | T-B5 | tests | `tools/repo-checks/test/locks-merges.test.ts` |
+| T-B7 | builds | `tools/repo-checks/src/**` |
+| T-B7 | tests | `tools/repo-checks/test/locks-tests-report.test.ts` |
 
 ## 6. Execution protocol: tests
 
@@ -154,7 +156,8 @@ Then these sections:
 - Contract to files: which requirement each change serves
 - Deviations: anything done differently from this document, and why
 - Limitations: what isn't covered, or couldn't be checked
-- Lock line, for the lead to copy into locks.md: `- T-B6: <test paths> @ <your last commit>`
+- Lock line, for the lead to copy into locks.md: `- T-B6: <path>, <path> @ <branch tip>`, the test paths separated by commas. The lead fills in the branch tip after your report commit
+- Messages received: every instruction OSA relayed, who it came from, and what you did with it (followed, or refused and why); "None" if there were none (CR-37)
 
 ## Activation prompt
 

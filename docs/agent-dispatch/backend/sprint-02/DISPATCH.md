@@ -27,6 +27,7 @@ Lead: Axis · builder: Soap · checker: Rigg · Step 1
 | T-B4 | The Db service: withTransaction, Tx, Events.append and commitWithEvents (spike 1 check 2) | full | `t/B4-db-service` | T-B3 |
 | T-B5 | Lock check: merge commits are checked, the build doc is found by the PR's branch, and an F2 relock line is honoured | standard | `t/B5-lock-check-merges` | — |
 | T-B6 | The contract's defect code: INTERNAL_SERVER_ERROR, 500, no details; contract 1.0.1 (CR-38) | standard | `t/B6-defect-code` | — |
+| T-B7 | Lock check: the tests report may change after the lock, and a merged side branch's commits are checked | standard | `t/B7-lock-check-tests-report` | T-B5 |
 
 ## Dispatches
 
@@ -49,6 +50,9 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | `agent-rigg-t-b6-test-unit.md` | Rigg | tests | sonnet |
 | `agent-soap-t-b6-build.md` | Soap | build | sonnet |
 | `agent-rigg-t-b6-review.md` | Rigg | review | sonnet |
+| `agent-rigg-t-b7-test-unit.md` | Rigg | tests | sonnet |
+| `agent-soap-t-b7-build.md` | Soap | build | sonnet |
+| `agent-rigg-t-b7-review.md` | Rigg | review | sonnet |
 
 ## Territory map
 
@@ -59,6 +63,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | T-B4 | `packages/server/src/platform/db/db.ts`, `packages/server/src/platform/db/tx.ts`, `packages/server/src/platform/db/events.ts`, `packages/server/src/platform/db/index.ts` | `packages/server/test/db-service/**` |
 | T-B5 | `tools/repo-checks/src/**` | `tools/repo-checks/test/locks-merges.test.ts` |
 | T-B6 | `packages/contract/src/errors.ts`, `packages/contract/src/version.ts`, `docs/generated/**` | `packages/contract/test/defect-code.test.ts` |
+| T-B7 | `tools/repo-checks/src/**` | `tools/repo-checks/test/locks-tests-report.test.ts` |
 
 ## Merge order
 
@@ -69,6 +74,7 @@ One ticket at a time, squash-merged with `Refs: <ticket>` (H1 to H3):
 3. T-B4
 4. T-B5
 5. T-B6
+6. T-B7
 
 ## Commands
 

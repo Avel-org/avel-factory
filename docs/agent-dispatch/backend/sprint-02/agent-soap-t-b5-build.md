@@ -131,6 +131,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 | T-B4 | tests | `packages/server/test/db-service/**` |
 | T-B6 | builds | `packages/contract/src/errors.ts`, `packages/contract/src/version.ts`, `docs/generated/**` |
 | T-B6 | tests | `packages/contract/test/defect-code.test.ts` |
+| T-B7 | builds | `tools/repo-checks/src/**` |
+| T-B7 | tests | `tools/repo-checks/test/locks-tests-report.test.ts` |
 
 ## 6. Execution protocol: build
 
@@ -169,6 +171,7 @@ Then these sections:
 - Contract to files: which requirement each change serves
 - Deviations: anything done differently from this document, and why
 - Limitations: what isn't covered, or couldn't be checked
+- Messages received: every instruction OSA relayed, who it came from, and what you did with it (followed, or refused and why); "None" if there were none (CR-37)
 
 ## Activation prompt
 
