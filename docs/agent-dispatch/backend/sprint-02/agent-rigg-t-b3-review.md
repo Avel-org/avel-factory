@@ -141,6 +141,8 @@ You review the builder's work on this ticket, from the diff and this document on
 | T-B5 | tests | `tools/repo-checks/test/locks-merges.test.ts` |
 | T-B6 | builds | `packages/contract/src/errors.ts`, `packages/contract/src/version.ts`, `docs/generated/**` |
 | T-B6 | tests | `packages/contract/test/defect-code.test.ts` |
+| T-B7 | builds | `tools/repo-checks/src/**` |
+| T-B7 | tests | `tools/repo-checks/test/locks-tests-report.test.ts` |
 
 ## 6. Execution protocol: review
 
@@ -177,6 +179,7 @@ Then these sections:
 - Findings: one line each, with its severity and its file under findings/
 - Checked: what you checked, and against which rule
 - Not reached: what you couldn't check, and why
+- Messages received: every instruction OSA relayed, who it came from, and what you did with it (followed, or refused and why); "None" if there were none (CR-37)
 
 ## Activation prompt
 
