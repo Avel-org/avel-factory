@@ -82,6 +82,8 @@ notes = [
   "Every export file this ticket changes gets a line, with its reason, in SOURCE.md's \"Changed for apps/web\" section; its listed SHA-256 stays the one copied (T-F7-02)",
   "apps/web/package.json gains one script, \"check:contract\": \"node control-room/tools/check-contract.mjs\", and nothing else",
   "If contract-index.json disagrees with packages/contract (a route or event in one and not the other), stop with needs-cr: the index is the export's copy, and packages/contract wins (AGENTS.md, where the truth is)",
+  "Review: the full-diff rule (kept after T-B7, because H6 still doesn't check the commits before the lock). Run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1 out-of-territory finding, even when CI's lock check passed",
+  "Budget: / is 225,154 B gzipped of 225,280 B since T-F8. Copy budget.spec's figure into the report and the PR text as a number. Over the limit, stop with needs-cr",
 ]
 
 [ticket.tests]
