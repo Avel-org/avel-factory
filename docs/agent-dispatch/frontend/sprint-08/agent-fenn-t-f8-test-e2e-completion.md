@@ -1,44 +1,41 @@
 status: done
 ticket: T-F8
 
-# T-F8 · tests · Fenn: completion report
+# T-F8 · tests · Fenn: completion report (attempt 2)
 
 ## Pre-flight
-Node 22+ was not on PATH; I used nvm's v24.22.2. `pnpm build` was run first (workspace packages must exist for vite).
-- `vite build`: ok (builds; first-load JS is far over 150 KB, as expected on the start commit)
+Node from nvm (not on PATH by default); `pnpm install --frozen-lockfile` and `pnpm build` run first.
+- `vite build`: ok (run by the budget test itself)
 - `pnpm typecheck`: ok
-- `pnpm lint`: ok (2 Biome warnings: `innerText` suggestions in my spec, not errors)
+- `pnpm lint`: ok (2 Biome warnings, `innerText` suggestions, no errors)
 - `vitest run`: 6 files, 30 tests pass
-- `playwright test` (whole suite): 9 passed, 3 failed. The 3 failures are the 3 new tests, which is the point.
-- The pair `vitest run && playwright test` therefore exits non-zero on the start commit, as required for a tests dispatch.
+- `playwright test`: 9 passed, 3 failed (the 3 T-F8 tests, as intended). So `vitest run && playwright test` exits non-zero on the start commit.
+- Postgres: started with pg-local.sh; these tests don't use it.
 
-## Failing first (start commit 53b12c8)
-- T-F8-01 `e2e/budget.spec.ts`: `Expected: <= 153600  Received: 354051` (gzipped JS for /: index 110,551 + main 226,744 + icons 6,435 + world 9,000 + routes 347 B)
-- T-F8-02 `e2e/control-room-budget/budget.spec.ts`: `#/library fetched no script of its own the first time. Expected: > 0  Received: 0` (nothing is split; every page is in the first load)
-- T-F8-03 same file, 390x844 on slow 4G: `JS fetched before the first card ... Expected: <= 153600  Received: 353077`
+## Failing first (start commit 50ab754 plus a1 tests; a2 limit 220 KB = 225,280 B)
+- T-F8-01 `e2e/budget.spec.ts`: gzipped JS for / is 354,051 B (index 110,551 + main 226,744 + icons 6,435 + world 9,000 + routes 347); limit 225,280.
+- T-F8-02 `e2e/control-room-budget/budget.spec.ts`: `#/library fetched no script of its own the first time. Expected: > 0 Received: 0`.
+- T-F8-03 same file, 390x844 slow 4G: `JS fetched before the first card ... Expected: <= 225280 Received: 353077`.
 
 ## What changed
-- `apps/web/e2e/budget.spec.ts`: LIMIT 350 KB to 150 KB, WARN 150 KB to 130 KB, comments and titles updated (T-F8-01). Its other tests are unchanged.
-- `apps/web/e2e/control-room-budget/preview.ts`: helper that builds once and serves `vite preview`.
-- `apps/web/e2e/control-room-budget/budget.spec.ts`: T-F8-02 and T-F8-03.
+- Commit a5df9d0: `apps/web/e2e/budget.spec.ts`: LIMIT 150 to 220 × 1024, WARN 130 to 200 × 1024.
+- `apps/web/e2e/control-room-budget/budget.spec.ts`: LIMIT 150 to 220 × 1024.
+- Nothing else in a1's tests changed (T-F8-04).
 
 ## Contract to files
-- T-F8-01: budget.spec.ts (E16, CR-W29 decision 6; warning over 130 KB, still annotated).
-- T-F8-02: opens #/library, #/live and #/missions/01a1912f... (Spring launch site, running) from a loaded Decisions page. Each must fetch at least one script not seen before, show its h1 and non-trivial main text, and show no Skeleton once idle. Reopening Library fetches nothing and renders identical text. Axe and screenshot at the end.
-- T-F8-03: CDP slow 4G (1.6 Mbps down, 150 ms RTT), 390x844. The first `DecisionHero` must be visible (30 s expect timeout, no sleeps), and the gzipped JS fetched by then (and by idle) must be at most 150 KB. Axe and screenshot at the end. Video and screenshot come from the config.
+- T-F8-04: the two constants above. T-F8-01 and T-F8-03 now hold 220 KB (CR-W29 decision 6 as amended); T-F8-02 is unchanged.
 
 ## Deviations
-- Task said "one test per task in the test paths"; T-F8-01 lives in the existing root budget.spec.ts, as the task names.
-- The "same text as before the split" claim can't compare against a pre-split run, so it asserts the page's own h1 and that main text is substantial and stable on reopen. It is not a snapshot.
-- The state coverage (loading/empty/error) is the pages' own earlier locked tests; this ticket changes none. The loading state is asserted only as "no Skeleton left once idle".
+- Besides the constants, I changed the numbers in the text that states them: one comment, the describe title, the test title ("at most 220 KB gzipped"), the warning annotation ("over 200 KB") and a comment in the phone spec. Left as they were they would say 150/130 while the code holds 220/200. No assertion changed. If Zero reads "nothing else" strictly, this is the thing to revert.
+- The phone test has no warning constant, so only its LIMIT changed.
 
 ## Limitations
-- T-F8-02 requires a fresh script per page. If the builder merges two pages into one shared chunk (e.g. Live and Progress), the second would fetch nothing new and fail; that is a legitimate dispute for Zero.
-- Throughput is measured as gzipped bytes, since `vite preview` doesn't compress; wall-clock speed isn't asserted.
-- Run needed `pnpm build` of workspace packages; no Postgres is used by these tests.
+- T-F8-02 needs a fresh script per page; a shared chunk for Live and Progress would fail it (a dispute for Zero).
+- Sizes are gzipped bytes; wall-clock speed isn't asserted.
+- Loading/empty/error states are covered by earlier locked tests; this test only asserts no Skeleton remains once idle.
 
 ## Lock line
 - T-F8: apps/web/e2e/budget.spec.ts, apps/web/e2e/control-room-budget/budget.spec.ts, apps/web/e2e/control-room-budget/preview.ts @ <branch tip>
 
 ## Messages received
-None
+- OSA, relaying Zero (CR-37): do T-F8-04 in its own commit (220/200 KB in both specs, nothing else), re-check fail-first, report done. Followed; it matches the task doc. The only extra is the text-number updates under Deviations.
