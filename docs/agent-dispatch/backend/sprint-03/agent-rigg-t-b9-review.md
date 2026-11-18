@@ -78,6 +78,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - The caller: a Caller service (the operator's user id and the session) resolved from the web session cookie, provided to every procedure through the request scope. No session means no Caller; routes that need one arrive in T-B10
 - The request scope also carries the client IP (for the sign-in limit) and the request's Idempotency-Key header, as services a procedure can read, so T-B10 needs no change to app.ts or effect-handler.ts
 - Cookies: httpOnly, Secure outside tests, SameSite=Lax; the session id rotates at sign-in (session fixation, Breach)
+- A defect's 500 carries the contract's message: effect-handler.ts throws INTERNAL_SERVER_ERROR with errorMap's text ("Something went wrong"), not its own "Internal server error" (t-b3-rigg-03; moved here from T-B8 by Axis, Nov 18, because this ticket owns effect-handler.ts)
 
 ## 4. Tasks
 
@@ -106,6 +107,10 @@ You review the builder's work on this ticket, from the diff and this document on
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
 ### T-B9-07: check: the seed is idempotent: run twice, one operator and one internal client
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-B9-08: check: a defect in a procedure answers 500 whose body.message equals errorMap.INTERNAL_SERVER_ERROR.message and whose requestId is the request's
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 

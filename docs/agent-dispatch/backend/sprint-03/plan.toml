@@ -28,6 +28,9 @@
 #    idempotency_keys.principal is a user or credential id (DATABASE.md). Axis proposes the device login's id as
 #    the principal for both. Route 3 already answers any replay with 409 TOKEN_REPLAYED and stores nothing.
 #    Say yes, or ask for a CR.
+# Change after approval (Axis, Nov 18): t-b3-rigg-03 (a defect's body.message is the contract's text) moves from
+# T-B8 to T-B9. The fix is in effect-handler.ts, T-B9's file, and T-B8 may not change it. T-B8's own text is left
+# as rendered so its task docs don't change mid-ticket; its tests a2 drops that one assertion by Axis's ruling.
 # Backlog, not in this sprint: T-B12 (sprint-04, first), CR-W30 B and C (after T-B10's step-up), the T-B5 relock P3 and t-b7-rigg-01 (lock-check tests), the contract-test timeout
 # (needs a CR and Zero), the declined db flake (CR-40). After T-B11: tests 10 and 11, spike 2 (DBOS), the jobs engine,
 # event consumers and the factory repo loader, which closes Step 1.
@@ -197,7 +200,7 @@ notes = [
   "The seed (packages/server/src/seed.ts, run by hand on the host) creates the operator from AVEL_OPERATOR_EMAIL and AVEL_OPERATOR_PASSWORD and AVEL's internal client (CR-13), and is safe to run twice. The password is never in the repo; tests make a throwaway one. List the two variable names in the build report; Axis adds them to .env.example",
   "The caller: a Caller service (the operator's user id and the session) resolved from the web session cookie, provided to every procedure through the request scope. No session means no Caller; routes that need one arrive in T-B10",
   "The request scope also carries the client IP (for the sign-in limit) and the request's Idempotency-Key header, as services a procedure can read, so T-B10 needs no change to app.ts or effect-handler.ts",
-  "Cookies: httpOnly, Secure outside tests, SameSite=Lax; the session id rotates at sign-in (session fixation, Breach)",
+  "Cookies: httpOnly, Secure outside tests, SameSite=Lax; the session id rotates at sign-in (session fixation, Breach)",  "A defect's 500 carries the contract's message: effect-handler.ts throws INTERNAL_SERVER_ERROR with errorMap's text (\"Something went wrong\"), not its own \"Internal server error\" (t-b3-rigg-03; moved here from T-B8 by Axis, Nov 18, because this ticket owns effect-handler.ts)",
 ]
 
 [ticket.tests]
@@ -210,7 +213,7 @@ behaviours = [
   "the 6th sign-in attempt in a minute for one email is 429, and so is the 6th from one IP",
   "a procedure run with the session cookie sees Caller with the operator's user id; without it there is no Caller; a procedure can read the request's Idempotency-Key header and client IP",
   "the session id after sign-in differs from any session id the client presented before it (no fixation)",
-  "the seed is idempotent: run twice, one operator and one internal client",
+  "the seed is idempotent: run twice, one operator and one internal client",  "a defect in a procedure answers 500 whose body.message equals errorMap.INTERNAL_SERVER_ERROR.message and whose requestId is the request's",
 ]
 
 # ---------------------------------------------------------------------------------------------
