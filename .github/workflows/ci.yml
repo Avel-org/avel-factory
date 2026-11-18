@@ -56,3 +56,31 @@ jobs:
       - run: pnpm --filter @avel/server run check:effect
       - run: pnpm lint
       - run: pnpm test
+
+  # The web's end-to-end tests (Build rules H4, H5, F6). A red test makes the job red; the
+  # screenshots, videos and traces are kept on every run.
+  e2e:
+    name: web e2e (Playwright)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @avel/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @avel/web exec playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-e2e-test-results
+          path: apps/web/test-results
