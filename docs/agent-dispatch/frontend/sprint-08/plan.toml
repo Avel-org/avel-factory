@@ -63,6 +63,7 @@ may_change = [
   "apps/web/control-room/src/**",
   "apps/web/control-room/SOURCE.md",
   "apps/web/src/routes/**",
+  "apps/web/src/control-room.d.ts",
   "apps/web/vite.config.ts",
 ]
 must_not_change = [
@@ -76,6 +77,8 @@ must_not_change = [
 context = [
   { path = "apps/web/control-room/src/app/logic.js", why = "its static imports pull every page's values and the whole sample world into the first load" },
   { path = "apps/web/control-room/src/app/ControlRoomView.jsx", why = "which page shows, the seam for loading each page's view on demand" },
+  { path = "apps/web/control-room/src/main.jsx", why = "since T-F7 it exports ControlRoom for src/routes/index.tsx to mount, and imports the 28 stylesheets (CSS, not JavaScript)" },
+  { path = "apps/web/control-room/SOURCE.md", why = "what T-F7 already changed in the export, and where this ticket names its own changes" },
   { path = "apps/web/e2e/budget.spec.ts", why = "the measurement T-F7 set, now held to 150 KB. T-F7's build measured 354,051 B gzipped for /, so this ticket cuts more than half" },
 ]
 verify = [
