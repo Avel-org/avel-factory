@@ -27,7 +27,6 @@ export function AgentCard({ nd, I }) {
       data-kind={nd.kind}
       data-rel={nd.rel ? "true" : undefined}
       data-changed={nd.changed}
-      aria-label={nd.name + ", " + nd.kindWord + ", " + nd.stLabel}
     >
       <span className="ag-head">
         <span className="ag-av" data-kind={nd.kind} aria-hidden="true">
