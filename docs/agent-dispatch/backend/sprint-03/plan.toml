@@ -3,15 +3,18 @@
 # Check it:   scripts/render.py --check backend/sprint-03
 # Render it:  scripts/render.py backend/sprint-03   (after approval), then commit the folder.
 #
-# Three tickets, each a full session, in Javaris's approved build order (Nov 17), one builder at a time (B7):
+# Four tickets, each a full session, in Javaris's approved build order (Nov 17), one builder at a time (B7):
+#   T-B11 the web's auth mock and a minified router (CR-W30 A and D; contract)                            ~60 min  standard, contract
 #   T-B8  platform hardening and the middleware services (backlog a, b, c, d; Step 1 items 2 and 4)   ~75 min  full
 #   T-B9  sign-in: Better Auth, the seed, lockout, and the caller (Step 1 item 5, test 7)                 ~90 min  full, new dependency
 #   T-B10 step-up and CLI login: routes 1 to 3 (items 6 and 7; tests 5, 8, 9)                             ~90 min  full
-# T-B11 (routes 4 and 5, the CLI session as a caller; tests 2 and 4, the rest of 9) opens sprint-04: render.py refuses
+# T-B12 (routes 4 and 5, the CLI session as a caller; tests 2 and 4, the rest of 9) opens sprint-04: render.py refuses
 # two tickets in one sprint that share a file, and it would share T-B10's cli/**, audit/** and router.ts.
 # Bigger tickets, per Javaris (Nov 17, via OSA): "lets stop merging and commiting small amounts".
 #
-# For Javaris, with this plan:
+# Approved by Javaris, Nov 17 ("approve all", via OSA): the plan, items 1 to 4 below, CR-W30, and session limits of
+# 120 minutes and 150 turns (#45). T-B11 runs first: CR-W30's A and D don't need the real server.
+# As proposed:
 # 1. Session limit: T-B9 and T-B10 likely run past scripts/agents/limits.json (60 min, 80 turns).
 #    Axis asks for 90 min and 120 turns for this sprint's build sessions. If you say no, each of the two
 #    splits in half (B9: auth and lockout / seed and caller; B10: step-up / CLI login).
@@ -25,7 +28,7 @@
 #    idempotency_keys.principal is a user or credential id (DATABASE.md). Axis proposes the device login's id as
 #    the principal for both. Route 3 already answers any replay with 409 TOKEN_REPLAYED and stores nothing.
 #    Say yes, or ask for a CR.
-# Backlog, not in this sprint: T-B11 (sprint-04, first), the T-B5 relock P3 and t-b7-rigg-01 (lock-check tests), the contract-test timeout
+# Backlog, not in this sprint: T-B12 (sprint-04, first), CR-W30 B and C (after T-B10's step-up), the T-B5 relock P3 and t-b7-rigg-01 (lock-check tests), the contract-test timeout
 # (needs a CR and Zero), the declined db flake (CR-40). After T-B11: tests 10 and 11, spike 2 (DBOS), the jobs engine,
 # event consumers and the factory repo loader, which closes Step 1.
 
@@ -43,7 +46,7 @@ done_when = [
   "Step 0 and Step 1 plan, Step 1 test 5: the 6th device-login start in a minute (route 1) is 429",
   "Step 1 test 7: the 11th failed sign-in in 15 minutes is locked out; sign-up is refused; nothing creates a second user",
   "Step 1 test 8: a wrong password gets no grant; a grant reused, used for another action or target, from another session, or after 5 minutes is refused",
-  "Step 1 test 9, its first half: approval needs step-up; polling returns the session once; a replayed poll is 409 and never returns the token (expiry and revoke come with T-B11)",
+  "Step 1 test 9, its first half: approval needs step-up; polling returns the session once; a replayed poll is 409 and never returns the token (expiry and revoke come with T-B12)",
   "Step 1 test 13, for this sprint's writes: each leaves exactly one activity row",
 ]
 sources = [
@@ -70,8 +73,8 @@ conventions = [
   "Tests run against real Postgres from scripts/pg-local.sh; test/db/support/database.ts makes a migrated database per file (T-B3)",
 ]
 notes = [
-  "One builder at a time (B7): T-B8, then T-B9, then T-B10. Rigg writes the next ticket's tests while Soap builds, once the ticket it depends on is merged",
-  "All three are full rigor (C4: tokens, sign-in, step-up, sessions): Javaris merges, and Axis's second review follows the security checklist",
+  "One builder at a time (B7): T-B11, then T-B8, then T-B9, then T-B10. Rigg writes the next ticket's tests while Soap builds, once the ticket it depends on is merged",
+  "T-B8 to T-B10 are full rigor (C4: tokens, sign-in, step-up, sessions): Javaris merges, and Axis's second review follows the security checklist. T-B11 is standard but contract-labelled: Zero signs off (I3)",
 ]
 
 # ---------------------------------------------------------------------------------------------
@@ -174,6 +177,7 @@ context = [
   { path = "docs/design/Backend modules and build plan.md", why = "section 8: one operator, password sign-in and step-up, passkeys later, the password never in the repo; Breach's attacks" },
   { path = "packages/db/src/schema", why = "users and the auth_* tables Better Auth uses through the Drizzle adapter (the names need a mapping: Step 1 plan, risks)" },
   { path = "packages/server/src/platform/rate-limit.ts", why = "T-B8's limiter: sign-in is 5 a minute per email and per IP" },
+  { path = "docs/ui-contracts/login.md", why = "section 1: the wire the web reads (sign-in, get-session, sign-out; INVALID_EMAIL_OR_PASSWORD; 429 with X-Retry-After for lockout and rate limit). The real server answers it the same way the mock does" },
   { path = "packages/server/src/platform/app.ts", why = "where /api/auth/* mounts, outside the contract, in the middleware order" },
   { path = "packages/server/src/platform/effect-handler.ts", why = "where the caller joins the request's services" },
   { path = "docs/design/DATABASE.md", why = "users, auth_sessions, auth_accounts, auth_verifications; clients.kind and the one internal client (CR-13)" },
@@ -255,7 +259,7 @@ verify = [
 notes = [
   "Step-up (item 6): the operator's password again, for one action on one target, bound to the session; single-use, 5 minutes (Clock), consumed in one atomic update. Only credential actions ask; in this step that's route 2. How the web obtains a grant and how route 2 presents it: follow the contract's stepUp meta and API routes.md; if they don't say, stop with needs-cr",
   "Route 1 (start): makes a device code and a short user code, rate-limited at 5 a minute (429). Route 2 (approve): needs the Caller and a valid step-up grant for this user code. Route 3 (poll): returns the session token once after approval, stores only its hash, polling faster than every 5 seconds is 429",
-  "Idempotency on every write through T-B8's store. Routes 1 and 3 have no session yet: their principal is the device login's id (Axis's proposal in this plan, pending Javaris). Route 3's response carries a token, so it's never stored and a replay is 409 TOKEN_REPLAYED",
+  "Idempotency on every write through T-B8's store. Routes 1 and 3 have no session yet: their principal is the device login's id (Javaris, Nov 17: approved). Route 3's response carries a token, so it's never stored and a replay is 409 TOKEN_REPLAYED",
   "Activity log (item 8, audit module): every write in this ticket leaves exactly one activity_log row (who, what, target), in the same transaction as the change",
   "DTOs through one mapper per object; outputs are validated against the contract (AGENTS.md API rules)",
   "Routing: platform/router.ts composes the health router and routes 1 to 3; main.ts passes it to createApp. app.ts doesn't change",
@@ -272,4 +276,67 @@ behaviours = [
   "route 3: before approval it says pending; after approval it returns the session token once, and cli_sessions stores only its hash; a replayed poll is 409 TOKEN_REPLAYED and never returns the token; polling faster than every 5 seconds is 429 (Step 1 test 9)",
   "routes 1 to 3: a replay with the same key and body returns the first response (except route 3), a different body is 409 IDEMPOTENCY_KEY_REUSED",
   "each write leaves exactly one activity_log row naming the action and target, and a failed write leaves none (Step 1 test 13)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B11"
+slug = "auth-mock-minified-router"
+title = "The web's auth mock and a minified router (CR-W30 A and D)"
+goal = "The web can sign in, read its session and sign out against contract-mock, and its API client imports a router with no schemas, about a third of today's size."
+rigor = "standard"
+refs = [
+  "CR-W30 (accepted Nov 17 by Javaris), items A and D; B and C follow T-B10's step-up",
+  "docs/ui-contracts/login.md, sections 1 and 5",
+  "Build rules I3 (contract changes: Zero signs off), E16 (the data layer from the minified contract)",
+]
+depends_on = []
+labels = ["contract"]
+cr = "CR-W30"
+may_change = [
+  "packages/contract-mock/src/**",
+  "packages/contract/src/minified.ts",
+  "packages/contract/src/index.ts",
+  "packages/contract/scripts/**",
+]
+must_not_change = [
+  "packages/contract/src/routes/**",
+  "packages/contract/src/dto/**",
+  "packages/contract/src/errors.ts",
+  "packages/contract/src/version.ts",
+  "packages/contract/package.json",
+  "packages/contract-mock/package.json",
+  "packages/server/**",
+  "apps/web/**",
+]
+context = [
+  { path = "docs/ui-contracts/login.md", why = "section 5: what the auth mock serves, word for word (the operator fixture, sign-in, the lockout, get-session's raw shape, sign-out, reset, resetAuth, recorded with the password redacted); section 1: the wire" },
+  { path = "packages/contract-mock/src/mock.ts", why = "the mock's fetch, where the three auth endpoints go beside the contract routes" },
+  { path = "packages/contract-mock/src/world.ts", why = "the mock's world and now(), for the lockout's 15 minutes" },
+  { path = "packages/contract-mock/src/fixtures.ts", why = "where fixtures.operator goes" },
+  { path = "packages/contract/src/routes/route.ts", why = "each route's meta: routeNo, write, stepUp, caller; its method and path" },
+  { path = "packages/contract/src/index.ts", why = "the package's exports; the minified router is one more" },
+]
+verify = [
+  "pnpm --filter @avel/contract-mock test",
+  "pnpm --filter @avel/contract test",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "A (the auth mock): build login.md section 5 as written. The operator's password there is a mock-only test value, never a real one. The 5-a-minute rate limit isn't simulated. Contract routes don't check the session",
+  "D (the minified router): packages/contract/src/minified.ts exports, for every route in the router, its key path, method, path, route number, write and stepUp, and no schema. A script in packages/contract/scripts writes it from the router; the file is committed. It's exported from the package's index. This changes no route and no wire, so CONTRACT_VERSION stays 1.0.1 and docs/generated doesn't change",
+  "If the minified router needs a package.json export of its own, or apps/web can't import it from the index without pulling the schemas in, stop with out-of-scope and say why",
+  "Zero signs off on the PR (I3, CR-W30)",
+  "Standard rigor, not C4: this is the mock's auth, with a mock-only password and no real credential, session or token. The real sign-in is T-B9 (full)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/contract-mock/test/auth.test.ts", "packages/contract/test/minified-router.test.ts"]
+behaviours = [
+  "sign-in with the operator's mock password: 200 with { redirect: false, token, user } and the session cookie as section 5 writes it; a wrong email or password: 401 INVALID_EMAIL_OR_PASSWORD",
+  "the 11th sign-in for one email within 15 minutes of the mock's now() is 429 TOO_MANY_ATTEMPTS with X-Retry-After, even with the right password, until 15 minutes after the 10th failure",
+  "get-session with the cookie gives Better Auth's raw shape with expiresAt 12 hours after sign-in; without it, null; after sign-out, null and the cookie expired",
+  "sign-up and any other /api/auth/* path is 404; reset() keeps sessions and clears failures; resetAuth() drops sessions; recorded() lists auth requests with the password as [redacted]",
+  "the minified router has one entry per route in the contract's router, each with the same method, path, route number, write and stepUp, and none carries a schema; regenerating it from the router gives the committed file",
 ]
