@@ -95,7 +95,7 @@ scripts/pg-local.sh stop    # prune removes the ones whose worktree is gone
 - **Axis** leads backend and **Zero** leads frontend. Each lead has a **builder** and a **checker**.
 - **The checker writes the acceptance tests first;** they must fail on `main`, and the builder can't change them.
 - **Sessions:** one dispatch per session (a ticket is three: tests, build, review), each in a fresh worktree with its own database, under its limits.
-- **Review:** one batch per cycle, at most two rounds, and only P0 and P1 block.
+- **Review:** one batch per cycle, at most two rounds, and only P0 and P1 block. The backend from T-B9 on has one review and no round 2: only a P0 or P1 sends a PR back, and P2s go to a later ticket (Build rules G5).
 - **Identities, system prompts and dispatch:** `docs/design/Agents, identities and system prompts.md`. Builders and checkers get their work only from a rendered task doc through `/dispatch`, never from a pasted prompt.
 - **Tabs, accounts and keys:** `docs/design/Build roster and environment.md`. Keys never go in the repo; `.env.example` lists the server's.
 - **Stop instead of guessing:** end with `blocked`, `needs-cr`, `test-dispute`, `needs-dependency` or `out-of-scope`.
