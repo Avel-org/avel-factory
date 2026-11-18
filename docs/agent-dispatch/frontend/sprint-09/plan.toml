@@ -58,7 +58,7 @@ title = "Every screen of the control room opens and passes WCAG 2.2 AA"
 goal = "Every page in the export's registry opens at its route in light and night, on desktop and phone, with no error and no accessibility violation."
 rigor = "standard"
 refs = ["E17; control-room-handoff/screens.md; the export's flow-smoke-every-page and audit-axe-routes"]
-depends_on = ["T-F8"]
+depends_on = ["T-F7"]
 may_change = ["apps/web/control-room/src/**", "apps/web/control-room/SOURCE.md"]
 must_not_change = [
   "apps/web/package.json",
@@ -79,6 +79,8 @@ verify = [
   "pnpm lint",
 ]
 notes = [
+  "Javaris (Nov 17): T-F9's tests run while T-F8 is built, so depends_on names T-F7 and not T-F8. T-F9's build starts only after T-F8 has merged and the lead has rebuilt t/F9 on that main, with the lock line after every tests-phase commit (F2). OSA starts the build by hand at that point",
+  "T-F8 makes every page but Decisions load its code when its #/ route first opens, behind the export's PageSkeleton (data-ui=\"Skeleton\"). The tests wait for each page's title and for no skeleton, never for a synchronous render, so they hold before and after T-F8",
   "Every export file this ticket changes gets a line, with its reason, in SOURCE.md's \"Changed for apps/web\" section; its listed SHA-256 stays the one copied (T-F7-02)",
   "Fix only what the tests find, in the export's own files, each fix small and named in the report. A fix that would change the design (a colour, a size, a layout) beyond what WCAG 2.2 AA needs: stop with out-of-scope and name it",
 ]
