@@ -88,11 +88,16 @@ mkdir -p "$base_dir"
 git rev-parse --verify -q main >/dev/null || die "there's no main branch yet"
 
 # A branch can be checked out in one worktree at a time: free it from a finished attempt's worktree.
+# Only a worktree the kit made for this ticket is removed. Any other (a lead's, Javaris's) is left
+# alone: on Nov 17 the lane loop removed the worktree Zero was locking T-F9 from.
 free_branch() {
   local other
   other=$(git worktree list --porcelain | awk -v b="refs/heads/$BRANCH" '/^worktree /{w=$2} $0=="branch "b{print w}')
   [[ -z $other ]] && return 0
   [[ $other == "$root" ]] && die "$BRANCH is checked out in the main checkout: switch it back to main"
+  if [[ ! $other =~ ^"$base_dir/$lane-$sprint-$tl-"[a-z0-9-]+-a[0-9]+$ ]]; then
+    die "$BRANCH is checked out in $other, which the kit didn't make. Whoever is using it checks out another branch or detaches it, then retry."
+  fi
   if [[ -n $(git -C "$other" status --porcelain) ]]; then
     die "$BRANCH is checked out in $other, which has uncommitted work. Commit or remove it first."
   fi

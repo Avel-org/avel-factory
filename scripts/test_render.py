@@ -396,6 +396,27 @@ class Flow(unittest.TestCase):
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit 3")
         self.assertEqual(self.state("agent-rigg-t-b1-test-unit"), "done")
 
+    def test_a_worktree_the_kit_didnt_make_is_never_removed(self):
+        # Nov 17: the lane loop started T-F9's build as soon as the lock line was on the branch, and
+        # agent.sh removed the clean worktree Zero was locking from.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        lead = os.path.join(r.tmp, "lead-checkout")
+        r.run(f"git worktree add -q '{lead}' t/B1-effect-spike")
+        with open(os.path.join(lead, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
+            f.write("- T-B1: packages/server/test/spike.test.ts @ abc1234\n")
+        r.run(f"git -C '{lead}' commit -qam 'lock T-B1'")
+        out = r.run("scripts/agent.sh --here backend sprint-01 agent-soap-t-b1-build", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("which the kit didn't make", out.stderr)
+        self.assertTrue(os.path.isdir(lead))
+        # once the lead detaches it, the build starts
+        r.run(f"git -C '{lead}' checkout -q --detach")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-soap-t-b1-build")
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "done")
+        self.assertTrue(os.path.isdir(lead))
+
     def test_a_stray_file_in_the_reports_folder_is_ignored(self):
         # Nov 17: a note named <doc>.a2.carried-over-a1-report.md made --status raise.
         r = self.r
