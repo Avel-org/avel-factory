@@ -1,0 +1,92 @@
+# frontend/sprint-10: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-10
+# Render it:  scripts/render.py frontend/sprint-10   (after approval), then commit the folder.
+#
+# Javaris (Nov 17, to OSA): "Approve T-F11". CI's test job runs `pnpm test`, which is Vitest only,
+# so no Playwright test has run in CI: not E16's budget, not E17's axe, not any route test. H4
+# requires "for the web: the bundle budget, accessibility and end-to-end tests", and F6 requires
+# Playwright in CI with a screenshot and a short video. T-F11 adds that job. It runs after T-F9 and
+# before T-F10, so T-F10 moved to sprint-11: the kit takes the newest rendered sprint as the
+# lane's current one, so the sprints follow the run order. This file renders only after T-F9 merges.
+# .github/ is a guardrail (CODEOWNERS), so Javaris merges T-F11.
+
+lane = "frontend"
+sprint = "sprint-10"
+step = 1
+title = "The web's end-to-end tests run in CI"
+goals = [
+  "Every pull request runs apps/web's Playwright suite in CI, and a red budget, axe or route test blocks the merge like any other check",
+]
+done_when = [
+  "H4's web checks (the bundle budget, accessibility and end-to-end tests) and F6's screenshot and video run in CI on every pull request and on main",
+]
+sources = [
+  { path = "docs/design/Build rules.md", why = "H4 (required checks, the web's three), H5 (a red check blocks), F6 (Playwright in CI, screenshot and video)" },
+  { path = ".github/workflows/ci.yml", why = "the CI job today: install, build, typecheck, check:effect, lint, test (Vitest only)" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/repo-checks test && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "GitHub Actions on ubuntu-24.04, pnpm 10 via pnpm/action-setup, Node 22 via actions/setup-node. apps/web's Playwright 1.64 with axe-core: playwright.config.ts starts two vite dev servers itself (contract-mock and bare), runs one worker, and records a screenshot and a video per test into apps/web/test-results; the budget specs build for production and start vite preview themselves"
+layout = ".github/workflows/ci.yml (the CI job), locks.yml and docs.yml (untouched). tools/repo-checks/test/workflow.test.ts already checks locks.yml as text; the new test sits beside it"
+conventions = [
+  "AGENTS.md and Build rules E4; workflow files have no linter, so the tests read them as text, as workflow.test.ts does",
+  "F3: no retries to get a green (H5), so the job sets no Playwright retries and the config isn't changed",
+]
+notes = [
+  "The e2e suite needs no Postgres: apps/web runs against contract-mock",
+  "The suite runs about 10 to 15 minutes today (T-F9's every-screen check is about 8.5 on its own)",
+]
+
+[[ticket]]
+id = "T-F11"
+slug = "web-e2e-ci"
+title = "The web's end-to-end tests run in CI"
+goal = "A pull request that breaks the control room's budget, accessibility or routes goes red in CI, with each test's screenshot and video attached to the run."
+rigor = "standard"
+refs = ["Build rules H4 (the web's checks), H5, F6", "Javaris, Nov 17: \"Approve T-F11\""]
+depends_on = ["T-F9"]
+may_change = [".github/workflows/ci.yml"]
+must_not_change = [
+  ".github/workflows/locks.yml",
+  ".github/workflows/docs.yml",
+  ".github/CODEOWNERS",
+  "apps/web/**",
+  "packages/**",
+  "package.json",
+  "pnpm-lock.yaml",
+]
+context = [
+  { path = ".github/workflows/ci.yml", why = "the job to extend, or to sit beside" },
+  { path = "apps/web/playwright.config.ts", why = "what the suite starts itself (two dev servers), where it writes (test-results) and what it records (screenshot and video on, trace on failure)" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "it runs vite build and vite preview itself, so CI must have built the workspace packages first" },
+  { path = "tools/repo-checks/test/workflow.test.ts", why = "how a workflow is checked as text" },
+]
+verify = [
+  "pnpm --filter @avel/repo-checks test",
+  "pnpm build",
+  "pnpm --filter @avel/web exec playwright test",
+]
+notes = [
+  "Add one job, e2e (name it \"web e2e (Playwright)\"), in ci.yml. It runs on the workflow's existing triggers (pull_request, and push to main) and needs no Postgres service. Steps: checkout, pnpm/action-setup, setup-node 22 with the pnpm cache, `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm --filter @avel/web exec playwright install --with-deps chromium`, then `pnpm --filter @avel/web exec playwright test`. Finally actions/upload-artifact uploads apps/web/test-results with `if: always()`, so a red run keeps its screenshots, videos and traces (F6)",
+  "timeout-minutes: 30 for this job. No retries, no continue-on-error, no `|| true`: a red test makes the job red (H5)",
+  "Leave the existing ci job's steps as they are",
+  "Making the new job a required check is a branch-protection setting, which Javaris sets on GitHub. Say so in the report",
+  "If the suite fails in CI where it passes locally (a port, a missing browser dependency, the budget's figure), don't touch the tests or the config: report it with the run's log. The budget figure CI measures is the one that counts (CR-W29 decision 6): if it's over 220 KB, stop with needs-cr",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["tools/repo-checks/test/web-e2e-ci.test.ts"]
+behaviours = [
+  "unit: ci.yml has a job that runs `playwright test` for @avel/web, after `pnpm install --frozen-lockfile` and `pnpm build`, and installs Playwright's Chromium with its system dependencies first",
+  "unit: that job runs on pull_request and on push to main, and has no continue-on-error, no `|| true` after the test command, and no Playwright --retries",
+  "unit: that job uploads apps/web/test-results with actions/upload-artifact under if: always()",
+  "unit: the existing ci job still runs build, typecheck, check:effect, lint and test, unchanged",
+]

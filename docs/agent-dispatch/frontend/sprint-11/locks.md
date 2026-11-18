@@ -1,4 +1,4 @@
-# Locks: frontend/sprint-10
+# Locks: frontend/sprint-11
 
 The lead adds one line per ticket once the checker's tests are committed and reviewed, copied
 from the tests report. The build starts once its line is here (Build rules B2, B3, H6).
