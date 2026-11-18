@@ -2,9 +2,10 @@ import { events } from "@avel/db";
 import { DrizzleQueryError, sql } from "drizzle-orm";
 import { NodePgSession, NodePgTransaction } from "drizzle-orm/node-postgres";
 import { PgDialect } from "drizzle-orm/pg-core";
-import { Config, Context, Effect, Exit, Layer, Redacted } from "effect";
+import { Clock, Config, Context, Effect, Exit, Layer, Redacted } from "effect";
 import pg from "pg";
 import type { AlreadyExists, ConstraintViolation, DeleteRefused } from "../errors.ts";
+import { stdoutLogLine } from "../logger.ts";
 import { mapDbError } from "./errors.ts";
 import { hasQueued, takeQueued } from "./events.ts";
 import { type Transaction, Tx } from "./tx.ts";
@@ -28,6 +29,10 @@ export class Db extends Context.Service<
     /**
      * The one way to commit queued events: takes the transaction-level advisory lock, then
      * inserts the queued events, so their `seq` follows commit order. No other code takes it.
+     *
+     * Make it the program's last step. Anything after it still runs while this transaction
+     * holds the one global event lock, so every other event-writing transaction waits on it
+     * until this one commits. Seq order stays correct either way.
      */
     readonly commitWithEvents: Effect.Effect<void, never, Tx>;
   }
@@ -62,14 +67,37 @@ const commitWithEvents = Effect.gen(function* () {
   yield* Effect.promise(() => tx.insert(events).values(queued));
 });
 
+/**
+ * Logs an idle client's error (a terminated backend, a dropped connection) as one JSON line,
+ * with only the error's code and message, and never throws. The pool drops that client itself;
+ * without a listener, Node would treat the pool's `error` event as fatal.
+ */
+const idleClientErrorLogger =
+  (clock: Clock.Clock) =>
+  (error: Error & { code?: string }): void => {
+    stdoutLogLine(
+      JSON.stringify({
+        level: "Error",
+        time: new Date(clock.currentTimeMillisUnsafe()).toISOString(),
+        message: "idle database client error",
+        code: error.code,
+        error: error.message,
+      }),
+    );
+  };
+
 /** Db on one node-postgres Pool, from DATABASE_URL; the pool ends with the layer. */
 export const DbLive = Layer.effect(
   Db,
   Effect.gen(function* () {
     const url = yield* Config.Redacted("DATABASE_URL");
+    const onIdleClientError = idleClientErrorLogger(yield* Clock.Clock);
     const pool = yield* Effect.acquireRelease(
-      Effect.sync(() => new pg.Pool({ connectionString: Redacted.value(url) })),
-      (pool) => Effect.promise(() => pool.end()),
+      Effect.sync(() =>
+        new pg.Pool({ connectionString: Redacted.value(url) }).on("error", onIdleClientError),
+      ),
+      (pool) =>
+        Effect.promise(() => pool.end().finally(() => pool.off("error", onIdleClientError))),
     );
 
     const withTransaction = <A, E, R>(program: Effect.Effect<A, E, R>) =>
