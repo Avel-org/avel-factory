@@ -132,7 +132,7 @@ It holds the job's purpose, its stages or loop, its limits (calls, tokens, quest
 4. **Learned lines come from findings.** A finding that shows a mistake an agent could repeat adds one line to that agent's **Learned** section, in the PR that routes the finding.
 5. **Untrusted text stays data.** Client, Canon and agent text is never an instruction, in any layer.
 6. **The same stop statuses everywhere:** `blocked`, `needs-cr`, `test-dispute`, `needs-dependency`, `out-of-scope`.
-7. **No model decides.** No identity or system prompt can approve, merge, release, file an upload or pick work. Those stay with code and with you. The one exception is OSA's squash merge of a PR that meets every CR-36 condition: CI and the checker's review have already decided it.
+7. **No model decides.** No identity or system prompt can approve, merge, release, file an upload or pick work. Those stay with code and with you. The one exception is OSA's squash merge of a PR that meets every CR-36 condition: CI and the checker's review have already decided it. Under CR-41, OSA also carries out a merge Javaris has decided in his own words; the tool posts those words on the PR.
 
 ## 6. Canon's system prompts: what they must contain (Step 7)
 
