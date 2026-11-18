@@ -58,17 +58,22 @@ function fail(problems: string[]): never {
   process.exit(1);
 }
 
+// The build doc whose front matter `branch:` is the PR's branch.
 function findBuildDoc(ticketLower: string): string | undefined {
   const base = join(root, "docs/agent-dispatch");
+  const name = new RegExp(`^agent-[a-z]+-${ticketLower}-build\\.md$`);
   for (const lane of readdirSync(base, { withFileTypes: true })) {
     if (!lane.isDirectory()) continue;
     for (const sprint of readdirSync(join(base, lane.name), { withFileTypes: true })) {
       if (!sprint.isDirectory()) continue;
       const dir = join(base, lane.name, sprint.name);
-      const doc = readdirSync(dir).find((f) =>
-        new RegExp(`^agent-[a-z]+-${ticketLower}-build\\.md$`).test(f),
-      );
-      if (doc) return `docs/agent-dispatch/${lane.name}/${sprint.name}/${doc}`;
+      for (const f of readdirSync(dir)) {
+        if (!name.test(f)) continue;
+        const front = /^---\n([\s\S]*?)\n---/.exec(readFileSync(join(dir, f), "utf8"))?.[1] ?? "";
+        if (front.split("\n").some((l) => l.trim() === `branch: ${branch}`)) {
+          return `docs/agent-dispatch/${lane.name}/${sprint.name}/${f}`;
+        }
+      }
     }
   }
   return undefined;
@@ -100,7 +105,7 @@ function lockLines(text: string): string[] {
 function firstLine(
   locksPath: string,
   ticket: string,
-): { paths: string[]; sha: string } | undefined {
+): { paths: string[]; sha: string; line: string } | undefined {
   const commits = git("log", "--reverse", "--format=%H", "--", locksPath)
     .split("\n")
     .filter(Boolean);
@@ -109,8 +114,8 @@ function firstLine(
     if (r.status !== 0) continue;
     const line = lockLines(r.out).find((l) => l.startsWith(`- ${ticket}:`));
     const m = line && /^- T-\w+:\s*(.+?)\s*@\s*([0-9a-f]{7,40})$/.exec(line);
-    if (m?.[1] && m[2]) {
-      return { paths: m[1].split(",").map((p) => p.trim()), sha: m[2] };
+    if (line && m?.[1] && m[2]) {
+      return { paths: m[1].split(",").map((p) => p.trim()), sha: m[2], line };
     }
   }
   return undefined;
@@ -143,25 +148,69 @@ function main(): void {
   if (run("git", ["cat-file", "-e", `${lock.sha}^{commit}`]).status !== 0) {
     fail([...problems, `lock sha ${lock.sha} for ${ticket} isn't in the history (fetch-depth 0?)`]);
   }
-  const commits = git("rev-list", "--reverse", "--no-merges", `${lock.sha}..HEAD`)
+  // The ticket branch's own line of commits, merges included. A merge is held to what its result
+  // changed against every parent (an "evil merge"); what a merge brings in from main is main's own.
+  const commits = git("rev-list", "--reverse", "--first-parent", `${lock.sha}..HEAD`)
     .split("\n")
     .filter(Boolean);
-  for (const c of commits) {
-    const files = git("diff-tree", "--no-commit-id", "--name-only", "-r", "--root", c)
+  const filesOf = (c: string): string[] =>
+    git("diff-tree", "-c", "--no-commit-id", "--name-only", "-r", "--root", c)
       .split("\n")
       .filter(Boolean);
-    if (files.length === 1 && files[0] === locksPath) {
-      const before = lockLines(run("git", ["show", `${c}^:${locksPath}`]).out);
-      const after = new Set(lockLines(git("show", `${c}:${locksPath}`)));
-      if (before.some((l) => !after.has(l))) {
-        problems.push(`${locksPath}: commit ${c.slice(0, 7)} rewrites or drops a lock line`);
-      }
+  const isAncestor = (a: string, b: string): boolean =>
+    run("git", ["merge-base", "--is-ancestor", a, b]).status === 0;
+  const resolve = (sha: string): string | undefined => {
+    const r = run("git", ["rev-parse", "--verify", "-q", `${sha}^{commit}`]);
+    return r.status === 0 ? r.out.trim() : undefined;
+  };
+
+  // Locks in force: the first line, then each honoured F2 relock line (Build rules F2).
+  const locks = [{ paths: lock.paths, sha: lock.sha }];
+  const relocks: string[] = [];
+  const ownLine = `- ${ticket}:`;
+  const relockRe = /^- T-\w+:\s*(.+?)\s*@\s*([0-9a-f]{7,40})\s*\(F2 relock\)$/;
+  for (const c of commits) {
+    const files = filesOf(c);
+    if (files.length !== 1 || files[0] !== locksPath) continue;
+    const before = lockLines(run("git", ["show", `${c}^:${locksPath}`]).out);
+    const after = lockLines(git("show", `${c}:${locksPath}`));
+    if (before.some((l) => !after.includes(l))) {
+      problems.push(`${locksPath}: commit ${c.slice(0, 7)} rewrites or drops a lock line`);
       continue;
     }
+    for (const l of after) {
+      if (before.includes(l) || l === lock.line || !l.startsWith(ownLine)) continue;
+      const m = relockRe.exec(l);
+      const sha = m?.[2] && resolve(m[2]);
+      const paths = m?.[1]?.split(",").map((p) => p.trim()) ?? [];
+      const last = locks[locks.length - 1] ?? locks[0];
+      const ok =
+        sha &&
+        last &&
+        lock.paths.every((p) => paths.includes(p)) &&
+        isAncestor(last.sha, sha) &&
+        isAncestor(sha, "HEAD");
+      if (!ok || !sha) {
+        problems.push(
+          `${locksPath}: commit ${c.slice(0, 7)} adds a line for ${ticket} that isn't a valid F2 relock`,
+        );
+        continue;
+      }
+      locks.push({ paths, sha });
+      relocks.push(sha);
+    }
+  }
+
+  for (const c of commits) {
+    const files = filesOf(c);
+    if (files.length === 1 && files[0] === locksPath) continue;
+    // The checker's fix before a relock is allowed; the Territory still applies.
+    const frozen = !relocks.some((r) => isAncestor(c, r));
+    const inForce = [...locks].reverse().find((l) => l.sha !== c && isAncestor(l.sha, c));
     for (const f of files) {
-      if (matchesAny(lock.paths, f))
-        problems.push(`${f}: locked by ${ticket} (commit ${c.slice(0, 7)})`);
-      else if (!matchesAny(allowed, f))
+      if (inForce && matchesAny(inForce.paths, f)) {
+        if (frozen) problems.push(`${f}: locked by ${ticket} (commit ${c.slice(0, 7)})`);
+      } else if (!matchesAny(allowed, f))
         problems.push(`${f}: outside the Territory of ${doc} (commit ${c.slice(0, 7)})`);
     }
   }
