@@ -11,6 +11,10 @@ export const errorTable = {
   ConstraintViolation: "CONSTRAINT_VIOLATION",
   DeleteRefused: "DELETE_REFUSED",
   StaleVersion: "STALE_VERSION",
+  IdempotencyKeyReused: "IDEMPOTENCY_KEY_REUSED",
+  IdempotencyInProgress: "IDEMPOTENCY_IN_PROGRESS",
+  TokenReplayed: "TOKEN_REPLAYED",
+  TooManyRequests: "TOO_MANY_REQUESTS",
 } as const satisfies Record<string, ErrorCode>;
 
 export type ErrorTag = keyof typeof errorTable;
@@ -52,4 +56,25 @@ export class DeleteRefused extends Data.TaggedError("DeleteRefused")<{
 export class StaleVersion extends Data.TaggedError("StaleVersion")<{
   message: string;
   details: StaleVersionDetails;
+}> {}
+
+/** An Idempotency-Key used again with another route or body (409). */
+export class IdempotencyKeyReused extends Data.TaggedError("IdempotencyKeyReused")<{
+  message: string;
+}> {}
+
+/** An Idempotency-Key used again while its first request still runs (409). */
+export class IdempotencyInProgress extends Data.TaggedError("IdempotencyInProgress")<{
+  message: string;
+}> {}
+
+/** A replay of a write whose response carried a token, which is never stored or sent again (409). */
+export class TokenReplayed extends Data.TaggedError("TokenReplayed")<{
+  message: string;
+}> {}
+
+/** Over a rate limit (429): how long until the window lets the next call through. */
+export class TooManyRequests extends Data.TaggedError("TooManyRequests")<{
+  message: string;
+  details: { readonly retryAfterMs: number };
 }> {}
