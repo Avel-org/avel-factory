@@ -15,6 +15,7 @@ import unittest
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TURNS = os.path.join(KIT, "scripts/hooks/turns.py")
 MSGLOG = os.path.join(KIT, "scripts/agents/msglog.py")
+SESSION = os.path.join(KIT, "scripts/hooks/session.py")
 
 
 def transcript(path, turns, split=False):
@@ -145,6 +146,59 @@ class MsgLog(unittest.TestCase):
     def test_the_hook_never_fails_a_call(self):
         out = self.run_log(["hook"], "not json", seat="OSA")
         self.assertEqual(out.returncode, 0)
+
+
+class DoneFlag(unittest.TestCase):
+    """session.py's stop event raises $AVEL_DONE_FLAG only for a report this attempt wrote."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="avel-done-")
+        self.flag = os.path.join(self.tmp, "a2.done")
+        self.report = os.path.join(self.tmp, "report.md")
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.com",
+                   GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@example.com")
+        self.env = env
+        subprocess.run("git init -q && git commit -q --allow-empty -m init", cwd=self.tmp, shell=True, env=env, check=True)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def commit_report(self, text):
+        with open(self.report, "w") as f:
+            f.write(text)
+        subprocess.run("git add report.md && git commit -qm report", cwd=self.tmp, shell=True, env=self.env, check=True)
+
+    def stop(self, start=""):
+        env = dict(self.env, AVEL_DONE_FLAG=self.flag, AVEL_REPORT=self.report, AVEL_KIND="tests",
+                   AVEL_REPORT_START=start, CLAUDE_PROJECT_DIR=self.tmp)
+        env.pop("WEZTERM_PANE", None)
+        subprocess.run([sys.executable, SESSION, "stop"], input="{}", text=True, env=env, cwd=self.tmp, check=True)
+        return os.path.exists(self.flag)
+
+    def sha(self):
+        import hashlib
+        with open(self.report, "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()
+
+    def test_a_committed_report_of_this_attempt_raises_the_flag(self):
+        self.commit_report("status: done\n")
+        self.assertTrue(self.stop())
+
+    def test_an_earlier_attempts_report_does_not(self):
+        # Nov 17: T-F9 tests a2 started on a branch holding a1's committed "blocked" report and was closed.
+        self.commit_report("status: blocked\n")
+        self.assertFalse(self.stop(start=self.sha()))
+
+    def test_rewriting_the_earlier_report_does(self):
+        self.commit_report("status: blocked\n")
+        start = self.sha()
+        self.commit_report("status: done\n")
+        self.assertTrue(self.stop(start=start))
+
+    def test_an_uncommitted_report_does_not(self):
+        with open(self.report, "w") as f:
+            f.write("status: done\n")
+        self.assertFalse(self.stop())
 
 
 if __name__ == "__main__":

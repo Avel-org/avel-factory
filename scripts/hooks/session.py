@@ -22,6 +22,7 @@ Nothing from the hook input is stored except the notification's message, cut to 
 """
 
 import fcntl
+import hashlib
 import json
 import os
 import subprocess
@@ -43,14 +44,19 @@ def git_common_dir(cwd):
     return path if os.path.isabs(path) else os.path.normpath(os.path.join(cwd, path))
 
 
-def finished(report, kind):
-    """True when the dispatch's report is final: it has a status line, and unless this is a review
-    (a reviewer's report stays uncommitted) it is committed with nothing uncommitted on top."""
+def finished(report, kind, start=""):
+    """True when the dispatch's report is final: this attempt wrote it (it differs from the report the
+    session started with, $AVEL_REPORT_START, so an earlier attempt's report on the branch doesn't count;
+    T-F9 tests a2 was closed after one turn on Nov 17 for that reason), it has a status line, and unless
+    this is a review (a reviewer's report stays uncommitted) it is committed with nothing uncommitted on top."""
     try:
-        with open(report, encoding="utf-8") as f:
-            if not any(line.lower().startswith("status:") for line in f):
-                return False
+        with open(report, "rb") as f:
+            data = f.read()
     except OSError:
+        return False
+    if start and hashlib.sha256(data).hexdigest() == start:
+        return False
+    if not any(line.lower().startswith("status:") for line in data.decode("utf-8", "replace").splitlines()):
         return False
     if kind == "review":
         return True
@@ -68,7 +74,8 @@ def mark_done(event):
     flag = os.environ.get("AVEL_DONE_FLAG")
     if not flag:
         return
-    if event == "stop" and finished(os.environ.get("AVEL_REPORT", ""), os.environ.get("AVEL_KIND", "")):
+    if event == "stop" and finished(os.environ.get("AVEL_REPORT", ""), os.environ.get("AVEL_KIND", ""),
+                                    os.environ.get("AVEL_REPORT_START", "")):
         with open(flag, "w") as f:
             f.write(datetime.now(timezone.utc).isoformat(timespec="seconds") + "\n")
     elif event in ("start", "prompt", "tool"):
