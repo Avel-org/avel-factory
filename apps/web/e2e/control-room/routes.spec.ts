@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { attachShot, expectNoViolations } from "../support/page";
-import { booted, DESKTOP, watchErrors } from "./support";
+import { attachShot } from "../support/page";
+import { booted, DESKTOP, expectNoViolationsSettled, watchErrors } from "./support";
 
 const PAGES = [
   { hash: "#/", title: "Decisions" },
@@ -32,7 +32,7 @@ test.describe("T-F7-05: #/ hash routes move between pages without a reload", () 
       await expect(page).toHaveURL(new RegExp(`/${p.hash}$`));
       await expect(page.locator("h1").first()).toContainText(p.title);
       expect(await stillSamePage(), `${p.hash} reloaded the page`).toBe(true);
-      await expectNoViolations(page);
+      await expectNoViolationsSettled(page);
       await attachShot(page, info, `route-${p.title.toLowerCase()}`);
     }
 
@@ -63,7 +63,7 @@ test.describe("T-F7-05: #/ hash routes move between pages without a reload", () 
     ).toBe(1);
     await page.goBack();
     await expect(page.locator("h1").first()).toContainText("Decisions");
-    await expectNoViolations(page);
+    await expectNoViolationsSettled(page);
     await attachShot(page, info, "route-sidebar-link");
   });
 
@@ -71,7 +71,7 @@ test.describe("T-F7-05: #/ hash routes move between pages without a reload", () 
     const errors = watchErrors(page);
     await page.goto("/#/library");
     await booted(page, "Library");
-    await expectNoViolations(page);
+    await expectNoViolationsSettled(page);
     expect(errors).toEqual([]);
     await attachShot(page, info, "route-library-direct");
   });

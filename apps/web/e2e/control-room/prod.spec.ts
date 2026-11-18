@@ -1,9 +1,9 @@
 import { type ChildProcess, execFile, spawn } from "node:child_process";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { attachShot, expectNoViolations } from "../support/page";
+import { attachShot } from "../support/page";
 import { PREVIEW_PORT } from "../support/ports";
-import { booted, DESKTOP, watchErrors } from "./support";
+import { booted, DESKTOP, expectNoViolationsSettled, watchErrors } from "./support";
 
 // T-F7-07: in a production build the Prototype dock and viewport preview don't render,
 // and nothing of OSA shows without ?osa=1. Serves its own build on a port of its own.
@@ -92,7 +92,7 @@ test.describe("T-F7-07: the production build hides the prototype dock and OSA", 
     await expect(page.locator('[data-ui="OsaBar"]')).toHaveCount(0);
     await expect(page.getByLabel("OSA, your operator agent")).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/\bOSA\b/);
-    await expectNoViolations(page);
+    await expectNoViolationsSettled(page);
     expect(errors).toEqual([]);
     await attachShot(page, info, "prod-no-dock");
   });
@@ -106,7 +106,7 @@ test.describe("T-F7-07: the production build hides the prototype dock and OSA", 
     await expect(page.locator('[data-ui="OsaBar"]')).toBeVisible();
     await expect(page.locator('[data-ui="SimPanel"]')).toHaveCount(0);
     await expect(page.locator(".cr-vp")).toHaveCount(0);
-    await expectNoViolations(page);
+    await expectNoViolationsSettled(page);
     await attachShot(page, info, "prod-osa-flag");
   });
 });

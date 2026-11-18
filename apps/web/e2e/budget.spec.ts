@@ -125,7 +125,9 @@ test.describe("T-F7-06: the production build (budget changed under CR-W29)", () 
       if (r.request().resourceType() === "script") urls.add(r.url());
     });
     await page.goto(`${origin}/`, { waitUntil: "networkidle" });
-    await expect(page.locator("nav.lib-nav[aria-label='Main']")).toBeVisible();
+    await expect(
+      page.locator("nav.lib-nav[aria-label='Main']").filter({ visible: true }),
+    ).toBeVisible();
     await expect(page.locator('[data-ui="FactoryPulse"]')).toBeVisible();
     await expect(page.locator("h1").first()).toContainText("Decisions");
     await expect(page.locator('[data-ui="DecisionsDashboard"]')).toBeVisible();
@@ -153,6 +155,7 @@ test.describe("T-F7-06: the production build (budget changed under CR-W29)", () 
       console.warn(`budget warning: ${total} B gzipped (over ${WARN})`);
     }
     expect(total, `gzipped JS: ${JSON.stringify(sizes)}`).toBeLessThanOrEqual(LIMIT);
+    await page.emulateMedia({ reducedMotion: "reduce" }); // settled colours for axe (motion.css)
     await expectNoViolations(page);
     await attachShot(page, test.info(), "budget-decisions");
   });
