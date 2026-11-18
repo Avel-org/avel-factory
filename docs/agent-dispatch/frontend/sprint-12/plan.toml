@@ -1,0 +1,114 @@
+# frontend/sprint-12: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-12
+# Render it:  scripts/render.py frontend/sprint-12   (after approval), then commit the folder.
+#
+# The wiring sprint's first ticket (CR-W29, E14: "Sign-in is the first ticket of the wiring sprint,
+# before any screen talks to the API"). Javaris, Nov 17 (to OSA): fewer, bigger tickets; a night
+# makes a few substantial PRs. T-F13 (sprint-13) brings the typed client, Settings live and the
+# CLI login approval with step-up.
+# Renders only when: T-F10 is merged; CR-W30 A (the auth mock) is on main; Javaris has ruled on
+# /'s budget (a guard runs before Decisions is interactive, and / has 117 B of headroom).
+
+lane = "frontend"
+sprint = "sprint-12"
+step = 1
+title = "Sign-in guards the control room"
+goals = [
+  "Signed out, every path lands on Sign in. Signing in returns you where you were going, and Settings signs you out",
+]
+done_when = [
+  "Step 0 and Step 1 plan, test 7 as the web shows it (the 11th failed sign-in is refused, against the mock), and login.md's LG scenarios that this ticket owns pass under AVEL_API=mock",
+]
+sources = [
+  { path = "docs/ui-contracts/login.md", why = "the sign-in UI contract: the wire, the guard, /login, sign-out, the mock, the LG scenarios" },
+  { path = "docs/design/CR-W29 The control room from the design export.md", why = "E14 (sign-in first), E16 and decision 6 (/'s budget), E4 (new code is TypeScript)" },
+  { path = "docs/design/CR-W30 The web's auth wire and a minified contract.md", why = "A: the auth mock this ticket builds against" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "item 5 (Better Auth: one operator, sign-up off, lockout), Rate limits, test 7" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "TanStack Start 1.169 with TanStack Router 1.170, React 19.3, Vite. / renders the export on the client only (ssr: false); __root's beforeLoad already reads the theme cookie through createServerFn. Playwright 1.64 with axe-core; playwright.config.ts starts a vite dev server with AVEL_API=mock, whose /api middleware is contract-mock's fetch"
+layout = "apps/web/src (TanStack routes, data/client.ts), apps/web/control-room (the export, plain JSX, SOURCE.md logs every change), apps/web/e2e and apps/web/test"
+conventions = [
+  "AGENTS.md; CR-W29 E4: new code is strict TypeScript and Biome-clean; the export's JSX changes only where a ticket says, each change logged in SOURCE.md",
+  "No new dependency: there's no TanStack Query and no better-auth in apps/web. login.md's QueryClient parts read as the router context here (see the ticket's notes)",
+]
+notes = [
+  "login.md was written for the pre-export shell (modules/system, _shell, QueryClient). This ticket's notes say how it maps onto the export; where they disagree with login.md, the notes win",
+]
+
+[[ticket]]
+id = "T-F12"
+slug = "sign-in"
+title = "Sign-in, the session guard and sign-out"
+goal = "Signed out, opening any page of the control room shows Sign in, never the shell. Signing in lands you on the page you asked for, a reload keeps you signed in, and Sign out in Settings ends it."
+rigor = "full"
+refs = ["login.md sections 0 to 4 and 7", "CR-W29 E14", "CR-W30 A", "Step 0 and Step 1 plan, item 5 and test 7", "Javaris, Nov 17: fewer, bigger tickets"]
+depends_on = ["T-F10"]
+may_change = [
+  "apps/web/src/auth/**",
+  "apps/web/src/routes/__root.tsx",
+  "apps/web/src/routes/login.tsx",
+  "apps/web/src/routeTree.gen.ts",
+  "apps/web/control-room/src/pages/settings/SettingsPage.jsx",
+  "apps/web/control-room/SOURCE.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/control-room/src/mock/**",
+  "apps/web/control-room/contract/**",
+  "apps/web/src/data/**",
+]
+context = [
+  { path = "docs/ui-contracts/login.md", why = "the screen, the wire, the guard and the copy (sections 0 to 4); its section 5 is the mock CR-W30 A builds" },
+  { path = "apps/web/src/routes/__root.tsx", why = "the guard goes in its beforeLoad, beside the theme's createServerFn" },
+  { path = "apps/web/src/routes/index.tsx", why = "/ is client-only; the guard must decide before the control room loads" },
+  { path = "apps/web/control-room/src/pages/settings/SettingsPage.jsx", why = "the Account section and Sign out go here" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "what / may load: 220 KB, or what Javaris rules for this ticket" },
+  { path = "docs/ui-reference/control-room-design-fidelity.md", why = "the export's tokens, type and focus rules the Sign in card uses" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "The wire is login.md section 1, called with fetch from apps/web/src/auth/api.ts only. It returns only the named fields: never token, ipAddress or the password. Nothing goes in localStorage, sessionStorage or a URL except next",
+  "The guard is server-side: __root's beforeLoad calls a createServerFn that forwards the request's cookie to GET /api/auth/get-session and returns { session } or null. Signed out on any path but /login, it redirects to /login?next=… (login.md section 2, safeNext exactly as written there, hash kept), so the shell is never drawn signed out. A failed session read counts as signed out. Signed in on /login, it redirects to next or /",
+  "login.md's QueryClient becomes the router context: the session lives in __root's context, and sign-in calls router.invalidate() before navigating. The 401-from-a-contract-route path (login.md section 2, LG-06) waits for T-F13, because no screen calls the API yet",
+  "/login is its own TanStack route outside the control room, ssr: true, styled with the export's tokens (fidelity spec). login.md section 3 gives its markup, states and copy. Where it names mh, Button or StatusGlyph, use the export's own equivalents and name them in a comment",
+  "Sign-out (login.md section 4) is an Account section in the export's SettingsPage.jsx: Signed in as {email}, and Sign out. On 200 it navigates to /login with replace. Log the change in SOURCE.md",
+  "Budget: the guard must add next to nothing to /'s first load (the server function's stub only). Copy budget.spec's figure into the report and the PR text as a number. If / goes over its limit, stop with needs-cr. Don't move code out of / to make room",
+  "Review, full rigor (G7): Fenn's review, then the second review against docs/review/security-checklist.md, then Javaris merges. The reviewer also applies the full-diff rule: run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
+  "Size: about 60 minutes. If the build can't finish, report blocked with what's done. Don't cut a state or a rule",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = [
+  "apps/web/test/sign-in/**",
+  "apps/web/e2e/sign-in/**",
+  "apps/web/e2e/support/auth.setup.ts",
+  "apps/web/playwright.config.ts",
+]
+behaviours = [
+  "unit: LG-03, safeNext keeps /missions?x=1#a and #/settings-style hashes, and turns every hostile or oversized next into /",
+  "unit: auth/api.ts returns only login.md section 1's fields from the mock's raw get-session (no token, no ipAddress), and reads sign-in and sign-out for their status only",
+  "unit: LG-02 and LG-04, the submit states and copy (empty field, busy, one request, 401 with Password cleared and focused, 429 with and without X-Retry-After at a fixed now, a 500 and a rejected fetch)",
+  "e2e: LG-20, signed out, the server answers / and /missions?x=1 with a redirect to /login with the right next, and no control-room element renders. Signing in lands on next, a reload stays signed in, and no page's HTML holds the session cookie's value or a \"token\" key",
+  "e2e: LG-21, at 390 and 1280, light and night, a wrong password's alert, then the right one. At 390 the fields and the button are 44px tall with no sideways scroll. /login passes the WCAG 2.2 AA check (E17)",
+  "e2e: the 11th failed sign-in within 15 minutes is refused with the Too many attempts copy, even with the right password (Step 1 test 7, against the mock)",
+  "e2e: LG-22, Sign out from Settings lands on /login, and Back lands there too",
+  "e2e: LG-23, a setup project signs in once and saves storageState, and every existing spec (T-F7 to T-F11) runs signed in and unchanged. The LG specs start signed out",
+]
