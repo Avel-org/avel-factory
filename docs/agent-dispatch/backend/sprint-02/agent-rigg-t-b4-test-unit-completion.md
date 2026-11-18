@@ -58,4 +58,4 @@ Task doc T-B4-01 to 06 map one-to-one onto the files above. Spike 1 check 2 is T
 - `pnpm test` has other known red from @avel/contract tsc timeouts under load; that is machine load, not this ticket (Axis).
 
 ## Lock line
-- T-B4: packages/server/test/db-service/** @ COMMIT
+- T-B4: packages/server/test/db-service/** @ 5c0c633 (the tests commit; the report-only commit after it changes no test)
