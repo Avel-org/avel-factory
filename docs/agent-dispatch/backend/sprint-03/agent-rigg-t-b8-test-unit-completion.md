@@ -1,96 +1,74 @@
 status: done
 ticket: T-B8
 
-All eight behaviours have a test and every one fails on the start commit (`01066e4`) for the right reason. Axis ruled on the one assertion that couldn't be built in T-B8 (Deviations, item 1) and the seams below. Nothing was loosened.
+F2 fix of T-B8-02 only, after Soap's test-dispute (the plan's boot check, `show lc_messages` when DbLive is built, can't pass against a Postgres that never answers). Axis ruled the test at fault. `pool-timeouts.test.ts` changed in T-B8-02 only; T-B8-03 and every other file are byte-identical.
 
 ## Pre-flight
 
-Run on the start commit plus my tests. The new tests fail, so the failures below are expected.
+Postgres from `scripts/pg-local.sh start`. The worktree had no `node_modules`; I ran `pnpm install --frozen-lockfile` (no tracked file changed).
 
 | Command | Result |
 | --- | --- |
 | `pnpm build` | exit 0 |
-| `pnpm typecheck` | exit 1: only `idempotency.test.ts` and `rate-limit.test.ts` fail. `idempotency.ts` and `rate-limit.ts` don't exist yet (TS2307), and the other errors are `unknown` types cascading from that. Every other file typechecks clean. |
-| `pnpm lint` | exit 0 (2 existing warnings) |
-| `pnpm test` | exit 1: 6 failed, 960 passed (attempt a2 after the ruling). The 6 are my tests (the 5 failing tests plus the two files that can't load). Before my tests: 44 passed in the server. |
-| `pnpm --filter @avel/server test` | exit 1: the same failures |
-| `pnpm --filter @avel/server typecheck` | exit 1: the same two files as above |
-| `pnpm --filter @avel/server check:effect` | exit 1: two `missingEffectContext` errors in `idempotency.test.ts`, from the missing import. The 5 warnings are older. |
-| `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | stops at typecheck, exit 1, as above |
+| `pnpm typecheck` | exit 0 |
+| `pnpm lint` | exit 0 (2 existing warnings in apps/web e2e) |
+| `pnpm test` | exit 0: 55 files, 971 tests passed |
+| `pnpm --filter @avel/server test` | exit 0: 17 files, 54 tests passed |
+| `pnpm --filter @avel/server typecheck` | exit 0 |
+| `pnpm --filter @avel/server check:effect` | exit 0: 0 errors, 6 warnings and 2 messages, all in test files (as in Soap's report) |
+| `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | each part exit 0 above |
 
-`pnpm build` has to run before the server tests: `@avel/contract` has no `dist` until it does. No `.skip`, `.only` or `todo` anywhere.
+The new T-B8-02 passed 3 runs in a row on the build.
 
 ## Failing first
 
-From `pnpm --filter @avel/server exec vitest run test/platform-hardening`:
+On the start commit's source (`git checkout 01066e4 -- packages/server/src`, then restored), `vitest run test/platform-hardening/pool-timeouts.test.ts -t T-B8-02`:
 
 ```
- × T-B8-04 ends as a defect, the process stays up, and the next withTransaction commits
-     AssertionError: expected [ …(1) ] to deeply equal []        (backend-death.test.ts:77, an uncaughtException from the dead client)
- × T-B8-01 logs the requestId and the pg code, never 'params:' or the value; answers 500 with no database text
-     AssertionError: expected 0 to be greater than or equal to 1  (defect-log.test.ts:60, no log line holds code 23502)
- × T-B8-05 fails to build when lc_messages isn't C, POSIX or en*, and the failure names lc_messages
-     AssertionError: expected false to be true                    (the layer builds against lc_messages = de_DE.UTF-8)
- × T-B8-02 withTransaction fails as a defect within the connect timeout, and an interruption ends it
-     AssertionError: withTransaction hung past the guard: expected 'hung' not to be 'hung'
- × T-B8-03 ends as a defect and the pool client is released (11 runs, more than the pool holds)
-     AssertionError: expected [ false, false, … ] to deeply equal [ true, true, … ]   (pg_sleep(1) is never cut off)
- FAIL idempotency.test.ts  Error: Cannot find module '../../src/platform/idempotency.ts'   (T-B8-06, T-B8-07)
- FAIL rate-limit.test.ts   Error: Cannot find module '../../src/platform/rate-limit.ts'    (T-B8-08, plus its 429 test)
+ × T-B8-02 · Postgres that stops answering after the layer is built > withTransaction fails as a defect within the connect timeout, and an interruption ends it 5238ms
+AssertionError: withTransaction hung past the guard: expected 'hung' not to be 'hung'   (pool-timeouts.test.ts:122)
 ```
+
+The layer builds (boot check absent there), the acquire hangs, and the guard reports "hung" (B2).
 
 ## What changed
 
-All in `packages/server/test/platform-hardening/`:
-
-- `support.ts`: the harness. It names the seams (below) and has `dbLayer(url, env)`, which feeds the settings through `ConfigProvider.fromEnvRecord`, and `hasDie`.
-- `defect-log.test.ts`: T-B8-01. A NOT NULL violation (23502) stays a defect. One test checks the log and the 500 with no database text. The message-text test was removed per Axis's ruling.
-- `pool-timeouts.test.ts`: T-B8-02 and T-B8-03.
-- `backend-death.test.ts`: T-B8-04.
-- `lc-messages.test.ts`: T-B8-05.
-- `idempotency.test.ts`: T-B8-06 (plus the 409 over HTTP) and T-B8-07.
-- `rate-limit.test.ts`: T-B8-08 (plus the 429 over HTTP).
+- `packages/server/test/platform-hardening/pool-timeouts.test.ts`: the black hole is replaced by `proxy(target)`, a TCP proxy in front of the test's real Postgres (from `testDatabase`).
+  - Pass-through forwards both ways. `hang()` destroys every socket it proxied (waiting on their `close` events and a few `setImmediate` turns, no wall-clock sleep), then accepts new connections and never answers.
+  - Each subtest builds DbLive through the proxy in pass-through (the boot check passes), switches to hang inside the program, then runs `withTransaction`.
+  - Subtest 1 (connect timeout 400): dies as a defect within the guard.
+  - Subtest 2 (20000): the fiber is interrupted while the connect is pending and it ends within the guard.
+  - Both assert `hungConnections() >= 1`: a new connection reached the proxy after the switch, so the failure came from a pending connect, not a pool client killed by `hang`.
+  - Subtest 1 also asserts the layer built (`Exit.isSuccess`), so a boot failure can't pass as the defect.
+- This report.
 
 ## Contract to files
 
-| Requirement | Test |
+| Requirement (Axis's ruling, points 1 to 7) | Where |
 | --- | --- |
-| T-B8-01: the defect log has the requestId and the pg code, with no params or bound value; 500 has no database text; the message is the contract's | `defect-log.test.ts` |
-| T-B8-02: an unanswered connect ends as a defect within the timeout; interruption ends a pending connect | `pool-timeouts.test.ts` |
-| T-B8-03: a statement past the timeout is a defect and the client is released (11 runs, more than the pool's 10; none left idle in a transaction; the next transaction commits) | `pool-timeouts.test.ts` |
-| T-B8-04: a killed backend is a defect, no uncaught exception, and the next transaction commits | `backend-death.test.ts` |
-| T-B8-05: a non-English lc_messages fails the build and names lc_messages; `C`, `POSIX` and `en_GB.UTF-8` build | `lc-messages.test.ts` |
-| T-B8-06, T-B8-07: the idempotency behaviours, plus the 24 hour expiry on `expires_at` | `idempotency.test.ts` |
-| T-B8-08: the 6th call, key isolation, the next window, `retryAfterMs` | `rate-limit.test.ts` |
-
-## Seams (confirmed by Axis)
-
-These are names and shapes I chose, because the task doc doesn't fix them. Also in `support.ts`.
-
-- `DbLive` reads `DATABASE_CONNECT_TIMEOUT_MS` (default 5000) and `DATABASE_STATEMENT_TIMEOUT_MS` (default 30000) as strings through Config. A bad `lc_messages` makes the build die with a message naming `lc_messages`.
-- `src/platform/errors.ts` gets `IdempotencyKeyReused`, `IdempotencyInProgress`, `TokenReplayed` and `TooManyRequests`, with table rows `IDEMPOTENCY_KEY_REUSED`, `IDEMPOTENCY_IN_PROGRESS`, `TOKEN_REPLAYED` and `TOO_MANY_REQUESTS`. `TooManyRequests.details` is `{ retryAfterMs }`, because the contract's 429 data requires it.
-- `src/platform/idempotency.ts` exports `Idempotency`, an Effect service with `begin(principal, key, route, bodySha256)` and `complete(principal, key, status, response, { sensitive })`. `begin` returns `{ _tag: "New" }` or `{ _tag: "Replay", status, response }`. `IdempotencyLive` is `Layer<Idempotency, never, Db>`. Both methods have no requirements.
-- `src/platform/rate-limit.ts` exports `RateLimit` with `check(name, key): Effect<void, TooManyRequests>`, and `RateLimitLive`, which reads Config. A window is one minute. `retryAfterMs` is what is left of it, so the 6th call 10 s into a window gives 50000. The tests start the clock on a whole minute so a window that starts at the first call and an aligned one agree. Names with defaults: `"device-login"` 5 and `"webhook"` 60. T-B9's names `sign-in-email` and `sign-in-ip` are my guess. The test only uses `"sign-in-ip"` as another name that must be a separate window.
+| 1: T-B8-02 only | `pool-timeouts.test.ts` diff touches nothing from `openTransactions` down |
+| 2: TCP proxy with pass-through and hang, switching destroys proxied sockets | `proxy()` |
+| 3: build in pass-through, hang, run | both subtests |
+| 4: at least one new connection after the switch | `hungConnections()` assertions |
+| 5: fails on the start commit with "hung" | Failing first |
+| 6: no locks.md | untouched |
+| 7: no sleeps | event waits and `setImmediate` turns only |
 
 ## Deviations
 
-1. **T-B8-01's `body.message` assertion is not in T-B8.** The task wants it to equal errorMap's text, but `effect-handler.ts` hardcodes "Internal server error" and isn't T-B8's file. Axis moved body.message to T-B9 (effect-handler.ts is T-B9's file) and had me delete that second test. The remaining test is unchanged, including no database text in the body.
-2. **T-B8-02 uses a socket that accepts and never answers, not a closed port.** A closed port is refused at once, which fails as a defect today, so the test would pass before the build (B2). The black-hole socket hangs today and the timeout test has to catch it. The test also covers interruption of a pending connect.
-3. The pool tests use the real clock, with a 4 s guard around real sockets. Everything with time in it (idempotency, rate limit) uses TestClock.
-4. T-B8-04 detects "the process stays up" by listening for `uncaughtException` in the test and asserting none arrives, since vitest would otherwise only report an unhandled error.
-5. E13's four per route doesn't apply: T-B8 adds no routes. I covered the error body with `requestId` over HTTP for 429 and IDEMPOTENCY_KEY_REUSED and for the defect 500. The happy path, replay and stale `rowVersion` are in T-B10 and T-B11.
+- The ruling doesn't say how to be sure the pool dropped the idle boot client before `withTransaction` runs. `hang()` waits for the destroyed sockets' `close` and 20 `setImmediate` turns. The `hungConnections` assertion would catch a run where the dead client was reused.
+- The 400 ms subtest logs two `idle database client error` lines from the pool's listener when the proxied sockets are destroyed. That's expected and the process stays up.
 
 ## Limitations
 
-- The pool tests wait on real sockets. They finish well inside the 60 s limit, but T-B8-03 takes about 12 s on the start commit.
-- `lc_messages` is set to a locale the container may not have. Postgres on alpine accepts any name, so the test only reads the setting. It couldn't be run against a Postgres that rejects unknown locales.
-- Whether the connect timeout in `DbLive` can also cover the `withTransaction` path through `Effect.timeout`, which a TestClock suite would never fire, is left to the build.
-- `check:effect` can't be clean until the missing modules exist.
+- The pool tests use real sockets and the real clock with a 4 s guard (as before).
+- The "dead idle client not reused" wait is by event-loop turns; I didn't see it flake in 3 runs on the build and 1 on the start commit.
 
 ## Lock line
 
-- T-B8: packages/server/test/platform-hardening/support.ts, packages/server/test/platform-hardening/defect-log.test.ts, packages/server/test/platform-hardening/pool-timeouts.test.ts, packages/server/test/platform-hardening/backend-death.test.ts, packages/server/test/platform-hardening/lc-messages.test.ts, packages/server/test/platform-hardening/idempotency.test.ts, packages/server/test/platform-hardening/rate-limit.test.ts @ <branch tip>
+None by instruction: Axis relocks after review (F2). `locks.md` is untouched.
 
 ## Messages received
 
-- OSA, relaying Axis: (1) delete the second defect-log test and the unused errorMap import: followed. (2) report to status done, note body.message moved to T-B9, commit, leave locks.md: followed. (3) the seams, the black-hole socket for T-B8-02 and the sign-in names are confirmed: no change needed.
+1. OSA, relaying Axis: the F2 fix of T-B8-02, seven points. Followed (see Contract to files).
+2. OSA: the ruling crossed with my `blocked`; carry on, no lock line, commit the test and report with status done. Followed.
