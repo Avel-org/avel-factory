@@ -1,7 +1,7 @@
-status: needs-cr
+status: done
 ticket: T-B8
 
-All eight behaviours have a test and every one fails on the start commit (`01066e4`) for the right reason. One assertion in T-B8-01 can't be built inside T-B8's territory, so the lead has to rule on it before the lock (see Deviations, item 1). Nothing was loosened.
+All eight behaviours have a test and every one fails on the start commit (`01066e4`) for the right reason. Axis ruled on the one assertion that couldn't be built in T-B8 (Deviations, item 1) and the seams below. Nothing was loosened.
 
 ## Pre-flight
 
@@ -12,8 +12,8 @@ Run on the start commit plus my tests. The new tests fail, so the failures below
 | `pnpm build` | exit 0 |
 | `pnpm typecheck` | exit 1: only `idempotency.test.ts` and `rate-limit.test.ts` fail. `idempotency.ts` and `rate-limit.ts` don't exist yet (TS2307), and the other errors are `unknown` types cascading from that. Every other file typechecks clean. |
 | `pnpm lint` | exit 0 (2 existing warnings) |
-| `pnpm test` | exit 1: 7 failed, 960 passed. The 7 are my tests (T-B8-01 has two). Before my tests: 44 passed in the server. |
-| `pnpm --filter @avel/server test` | exit 1: the same 7 failures |
+| `pnpm test` | exit 1: 6 failed, 960 passed (attempt a2 after the ruling). The 6 are my tests (the 5 failing tests plus the two files that can't load). Before my tests: 44 passed in the server. |
+| `pnpm --filter @avel/server test` | exit 1: the same failures |
 | `pnpm --filter @avel/server typecheck` | exit 1: the same two files as above |
 | `pnpm --filter @avel/server check:effect` | exit 1: two `missingEffectContext` errors in `idempotency.test.ts`, from the missing import. The 5 warnings are older. |
 | `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | stops at typecheck, exit 1, as above |
@@ -29,8 +29,6 @@ From `pnpm --filter @avel/server exec vitest run test/platform-hardening`:
      AssertionError: expected [ …(1) ] to deeply equal []        (backend-death.test.ts:77, an uncaughtException from the dead client)
  × T-B8-01 logs the requestId and the pg code, never 'params:' or the value; answers 500 with no database text
      AssertionError: expected 0 to be greater than or equal to 1  (defect-log.test.ts:60, no log line holds code 23502)
- × T-B8-01 the 500's message is the contract's text (t-b3-rigg-03)
-     AssertionError: expected 'Internal server error' to be 'Something went wrong'
  × T-B8-05 fails to build when lc_messages isn't C, POSIX or en*, and the failure names lc_messages
      AssertionError: expected false to be true                    (the layer builds against lc_messages = de_DE.UTF-8)
  × T-B8-02 withTransaction fails as a defect within the connect timeout, and an interruption ends it
@@ -46,7 +44,7 @@ From `pnpm --filter @avel/server exec vitest run test/platform-hardening`:
 All in `packages/server/test/platform-hardening/`:
 
 - `support.ts`: the harness. It names the seams (below) and has `dbLayer(url, env)`, which feeds the settings through `ConfigProvider.fromEnvRecord`, and `hasDie`.
-- `defect-log.test.ts`: T-B8-01. A NOT NULL violation (23502) stays a defect. The first test checks the log and the 500; the second checks the message text.
+- `defect-log.test.ts`: T-B8-01. A NOT NULL violation (23502) stays a defect. One test checks the log and the 500 with no database text. The message-text test was removed per Axis's ruling.
 - `pool-timeouts.test.ts`: T-B8-02 and T-B8-03.
 - `backend-death.test.ts`: T-B8-04.
 - `lc-messages.test.ts`: T-B8-05.
@@ -65,7 +63,7 @@ All in `packages/server/test/platform-hardening/`:
 | T-B8-06, T-B8-07: the idempotency behaviours, plus the 24 hour expiry on `expires_at` | `idempotency.test.ts` |
 | T-B8-08: the 6th call, key isolation, the next window, `retryAfterMs` | `rate-limit.test.ts` |
 
-## Seams for the lead to confirm before the lock
+## Seams (confirmed by Axis)
 
 These are names and shapes I chose, because the task doc doesn't fix them. Also in `support.ts`.
 
@@ -76,7 +74,7 @@ These are names and shapes I chose, because the task doc doesn't fix them. Also 
 
 ## Deviations
 
-1. **T-B8-01 can't be fully built inside T-B8's territory.** The task wants `body.message` to equal errorMap's text, which is "Something went wrong". Today `effect-handler.ts` hardcodes `"Internal server error"` in the ORPCError, and app.ts copies it into the body. T-B8's notes say effect-handler.ts doesn't change, and it is in my "never change" list and Soap's `must_not_change`. I wrote the assertion as its own test (`the 500's message is the contract's text`) so the rest of T-B8-01 stays independent. **The lead needs to either let T-B8 change that one string in `effect-handler.ts`** (T-B9 owns the file later and builds after T-B8, so there's no clash), **or drop the assertion with a change request.** I did not loosen it. That is why the status is `needs-cr`.
+1. **T-B8-01's `body.message` assertion is not in T-B8.** The task wants it to equal errorMap's text, but `effect-handler.ts` hardcodes "Internal server error" and isn't T-B8's file. Axis moved body.message to T-B9 (effect-handler.ts is T-B9's file) and had me delete that second test. The remaining test is unchanged, including no database text in the body.
 2. **T-B8-02 uses a socket that accepts and never answers, not a closed port.** A closed port is refused at once, which fails as a defect today, so the test would pass before the build (B2). The black-hole socket hangs today and the timeout test has to catch it. The test also covers interruption of a pending connect.
 3. The pool tests use the real clock, with a 4 s guard around real sockets. Everything with time in it (idempotency, rate limit) uses TestClock.
 4. T-B8-04 detects "the process stays up" by listening for `uncaughtException` in the test and asserting none arrives, since vitest would otherwise only report an unhandled error.
@@ -95,4 +93,4 @@ These are names and shapes I chose, because the task doc doesn't fix them. Also 
 
 ## Messages received
 
-None.
+- OSA, relaying Axis: (1) delete the second defect-log test and the unused errorMap import: followed. (2) report to status done, note body.message moved to T-B9, commit, leave locks.md: followed. (3) the seams, the black-hole socket for T-B8-02 and the sign-in names are confirmed: no change needed.

@@ -1,11 +1,12 @@
 /**
  * T-B8-01: a defect thrown by a Drizzle query is logged with the request ID and the pg error's
- * code, and the log holds no bound value; the response is a 500 with the contract's message.
+ * code, and the log holds no bound value; the response is a 500 with no database text.
+ * (body.message equal to errorMap's text moved to T-B9, which owns effect-handler.ts.)
  *
  * The query breaks a NOT NULL (23502), which isn't one of T-B3's mapped violations, so it stays
  * a defect. Drizzle's DrizzleQueryError message is the query and its params (t-b3-rigg-01).
  */
-import { ErrorBody, errorMap, REQUEST_ID_HEADER } from "@avel/contract";
+import { ErrorBody, REQUEST_ID_HEADER } from "@avel/contract";
 import { users } from "@avel/db";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
@@ -64,11 +65,5 @@ describe("T-B8-01 · a Drizzle defect is logged without its bound values", () =>
       expect(line).not.toContain("params:");
       expect(line).not.toContain(SECRET);
     }
-  });
-
-  it("the 500's message is the contract's text (t-b3-rigg-03)", async () => {
-    const { text } = await breakingRequest();
-    const body = ErrorBody.parse(JSON.parse(text));
-    expect(body.message).toBe(errorMap.INTERNAL_SERVER_ERROR.message);
   });
 });
