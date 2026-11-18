@@ -34,6 +34,7 @@
 # Change after approval (Axis, Nov 18, t-b11-rigg-01): T-B11's Territory gains packages/contract/package.json for one
 # ./minified subpath export (4 lines, Axis's A4). The contract's index loads zod and its locale (D58), so the web
 # can't take the minified router from it. The lock check holds post-lock commits to the Territory, A4 included.
+# T-B8's reading list drops sprint-02/findings/t-b3-rigg-01.md: findings stay in .git/avel/reports, not the repo.
 # Backlog, not in this sprint: T-B12 (sprint-04, first), CR-W30 B and C (after T-B10's step-up), the T-B5 relock P3 and t-b7-rigg-01 (lock-check tests), the contract-test timeout
 # (needs a CR and Zero), the declined db flake (CR-40). After T-B11: tests 10 and 11, spike 2 (DBOS), the jobs engine,
 # event consumers and the factory repo loader, which closes Step 1.
@@ -114,7 +115,6 @@ must_not_change = [
   "packages/contract/**",
 ]
 context = [
-  { path = "docs/agent-dispatch/backend/sprint-02/findings/t-b3-rigg-01.md", why = "why the defect log carries Drizzle's params (a DrizzleQueryError's message is the query and its params)" },
   { path = "packages/server/src/platform/db/db.ts", why = "T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping" },
   { path = "packages/server/src/platform/effect-handler.ts", why = "line 76 logs Cause.pretty for a defect; read only" },
   { path = "packages/server/src/platform/logger.ts", why = "the JSON logger that writes the cause; read only" },

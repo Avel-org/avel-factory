@@ -47,18 +47,17 @@ You review the builder's work on this ticket, from the diff and this document on
 7. `docs/design/Backend modules and build plan.md`: section 8: auth decisions, the order inside Step 1, Breach's attacks; module table: platform owns Better Auth's tables, cli_sessions, step_up_grants, idempotency_keys; audit owns activity_log
 8. `docs/design/API routes.md`: routes 1 to 5 and the rules on every write
 9. `docs/design/Build rules.md`: C4 (full rigor), E5 (dependencies), E6 (no secrets), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6
-10. `docs/agent-dispatch/backend/sprint-02/findings/t-b3-rigg-01.md`: why the defect log carries Drizzle's params (a DrizzleQueryError's message is the query and its params)
-11. `packages/server/src/platform/db/db.ts`: T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping
-12. `packages/server/src/platform/effect-handler.ts`: line 76 logs Cause.pretty for a defect; read only
-13. `packages/server/src/platform/logger.ts`: the JSON logger that writes the cause; read only
-14. `packages/server/src/platform/db/errors.ts`: the FK split reads Postgres's English message (t-b3-rigg-02); read only
-15. `packages/db/src/schema/platform.ts`: idempotency_keys: (principal, key), route, body_sha256, status in_progress or completed, http_status, response, expires_at
-16. `packages/contract/src/errors.ts`: IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS, TOKEN_REPLAYED, TOO_MANY_REQUESTS
-17. `docs/design/DATABASE.md`: idempotency_keys and its purge (after expires_at); a response carrying a secret or token is never stored
-18. `packages/server/test/platform-hardening/**`: the locked acceptance tests: they define done
-19. `docs/agent-dispatch/backend/sprint-03/agent-soap-t-b8-build-completion.md`: the builder's completion report
-20. `docs/review/security-checklist.md`: full rigor: work through it item by item
-21. `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review.md`: this document: follow it exactly
+10. `packages/server/src/platform/db/db.ts`: T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping
+11. `packages/server/src/platform/effect-handler.ts`: line 76 logs Cause.pretty for a defect; read only
+12. `packages/server/src/platform/logger.ts`: the JSON logger that writes the cause; read only
+13. `packages/server/src/platform/db/errors.ts`: the FK split reads Postgres's English message (t-b3-rigg-02); read only
+14. `packages/db/src/schema/platform.ts`: idempotency_keys: (principal, key), route, body_sha256, status in_progress or completed, http_status, response, expires_at
+15. `packages/contract/src/errors.ts`: IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS, TOKEN_REPLAYED, TOO_MANY_REQUESTS
+16. `docs/design/DATABASE.md`: idempotency_keys and its purge (after expires_at); a response carrying a secret or token is never stored
+17. `packages/server/test/platform-hardening/**`: the locked acceptance tests: they define done
+18. `docs/agent-dispatch/backend/sprint-03/agent-soap-t-b8-build-completion.md`: the builder's completion report
+19. `docs/review/security-checklist.md`: full rigor: work through it item by item
+20. `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-review.md`: this document: follow it exactly
 
 ## 3. Domain
 
