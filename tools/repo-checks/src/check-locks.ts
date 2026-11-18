@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 
 // The lock check (Build rules H6). For a PR from t/<B|F><n>-<slug> it reads the ticket's rendered
 // build task doc (its Territory) and its locks.md line, then holds the builder's commits to them.
-// The builder's commits are the commits after the lock line's sha.
+// The builder's commits are every commit after the lock line's sha that isn't on the base branch,
+// side branches included. The tests report (the checker's, rewritten by the kit) is exempt.
 
 const root = process.env.AVEL_REPO_ROOT ?? fileURLToPath(new URL("../../../", import.meta.url));
 const branch = process.env.GITHUB_HEAD_REF ?? "";
@@ -79,6 +80,33 @@ function findBuildDoc(ticketLower: string): string | undefined {
   return undefined;
 }
 
+function frontMatter(path: string): string {
+  return /^---\n([\s\S]*?)\n---/.exec(readFileSync(join(root, path), "utf8"))?.[1] ?? "";
+}
+
+// The tests report: the `report:` of the tests task doc that the build doc's `after:` names.
+function testsReport(doc: string): string | undefined {
+  const after = /^after:\s*\[(.*)\]\s*$/m.exec(frontMatter(doc))?.[1] ?? "";
+  for (const name of after.split(",").map((n) => n.trim())) {
+    const path = `${dirname(doc)}/${name}.md`;
+    if (!name || !existsSync(join(root, path))) continue;
+    const front = frontMatter(path);
+    if (!/^kind:\s*tests\s*$/m.test(front)) continue;
+    const report = /^report:\s*(\S+)\s*$/m.exec(front)?.[1];
+    if (report) return report;
+  }
+  return undefined;
+}
+
+// The base branch the PR targets: origin/$GITHUB_BASE_REF, else a local main (scratch repos).
+function baseRef(): string | undefined {
+  const wanted = process.env.GITHUB_BASE_REF;
+  const candidates = [...(wanted ? [`origin/${wanted}`] : []), "main"];
+  return candidates.find(
+    (c) => run("git", ["rev-parse", "--verify", "-q", `${c}^{commit}`]).status === 0,
+  );
+}
+
 // The "You may change" list of the doc's Part 5.
 function territory(doc: string): string[] {
   const lines = readFileSync(join(root, doc), "utf8").split("\n");
@@ -139,6 +167,7 @@ function main(): void {
 
   const problems: string[] = [];
   const allowed = territory(doc);
+  const report = testsReport(doc);
   const [, lane = "", sprint = ""] = /^docs\/agent-dispatch\/([^/]+)\/([^/]+)\//.exec(doc) ?? [];
 
   const verify = run("python3", ["scripts/render.py", "--verify", `${lane}/${sprint}`]);
@@ -148,9 +177,17 @@ function main(): void {
   if (run("git", ["cat-file", "-e", `${lock.sha}^{commit}`]).status !== 0) {
     fail([...problems, `lock sha ${lock.sha} for ${ticket} isn't in the history (fetch-depth 0?)`]);
   }
-  // The ticket branch's own line of commits, merges included. A merge is held to what its result
-  // changed against every parent (an "evil merge"); what a merge brings in from main is main's own.
-  const commits = git("rev-list", "--reverse", "--first-parent", `${lock.sha}..HEAD`)
+  const base = baseRef();
+  if (!base) {
+    fail([
+      ...problems,
+      `no base branch to compare against (origin/${process.env.GITHUB_BASE_REF ?? "<base>"} or main): fetch-depth 0?`,
+    ]);
+  }
+  // Every commit after the lock that isn't on the base branch, side branches included. A merge is
+  // held to what its result changed against every parent (an "evil merge"); what a merge brings in
+  // from main is main's own and isn't in the range.
+  const commits = git("rev-list", "--reverse", "--topo-order", `${lock.sha}..HEAD`, `^${base}`)
     .split("\n")
     .filter(Boolean);
   const filesOf = (c: string): string[] =>
@@ -202,7 +239,7 @@ function main(): void {
   }
 
   for (const c of commits) {
-    const files = filesOf(c);
+    const files = filesOf(c).filter((f) => f !== report);
     if (files.length === 1 && files[0] === locksPath) continue;
     // The checker's fix before a relock is allowed; the Territory still applies.
     const frozen = !relocks.some((r) => isAncestor(c, r));
