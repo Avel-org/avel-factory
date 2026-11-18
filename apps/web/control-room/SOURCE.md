@@ -132,3 +132,4 @@ Copied byte for byte from `/mnt/c/Users/javar/Desktop/avel-control-room` (the de
 - `src/pages/decisions/DecisionsPage.jsx`: the empty state's art loads when the queue is empty.
 - `src/shell/TabBar.jsx`: the thinking orb (thinking-orbs) loads when Canon's tab shows it.
 - `src/shell/PageSkeleton.jsx`: the skeleton's labelled div gets role="status", because an aria-label on a div with no role fails axe's aria-prohibited-attr, and since T-F8 the skeleton shows on route changes (Zero, A4, finding t-f8-fenn-01).
+- `src/pages/roster/AgentParts.jsx`: the agent card link drops its aria-label ("name, kind, status"), which did not contain the card's visible text and failed axe's label-content-name-mismatch (WCAG 2.5.3). The link's name now comes from its visible content (T-F9-02).
