@@ -1,48 +1,50 @@
-status: blocked
+status: done
 ticket: T-F9
 
-Blocked on B2: T-F9-01 and T-F9-03 pass on the start commit, and T-F9-02 fails only on `#/roster`. T-F7 already built most of what T-F9 asks for. I did not loosen or invent anything to make them fail. The lead decides what to do with the tests that pass (see Deviations).
+Attempt a4. The tests are unchanged from a1's commit 3748f43. Zero ruled on a1's block (relayed by OSA): the tests stand, the 4 `#/roster` failures are the build's work, and the other 185 are E17's per-page AA check, kept whether or not they fail first. T-F8's lazy loading broke none of them.
 
 ## Pre-flight
-Run on the start commit `cf6cc4a`. Node 24.22.2 from nvm. `pnpm install --frozen-lockfile`, then `@avel/contract` and `@avel/contract-mock` built so vite could load its config.
-- `vite build`: ok.
-- `pnpm typecheck`: fails in `tools/docs` (`Cannot find module '@avel/db'`, an unbuilt workspace package). This is not in my files and was not fixed.
-- `pnpm lint`: ok after `biome check --write` on my two files (`Checked 205 files`, no errors).
+On 3748f43, which is main e2715aa (T-F8 merged) plus the tests. Node 24.22.2, `pnpm install --frozen-lockfile`.
+- `vite build`: ok (built in 336 ms).
+- `pnpm typecheck`: fails in `tools/docs` only (`src/schema.ts: Cannot find module '@avel/db'`, an unbuilt workspace package). `packages/server` passes. Not in my territory, not fixed. Same as a1.
+- `pnpm lint`: ok, 207 files checked, 2 warnings, no errors.
 - `vitest run`: 6 files, 30 tests passed.
-- `playwright test e2e/control-room-screens`: 189 tests, 185 passed, 4 failed (8.5 min).
-- The full `vitest && playwright` chain, and the other E2E specs, were not re-run. Their time budget did not fit. Only my directory was run.
+- `playwright test e2e/control-room-screens`: 189 tests, 185 passed, 4 failed (17.1 min).
+- Not re-run: the second pass of `vitest && playwright` over the whole `e2e/` tree, and the second `vite build` and `lint`. The full suite takes about 17 min for my directory alone. The first pass is the one recorded above, and the final `vite build`/`lint` repeat what is above on an unchanged tree.
 
 ## Failing first
-Only 4 of 189 fail, all T-F9-02, all `#/roster`, at 1280 and 390, light and night. Output (same in all four):
+Only the 4 expected tests fail, all T-F9-02, all `#/roster`, at 1280 and 390, light and night:
 ```
-axe-core WCAG 2.2 AA violations
-id: "label-content-name-mismatch", impact: "serious"
-nodes: a[href$="#/roster/canon"], a[href$="#/roster/nemi"], a[href$="#/roster/atlas"] ...
+1) screens.spec.ts:46 › T-F9-02 › desktop 1280x800 › roster (#/roster) in light
+2) screens.spec.ts:46 › T-F9-02 › desktop 1280x800 › roster (#/roster) in night
+3) screens.spec.ts:46 › T-F9-02 › phone 390x844 › roster (#/roster) in light
+4) screens.spec.ts:46 › T-F9-02 › phone 390x844 › roster (#/roster) in night
+Error: axe-core WCAG 2.2 AA violations
+  "id": "label-content-name-mismatch"   (WCAG 2.5.3, on the roster's a[href$="#/roster/<agent>"] links)
 ```
-A real defect (WCAG 2.5.3) for T-F9's build to fix, in the export's own roster page.
-Passing on the start commit: every T-F9-01 test (62), every T-F9-03 test (3), and the other T-F9-02 tests (120).
+185 pass: all of T-F9-01 (62), all of T-F9-03 (3), and 120 of T-F9-02. These are regression locks for E17's per-page check, kept by Zero's ruling.
 
 ## What changed
-- `apps/web/e2e/control-room-screens/routes.ts`: the 31 routes from the registry (PAGES) with sample ids from the sample world, the viewports (1280x800, 390x844) and the themes.
-- `apps/web/e2e/control-room-screens/screens.spec.ts`: T-F9-01 (each route shows its title, no skeleton, no page or console error); T-F9-02 (T-F7's `expectNoViolationsSettled`, light and night, both viewports; theme set through `localStorage["avel-cr"]`, asserted on `html[data-theme]`); T-F9-03 (three unknown `#/` routes show "Not found"). Every test attaches a screenshot; the config records video.
-- This report.
+- `apps/web/e2e/control-room-screens/routes.ts` (a1): 31 registry routes with sample ids, the two viewports, the two themes.
+- `apps/web/e2e/control-room-screens/screens.spec.ts` (a1): T-F9-01 title and no error; T-F9-02 `expectNoViolationsSettled`, light and night; T-F9-03 unknown routes show Not found. Each test attaches a screenshot; the config records video.
+- This report. No test changed in a4.
 
 ## Contract to files
-T-F9-01, 02 and 03 map to the three describe blocks in `screens.spec.ts`. Titles wait on `[data-ui="Skeleton"]` being gone, so they hold before and after T-F8. No wall-clock waits, `.skip`, `.only` or `todo`.
+T-F9-01, 02 and 03 map to the three describe blocks in `screens.spec.ts`. Waits are on `[data-ui="Skeleton"]` being gone and the h1 text, never the wall clock, so they hold with T-F8's lazy loading (verified: they pass on it). No `.skip`, `.only` or `todo`.
 
 ## Deviations
-- B2 not met for T-F9-01, T-F9-03 and most of T-F9-02 (see status). Options for the lead: accept them as regression locks with only the roster failing, or take the ticket to a CR, because T-F7 already delivered most of it.
-- No states test per screen (loading/empty/error): the export runs on its sample world and screens.md names no contract-mock wiring this sprint.
-- Project pages (any tab of a mission) show the mission name in h1, so those titles say nothing about which tab opened. I did not add tab assertions.
-- Each route is a separate test, not literally "one test" per task.
+- B2 is met only for the 4 roster tests; the rest pass on the start commit. Accepted by Zero (see top).
+- Each route is its own test, not literally one test per task.
+- No per-screen loading/empty/error test: the export runs on its sample world and screens.md names no contract-mock wiring this sprint.
+- Project-page titles are the mission name on every tab, so those tests don't say which tab opened.
 
 ## Limitations
-- Not covered: the export's filtered or popover states (`?status=`, the filter bar, the phone sheet), which its audit script exercises. No plain-text or no-money checks (T-F10's).
-- The suite takes ~8.5 min at one worker (video on).
-- The sample ids are copied from the world files; if the export changes, they need updating.
+- Not covered: the export's filtered and popover states (`?status=`, filter bar, phone sheet). No plain-text or no-money checks (T-F10's).
+- The sample ids are copied from the world files and need updating if the export changes.
+- The suite takes about 17 min at one worker with video on.
 
 ## Lock line
 - T-F9: apps/web/e2e/control-room-screens/routes.ts, apps/web/e2e/control-room-screens/screens.spec.ts @ <branch tip>
 
 ## Messages received
-None.
+- OSA, relaying Zero (CR-37): re-run fail-first on the rebuilt branch, expect only the 4 roster failures, change no test unless T-F8 broke one, write the report with status done. Followed: re-ran, got exactly the 4 failures, changed no test.
