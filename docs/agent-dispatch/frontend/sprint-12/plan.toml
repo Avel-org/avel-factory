@@ -7,8 +7,9 @@
 # before any screen talks to the API"). Javaris, Nov 17 (to OSA): fewer, bigger tickets; a night
 # makes a few substantial PRs. T-F13 (sprint-13) brings the typed client, Settings live and the
 # CLI login approval with step-up.
-# Renders only when: T-F10 is merged; CR-W30 A (the auth mock) is on main; Javaris has ruled on
-# /'s budget (a guard runs before Decisions is interactive, and / has 117 B of headroom).
+# Javaris approved it Nov 17 ("approve all"): CR-W30 accepted, and / held to 235 KB (CR-W29 decision 6,
+# second amendment), which this ticket's tests write into budget.spec.ts.
+# Renders only when T-F10 is merged and CR-W30 A (the auth mock) is on main.
 
 lane = "frontend"
 sprint = "sprint-12"
@@ -73,7 +74,7 @@ context = [
   { path = "apps/web/src/routes/__root.tsx", why = "the guard goes in its beforeLoad, beside the theme's createServerFn" },
   { path = "apps/web/src/routes/index.tsx", why = "/ is client-only; the guard must decide before the control room loads" },
   { path = "apps/web/control-room/src/pages/settings/SettingsPage.jsx", why = "the Account section and Sign out go here" },
-  { path = "apps/web/e2e/budget.spec.ts", why = "what / may load: 220 KB, or what Javaris rules for this ticket" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "what / may load: 235 KB, warning over 225 KB, as this ticket's tests set it (CR-W29 decision 6, second amendment)" },
   { path = "docs/ui-reference/control-room-design-fidelity.md", why = "the export's tokens, type and focus rules the Sign in card uses" },
 ]
 verify = [
@@ -89,7 +90,7 @@ notes = [
   "login.md's QueryClient becomes the router context: the session lives in __root's context, and sign-in calls router.invalidate() before navigating. The 401-from-a-contract-route path (login.md section 2, LG-06) waits for T-F13, because no screen calls the API yet",
   "/login is its own TanStack route outside the control room, ssr: true, styled with the export's tokens (fidelity spec). login.md section 3 gives its markup, states and copy. Where it names mh, Button or StatusGlyph, use the export's own equivalents and name them in a comment",
   "Sign-out (login.md section 4) is an Account section in the export's SettingsPage.jsx: Signed in as {email}, and Sign out. On 200 it navigates to /login with replace. Log the change in SOURCE.md",
-  "Budget: the guard must add next to nothing to /'s first load (the server function's stub only). Copy budget.spec's figure into the report and the PR text as a number. If / goes over its limit, stop with needs-cr. Don't move code out of / to make room",
+  "Budget: / may load at most 235 KB gzipped, with a warning over 225 KB (CR-W29 decision 6, second amendment). The guard should still add next to nothing to /'s first load (the server function's stub only). Copy budget.spec's figure into the report and the PR text as a number. If / goes over 235 KB, stop with needs-cr",
   "Review, full rigor (G7): Fenn's review, then the second review against docs/review/security-checklist.md, then Javaris merges. The reviewer also applies the full-diff rule: run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
   "Size: about 60 minutes. If the build can't finish, report blocked with what's done. Don't cut a state or a rule",
 ]
@@ -101,6 +102,7 @@ paths = [
   "apps/web/e2e/sign-in/**",
   "apps/web/e2e/support/auth.setup.ts",
   "apps/web/playwright.config.ts",
+  "apps/web/e2e/budget.spec.ts",
 ]
 behaviours = [
   "unit: LG-03, safeNext keeps /missions?x=1#a and #/settings-style hashes, and turns every hostile or oversized next into /",
@@ -110,5 +112,6 @@ behaviours = [
   "e2e: LG-21, at 390 and 1280, light and night, a wrong password's alert, then the right one. At 390 the fields and the button are 44px tall with no sideways scroll. /login passes the WCAG 2.2 AA check (E17)",
   "e2e: the 11th failed sign-in within 15 minutes is refused with the Too many attempts copy, even with the right password (Step 1 test 7, against the mock)",
   "e2e: LG-22, Sign out from Settings lands on /login, and Back lands there too",
+  "e2e: budget.spec holds / to 235 KB gzipped and warns over 225 KB (CR-W29 decision 6, second amendment). Only LIMIT, WARN and their comment change; what it measures stays T-F8's",
   "e2e: LG-23, a setup project signs in once and saves storageState, and every existing spec (T-F7 to T-F11) runs signed in and unchanged. The LG specs start signed out",
 ]

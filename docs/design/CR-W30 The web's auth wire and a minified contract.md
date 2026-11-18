@@ -1,8 +1,10 @@
-# CR-W30: The web's auth wire, the mock that serves it, and a minified contract (proposed)
+# CR-W30: The web's auth wire, the mock that serves it, and a minified contract (accepted)
 
 Nov 17, 2026 · Zero, for Javaris · Axis's lane makes it · the frontend's sprint-12 (T-F12, T-F13) waits on it
 
-Proposed, not yet accepted. The web never edits the contract or `contract-mock` (E2, I3), so this asks Axis's lane for three things. Without them, the frontend's wiring sprint can't start.
+**Accepted Nov 17 by Javaris** (to OSA: "approve all"). Axis's lane does A and D first in backend sprint-03, under the `contract` label, and Zero signs them off (I3). B and C follow the backend's step-up ticket.
+
+The web never edits the contract or `contract-mock` (E2, I3), so this asks Axis's lane for three things. Without them, the frontend's wiring sprint can't start.
 
 ## Why
 

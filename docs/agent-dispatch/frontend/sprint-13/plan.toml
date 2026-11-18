@@ -9,9 +9,9 @@
 # bigger tickets". Settings is the first live screen because its routes (4 to 7) are the ones the
 # backend ships next. Decisions (routes 52 and 54) moves to Step 6 or 7 (CR-31), and its client
 # wouldn't fit /'s budget today.
-# Renders only when: T-F12 is merged; CR-W30 B, C and D are on main; Zero has written
-# docs/ui-contracts/cli-approval.md on CR-W30 B's wire; Javaris has ruled on the session limit
-# (this ticket asks for 90 minutes and 120 turns).
+# Javaris approved it Nov 17 ("approve all"), with CR-W30 accepted and the session limit raised (#45).
+# Renders only when: T-F12 is merged; CR-W30 B, C and D are on main; #45 is merged; Zero has
+# written docs/ui-contracts/cli-approval.md on CR-W30 B's wire.
 
 lane = "frontend"
 sprint = "sprint-13"
@@ -79,7 +79,7 @@ context = [
   { path = "docs/ui-contracts/login.md", why = "section 2's 401 rule (LG-06), finished here now that screens call the API" },
   { path = "apps/web/control-room/src/pages/settings/SettingsPage.jsx", why = "the screen that moves from the sample world to the client" },
   { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Settings' routes and states" },
-  { path = "apps/web/e2e/budget.spec.ts", why = "/'s budget, unchanged by this ticket; each other route at most 150 KB (E16)" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "/'s budget (235 KB from T-F12), unchanged by this ticket; each other route at most 150 KB (E16)" },
 ]
 verify = [
   "pnpm --filter @avel/web exec vitest run",
@@ -97,7 +97,7 @@ notes = [
   "Budget: nothing of the client in /'s first load. Copy budget.spec's / figure and the Settings and approval routes' sizes into the report and the PR text as numbers. Over a limit, stop with needs-cr",
   "Against the real API: once the backend's CLI login is on main, run the approval e2e against the real server too (handoff port order: the mock first, then the real API), and say in the report whether it ran. If the real server isn't there yet, the mock run stands",
   "Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. The full-diff rule applies: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
-  "Size: more than one 60-minute session. This ticket asks for 90 minutes and 120 turns (limits.json's agent_session). If Javaris keeps 60, split it at the line between Settings and the approval page",
+  "Size: more than 60 minutes. It runs under #45's session limit (120 minutes, 150 turns). If the build can't finish, report blocked with what's done, Settings first. Don't cut a state or a rule",
 ]
 
 [ticket.tests]
