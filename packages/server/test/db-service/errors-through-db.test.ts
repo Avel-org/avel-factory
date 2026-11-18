@@ -6,11 +6,16 @@
 import { ErrorBody, REQUEST_ID_HEADER } from "@avel/contract";
 import { jobs, users } from "@avel/db";
 import { and, eq } from "drizzle-orm";
-import { Cause, Effect, Exit } from "effect";
+import { Cause, Effect, Exit, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { Db, Tx } from "../../src/platform/db/db.ts";
 import { requireUpdated } from "../../src/platform/db/errors.ts";
-import { AlreadyExists, ConstraintViolation, StaleVersion } from "../../src/platform/errors.ts";
+import {
+  AlreadyExists,
+  ConstraintViolation,
+  type DeleteRefused,
+  StaleVersion,
+} from "../../src/platform/errors.ts";
 import { testDatabase } from "../db/support/database.ts";
 import { appRunning, fixedIds, get } from "../support/harness.ts";
 import { dbLayer, runDb } from "./support/db.ts";
@@ -49,7 +54,7 @@ const staleUpdate = (key: string) =>
 const failureOf = <A, E>(exit: Exit.Exit<A, E>) => {
   if (!Exit.isFailure(exit)) throw new Error("expected a failure");
   const found = Cause.findError(exit.cause);
-  if (found._tag === "Failure") return found.failure as E;
+  if (found._tag === "Success") return found.success as E;
   throw new Error(`expected a typed failure, got ${Cause.pretty(exit.cause)}`);
 };
 
@@ -154,8 +159,12 @@ describe("T-B4-06 · database errors through withTransaction", () => {
         yield* db.withTransaction(insertUser("http-dup@avel.test"));
       }),
     );
-    const through = (program: Effect.Effect<unknown, AlreadyExists | ConstraintViolation, Db>) =>
-      appRunning(() => program.pipe(Effect.provide(dbLayer(d.url))), { layer: fixedIds(ID) });
+    const through = (
+      program: Effect.Effect<unknown, AlreadyExists | ConstraintViolation | DeleteRefused, Db>,
+    ) =>
+      appRunning(() => program.pipe(Effect.provide(Layer.orDie(dbLayer(d.url)))), {
+        layer: fixedIds(ID),
+      });
 
     const dup = through(
       Effect.gen(function* () {

@@ -29,7 +29,7 @@ import { ConfigProvider, Effect, Layer } from "effect";
 import { type Db, DbLive } from "../../../src/platform/db/db.ts";
 
 /** DbLive reading this URL as its DATABASE_URL, the way production reads it from the environment. */
-export const dbLayer = (url: string): Layer.Layer<Db, unknown> =>
+export const dbLayer = (url: string): Layer.Layer<Db, Layer.Error<typeof DbLive>> =>
   DbLive.pipe(
     Layer.provide(ConfigProvider.layer(ConfigProvider.fromEnvRecord({ DATABASE_URL: url }))),
   );

@@ -20,6 +20,7 @@ describe("T-B4-04 · Events.append needs Tx", () => {
     expect(needsTx).toBeDefined();
 
     // @ts-expect-error Tx is still required, so the effect can't be run as it is.
+    // @effect-diagnostics-next-line missingEffectContext:off
     void (() => Effect.runPromise(append));
 
     const inside = Effect.gen(function* () {
@@ -27,6 +28,7 @@ describe("T-B4-04 · Events.append needs Tx", () => {
       // Inside withTransaction the requirement is gone.
       const ok: Effect.Effect<void, unknown, never> = db.withTransaction(append);
       // @ts-expect-error commitWithEvents needs Tx too: only withTransaction provides it.
+      // @effect-diagnostics-next-line missingEffectContext:off
       const bad: Effect.Effect<void, never, never> = db.commitWithEvents;
       return [ok, bad];
     });
