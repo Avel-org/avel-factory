@@ -1,25 +1,8 @@
 // Compiled from the Claude Design export (AVEL Control Room). Edit freely: this is the source now.
-import { Fragment, useRef } from "react";
+import { Fragment, lazy, Suspense, useRef } from "react";
 import { useSheet } from "../kit/sheet";
 import { css, list } from "../lib/dc";
-import { SimDock } from "../dev/SimDock";
-import { ViewportPreview } from "../dev/ViewportPreview";
-import { FilteredListPage } from "../pages/FilteredListPage";
-import { GenericPage } from "../pages/GenericPage";
 import { DecisionsPage } from "../pages/decisions/DecisionsPage";
-import { LibraryPage } from "../pages/library/LibraryPage";
-import { OpsPage } from "../pages/operations/OpsPages";
-import { TemplatePage } from "../pages/templates/TemplatePage";
-import { TemplatesGalleryPage } from "../pages/templates/TemplatesGalleryPage";
-import { TemplateNewPage } from "../pages/templates/TemplateNewPage";
-import { FactoryLivePage } from "../pages/live/FactoryLivePage";
-import { SlotRackPage } from "../pages/live/SlotRackPage";
-import { CanonPage } from "../pages/project/CanonPage";
-import { NewProjectPage } from "../pages/project/NewProjectPage";
-import { ProjectOverviewPage } from "../pages/project/ProjectOverviewPage";
-import { AgentRosterPage } from "../pages/roster/AgentRosterPage";
-import { SettingsPage } from "../pages/settings/SettingsPage";
-import { UploadsPage } from "../pages/uploads/UploadsPages";
 import { DropTarget, FilingSheet, UploadTray } from "../pages/uploads/UploadLayer";
 import { ErrorPanel } from "../shell/ErrorPanel";
 import { LiveStrip } from "../shell/LiveStrip";
@@ -31,7 +14,27 @@ import { Sidebar } from "../shell/Sidebar";
 import { StateBar } from "../shell/StateBar";
 import { TabBar } from "../shell/TabBar";
 import { Topbar } from "../shell/Topbar";
-import { CommandPalette, KeysSheet } from "../shell/CommandPalette";
+
+// Every page but Decisions loads its view when its route first opens (E16, T-F8).
+const SimDock = lazy(() => import("../dev/SimDock").then((m) => ({ default: m.SimDock })));
+const ViewportPreview = lazy(() => import("../dev/ViewportPreview").then((m) => ({ default: m.ViewportPreview })));
+const FilteredListPage = lazy(() => import("../pages/FilteredListPage").then((m) => ({ default: m.FilteredListPage })));
+const GenericPage = lazy(() => import("../pages/GenericPage").then((m) => ({ default: m.GenericPage })));
+const LibraryPage = lazy(() => import("../pages/library/LibraryPage").then((m) => ({ default: m.LibraryPage })));
+const OpsPage = lazy(() => import("../pages/operations/OpsPages").then((m) => ({ default: m.OpsPage })));
+const TemplatePage = lazy(() => import("../pages/templates/TemplatePage").then((m) => ({ default: m.TemplatePage })));
+const TemplatesGalleryPage = lazy(() => import("../pages/templates/TemplatesGalleryPage").then((m) => ({ default: m.TemplatesGalleryPage })));
+const TemplateNewPage = lazy(() => import("../pages/templates/TemplateNewPage").then((m) => ({ default: m.TemplateNewPage })));
+const FactoryLivePage = lazy(() => import("../pages/live/FactoryLivePage").then((m) => ({ default: m.FactoryLivePage })));
+const SlotRackPage = lazy(() => import("../pages/live/SlotRackPage").then((m) => ({ default: m.SlotRackPage })));
+const CanonPage = lazy(() => import("../pages/project/CanonPage").then((m) => ({ default: m.CanonPage })));
+const NewProjectPage = lazy(() => import("../pages/project/NewProjectPage").then((m) => ({ default: m.NewProjectPage })));
+const ProjectOverviewPage = lazy(() => import("../pages/project/ProjectOverviewPage").then((m) => ({ default: m.ProjectOverviewPage })));
+const AgentRosterPage = lazy(() => import("../pages/roster/AgentRosterPage").then((m) => ({ default: m.AgentRosterPage })));
+const SettingsPage = lazy(() => import("../pages/settings/SettingsPage").then((m) => ({ default: m.SettingsPage })));
+const UploadsPage = lazy(() => import("../pages/uploads/UploadsPages").then((m) => ({ default: m.UploadsPage })));
+const CommandPalette = lazy(() => import("../shell/CommandPalette").then((m) => ({ default: m.CommandPalette })));
+const KeysSheet = lazy(() => import("../shell/CommandPalette").then((m) => ({ default: m.KeysSheet })));
 
 export function ControlRoomView({ vals }) {
   const {
@@ -119,6 +122,7 @@ export function ControlRoomView({ vals }) {
               {show?.bar ? <StateBar vals={vals} /> : null}
               {show?.content ? (
                 <>
+                  <Suspense fallback={<PageSkeleton vals={vals} />}>
                   <div className={contentCls}>
                     {L?.decisions ? <DecisionsPage vals={vals} /> : null}
                     {L?.overview ? <ProjectOverviewPage vals={vals} /> : null}
@@ -137,6 +141,7 @@ export function ControlRoomView({ vals }) {
                     {L?.settings ? <SettingsPage vals={vals} /> : null}
                     {L?.uploads ? <UploadsPage vals={vals} /> : null}
                   </div>
+                  </Suspense>
                 </>
               ) : null}
             </div>{" "}
@@ -187,6 +192,7 @@ export function ControlRoomView({ vals }) {
           </span>
         </>
       ) : null}
+      <Suspense fallback={null}>
       {vals.pal ? <CommandPalette p={vals.pal} /> : null}
       {vals.keys ? <KeysSheet k={vals.keys} /> : null}
       {vals.up ? <UploadTray t={vals.up.tray} I={vals.up.I} /> : null}
@@ -194,6 +200,7 @@ export function ControlRoomView({ vals }) {
       {vals.up ? <DropTarget d={vals.up.drop} /> : null}
       {showDock ? <SimDock vals={vals} /> : null}
       {vp ? <ViewportPreview vals={vals} /> : null}
+      </Suspense>
     </>
   );
 }
