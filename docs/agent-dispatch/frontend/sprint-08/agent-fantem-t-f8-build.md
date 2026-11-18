@@ -17,7 +17,7 @@ report: docs/agent-dispatch/frontend/sprint-08/agent-fantem-t-f8-build-completio
 ---
 
 
-# T-F8 · build · Fantem: The control room's first load is back under 150 KB of JavaScript
+# T-F8 · build · Fantem: The control room loads each page's code when it opens, and / holds to 220 KB of JavaScript
 
 <!-- Rendered by scripts/render.py from plan.toml. Never edit this file: change the plan, re-render, commit, and start a new attempt. -->
 
@@ -49,18 +49,17 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 9. `apps/web/control-room/src/app/ControlRoomView.jsx`: which page shows, the seam for loading each page's view on demand
 10. `apps/web/control-room/src/main.jsx`: since T-F7 it exports ControlRoom for src/routes/index.tsx to mount, and imports the 28 stylesheets (CSS, not JavaScript)
 11. `apps/web/control-room/SOURCE.md`: what T-F7 already changed in the export, and where this ticket names its own changes
-12. `apps/web/e2e/budget.spec.ts`: the measurement T-F7 set, now held to 150 KB. T-F7's build measured 354,051 B gzipped for /, so this ticket cuts more than half
+12. `apps/web/e2e/budget.spec.ts`: the measurement T-F7 set, now held to 220 KB. T-F7's build measured 354,051 B gzipped for /; attempt 1 measured the floor with every other page on demand at about 205 to 215 KB
 13. `apps/web/e2e/control-room-budget/**`: the locked acceptance tests: they define done
 14. `apps/web/e2e/budget.spec.ts`: the locked acceptance tests: they define done
 15. `docs/agent-dispatch/frontend/sprint-08/agent-fantem-t-f8-build.md`: this document: follow it exactly
 
 ## 3. Domain
 
-**Goal:** The Decisions home loads fast on a phone again: / fetches at most 150 KB of JavaScript, gzipped, before it's interactive, and every other page loads its own code when it opens.
+**Goal:** The Decisions home loads faster on a phone: / fetches at most 220 KB of JavaScript, gzipped, before it's interactive (down from about 355 KB), and every other page loads its own code when it opens.
 
 **Refs:**
-- E16; CR-W29 decision 6
-- control-room-handoff/README.md: under 150 KB of JavaScript on first load for Decisions
+- E16; CR-W29 decision 6, as amended Nov 17: 220 KB from T-F8, only ever lowered; 150 KB returns as the wiring's done-when
 
 **Merged before this starts:** T-F7
 
@@ -68,11 +67,12 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - Every export file this ticket changes gets a line, with its reason, in SOURCE.md's "Changed for apps/web" section; its listed SHA-256 stays the one copied (T-F7-02)
 - Split by page: each page's view, its values module (knowledge, operations, uploads, canon, history, crew) and its mock JSON load with a dynamic import when its #/ route first opens, and Decisions' stays in the first load. A page that's loading shows the export's PageSkeleton
 - Don't change what any page shows or how it behaves; T-F7's tests and every earlier locked test must still pass
-- If / can't reach 150 KB without restructuring logic.js beyond moving imports behind dynamic imports and the values it computes per page, stop with needs-cr and report what the first load holds, by module and size
+- Don't split logic.js's class or restructure it: the wiring moves each screen's values out of it (CR-W29 decision 6, as amended). Move imports behind dynamic imports, and move the values it computes per page only where that's a move, not a rewrite. If / can't reach 220 KB that way, stop with needs-cr and report what the first load holds, by module and size
+- Attempt 1 (needs-cr, Fantem's report 2131a61) measured the first load by module; start from its breakdown
 
 ## 4. Tasks
 
-### T-F8-01: make it true: e2e (budget.spec.ts, changed under CR-W29): everything / loads before the Decisions home is interactive is at most 150 KB gzipped, with a warning over 130 KB, as E16 says
+### T-F8-01: make it true: e2e (budget.spec.ts, changed under CR-W29): everything / loads before the Decisions home is interactive is at most 220 KB gzipped, with a warning over 200 KB (CR-W29 decision 6, as amended)
 
 - **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
 
@@ -80,7 +80,11 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 - **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
 
-### T-F8-03: make it true: e2e: on a 390x844 phone with a slow-4G profile, the Decisions home's first decision card is visible within the first load
+### T-F8-03: make it true: e2e: on a 390x844 phone with a slow-4G profile, the Decisions home's first decision card is visible within the first load (the same 220 KB)
+
+- **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
+
+### T-F8-04: make it true: Attempt 2, under F2 and CR-W29 decision 6 as amended: in your own commit, change LIMIT to 220 × 1024 and the warning to 200 × 1024 in e2e/budget.spec.ts and e2e/control-room-budget/budget.spec.ts, and change nothing else in attempt 1's tests. If you think anything else in them is wrong, stop with test-dispute
 
 - **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
 
@@ -152,4 +156,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F8, "The control room's first load is back under 150 KB of JavaScript": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-08/agent-fantem-t-f8-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F8-control-room-budget`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-08/agent-fantem-t-f8-build-completion.md`, committed to the branch. Don't push.
+> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F8, "The control room loads each page's code when it opens, and / holds to 220 KB of JavaScript": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-08/agent-fantem-t-f8-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F8-control-room-budget`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-08/agent-fantem-t-f8-build-completion.md`, committed to the branch. Don't push.

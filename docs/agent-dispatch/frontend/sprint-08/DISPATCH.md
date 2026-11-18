@@ -1,4 +1,4 @@
-# DISPATCH: frontend/sprint-08: The control room's first load is back under 150 KB of JavaScript
+# DISPATCH: frontend/sprint-08: The control room loads each page's code when it opens, and / holds to 220 KB of JavaScript
 
 <!-- Rendered by scripts/render.py from plan.toml. Never edit this file. -->
 
@@ -11,13 +11,13 @@ Lead: Zero · builder: Fantem · checker: Fenn · Step 1
 ## Done when
 
 - CR-W29's done-when: / shows the export's Decisions home, and every page in its registry opens by its #/ route
-- / loads at most 150 KB of JavaScript gzipped (E16); every screen passes WCAG 2.2 AA (E17); no money (E15); check-contract.mjs passes
+- / loads at most 220 KB of JavaScript gzipped (E16, CR-W29 decision 6 as amended; 150 KB returns with the wiring); every screen passes WCAG 2.2 AA (E17); no money (E15); check-contract.mjs passes
 
 ## Tickets
 
 | Ticket | Title | Rigor | Branch | Depends on |
 | --- | --- | --- | --- | --- |
-| T-F8 | The control room's first load is back under 150 KB of JavaScript | standard | `t/F8-control-room-budget` | T-F7 |
+| T-F8 | The control room loads each page's code when it opens, and / holds to 220 KB of JavaScript | standard | `t/F8-control-room-budget` | T-F7 |
 
 ## Dispatches
 
