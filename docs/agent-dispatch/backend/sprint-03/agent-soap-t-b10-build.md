@@ -51,7 +51,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 11. `docs/design/API routes.md`: routes 1 to 3; route 3 is never replayable and never returns the token twice
 12. `packages/db/src/schema`: step_up_grants, device_logins, cli_sessions (token stored as a hash), activity_log
 13. `packages/server/src/platform/idempotency.ts`: T-B8's store: every write takes an Idempotency-Key; route 3's response is sensitive
-14. `packages/server/src/platform/rate-limit.ts`: T-B8's limiter: 5 device-login starts a minute; polling no faster than every 5 seconds
+14. `packages/server/src/platform/rate-limit.ts`: T-B8's limiter: 5 device-login starts a minute (the name device-login); read only
 15. `packages/server/src/platform/auth`: T-B9's Caller and the password check step-up repeats
 16. `packages/server/test/cli-login/**`: the locked acceptance tests: they define done
 17. `docs/agent-dispatch/backend/sprint-03/agent-soap-t-b10-build.md`: this document: follow it exactly
@@ -70,6 +70,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 **Notes from the lead:**
 - Step-up (item 6): the operator's password again, for one action on one target, bound to the session; single-use, 5 minutes (Clock), consumed in one atomic update. Only credential actions ask; in this step that's route 2. How the web obtains a grant and how route 2 presents it: follow the contract's stepUp meta and API routes.md; if they don't say, stop with needs-cr
 - Route 1 (start): makes a device code and a short user code, rate-limited at 5 a minute (429). Route 2 (approve): needs the Caller and a valid step-up grant for this user code. Route 3 (poll): returns the session token once after approval, stores only its hash, polling faster than every 5 seconds is 429
+- The 5-second poll interval isn't T-B8's per-minute limiter: route 3 enforces it in platform/cli/** per device code, from the Clock (the last poll's time, in memory), and answers 429 TOO_MANY_REQUESTS with retryAfterMs. rate-limit.ts doesn't change (t-b8-rigg-03, Axis's ruling Nov 18)
 - Idempotency on every write through T-B8's store. Routes 1 and 3 have no session yet: their principal is the device login's id (Javaris, Nov 17: approved). Route 3's response carries a token, so it's never stored and a replay is 409 TOKEN_REPLAYED
 - Activity log (item 8, audit module): every write in this ticket leaves exactly one activity_log row (who, what, target), in the same transaction as the change
 - DTOs through one mapper per object; outputs are validated against the contract (AGENTS.md API rules)
