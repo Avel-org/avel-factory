@@ -41,7 +41,7 @@ export DATABASE_URL=$(scripts/pg-local.sh start)
 pnpm build && pnpm typecheck && pnpm lint && pnpm test
 ```
 
-`scripts/pg-local.sh stop` removes the database. CI runs the same four commands against a Postgres service (`.github/workflows/ci.yml`), plus the drift check and a fresh generate of `docs/generated` (`docs.yml`).
+`scripts/pg-local.sh stop` removes the database, and `scripts/pg-local.sh prune` removes every one whose checkout is gone. CI runs the same four commands against a Postgres service (`.github/workflows/ci.yml`), plus the drift check and a fresh generate of `docs/generated` (`docs.yml`).
 
 ## Seeding this repo
 

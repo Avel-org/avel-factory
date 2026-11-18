@@ -2,18 +2,20 @@
 # A throwaway local Postgres in Docker, for tests that need a real database.
 # One container per checkout (each worktree gets its own), its data on a
 # tmpfs, and a free host port picked by Docker, so it never clashes with
-# another worktree or with a Postgres already on 5432.
+# another worktree or with a Postgres already on 5432. Each container is held to
+# 512 MB of memory and 512 MB of data, so leftovers can't take the machine down.
 #
 # Usage: scripts/pg-local.sh start   start it (or keep it running) and print its DATABASE_URL
 #        scripts/pg-local.sh url     print its DATABASE_URL; exit 1 if it isn't running
 #        scripts/pg-local.sh stop    remove it and its data; a no-op if it isn't running
+#        scripts/pg-local.sh prune   remove every pg-local container whose checkout is gone
 #   export DATABASE_URL=$(scripts/pg-local.sh start)
 #   Every command is idempotent. The URL goes to stdout and everything else to stderr.
 #   Overrides: PG_LOCAL_NAME (container name), PG_LOCAL_IMAGE (default postgres:17-alpine),
 #   PG_LOCAL_PORT (a fixed host port instead of a free one).
 set -euo pipefail
 
-usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 1; }
+usage() { sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 1; }
 
 repo=$(git -C "$(dirname "$0")" rev-parse --show-toplevel)
 slug=$(basename "$repo" | sed 's/[^A-Za-z0-9_.-]/-/g')
@@ -22,6 +24,8 @@ image=${PG_LOCAL_IMAGE:-postgres:17-alpine}
 port=${PG_LOCAL_PORT:-}
 user=avel password=avel db=avel
 ready_timeout=60
+# The cap for one container. The tmpfs data counts against the memory cap too.
+mem_cap=512m
 
 die() { echo "pg-local: $*" >&2; exit 1; }
 
@@ -77,7 +81,8 @@ start() {
     echo "pg-local: starting $name ($image)" >&2
     if ! docker run -d --rm --name "$name" \
       --label avel.pg-local="$repo" \
-      --tmpfs /var/lib/postgresql/data:rw \
+      --memory "$mem_cap" --memory-swap "$mem_cap" \
+      --tmpfs "/var/lib/postgresql/data:rw,size=$mem_cap" \
       -e POSTGRES_USER="$user" -e POSTGRES_PASSWORD="$password" -e POSTGRES_DB="$db" \
       -p "127.0.0.1:${port}:5432" \
       "$image" >/dev/null; then
@@ -106,6 +111,22 @@ stop() {
   fi
 }
 
+# Every container is labelled with its checkout's path. Remove the ones whose checkout
+# is gone: a finished attempt's worktree, or a session that crashed before its stop.
+prune() {
+  need_docker
+  local n path removed=0
+  while read -r n path; do
+    [[ -n $n ]] || continue
+    if [[ -z $path || ! -d $path ]]; then
+      echo "pg-local: removing $n (${path:-its checkout} is gone)" >&2
+      docker rm -f "$n" >/dev/null
+      removed=$((removed + 1))
+    fi
+  done < <(docker ps -a --filter label=avel.pg-local --format '{{.Names}} {{.Label "avel.pg-local"}}')
+  echo "pg-local: pruned $removed container(s)" >&2
+}
+
 case ${1:-} in
   start) start ;;
   url)
@@ -114,5 +135,6 @@ case ${1:-} in
     url
     ;;
   stop) stop ;;
+  prune) prune ;;
   *) usage ;;
 esac
