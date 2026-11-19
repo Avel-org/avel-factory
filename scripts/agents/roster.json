@@ -16,7 +16,12 @@
       "checker": "fenn",
       "prefix": "T-F",
       "test_roles": ["test-unit", "test-e2e"],
-      "never": ["packages/**"]
+      "never": ["packages/**"],
+      "_allow_note": "Javaris approved T-F22 on Nov 18: the frontend lane builds CR-W31's mock routes. packages/contract, packages/db and the rest of contract-mock (its package.json) stay the backend's (I3).",
+      "allow": {
+        "packages/contract-mock/src/**": { "label": "mock", "cr": "CR-W31", "why": "CR-W31: the frontend builds the mock's routes, Axis reads the state module" },
+        "packages/contract-mock/test/**": { "label": "mock", "cr": "CR-W31", "why": "CR-W31: the frontend builds the mock's routes, Axis reads the state module" }
+      }
     }
   },
   "never": [

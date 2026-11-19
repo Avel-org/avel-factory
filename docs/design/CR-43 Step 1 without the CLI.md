@@ -1,6 +1,6 @@
 # CR-43: Step 1 without the CLI (accepted)
 
-Nov 18, 2026 · drafted by Axis for @javaris · **accepted Nov 18 by Javaris** (to OSA: "approve 5 to 9"; item 5 of his brief). Zero's sign-off is still to come, because it changes CR-W30 B and C (I3)
+Nov 18, 2026 · drafted by Axis for @javaris · **accepted Nov 18 by Javaris** (to OSA: "approve 5 to 9"; item 5 of his brief). Zero signed off Nov 18 (I3), with the two CR-W30 wording fixes below
 
 - **What:** Step 1 doesn't build CLI login (item 7, routes 1 to 5) or step-up (item 6). CLI login moves to Step 5, where the CLI is built. Step-up moves to Step 4, where its first credential actions are. Step 1 builds the clients routes (8 to 11) instead, so its middleware tests still run on real routes.
 - **Why:**
@@ -47,8 +47,8 @@ Tests 1, 3, 6, 7 and 10 to 12 don't change. The stale `rowVersion` check from E1
 - **`Design v0.6 Main`** (frozen; this CR overrides it): build order Step 1 drops "single-use step-up grants for credential actions, 12-hour CLI sessions". Step 4 gains step-up, and Step 5 gains CLI login.
 - **CR-W30 (frontend, accepted Nov 17):**
   - B (the step-up wire) waits for Step 4's step-up.
-  - C (the mock serving routes 1 to 7) is split. Routes 1 to 5 wait for Step 5, and routes 6 and 7 can go ahead.
-  - Zero's T-F13 drops the CLI approval, and Settings' CLI sessions panel stays on the mock.
+  - C (the mock serving routes 1 to 7) waits as a whole. Routes 1 to 5 wait for Step 5, and routes 6 and 7 aren't on the web's first-mission path either (Zero, Nov 18).
+  - T-F13 is withdrawn (frontend re-plan, approved Nov 18): Settings' CLI sessions panel stays on the sample world.
   - This needs Zero's sign-off (I3).
 - **Tables:** no schema change and no contract change. The contract already has routes 1 to 5 and 8 to 11.
 

@@ -2,7 +2,7 @@
 name: soap
 description: Backend builder on the AVEL build team. Builds one backend ticket per session until its locked acceptance tests pass.
 tools: Read, Write, Edit, Glob, Grep, Bash, SendMessage, ListAgents, ToolSearch
-model: sonnet
+model: opus
 ---
 
 # Soap: backend builder

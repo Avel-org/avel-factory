@@ -164,6 +164,50 @@ class RenderChecks(unittest.TestCase):
         self.assertIn("never changed", out.stderr)  # packages/** is off limits to the frontend lane
 
 
+    def test_the_frontend_changes_the_mocks_src_and_test_only_under_cr_w31(self):
+        # Javaris, Nov 18: T-F22 (frontend) builds CR-W31's mock routes. The rest of packages/** stays closed.
+        front = example().replace('lane = "backend"', 'lane = "frontend"').replace("T-B", "T-F") \
+            .replace('role = "test-unit"', 'role = "test-e2e"').replace("packages/server/", "apps/web/")
+        mock = front.replace('may_change = ["apps/web/src/spike/**", "apps/web/package.json", "apps/web/tsconfig.json"]',
+                             'may_change = ["packages/contract-mock/src/state/**"]') \
+            .replace('paths = ["apps/web/test/spike.test.ts"]', 'paths = ["packages/contract-mock/test/state.test.ts"]')
+        self.assertNotEqual(mock, front)
+
+        def check(text):
+            self.r.plan(text, lane="frontend")
+            return self.r.run("python3 scripts/render.py --check frontend/sprint-01", check=False)
+
+        out = check(mock)
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        self.assertIn('needs labels = ["mock"] and cr = "CR-W31"', out.stderr)
+        labelled = mock.replace('slug = "effect-spike"', 'slug = "effect-spike"\nlabels = ["mock"]\ncr = "CR-W31"')
+        out = check(labelled)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        out = check(labelled.replace('"packages/contract-mock/src/state/**"', '"packages/contract-mock/package.json"'))
+        self.assertIn("never changed", out.stderr)
+        out = check(labelled.replace('"packages/contract-mock/src/state/**"', '"packages/contract/src/routes/**"'))
+        self.assertIn("never changed", out.stderr)
+
+    def test_guard_tests_may_pass_first_and_behaviours_still_fail_first(self):
+        # CR-42 item 5. T-B1 gets one guard; the other tickets' docs don't change.
+        self.r.plan()
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        d = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01")
+        before = read(os.path.join(d, "agent-rigg-t-b2-test-unit.md"))
+        guarded = example().replace('paths = ["packages/server/test/spike.test.ts"]',
+                                    'paths = ["packages/server/test/spike.test.ts"]\nguards = ["every response carries X-Contract-Version"]')
+        self.r.plan(guarded)
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        tests = read(os.path.join(d, "agent-rigg-t-b1-test-unit.md")).decode()
+        self.assertIn("### T-B1-G01: a guard test for: every response carries X-Contract-Version", tests)
+        self.assertIn("### T-B1-01: a failing test for:", tests)
+        self.assertIn("Guard tests may pass there (CR-42)", tests)
+        self.assertIn("### T-B1-G01: keep it true:", read(os.path.join(d, "agent-soap-t-b1-build.md")).decode())
+        self.assertEqual(before, read(os.path.join(d, "agent-rigg-t-b2-test-unit.md")))
+        self.check_fails(example().replace('paths = ["packages/server/test/spike.test.ts"]',
+                                           'paths = ["packages/server/test/spike.test.ts"]\nguards = "not a list"'),
+                         "tests.guards must be a list")
+
     def test_a_merged_ticket_in_another_lane_clashes_with_nothing(self):
         # Nov 17: frontend sprint-03 couldn't render because backend sprint-02's merged T-B2 also built
         # pnpm-lock.yaml. A ticket whose build report is on main can't run again.
@@ -368,6 +412,33 @@ class Flow(unittest.TestCase):
         self.assertIn("matches a fresh render", out.stdout)
         p = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
         self.assertNotIn("Messages received", read(p).decode())
+
+    def test_every_build_is_on_opus_and_tests_stay_on_sonnet(self):
+        # Javaris, Nov 18: "builders should be on opus not sonnet". T-B1 is standard rigor, T-B3 full.
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        d = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01")
+        for doc, model in (("agent-soap-t-b1-build", "opus"), ("agent-soap-t-b3-build", "opus"),
+                           ("agent-rigg-t-b1-test-unit", "sonnet"), ("agent-rigg-t-b1-review", "sonnet"),
+                           ("agent-rigg-t-b3-review", "opus")):
+            self.assertIn(f"model: {model}", read(os.path.join(d, doc + ".md")).decode(), doc)
+
+    def test_a_build_rendered_before_v3_keeps_its_doc_but_starts_on_opus(self):
+        r = self.r
+        r.run("python3 - <<'PY'\n"
+              "import os, sys\n"
+              "sys.path.insert(0, 'scripts')\n"
+              "import render\n"
+              "plan, _ = render.load_plan('backend', 'sprint-01', render.load_json('roster.json'))\n"
+              "files = render.render_package(plan, render.owned_paths([plan]), 'avel-render 2')\n"
+              "for name, body in files.items():\n"
+              "    open(os.path.join(render.folder('backend', 'sprint-01'), name), 'w').write(body)\n"
+              "PY")
+        r.run("git add -A && git commit -qm 'a v2 package'")
+        self.assertIn("matches a fresh render", r.run("python3 scripts/render.py --verify backend/sprint-01").stdout)
+        p = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
+        self.assertIn("model: sonnet", read(p).decode())
+        info = r.run("python3 scripts/render.py --info backend/sprint-01 agent-soap-t-b1-build").stdout
+        self.assertIn("MODEL=opus", info)
 
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r
