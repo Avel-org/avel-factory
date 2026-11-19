@@ -5,10 +5,9 @@
 #
 # Re-planned Nov 18 (Zero's re-plan, approved by Javaris as "sprint-13 (T-F16 to T-F21)"). These four
 # tickets moved here from sprint-13 because their routes are in CR-W31's later parts (b and c: the
-# streams 34, 63 and 64, and the reads and writes part (a) leaves out), which aren't built yet. Who
-# builds them, Axis's lane or this one after T-F22, is Javaris's call (asked Nov 18).
-# Renders when sprint-13's tickets are merged and the routes each ticket names are served by
-# contract-mock on main. A ticket whose routes aren't there yet moves to the next sprint.
+# streams and the reads and writes part (a) leaves out). The frontend lane builds them in sprint-13
+# as T-F23 (b) and T-F24 (c) (Javaris, Nov 18).
+# Renders when sprint-13's tickets are merged.
 
 lane = "frontend"
 sprint = "sprint-14"
@@ -53,12 +52,12 @@ title = "Canon onboarding live"
 goal = "You talk to Canon and its reply streams in as plain text, you answer the question deck, and you edit, generate, approve, ask for changes on or reopen each checkpoint, all from the API."
 rigor = "standard"
 refs = [
-  "CR-W31 part (b) or (c): routes 33, 34, 105, 38 to 43",
+  "CR-W31 parts (b) and (c), T-F23 and T-F24: routes 33, 34, 105, 38 to 43",
   "handoff port order step 6 (Canon onboarding)",
   "CR-W19 (streaming replies, the question deck)",
   "J3 and E15 (untrusted text renders as text)",
 ]
-depends_on = ["T-F14"]
+depends_on = ["T-F14", "T-F23", "T-F24"]
 may_change = [
   "apps/web/control-room/src/sources/canon.js",
   "apps/web/control-room/src/app/canon.js",
@@ -117,11 +116,11 @@ title = "Plan and dispatch live"
 goal = "You read the mission's plan by version, its dispatch package and each of its files, and confirm the package commit, all from the API."
 rigor = "standard"
 refs = [
-  "CR-W31 part (b) or (c): routes 46, 49, 100 to 102",
+  "CR-W31 part (c), T-F24: routes 46, 49, 100 to 102",
   "CR-W11 (the package commit)",
   "CR-16 (the dispatch package)",
 ]
-depends_on = ["T-F14"]
+depends_on = ["T-F14", "T-F24"]
 may_change = [
   "apps/web/control-room/src/sources/plan.js",
   "apps/web/control-room/changes/T-F19.md",
@@ -174,12 +173,12 @@ title = "Watch the build, live from the streams"
 goal = "The factory floor and the module page stay live from the event and trace streams: the retry ladder, cost against its cap, each agent step and each landing, with nothing polling but the stall check."
 rigor = "standard"
 refs = [
-  "CR-W31 part (b) or (c): routes 49, 56, 63, 64, 104, 108, 109",
+  "CR-W31 parts (b) and (c), T-F23 and T-F24: routes 49, 56, 63, 64, 104, 108, 109",
   "handoff port order step 5 (Live)",
   "README: nothing polls except the stall check",
   "CR-W20 section 3 (AI cost only against its cap)",
 ]
-depends_on = ["T-F14"]
+depends_on = ["T-F14", "T-F23", "T-F24"]
 may_change = [
   "apps/web/control-room/src/sources/build.js",
   "apps/web/control-room/src/pages/live/**",
@@ -238,12 +237,12 @@ title = "Gates, findings and the release, live"
 goal = "You see each gate and its integration commit, confirm, dismiss or accept findings with a reason, check the receipt, and release the exact commit it names, all from the API."
 rigor = "full"
 refs = [
-  "CR-W31 part (b) or (c): routes 21, 29, 30, 55, 56, 58 to 61, 107",
+  "CR-W31 part (c), T-F24: routes 21, 29, 30, 55, 56, 58 to 61, 107",
   "handoff port order step 7 (Release)",
   "C4: gates and receipts",
   "CR-W21 (the receipt's proof check)",
 ]
-depends_on = ["T-F14"]
+depends_on = ["T-F14", "T-F24"]
 may_change = [
   "apps/web/control-room/src/sources/release.js",
   "apps/web/control-room/src/pages/operations/ReceiptPage.jsx",

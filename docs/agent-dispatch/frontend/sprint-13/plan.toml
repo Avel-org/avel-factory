@@ -7,8 +7,9 @@
 # approval and Settings live) is withdrawn; CR-43 moves the CLI out of Step 1. This sprint wires the
 # first mission's first screens to contract-mock: your approvals (T-F16) and a mission's start
 # (T-F17), whose routes are CR-W31 part (a). It also moves CI's end-to-end tests to the production
-# build (T-F15), which waited for T-F12 because both change playwright.config.ts. The screens whose
-# routes are in CR-W31's later parts (Canon, plan and dispatch, the build, release) are sprint-14.
+# build (T-F15), which waited for T-F12 because both change playwright.config.ts. And it builds the
+# rest of contract-mock's mission, CR-W31 parts (b) and (c), as T-F23 then T-F24 (Javaris, Nov 18,
+# "yes i approve"), so sprint-14's screens (Canon, plan and dispatch, the build, release) run on it.
 # Renders when T-F12, T-F14 and T-F22 (CR-W31 part (a)) are merged, and render.py puts builders
 # on Opus (Javaris, Nov 18). CR-42: plan and render in one PR; one review round.
 
@@ -20,6 +21,7 @@ goals = [
   "What's waiting on you comes from the API, and approving moves the mission on",
   "You add a client, start a project, and see it on its overview",
   "CI's end-to-end tests run against the build you ship",
+  "contract-mock streams Canon, events and traces, and serves the rest of the mission's routes",
 ]
 done_when = [
   "Each ticket's states (loading, empty, error with the error map's sentence, offline, not found, ready) render against contract-mock under AVEL_API=mock, and each passes WCAG 2.2 AA at 390 and 1280, light and night (E17)",
@@ -211,4 +213,107 @@ behaviours = [
   "e2e (behaviour): the overview shows route 21's gate strip and route 108's module rows; an unknown mission id shows not found",
   "e2e (behaviour): loading, empty (no clients, no projects) and error (422 on create with its field message, 500, offline) render with their words",
   "e2e (guard): every state passes WCAG 2.2 AA at 390 and 1280, light and night; each route at most 150 KB; no '$' (E15)",
+]
+
+[[ticket]]
+id = "T-F23"
+slug = "mock-streams"
+title = "contract-mock streams Canon, events and traces (CR-W31 part b)"
+goal = "contract-mock streams Canon's replies, the factory's events and an attempt's agent steps over the mission world, so the onboarding and build screens can run live against it."
+rigor = "standard"
+labels = ["mock"]
+cr = "CR-W31"
+refs = ["CR-W31 part (b): routes 33, 34, 105, 63, 64, 109", "Javaris, Nov 18: \"yes i approve\" (the frontend lane builds CR-W31 (b) and (c) as sprint-13 tickets after T-F22), on Axis's three conditions", "E2 (the web builds against contract-mock)", "docs/design/API routes.md"]
+depends_on = []
+may_change = ["packages/contract-mock/src/**"]
+must_not_change = [
+  "packages/contract/**",
+  "packages/db/**",
+  "apps/**",
+  "pnpm-lock.yaml",
+  "packages/contract-mock/package.json",
+]
+context = [
+  { path = "packages/contract-mock/src/mock.ts", why = "implement(contract) through OpenAPIHandler: idempotency, MockFailure, recorded requests, and T-B11's auth" },
+  { path = "packages/contract-mock/src/world.ts", why = "the sample world the mock grows from" },
+  { path = "packages/contract/src/routes", why = "each new route's input, output and errors" },
+  { path = "docs/design/API routes.md", why = "the routes this ticket adds" },
+  { path = "docs/design/DATABASE.md", why = "the mission, checkpoint and proposal state machines the world follows" },
+]
+verify = [
+  "pnpm --filter @avel/contract-mock test",
+  "pnpm build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Axis's conditions (Nov 18): the mock stays implement(contract) with output validation, and each new route's test checks its output against the contract; state moves follow the contract's value lists and state machines (422 with the allowed moves, stale is 409); anything the contract doesn't say is a CR-W, so stop with needs-cr rather than invent it",
+  "Routes in part (b): 33 (the chat history), 34 (your turn: Canon's reply as CanonStreamChunk through oRPC's event iterator; aborting the request stops it), 105 (re-attach to a reply still streaming; STREAM_GONE once finished), 63 (events for all missions or one, ?missionId=, resuming from Last-Event-ID), 64 (traces, ?attemptId= with view=steps, resuming from Last-Event-ID), 109 (an attempt's steps, oldest first, ?after=). Each stream replays a fixed script whose timing the test controls through the mock's now(), never the wall clock (F4). A state move on another route emits its event on 63, with the contract's event kind",
+  "The world is T-F22's state module: this ticket adds its routes to it and changes a move only where a new route needs one, each change named in the report",
+  "Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in",
+  "Review: one round (CR-42); the full-diff rule applies as in T-F14",
+  "Size: a full session (#45)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/contract-mock/test/mission-streams.test.ts"]
+behaviours = [
+  "unit (behaviour): route 34 streams Canon's scripted reply as CanonStreamChunk values the contract accepts, and an aborted request stops the script",
+  "unit (behaviour): route 105 re-attaches to a reply still streaming from where the client was, and answers STREAM_GONE once it has finished",
+  "unit (behaviour): route 63 sends an event, with a contract event kind, for each state move a part (a) route makes, and a reconnect with Last-Event-ID sends only what came after",
+  "unit (behaviour): route 64 with view=steps streams an attempt's steps, and route 109 returns the same steps oldest first, from ?after=",
+  "unit (behaviour): MockFailure works on every part (b) route, and recorded requests name the route by number",
+]
+
+[[ticket]]
+id = "T-F24"
+slug = "mock-mission-reads"
+title = "contract-mock serves the rest of the mission: checkpoints, plan, package, gates, findings and receipt (CR-W31 part c)"
+goal = "contract-mock serves the checkpoints, the plan, the dispatch package, the gates, the findings and the receipt over the mission world, so the plan and release screens run against it."
+rigor = "standard"
+labels = ["mock"]
+cr = "CR-W31"
+refs = ["CR-W31 part (c): routes 38 to 43, 46, 49, 55, 56, 58 to 61, 100 to 102, 107", "Javaris, Nov 18: \"yes i approve\" (the frontend lane builds CR-W31 (b) and (c) as sprint-13 tickets after T-F22), on Axis's three conditions", "E2 (the web builds against contract-mock)", "docs/design/API routes.md"]
+depends_on = ["T-F23"]
+may_change = ["packages/contract-mock/src/**"]
+must_not_change = [
+  "packages/contract/**",
+  "packages/db/**",
+  "apps/**",
+  "pnpm-lock.yaml",
+  "packages/contract-mock/package.json",
+]
+context = [
+  { path = "packages/contract-mock/src/mock.ts", why = "implement(contract) through OpenAPIHandler: idempotency, MockFailure, recorded requests, and T-B11's auth" },
+  { path = "packages/contract-mock/src/world.ts", why = "the sample world the mock grows from" },
+  { path = "packages/contract/src/routes", why = "each new route's input, output and errors" },
+  { path = "docs/design/API routes.md", why = "the routes this ticket adds" },
+  { path = "docs/design/DATABASE.md", why = "the mission, checkpoint and proposal state machines the world follows" },
+]
+verify = [
+  "pnpm --filter @avel/contract-mock test",
+  "pnpm build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Axis's conditions (Nov 18): the mock stays implement(contract) with output validation, and each new route's test checks its output against the contract; state moves follow the contract's value lists and state machines (422 with the allowed moves, stale is 409); anything the contract doesn't say is a CR-W, so stop with needs-cr rather than invent it",
+  "Routes in part (c): 38 to 42 (a checkpoint's sections, generate, approve, ask for changes, reopen; 40 is part (a)'s, unchanged), 43 (a fact), 46 (the plan, ?version=), 49 (dispatches), 55 (gates), 56 (an integration commit), 58 to 60 (findings: list, confirm or dismiss, accept, which caps the verdict at pass), 61 (the receipt, ?verify=1), 100 to 102 (the package manifest, one file, the archive), 107 (one proof file, at most 2 MB). Every write keeps Idempotency-Key replay, rowVersion or the bound hash, and the contract's error body",
+  "The world is T-F22's state module: this ticket adds its routes to it and changes a move only where a new route needs one, each change named in the report",
+  "Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in",
+  "Review: one round (CR-42); the full-diff rule applies as in T-F14",
+  "Waits for T-F23: both change packages/contract-mock/src/** (CR-42 item 4: tickets in one sprint depend on each other only when they share a file)",
+  "Size: a full session (#45)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/contract-mock/test/mission-reads.test.ts"]
+behaviours = [
+  "unit (behaviour): each part (c) route answers with a body its contract output schema accepts, with X-Request-Id and X-Contract-Version",
+  "unit (behaviour): editing, generating, asking for changes on and reopening a checkpoint move it the way the state machine says, and a move it doesn't allow is 422 with the allowed moves",
+  "unit (behaviour): accepting a finding on route 60 caps the receipt's verdict at pass on route 61, and route 61 with ?verify=1 rechecks the hash",
+  "unit (behaviour): route 100's packageHash is the hash route 114 binds; a stale one is 409",
+  "unit (behaviour): MockFailure works on every part (c) route, and recorded requests name the route by number",
 ]

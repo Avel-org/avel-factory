@@ -1,6 +1,6 @@
 # CR-W31: contract-mock serves the first mission's routes
 
-Nov 18, 2026 · drafted by Zero · **accepted Nov 18** (Javaris's brief, item 7; "approve T-F22"). Part (a) is built by the frontend lane as T-F22, on Axis's three conditions (below). Parts (b) and (c): who builds them is open.
+Nov 18, 2026 · drafted by Zero · **accepted Nov 18** (Javaris's brief, item 7; "approve T-F22"). Part (a) is built by the frontend lane as T-F22, on Axis's three conditions (below). Parts (b) and (c) are built by the frontend lane too, as T-F23 and T-F24 in frontend sprint-13 (Javaris, Nov 18: "yes i approve"), on the same conditions.
 
 **What:** `packages/contract-mock` serves the routes the first mission's screens use, over a world with one mission that can walk from draft to receipt.
 **Why:** the web builds against contract-mock and never fakes an endpoint (E2, handoff README). The mock serves only routes 8, 19 and 52 to 54 today, plus 1 to 7 under CR-W30 C. Javaris's Nov 18 re-plan wires the mission's screens next (frontend sprint-13).
@@ -38,14 +38,15 @@ The existing `MockFailure` hook covers every new route (any status and code, or 
 | Part | Routes | Built by |
 | --- | --- | --- |
 | (a) | The world's mission state module, and routes 8, 9, 10, 19, 20, 21, 28 to 30, 40, 44, 52 to 54, 104, 108 and 114 (Axis's split, Nov 18: 8, 19 and 52 to 54 read the same world, so what a write makes or removes shows in the lists) | The frontend lane, T-F22 (frontend sprint-12) |
-| (b) and (c) | The streams (34, 63, 64) and the remaining reads and writes in section A | Open: Axis's lane (backend sprint-05), or the frontend lane after T-F22 (Javaris, asked Nov 18) |
+| (b) | The streams: 33, 34, 105, 63, 64, 109 | The frontend lane, T-F23 (frontend sprint-13) |
+| (c) | The remaining reads and writes: 38 to 43, 46, 49, 55, 56, 58 to 61, 100 to 102, 107 | The frontend lane, T-F24 (frontend sprint-13, after T-F23) |
 
 ## Axis's conditions on the frontend building it (Nov 18)
 
 1. The mock stays `implement(contract)` with output validation, and each new route's test checks its output against the contract.
 2. State moves follow the contract's value lists and state machines (422 with the allowed moves, stale is 409). Anything the contract doesn't say is a CR-W.
-3. Axis reads part (a)'s state module for fidelity before it merges, as a check, not a G7 review.
+3. Axis reads each part's state changes for fidelity before it merges, as a check, not a G7 review.
 
 ## What changes in the kit
 
-`scripts/render.py` refuses any frontend ticket that changes `packages/contract-mock/**` ("only the backend lane changes packages/contract-mock/** (I3)"). For T-F22, it allows the frontend lane `packages/contract-mock/src/**` and `packages/contract-mock/test/**`, in a ticket that names CR-W31. `packages/contract` and `packages/db` stay Axis's lane only (I3). This is a kit change in Axis's lane, landed between cycles (CR-42).
+`scripts/render.py` refuses any frontend ticket that changes `packages/contract-mock/**` ("only the backend lane changes packages/contract-mock/** (I3)"). For T-F22 to T-F24, it allows the frontend lane `packages/contract-mock/src/**` and `packages/contract-mock/test/**`, in a ticket that names CR-W31. `packages/contract` and `packages/db` stay Axis's lane only (I3). This is a kit change in Axis's lane, landed between cycles (CR-42), in PR #59. The overlap check also has to let two tickets of one sprint share a file when one depends on the other, as CR-42 item 4 allows: T-F24 waits for T-F23.
