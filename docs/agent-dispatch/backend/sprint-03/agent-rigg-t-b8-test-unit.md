@@ -43,18 +43,19 @@ You write this ticket's acceptance tests before anything is built. They must fai
 3. `docs/design/Build rules.md`: how work moves from a ticket to main; cite rules by ID
 4. `docs/agent-dispatch/backend/sprint-03/codebase-analysis.md`: the codebase in short
 5. `docs/design/Step 0 and Step 1 plan.md`: Step 1 items 2 (middleware order), 4 (idempotency), 5 (Better Auth), 6 (step-up), 7 (CLI login), 8 (activity log); the rate limits; tests 2, 4, 5, 7, 8, 9, 13
-6. `docs/design/CR-31 Step 1 without the sample route and approval page.md`: how tests 2, 4 and 5 are proved on the CLI login routes
-7. `docs/design/Backend modules and build plan.md`: section 8: auth decisions, the order inside Step 1, Breach's attacks; module table: platform owns Better Auth's tables, cli_sessions, step_up_grants, idempotency_keys; audit owns activity_log
-8. `docs/design/API routes.md`: routes 1 to 5 and the rules on every write
-9. `docs/design/Build rules.md`: C4 (full rigor), E5 (dependencies), E6 (no secrets), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6
-10. `packages/server/src/platform/db/db.ts`: T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping
-11. `packages/server/src/platform/effect-handler.ts`: line 76 logs Cause.pretty for a defect; read only
-12. `packages/server/src/platform/logger.ts`: the JSON logger that writes the cause; read only
-13. `packages/server/src/platform/db/errors.ts`: the FK split reads Postgres's English message (t-b3-rigg-02); read only
-14. `packages/db/src/schema/platform.ts`: idempotency_keys: (principal, key), route, body_sha256, status in_progress or completed, http_status, response, expires_at
-15. `packages/contract/src/errors.ts`: IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS, TOKEN_REPLAYED, TOO_MANY_REQUESTS
-16. `docs/design/DATABASE.md`: idempotency_keys and its purge (after expires_at); a response carrying a secret or token is never stored
-17. `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-test-unit.md`: this document: follow it exactly
+6. `docs/design/CR-31 Step 1 without the sample route and approval page.md`: no sample route and no approval page in Step 1
+7. `docs/design/CR-43 Step 1 without the CLI.md`: proposed: step-up moves to Step 4 and CLI login to Step 5; test 5 is sign-in's limit
+8. `docs/design/Backend modules and build plan.md`: section 8: auth decisions, the order inside Step 1, Breach's attacks; module table: platform owns Better Auth's tables, cli_sessions, step_up_grants, idempotency_keys; audit owns activity_log
+9. `docs/design/API routes.md`: routes 1 to 5 and the rules on every write
+10. `docs/design/Build rules.md`: C4 (full rigor), E5 (dependencies), E6 (no secrets), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6
+11. `packages/server/src/platform/db/db.ts`: T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping
+12. `packages/server/src/platform/effect-handler.ts`: line 76 logs Cause.pretty for a defect; read only
+13. `packages/server/src/platform/logger.ts`: the JSON logger that writes the cause; read only
+14. `packages/server/src/platform/db/errors.ts`: the FK split reads Postgres's English message (t-b3-rigg-02); read only
+15. `packages/db/src/schema/platform.ts`: idempotency_keys: (principal, key), route, body_sha256, status in_progress or completed, http_status, response, expires_at
+16. `packages/contract/src/errors.ts`: IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS, TOKEN_REPLAYED, TOO_MANY_REQUESTS
+17. `docs/design/DATABASE.md`: idempotency_keys and its purge (after expires_at); a response carrying a secret or token is never stored
+18. `docs/agent-dispatch/backend/sprint-03/agent-rigg-t-b8-test-unit.md`: this document: follow it exactly
 
 ## 3. Domain
 
@@ -142,8 +143,6 @@ You write this ticket's acceptance tests before anything is built. They must fai
 
 | Ticket | Kind | Paths |
 | --- | --- | --- |
-| T-B10 | builds | `packages/server/src/platform/step-up/**`, `packages/server/src/platform/cli/**`, `packages/server/src/audit/**`, `packages/server/src/platform/router.ts`, `packages/server/src/main.ts` |
-| T-B10 | tests | `packages/server/test/cli-login/**` |
 | T-B11 | builds | `packages/contract-mock/src/**`, `packages/contract/src/minified.ts`, `packages/contract/src/index.ts`, `packages/contract/scripts/**`, `packages/contract/package.json` |
 | T-B11 | tests | `packages/contract-mock/test/auth.test.ts`, `packages/contract/test/minified-router.test.ts` |
 | T-B9 | builds | `packages/server/src/platform/auth/**`, `packages/server/src/platform/app.ts`, `packages/server/src/platform/effect-handler.ts`, `packages/server/src/seed.ts`, `packages/server/package.json`, `pnpm-lock.yaml` |

@@ -1,24 +1,21 @@
 {
   "files": {
-    "DISPATCH-PROMPTS.md": "11e1c36011245c601acf6da56e07eb48e0eeb25e7e21ba6d51c619afc6f4ff56",
-    "DISPATCH.md": "7f886b6105bbdf1d5ed2b1be2ff297cca8bf4554974b03c751714012d736e797",
-    "agent-rigg-t-b10-review.md": "1cfb88945c3b917d97b74bb39410834e849af8674927fba910055c2f8c006771",
-    "agent-rigg-t-b10-test-unit.md": "b07a35b247f054093efa46251c9522ba3cc9296676a9939addb5d90389ced6f7",
-    "agent-rigg-t-b11-review.md": "3515165bb46a6d563502a0bfcac68ea4e3bfe42c7a5d06b934885e820fe38aef",
-    "agent-rigg-t-b11-test-unit.md": "d6f774a8e795572c2d161bb090e0d0cc12973247e2ed0ae3d1fcdc426761b66f",
-    "agent-rigg-t-b8-review.md": "bbca65b368f27288c7bc2de1687a8231cd24ed926f3d00a02618404d4ee4469c",
-    "agent-rigg-t-b8-test-unit.md": "f37caa1768c13f37dba02987d9a3b74ce4796e81c91bbdca3f2418f22ac403d6",
-    "agent-rigg-t-b9-review.md": "03845002cbb1d36408694a3bb04f84afb9b956a7d9634b8e6e1f5d6b4064622d",
-    "agent-rigg-t-b9-test-unit.md": "0ad7711d0ce514cc5184df76b343f49aff2c6d2279b7fe7902751998cae4801a",
-    "agent-soap-t-b10-build.md": "a943d9080e0e7da7a5f722ee145aa8e60aa1da6f2b9caf608160803ec27fe046",
-    "agent-soap-t-b11-build.md": "e6eee97ad27c48d5d19b3585393ee2f73cd0503ec906c9e85a2de8abc19b27c6",
-    "agent-soap-t-b8-build.md": "e509a8c2f06ebf659ff34565b05dc39cd9d1a7dbb3f54b46d852f3a641b33813",
-    "agent-soap-t-b9-build.md": "2ba6a47f0ed4e7cb6feef340938bcdaaefebad7004df85b69f42a58fdbda171e",
-    "codebase-analysis.md": "524fe3c3063fbdff9a46307c6de9e1db3b97a81455e9e32079ab60c019af4999"
+    "DISPATCH-PROMPTS.md": "0217c030ae4f48ed2819dc4ffc119dddae107365349353efe8674e20eaac2418",
+    "DISPATCH.md": "8f70adbbc3218d903250d948d98ee20ce86a567e24b26567ccad81473a479dba",
+    "agent-rigg-t-b11-review.md": "02efda4252fa3e8805acd1d0b1c6643e8b5140824c3ed6141cfdbe6d5db0d36b",
+    "agent-rigg-t-b11-test-unit.md": "6d3f8e2fd55679aa239ceeae78320de8cce5e847ec114a63d501091c2233eb85",
+    "agent-rigg-t-b8-review.md": "d4ed1ece339ef968c225c5860265b1b72f7ee4be7dafb216c978d4c55f12da51",
+    "agent-rigg-t-b8-test-unit.md": "f5b06f5a9845c9767bb10c77bf2fdc43a27145194751371ce4eab3640a2b06eb",
+    "agent-rigg-t-b9-review.md": "5b8b9b7ecaae4d5e78b4516a94b98fe438f6393b0701aa219b02a70074c00600",
+    "agent-rigg-t-b9-test-unit.md": "bcf0d603b94e1261e6eaf11f77075ff489fbb180e17293955d2976982ea9bd1d",
+    "agent-soap-t-b11-build.md": "4e9aad99f2673489cba5ae4b9c7224e232968b7ffd091546294dc63a4f8c14dd",
+    "agent-soap-t-b8-build.md": "f51f761d55aa76cef0ed80c3729890ed44d3f2526eedd40337f9073db7dd0214",
+    "agent-soap-t-b9-build.md": "b842910765239e3c59b20a4022578eb0c5e44f805cf1d35457fe1e55510f81a9",
+    "codebase-analysis.md": "68a22ac5de5f86c6fcad1875afd2e7de9e6a9bdbffa7f6e224b4ff938027f0f0"
   },
   "lane": "backend",
-  "packageSha256": "82ade758ace5bb725230dd7175f0c77ca70454a7d10248ec5e8dfd83612786ed",
-  "plan_sha256": "dfd4d36ae683c59b8df7b1360c2f02426130e0ab7657b72b93740552ac3ce0d0",
+  "packageSha256": "ec74e61f4efa3cefd3f5eba5dc7cf176f517dcc93ca3e3ba11788c2eb43be7ce",
+  "plan_sha256": "d8b61e2fe8e3019b98e85e0ad30c8f6c3e99081536f6058c49c3f1b1522c62a5",
   "renderer": "avel-render 2",
   "sprint": "sprint-03"
 }
