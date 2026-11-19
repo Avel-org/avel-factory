@@ -1,0 +1,291 @@
+#!/usr/bin/env python3
+"""OSA's merge tool: CR-36's conditions, checked by code, and CR-41's merge with Javaris's approval.
+
+  scripts/agents/merge.py check <pr> [<pr> ...]                    report each PR, merge nothing
+  scripts/agents/merge.py merge <pr> [<pr> ...]                    merge each one that meets every CR-36 condition
+  scripts/agents/merge.py merge <pr> [<pr> ...] --approved "TEXT"  CR-41: Javaris approved these PRs, in his words
+
+The conditions (CR-36, section 1):
+  1  CI green on the head, every required check, none re-run (H4, H5, H6)        always required
+  2  standard rigor: not a full-rigor ticket, no code-owner review required       Javaris's approval covers it
+  3  a ticket's review report has a verdict of pass (G3, G5)                       Javaris's approval covers it
+  4  mergeable and CLEAN against main                                             always required
+  5  a squash merge: the PR title as the header, the PR's Refs: line as the body  always required
+  6  a ticket PR from dispatch: a t/<id>-<slug> branch                            Javaris's approval covers it
+  7  not a guardrail or design PR (labels contract or schema, the lockfile,       Javaris's approval covers it
+     .github, .claude, .agents, scripts, docs/design, AGENTS.md)
+  8  no "hold" label and no review asking for changes                             always required
+
+With --approved, TEXT must be Javaris's own words from OSA's session, quoted as he wrote them, and they
+must cover every PR named. The tool posts them on each PR before merging it, with the head it approved and
+the conditions his approval covered. The merge is pinned to that head (--match-head-commit), so a push after
+the approval fails the merge and OSA asks again.
+
+PRs merge in the order given, one at a time. After each, the tool waits for main's CI on the merge commit
+and stops at the first failure. It never updates a branch, re-runs a check or resolves a conflict: a PR
+that fails a condition is reported with where it goes (L2), and the rest of the list doesn't merge.
+"""
+
+import argparse
+import glob
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+GH = os.environ.get("AVEL_GH", "gh")
+CENTRAL = ZoneInfo("America/Chicago")
+TICKET_BRANCH = re.compile(r"^t/([A-Z]\d+)-[a-z0-9-]+$")
+GUARDED_PREFIXES = (".github/", ".claude/", ".agents/", "scripts/", "docs/design/")
+GUARDED_FILES = {"AGENTS.md", "pnpm-lock.yaml"}
+GUARDED_LABELS = {"contract", "schema"}
+WAIVABLE = {2, 3, 6, 7}
+ROUTE = {1: "the lane's lead", 3: "the lane's lead", 4: "the lane's lead", 6: "the lane's lead",
+         8: "the lane's lead", 2: "Javaris, as a decision", 7: "Javaris, as a decision", 5: "OSA (fix the PR text)"}
+MAIN_CI_TIMEOUT = int(os.environ.get("AVEL_MERGE_CI_TIMEOUT", "1800"))
+POLL = float(os.environ.get("AVEL_MERGE_POLL", "20"))
+
+
+class GhError(Exception):
+    pass
+
+
+def gh(*args, parse=True):
+    out = subprocess.run([GH, *args], capture_output=True, text=True, timeout=120)
+    if out.returncode != 0:
+        raise GhError(f"gh {' '.join(args[:3])}: {out.stderr.strip() or out.stdout.strip()}")
+    return json.loads(out.stdout) if parse else out.stdout
+
+
+def git(root, *args):
+    out = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, timeout=30)
+    return out.stdout.strip() if out.returncode == 0 else ""
+
+
+def repo_root():
+    here = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    return git(here, "rev-parse", "--show-toplevel") or here
+
+
+def common_dir(root):
+    path = git(root, "rev-parse", "--git-common-dir") or ".git"
+    return path if os.path.isabs(path) else os.path.normpath(os.path.join(root, path))
+
+
+def guarded(files, labels):
+    """Condition 7: the guardrail and design paths and labels this PR touches."""
+    hits = sorted({f for f in files if f in GUARDED_FILES or f.startswith(GUARDED_PREFIXES)})
+    return [f"label {l}" for l in sorted(set(labels) & GUARDED_LABELS)] + hits
+
+
+def refs_line(body):
+    """Condition 5: the PR body's last Refs: line."""
+    lines = [l.strip() for l in (body or "").splitlines() if l.strip().startswith("Refs:")]
+    return lines[-1] if lines else None
+
+
+def build_doc(root, ticket):
+    """The ticket's rendered build doc on main's checkout: (path, rigor), or (None, None)."""
+    for path in sorted(glob.glob(os.path.join(root, "docs", "agent-dispatch", "*", "sprint-*", "agent-*-build.md"))):
+        try:
+            with open(path, encoding="utf-8") as f:
+                head = f.read(2000)
+        except OSError:
+            continue
+        if re.search(r"(?m)^ticket: " + re.escape(ticket) + r"$", head):
+            rigor = re.search(r"(?m)^rigor: (\w+)$", head)
+            return path, rigor.group(1) if rigor else None
+    return None, None
+
+
+def review_verdict(root, doc_path, ticket):
+    """Condition 3: (attempt, status, verdict) of the ticket's latest review report copy."""
+    parts = doc_path.split(os.sep)
+    lane, sprint = parts[-3], parts[-2]
+    pattern = os.path.join(common_dir(root), "avel", "reports", f"{lane}-{sprint}-agent-*-{ticket.lower()}-review.a*.md")
+    best = None
+    for path in glob.glob(pattern):
+        m = re.search(r"\.a(\d+)\.md$", path)
+        if m and (best is None or int(m.group(1)) > best[0]):
+            best = (int(m.group(1)), path)
+    if not best:
+        return None
+    with open(best[1], encoding="utf-8") as f:
+        text = f.read(4000)
+    status = re.search(r"(?m)^status: (\S+)", text)
+    verdict = re.search(r"(?m)^verdict: (\S+)", text)
+    return best[0], status.group(1) if status else None, verdict.group(1) if verdict else None
+
+
+def reruns(sha):
+    """Condition 1, H5: workflows on this head that ran more than once (attempt 2 or later)."""
+    runs = gh("run", "list", "--commit", sha, "--json", "name,attempt")
+    return sorted({f"{r['name']} (attempt {r['attempt']})" for r in runs if r.get("attempt", 1) > 1})
+
+
+def assess(root, number):
+    """Every CR-36 condition for one PR: {'pr': ..., 'fails': {n: reason}, 'notes': [...]}."""
+    pr = gh("pr", "view", str(number), "--json",
+            "number,title,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,mergeStateStatus,"
+            "labels,files,body,reviews")
+    fails, notes = {}, []
+    labels = [l["name"] for l in pr.get("labels", [])]
+    files = [f["path"] for f in pr.get("files", [])]
+    if pr["state"] != "OPEN" or pr.get("isDraft") or pr["baseRefName"] != "main":
+        fails[4] = f"state {pr['state']}{', draft' if pr.get('isDraft') else ''}, base {pr['baseRefName']}"
+
+    # 1: CI
+    try:
+        checks = gh("pr", "checks", str(number), "--required", "--json", "name,bucket")
+    except GhError:
+        checks = gh("pr", "checks", str(number), "--json", "name,bucket")
+    bad = [f"{c['name']}={c['bucket']}" for c in checks if c["bucket"] not in ("pass", "skipping")]
+    if not checks:
+        fails[1] = "no checks reported"
+    elif bad:
+        fails[1] = "not green: " + ", ".join(bad)
+    else:
+        again = reruns(pr["headRefOid"])
+        if again:
+            fails[1] = "re-run (H5): " + ", ".join(again)
+
+    # 6, 2, 3: the ticket
+    m = TICKET_BRANCH.match(pr["headRefName"])
+    ticket = f"T-{m.group(1)}" if m else None
+    if not ticket:
+        fails[6] = f"not a ticket branch ({pr['headRefName']})"
+    else:
+        doc, rigor = build_doc(root, ticket)
+        if not doc:
+            fails[6] = f"no rendered build doc for {ticket} on main"
+        else:
+            if rigor != "standard":
+                fails[2] = f"{ticket} is rigor {rigor}"
+            found = review_verdict(root, doc, ticket)
+            if not found:
+                fails[3] = f"no review report for {ticket}"
+            else:
+                attempt, status, verdict = found
+                notes.append(f"{ticket} review a{attempt}: status {status}, verdict {verdict}")
+                if status != "done" or verdict != "pass":
+                    fails[3] = f"review a{attempt} is status {status}, verdict {verdict}"
+
+    # 4: mergeable
+    if pr.get("mergeable") != "MERGEABLE" or pr.get("mergeStateStatus") != "CLEAN":
+        fails.setdefault(4, f"{pr.get('mergeable')} / {pr.get('mergeStateStatus')}")
+
+    # 5: Refs
+    refs = refs_line(pr.get("body"))
+    if not refs:
+        fails[5] = "no Refs: line in the PR text"
+
+    # 7: guardrails
+    hits = guarded(files, labels)
+    if hits:
+        shown = hits[:6] + ([f"and {len(hits) - 6} more"] if len(hits) > 6 else [])
+        fails[7] = "touches " + ", ".join(shown)
+
+    # 8: hold
+    latest = {}
+    for r in pr.get("reviews", []):
+        latest[r.get("author", {}).get("login")] = r.get("state")
+    asking = sorted(a for a, s in latest.items() if s == "CHANGES_REQUESTED")
+    if "hold" in labels:
+        fails[8] = "hold label"
+    elif asking:
+        fails[8] = "changes requested by " + ", ".join(asking)
+
+    return {"pr": pr, "refs": refs, "fails": fails, "notes": notes}
+
+
+def describe(a, approved):
+    pr, fails = a["pr"], a["fails"]
+    hard = {n: r for n, r in fails.items() if n not in WAIVABLE or not approved}
+    lines = [f"#{pr['number']} {pr['title']}", f"  head {pr['headRefOid'][:7]} on {pr['headRefName']}"]
+    lines += [f"  {n}" for n in a["notes"]]
+    for n in sorted(fails):
+        covered = " (covered by Javaris's approval)" if approved and n in WAIVABLE else f" -> {ROUTE[n]}"
+        lines.append(f"  condition {n} fails: {fails[n]}{covered}")
+    lines.append("  can merge" if not hard else "  can't merge")
+    return "\n".join(lines), not hard
+
+
+def approval_comment(a, text):
+    now = datetime.now(CENTRAL).strftime("%b %-d, %Y %H:%M %Z")
+    covered = [f"{n} ({a['fails'][n]})" for n in sorted(a["fails"]) if n in WAIVABLE]
+    body = [f"**Merged by OSA with Javaris's approval (CR-41).**", "",
+            f"Javaris, in OSA's session, {now}:", "", "> " + "\n> ".join(text.splitlines()), "",
+            f"- Approved head: {a['pr']['headRefOid']}",
+            "- CR-36 conditions his approval covers: " + ("; ".join(covered) if covered else "none, every condition held"),
+            "- Held, as always required: 1 (CI green, no re-runs), 4 (mergeable, clean), 5 (squash with the Refs: line), 8 (no hold)"]
+    return "\n".join(body)
+
+
+def wait_for_main(sha):
+    deadline = time.time() + MAIN_CI_TIMEOUT
+    while time.time() < deadline:
+        runs = gh("run", "list", "--commit", sha, "--json", "name,status,conclusion")
+        if runs and all(r["status"] == "completed" for r in runs):
+            bad = [f"{r['name']}={r['conclusion']}" for r in runs if r["conclusion"] not in ("success", "skipped")]
+            return (False, ", ".join(bad)) if bad else (True, ", ".join(r["name"] for r in runs))
+        time.sleep(POLL)
+    return False, f"main's CI on {sha[:7]} didn't finish in {MAIN_CI_TIMEOUT} s"
+
+
+def merge_one(a, approved):
+    pr = a["pr"]
+    if approved:
+        gh("pr", "comment", str(pr["number"]), "--body", approval_comment(a, approved), parse=False)
+    gh("pr", "merge", str(pr["number"]), "--squash", "--subject", f"{pr['title']} (#{pr['number']})",
+       "--body", a["refs"], "--match-head-commit", pr["headRefOid"], parse=False)
+    sha = gh("pr", "view", str(pr["number"]), "--json", "mergeCommit")["mergeCommit"]["oid"]
+    return sha
+
+
+def main(argv=None):
+    p = argparse.ArgumentParser(description="CR-36 checks and merges, and CR-41's merge with Javaris's approval")
+    p.add_argument("action", choices=["check", "merge"])
+    p.add_argument("prs", nargs="+", type=int)
+    p.add_argument("--approved", help="Javaris's words approving these PRs, quoted as he wrote them (CR-41)")
+    args = p.parse_args(argv)
+    if args.approved is not None and not args.approved.strip():
+        p.error("--approved needs Javaris's words")
+    root = repo_root()
+
+    for i, number in enumerate(args.prs):
+        try:
+            a = assess(root, number)
+        except GhError as e:
+            print(f"#{number}: {e}")
+            return 1
+        text, ok = describe(a, args.approved)
+        print(text)
+        if args.action == "check":
+            continue
+        if not ok:
+            rest = args.prs[i + 1:]
+            print(f"stopped at #{number}; not merged: {', '.join(f'#{n}' for n in [number, *rest])}")
+            return 1
+        try:
+            sha = merge_one(a, args.approved)
+        except GhError as e:
+            print(f"  merge failed: {e}")
+            return 1
+        print(f"  merged as {sha[:7]}; waiting for main's CI")
+        green, detail = wait_for_main(sha)
+        if not green:
+            rest = args.prs[i + 1:]
+            print(f"  main is not green after #{number}: {detail}")
+            if rest:
+                print(f"stopped; not merged: {', '.join(f'#{n}' for n in rest)}")
+            return 1
+        print(f"  main green: {detail}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
