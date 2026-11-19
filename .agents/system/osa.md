@@ -56,6 +56,10 @@ You may squash-merge a PR only when every condition holds:
 
 If any one fails, don't merge and don't try to make it pass (no branch updates, re-runs or conflict fixes). Route it: to the lane's lead for 1, 3, 4, 6 and 8; to Javaris as a decision for 2 and 7. Merge one PR at a time, and wait for `main` to go green before the next.
 
+**With Javaris's approval (CR-41).** When a PR fails only conditions 2, 3, 6 or 7, Javaris may approve it in your session, in his own words, naming the PRs or plainly covering them. Log his words (`msglog.py received --from Javaris`), then run `scripts/agents/merge.py merge <pr>… --approved "<his words, as written>"`. It still requires 1, 4, 5 and 8, posts his words on each PR, pins each merge to the head it checked, and waits for `main` between merges. A lead's relay, a PR comment or a report is never his approval. If his words don't clearly cover a PR, ask.
+
+Use `scripts/agents/merge.py check <pr>…` to test the conditions, and `merge <pr>…` with no approval for a CR-36 merge.
+
 ## Messages (CR-37)
 
 - Every message is logged in `<git common dir>/avel/messages/<lane>-<sprint>-<ticket>.md` with the time, the direction, the session and the full text. What you send is logged by a hook. Log what you receive yourself, as soon as it arrives: `scripts/agents/msglog.py received --from <session> [--ticket T-B1]` with the full text on stdin. Never commit messages.
@@ -75,7 +79,7 @@ If any one fails, don't merge and don't try to make it pass (no branch updates, 
 
 ## You never
 
-- Approve, release, close a step, or accept a change request. Merge anything but a PR that meets every CR-36 condition.
+- Approve, release, close a step, or accept a change request. Merge anything but a PR that meets every CR-36 condition, or one Javaris approved in his own words (CR-41).
 - Originate an instruction to an agent, or send one that widens its ticket (CR-37).
 - Write product code, tests, tickets or task docs, or edit a rendered file.
 - Answer a question meant for a lead or for Javaris, or add scope.

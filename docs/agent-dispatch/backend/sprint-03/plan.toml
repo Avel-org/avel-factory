@@ -3,13 +3,11 @@
 # Check it:   scripts/render.py --check backend/sprint-03
 # Render it:  scripts/render.py backend/sprint-03   (after approval), then commit the folder.
 #
-# Four tickets, each a full session, in Javaris's approved build order (Nov 17), one builder at a time (B7):
+# Three tickets, each a full session, in Javaris's approved build order (Nov 17), one builder at a time (B7):
 #   T-B11 the web's auth mock and a minified router (CR-W30 A and D; contract)                            ~60 min  standard, contract
 #   T-B8  platform hardening and the middleware services (backlog a, b, c, d; Step 1 items 2 and 4)   ~75 min  full
 #   T-B9  sign-in: Better Auth, the seed, lockout, and the caller (Step 1 item 5, test 7)                 ~90 min  full, new dependency
-#   T-B10 step-up and CLI login: routes 1 to 3 (items 6 and 7; tests 5, 8, 9)                             ~90 min  full
-# T-B12 (routes 4 and 5, the CLI session as a caller; tests 2 and 4, the rest of 9) opens sprint-04: render.py refuses
-# two tickets in one sprint that share a file, and it would share T-B10's cli/**, audit/** and router.ts.
+# T-B10 (step-up and CLI login, routes 1 to 3) is withdrawn (Axis, Nov 18, under proposed CR-43; see the end of this header).
 # Bigger tickets, per Javaris (Nov 17, via OSA): "lets stop merging and commiting small amounts".
 #
 # Approved by Javaris, Nov 17 ("approve all", via OSA): the plan, items 1 to 4 below, CR-W30, and session limits of
@@ -28,30 +26,40 @@
 #    idempotency_keys.principal is a user or credential id (DATABASE.md). Axis proposes the device login's id as
 #    the principal for both. Route 3 already answers any replay with 409 TOKEN_REPLAYED and stores nothing.
 #    Say yes, or ask for a CR.
+# Change after approval (Axis, Nov 18): t-b3-rigg-03 (a defect's body.message is the contract's text) moves from
+# T-B8 to T-B9. The fix is in effect-handler.ts, T-B9's file, and T-B8 may not change it. T-B8's own text is left
+# as rendered so its task docs don't change mid-ticket; its tests a2 drops that one assertion by Axis's ruling.
+# Change after approval (Axis, Nov 18, t-b11-rigg-01): T-B11's Territory gains packages/contract/package.json for one
+# ./minified subpath export (4 lines, Axis's A4). The contract's index loads zod and its locale (D58), so the web
+# can't take the minified router from it. The lock check holds post-lock commits to the Territory, A4 included.
+# T-B8's reading list drops sprint-02/findings/t-b3-rigg-01.md: findings stay in .git/avel/reports, not the repo.
+# T-B10's notes say route 3 enforces its 5-second poll interval itself, in platform/cli/** (t-b8-rigg-03).
+# T-B9 and T-B10 get one review and no round 2 (Javaris, Nov 18; Build rules G5). T-B9's client IP is the peer address (T-B8 G7 P2).
 # Backlog, not in this sprint: T-B12 (sprint-04, first), CR-W30 B and C (after T-B10's step-up), the T-B5 relock P3 and t-b7-rigg-01 (lock-check tests), the contract-test timeout
 # (needs a CR and Zero), the declined db flake (CR-40). After T-B11: tests 10 and 11, spike 2 (DBOS), the jobs engine,
 # event consumers and the factory repo loader, which closes Step 1.
+# Re-plan (Axis, Nov 18, for Javaris's approval with CR-43): Javaris, via OSA: "lets not owrk on the cli right now lets foucs
+# more on building the needed modules to run the first real mission". T-B10 is withdrawn before it started (no tests,
+# branch or session); it keeps its ID for Step 4 (step-up) and Step 5 (CLI login), with T-B12 (routes 4 and 5). Step 1's
+# tests 2, 4 and 13 move to the clients routes (T-B14, sprint-04), and test 5 to sign-in's limit, which T-B9 already tests.
+# T-B9's two notes that named T-B10 now name T-B14. T-B8's and T-B11's text doesn't change.
 
 lane = "backend"
 sprint = "sprint-03"
 step = 1
-title = "Step 1, cycle 3: a hardened platform, sign-in, step-up and CLI login"
+title = "Step 1, cycle 3: a hardened platform and sign-in"
 goals = [
   "Nothing the Db service does can hang a request, crash the process on a dropped connection, or log a query's values",
   "The operator can sign in with email and password, a second account can't be made, and brute force locks out",
-  "The CLI can log in through a device code the operator approves with step-up",
-  "Every write in this sprint takes an Idempotency-Key, replays safely, and leaves one activity row",
 ]
 done_when = [
-  "Step 0 and Step 1 plan, Step 1 test 5: the 6th device-login start in a minute (route 1) is 429",
+  "Step 0 and Step 1 plan, Step 1 test 5 (CR-43): the 6th sign-in in a minute, for one email or from one IP, is 429",
   "Step 1 test 7: the 11th failed sign-in in 15 minutes is locked out; sign-up is refused; nothing creates a second user",
-  "Step 1 test 8: a wrong password gets no grant; a grant reused, used for another action or target, from another session, or after 5 minutes is refused",
-  "Step 1 test 9, its first half: approval needs step-up; polling returns the session once; a replayed poll is 409 and never returns the token (expiry and revoke come with T-B12)",
-  "Step 1 test 13, for this sprint's writes: each leaves exactly one activity row",
 ]
 sources = [
   { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 items 2 (middleware order), 4 (idempotency), 5 (Better Auth), 6 (step-up), 7 (CLI login), 8 (activity log); the rate limits; tests 2, 4, 5, 7, 8, 9, 13" },
-  { path = "docs/design/CR-31 Step 1 without the sample route and approval page.md", why = "how tests 2, 4 and 5 are proved on the CLI login routes" },
+  { path = "docs/design/CR-31 Step 1 without the sample route and approval page.md", why = "no sample route and no approval page in Step 1" },
+  { path = "docs/design/CR-43 Step 1 without the CLI.md", why = "accepted Nov 18: step-up moves to Step 4 and CLI login to Step 5; test 5 is sign-in's limit" },
   { path = "docs/design/Backend modules and build plan.md", why = "section 8: auth decisions, the order inside Step 1, Breach's attacks; module table: platform owns Better Auth's tables, cli_sessions, step_up_grants, idempotency_keys; audit owns activity_log" },
   { path = "docs/design/API routes.md", why = "routes 1 to 5 and the rules on every write" },
   { path = "docs/design/Build rules.md", why = "C4 (full rigor), E5 (dependencies), E6 (no secrets), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6" },
@@ -73,8 +81,8 @@ conventions = [
   "Tests run against real Postgres from scripts/pg-local.sh; test/db/support/database.ts makes a migrated database per file (T-B3)",
 ]
 notes = [
-  "One builder at a time (B7): T-B11, then T-B8, then T-B9, then T-B10. Rigg writes the next ticket's tests while Soap builds, once the ticket it depends on is merged",
-  "T-B8 to T-B10 are full rigor (C4: tokens, sign-in, step-up, sessions): Javaris merges, and Axis's second review follows the security checklist. T-B11 is standard but contract-labelled: Zero signs off (I3)",
+  "One builder at a time (B7): T-B11, then T-B8, then T-B9. Rigg writes the next ticket's tests while Soap builds, once the ticket it depends on is merged",
+  "T-B8 and T-B9 are full rigor (C4: tokens, sign-in, sessions): Javaris merges, and Axis's second review follows the security checklist. T-B11 is standard but contract-labelled: Zero signs off (I3)",
 ]
 
 # ---------------------------------------------------------------------------------------------
@@ -108,7 +116,6 @@ must_not_change = [
   "packages/contract/**",
 ]
 context = [
-  { path = "docs/agent-dispatch/backend/sprint-02/findings/t-b3-rigg-01.md", why = "why the defect log carries Drizzle's params (a DrizzleQueryError's message is the query and its params)" },
   { path = "packages/server/src/platform/db/db.ts", why = "T-B4's Db service: the pool, withTransaction's acquireRelease (pool.connect can't be interrupted), the defect mapping" },
   { path = "packages/server/src/platform/effect-handler.ts", why = "line 76 logs Cause.pretty for a defect; read only" },
   { path = "packages/server/src/platform/logger.ts", why = "the JSON logger that writes the cause; read only" },
@@ -195,9 +202,11 @@ notes = [
   "Email and password only. Sign-up is off. No GitHub sign-in, no passkeys (their table stays unused). Better Auth's tables are the schema's users and auth_* through the Drizzle adapter's name mapping; no schema change. If the schema can't hold what Better Auth needs, stop with needs-cr",
   "Lockout: 10 failed sign-ins in 15 minutes locks the account for 15 minutes. Sign-in is also rate-limited at 5 a minute per email and per IP through T-B8's limiter",
   "The seed (packages/server/src/seed.ts, run by hand on the host) creates the operator from AVEL_OPERATOR_EMAIL and AVEL_OPERATOR_PASSWORD and AVEL's internal client (CR-13), and is safe to run twice. The password is never in the repo; tests make a throwaway one. List the two variable names in the build report; Axis adds them to .env.example",
-  "The caller: a Caller service (the operator's user id and the session) resolved from the web session cookie, provided to every procedure through the request scope. No session means no Caller; routes that need one arrive in T-B10",
-  "The request scope also carries the client IP (for the sign-in limit) and the request's Idempotency-Key header, as services a procedure can read, so T-B10 needs no change to app.ts or effect-handler.ts",
-  "Cookies: httpOnly, Secure outside tests, SameSite=Lax; the session id rotates at sign-in (session fixation, Breach)",
+  "The caller: a Caller service (the operator's user id and the session) resolved from the web session cookie, provided to every procedure through the request scope. No session means no Caller; routes that need one arrive in T-B14 (the clients routes, sprint-04)",
+  "The request scope also carries the client IP (for the sign-in limit) and the request's Idempotency-Key header, as services a procedure can read, so T-B14 needs no change to app.ts or effect-handler.ts",
+  "Cookies: httpOnly, Secure outside tests, SameSite=Lax; the session id rotates at sign-in (session fixation, Breach)",  "A defect's 500 carries the contract's message: effect-handler.ts throws INTERNAL_SERVER_ERROR with errorMap's text (\"Something went wrong\"), not its own \"Internal server error\" (t-b3-rigg-03; moved here from T-B8 by Axis, Nov 18, because this ticket owns effect-handler.ts)",
+  "The client IP for the sign-in-ip limit is the socket's peer address, or the first trusted proxy's when one is configured, never a raw X-Forwarded-For a client can set (T-B8 G7 P2)",
+  "Review (Build rules G5, Javaris Nov 18): one review, no round 2. Only a P0 or P1 sends the PR back, and the checker then confirms only those fixes. Every P2 goes to a later ticket or the backlog, named in the PR text",
 ]
 
 [ticket.tests]
@@ -210,74 +219,7 @@ behaviours = [
   "the 6th sign-in attempt in a minute for one email is 429, and so is the 6th from one IP",
   "a procedure run with the session cookie sees Caller with the operator's user id; without it there is no Caller; a procedure can read the request's Idempotency-Key header and client IP",
   "the session id after sign-in differs from any session id the client presented before it (no fixation)",
-  "the seed is idempotent: run twice, one operator and one internal client",
-]
-
-# ---------------------------------------------------------------------------------------------
-[[ticket]]
-id = "T-B10"
-slug = "step-up-cli-login"
-title = "Step-up grants and CLI login: start a device login, approve it with step-up, poll for the session (routes 1 to 3)"
-goal = "The CLI logs in with a device code the operator approves in the web app with their password again, and gets its session exactly once."
-rigor = "full"
-refs = [
-  "Step 0 and Step 1 plan, Step 1 items 6 and 7, tests 5, 8 and 9; the rate limits section (CLI login)",
-  "API routes.md, routes 1 to 3 and the rules on every write",
-  "CR-31 (test 5 on route 1)",
-]
-depends_on = ["T-B9"]
-may_change = [
-  "packages/server/src/platform/step-up/**",
-  "packages/server/src/platform/cli/**",
-  "packages/server/src/audit/**",
-  "packages/server/src/platform/router.ts",
-  "packages/server/src/main.ts",
-]
-must_not_change = [
-  "packages/server/src/platform/app.ts",
-  "packages/server/src/platform/effect-handler.ts",
-  "packages/server/src/platform/db/**",
-  "packages/server/src/platform/idempotency.ts",
-  "packages/server/src/platform/rate-limit.ts",
-  "packages/server/src/platform/auth/**",
-  "packages/server/package.json",
-  "packages/db/**",
-  "packages/contract/**",
-]
-context = [
-  { path = "packages/contract/src/routes/auth.ts", why = "routes 1 to 3, their inputs, outputs and the stepUp meta" },
-  { path = "docs/design/API routes.md", why = "routes 1 to 3; route 3 is never replayable and never returns the token twice" },
-  { path = "packages/db/src/schema", why = "step_up_grants, device_logins, cli_sessions (token stored as a hash), activity_log" },
-  { path = "packages/server/src/platform/idempotency.ts", why = "T-B8's store: every write takes an Idempotency-Key; route 3's response is sensitive" },
-  { path = "packages/server/src/platform/rate-limit.ts", why = "T-B8's limiter: 5 device-login starts a minute; polling no faster than every 5 seconds" },
-  { path = "packages/server/src/platform/auth", why = "T-B9's Caller and the password check step-up repeats" },
-]
-verify = [
-  "pnpm --filter @avel/server test",
-  "pnpm --filter @avel/server typecheck",
-  "pnpm --filter @avel/server check:effect",
-  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
-]
-notes = [
-  "Step-up (item 6): the operator's password again, for one action on one target, bound to the session; single-use, 5 minutes (Clock), consumed in one atomic update. Only credential actions ask; in this step that's route 2. How the web obtains a grant and how route 2 presents it: follow the contract's stepUp meta and API routes.md; if they don't say, stop with needs-cr",
-  "Route 1 (start): makes a device code and a short user code, rate-limited at 5 a minute (429). Route 2 (approve): needs the Caller and a valid step-up grant for this user code. Route 3 (poll): returns the session token once after approval, stores only its hash, polling faster than every 5 seconds is 429",
-  "Idempotency on every write through T-B8's store. Routes 1 and 3 have no session yet: their principal is the device login's id (Javaris, Nov 17: approved). Route 3's response carries a token, so it's never stored and a replay is 409 TOKEN_REPLAYED",
-  "Activity log (item 8, audit module): every write in this ticket leaves exactly one activity_log row (who, what, target), in the same transaction as the change",
-  "DTOs through one mapper per object; outputs are validated against the contract (AGENTS.md API rules)",
-  "Routing: platform/router.ts composes the health router and routes 1 to 3; main.ts passes it to createApp. app.ts doesn't change",
-  "E13: each route gets its happy path with the DTO checked, the error body with requestId, and the idempotent replay",
-]
-
-[ticket.tests]
-role = "test-unit"
-paths = ["packages/server/test/cli-login/**"]
-behaviours = [
-  "route 1: a start returns a device code and user code matching the DTO; the 6th start in a minute is 429 with the error body and requestId (Step 1 test 5)",
-  "step-up: a wrong password gets no grant; a grant works once; reused, used for another action or another target, from another session, or after 5 minutes (TestClock) it is 403 STEP_UP_REQUIRED (Step 1 test 8)",
-  "route 2: approval without a grant is 403 STEP_UP_REQUIRED; with one it approves the device login; two concurrent approvals of one user code approve once",
-  "route 3: before approval it says pending; after approval it returns the session token once, and cli_sessions stores only its hash; a replayed poll is 409 TOKEN_REPLAYED and never returns the token; polling faster than every 5 seconds is 429 (Step 1 test 9)",
-  "routes 1 to 3: a replay with the same key and body returns the first response (except route 3), a different body is 409 IDEMPOTENCY_KEY_REUSED",
-  "each write leaves exactly one activity_log row naming the action and target, and a failed write leaves none (Step 1 test 13)",
+  "the seed is idempotent: run twice, one operator and one internal client",  "a defect in a procedure answers 500 whose body.message equals errorMap.INTERNAL_SERVER_ERROR.message and whose requestId is the request's",
 ]
 
 # ---------------------------------------------------------------------------------------------
@@ -300,13 +242,13 @@ may_change = [
   "packages/contract/src/minified.ts",
   "packages/contract/src/index.ts",
   "packages/contract/scripts/**",
+  "packages/contract/package.json",
 ]
 must_not_change = [
   "packages/contract/src/routes/**",
   "packages/contract/src/dto/**",
   "packages/contract/src/errors.ts",
   "packages/contract/src/version.ts",
-  "packages/contract/package.json",
   "packages/contract-mock/package.json",
   "packages/server/**",
   "apps/web/**",
