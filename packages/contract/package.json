@@ -36,6 +36,10 @@
     "./completion-report": {
       "types": "./dist/completion-report.d.ts",
       "default": "./dist/completion-report.js"
+    },
+    "./minified": {
+      "types": "./dist/minified.d.ts",
+      "default": "./dist/minified.js"
     }
   },
   "files": [
