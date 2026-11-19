@@ -1,53 +1,69 @@
 status: done
 ticket: T-B9
 
-All eight tasks pass on `b10aca7`, T-B9-01 to T-B9-08: the 8 locked files in `packages/server/test/auth/`, 12 tests, in every run.
+This is attempt a2. It fixes review finding **t-b9-rigg-01 (P1)** in commit **`99f855b`**, and nothing else, as Axis's ruling asked (G5). All eight tasks still pass: T-B9-01 to T-B9-08, the 8 locked files in `packages/server/test/auth/`, 12 tests.
 
-**One flaky test, not mine, for Axis to decide before CI runs.** T-B8's `test/platform-hardening/pool-timeouts.test.ts` ("withTransaction fails as a defect within the connect timeout") failed in 3 of 9 full test runs on this branch, here on 4 cores. The assertion was `no new connection reached the proxy after the switch` at line 133. It passed 5 of 5 times alone and 6 of 6 alongside only `test/auth/`. So it looks like CPU load across the whole parallel suite meeting its 400 ms connect timeout. The auth tests add real load: Better Auth hashes with pure-JS scrypt on every sign-in and seed. I didn't measure the rate on the lock commit, so I can't say how much of it is new. Neither the test nor `vitest.config.ts` is in my Territory, and weakening the password hash to ease it would be wrong. CI runs once (H5), so it may come up red. Details are under Pre-flight.
+**The finding (Rigg's review a1):** with a session cookie, the password could be guessed without limit through `/api/auth/change-password` and `/api/auth/verify-password`. The sign-in guard covered only `/sign-in/email`, and Better Auth's own limiter is off.
 
-This is attempt a1, built on the lock at `522b980`. It has three code commits, all with `Refs: T-B9`:
-- `114bece`: the dependency (better-auth 1.7.16), alone with the lockfile
-- `5379e14`: Better Auth at `/api/auth/*`, the sign-in limits and lockout, the request services and Caller, and the defect message
-- `b10aca7`: the seed
+**The fix (Axis's, relayed by OSA):** Better Auth's handler now sees only the three endpoints in `docs/ui-contracts/login.md` section 1:
+- `POST /api/auth/sign-in/email`, through the existing guard (the rate limits, then the lockout);
+- `GET /api/auth/get-session`;
+- `POST /api/auth/sign-out`.
+
+Every other method and path under `/api/auth/*` never reaches Better Auth and answers 404 with the contract's `NOT_FOUND` body and the request's `requestId`. That covers change-password, verify-password, sign-up, list-sessions, revoke-sessions, update-user and the rest (login.md: "any other `/api/auth/*` path (404)"). The server-side `auth.api.getSession` call that resolves Caller is unchanged.
+
+**Commits on `t/B9-sign-in` since the lock (`522b980`),** all with `Refs: T-B9`:
+- a1: `114bece` (better-auth 1.7.16 and the lockfile), `5379e14` (Better Auth, the limits and lockout, the caller, the defect message), `b10aca7` (the seed), `0cb894d` (a1's report);
+- a2: **`99f855b`** (rigg-01), then this report.
 
 ## Pre-flight
 
 The Postgres came from `scripts/pg-local.sh start` (D5). The worktree was fresh, so I first ran `pnpm install --frozen-lockfile`, which left the lockfile unchanged.
 
-Before any change:
-- `pnpm --filter @avel/server test`: the 8 locked auth files failed, and the other 17 passed (54 tests).
-- `pnpm test`: 9 files failed. They were the 8 auth files, plus the server's `check:effect` run, which failed because the auth modules didn't exist yet.
+**Before any change, on `0cb894d`:** `pnpm build` exited 0, and `pnpm --filter @avel/server test` passed 25 of 25 files and 66 of 66 tests.
 
-The locked tests failed first, as B2 requires.
+**rigg-01 failed first.** I used a throwaway probe file, deleted afterwards and never committed. It signs in, then sends nine `/api/auth/*` requests that aren't on the list, each with the session cookie. On `0cb894d`, its first request (`POST /api/auth/change-password` with the right current password) got **200**. On `99f855b` it passes:
+- all nine requests are 404, each with body `{ code: "NOT_FOUND", message: errorMap.NOT_FOUND.message, requestId }`, and each `requestId` equals the request's `X-Request-Id`. The nine:
+  - `POST change-password`, `POST verify-password`, `POST sign-up/email`;
+  - `GET sign-in/email`, and `POST sign-in/email/` (trailing slash);
+  - `POST get-session` (the wrong method), `GET list-sessions`, `POST revoke-sessions`, `GET ok`;
+- after them, `get-session` still returns the session;
+- the old password still signs in, so change-password never reached Better Auth;
+- `sign-out` is 200 `{ success: true }`, and afterwards `get-session` is `null`.
 
-The verification, in Part 7's order, on `b10aca7`:
+**The verification, in Part 7's order, on `99f855b`:**
 
 | Command | Result |
 | --- | --- |
 | `pnpm build` | exit 0 |
 | `pnpm typecheck` | exit 0 |
-| `pnpm lint` | exit 0. 246 files; 2 warnings, both already there and outside this ticket (`apps/web/e2e/control-room-budget/budget.spec.ts` 73 and 89) |
+| `pnpm lint` | exit 0. 246 files; 2 warnings, both already there and outside this ticket (`apps/web/e2e/control-room-budget/budget.spec.ts` lines 73 and 89) |
 | `pnpm test` | exit 0. 63 files, 983 tests passed |
-| `pnpm --filter @avel/server test` | **exit 1.** 24 of 25 files passed, 65 of 66 tests. The one failure was T-B8-02 in `pool-timeouts.test.ts` (the flake above). Rerun 3 times straight after: 25 of 25 files, 66 of 66 tests, each time |
+| `pnpm --filter @avel/server test` | exit 0. 25 files, 66 tests passed |
 | `pnpm --filter @avel/server typecheck` | exit 0 |
-| `pnpm --filter @avel/server check:effect` | exit 0. 50 files, 0 errors; 6 warnings and 2 messages, all in tests outside this ticket (for example `test/platform-hardening/rate-limit.test.ts`'s `unstableApiUsage` and `multipleEffectProvide`), none in `src/` |
-| `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | **exit 1** at `pnpm test`: 62 of 63 files, 982 of 983 tests. The one failure was the same T-B8-02 test. Build, typecheck and lint passed |
+| `pnpm --filter @avel/server check:effect` | exit 0. 50 files, 0 errors. The 6 warnings and 2 messages are all in tests outside this ticket (`test/db/errors.test.ts`, `test/platform-hardening/idempotency.test.ts` and `rate-limit.test.ts`); none is in `src/` |
+| `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | exit 0. 63 files, 983 tests passed |
 
-**Every full run since the code landed** (the server suite, or the root suite, which includes it):
-- T-B8-02 failed in runs 1, 5 and 6;
-- runs 2 to 4 and 7 to 9 were all green.
-
-The 12 auth tests passed in all nine.
+**The T-B8-02 flake** that a1 reported (`test/platform-hardening/pool-timeouts.test.ts`) didn't show up in a2's three full runs: the baseline server suite, `pnpm test`, and the combined command. Three runs are too few to call it gone (see Limitations).
 
 **Other checks:**
 - `git diff 522b980 HEAD -- packages/server/test` is empty: no locked test changed.
-- Every file changed since the lock is in Part 5's Territory.
-- Probed by hand with a temporary test file, deleted afterwards and never committed:
-  - `POST /api/auth/sign-in/email/` (trailing slash) is 404 from Better Auth's router, so the guard can't be stepped around;
-  - a form-encoded sign-in with the email upper-cased still counts against the email limit (the 6th, from a 6th address, is 429);
-  - `env.incoming.socket.remoteAddress` is read as the peer.
+- a2's diff touches two files, `packages/server/src/platform/app.ts` and `packages/server/src/platform/auth/web-auth.ts`, both in Part 5's Territory. With this report, that's three.
 
 ## What changed
+
+### a2 (`99f855b`, rigg-01)
+
+| File | Why |
+| --- | --- |
+| `packages/server/src/platform/auth/web-auth.ts` | `SERVED` lists the three endpoints as `"METHOD /path"`, matched exactly against the request's method and URL pathname. The new `WebAuth.serves(request)` says whether a request is one of them. `handle` sends `POST /api/auth/sign-in/email` through the guard and the other two straight to Better Auth |
+| `packages/server/src/platform/app.ts` | `/api/auth/*` goes to `runEdge` only when `auth.serves(request)`. Anything else falls through to `serveContract`, which has no route under `/api/auth/` and already answers an unmatched path with 404 `NOT_FOUND` and the request's `requestId`. So the 404 body is built in one place, and the response still carries X-Request-Id and X-Contract-Version |
+
+The match is exact, so a trailing slash, a doubled slash, a percent-encoded variant or another method doesn't match and gets 404.
+
+### The ticket as a whole (a1, unchanged by a2 except as above)
+
+The a1 report follows as it was written. Its notes on `web-auth.ts` and `app.ts` still hold, apart from the endpoint allowlist above.
 
 | File | Why |
 | --- | --- |
@@ -123,16 +139,24 @@ The 12 auth tests passed in all nine.
 | T-B9-08: a defect's 500 carries the contract's message | `effect-handler.ts` (`internalError`, `runEdge`) |
 | Axis, note 1: the peer address from `env.incoming` | `app.ts` (`Peer`, `peerAddress`) |
 | Axis, note 2: main.ts untouched | No change to `main.ts` (see Limitations) |
+| rigg-01 (a2): no password guessing through the other Better Auth endpoints | `web-auth.ts` (`SERVED`, `serves`), `app.ts` (the 404 fall-through) |
 
 ## Deviations
 
-None from the task doc. Some choices the doc left open:
+**a2:** none. a2 does only what Axis's ruling says.
+
+**a1:** none from the task doc. Some choices the doc left open:
 - **The 429 bodies on `/api/auth/*`** are `{ code, message, requestId }`. The codes and the lockout's message ("Too many attempts") are login.md's wire. `TOO_MANY_ATTEMPTS` isn't a contract code, because `/api/auth/*` is outside the contract, so it isn't in `errorTable`. `errors.ts` isn't in my Territory anyway.
 - **The defect message also applies where `effectHandler` gets a context that isn't a `RequestScope`.** That was the other place with "Internal server error".
 - **I added `runEdge` to `effect-handler.ts`.** Writing Effect rule 2 keeps program runs in the adapter, so the auth routes run there too, not in `app.ts`.
 
 ## Limitations
 
+**a2:**
+- **The fix is checked only by the probe above,** not by a locked test. The locked T-B9-02 accepts any 4xx for sign-up, and it now gets 404. A locked test for "any other `/api/auth/*` path is 404" would be Rigg's to add.
+- **Another method on one of the three paths** (`HEAD` or `OPTIONS`, say) is 404 too, because only the exact method counts. login.md names no other method, and the web uses only these.
+
+**Carried from a1** (the P2s and P3s from Rigg's review a1 go elsewhere, per Axis, and aren't covered here):
 - **The production entry point doesn't mount auth yet** (Axis, note 2). `main.ts` still calls `createApp()` with no `auth`, so production serves no `/api/auth/*` and no Caller until T-B14 wires the options and the router. T-B14 will also need the settings for `secret`, `baseUrl` and `secureCookies`, which this ticket doesn't name.
 - **No trusted-proxy setting.** The ticket says "the socket's peer address, or the first trusted proxy's when one is configured". No setting for a trusted proxy exists, and no test asks for one, so building one would be speculative (E8). The IP is always the socket peer's. If AVEL runs behind a proxy, every client shares the proxy's address for the `sign-in-ip` limit. Candidate for T-B14 or the backlog.
 - **Without a peer,** for example `app.fetch(request)` alone as the older harness calls it, `ClientIp` is `"unknown"`, and all such requests share one `sign-in-ip` window. Production always passes node-server's `env`.
@@ -142,10 +166,16 @@ None from the task doc. Some choices the doc left open:
 - **`auth_sessions.ip_address` stays null:** IP tracking is off. Better Auth would otherwise have recorded a client-set X-Forwarded-For.
 - **The web session lasts Better Auth's default 7 days,** refreshed daily by `get-session`. No doc names a web session lifetime; login.md's mock uses 12 hours. The caller lookup on contract routes never refreshes it (`disableRefresh`).
 - **A new sign-in doesn't revoke the session a client presented.** T-B9-06 asks only that the new session differs, and the presented one isn't adopted.
-- **The T-B8-02 flake** (top of this report) isn't fixed here. It belongs to T-B8's test or to the suite's parallelism, both outside Territory. Candidates: give that test its own run or a longer connect timeout, or limit how many server test files run at once.
+- **The T-B8-02 flake** isn't fixed here. a1 saw it fail in 3 of 9 full runs under the suite's load; a2's 3 runs were green. It belongs to T-B8's test or to the suite's parallelism, both outside Territory. Candidates: give that test its own run or a longer connect timeout, or limit how many server test files run at once.
 - **Better Auth's logger is set to `error`,** and writes the message only. Its `warn` lines (for example "User not found") are dropped.
 
 ## Messages received
+
+| # | Attempt | From | Instruction | What I did |
+| --- | --- | --- | --- | --- |
+| 1 | a2 | OSA, relaying Axis | Fix only t-b9-rigg-01 (P1), inside the ticket (G5). Better Auth's handler sees only `POST /api/auth/sign-in/email` (through the guard), `GET /api/auth/get-session` and `POST /api/auth/sign-out`. Every other `/api/auth/*` path answers 404 with the contract's `NOT_FOUND` body and the requestId, without reaching Better Auth. Leave Caller's `auth.api.getSession` as it is. Nothing else; the P2s and P3s go elsewhere. Name the commit that fixes rigg-01 | **Followed.** It narrows the ticket, and both files are in Territory. Done in `99f855b`, named at the top of this report. No other change in a2 |
+
+a1's messages, for the record (all followed in a1):
 
 | # | From | Instruction | What I did |
 | --- | --- | --- | --- |
