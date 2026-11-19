@@ -11,7 +11,7 @@ Lead: Axis · builder: Soap · checker: Rigg · Step 1
 
 ## Done when
 
-- Step 0 and Step 1 plan, Step 1 test 5 (as CR-43 proposes): the 6th sign-in in a minute, for one email or from one IP, is 429
+- Step 0 and Step 1 plan, Step 1 test 5 (CR-43): the 6th sign-in in a minute, for one email or from one IP, is 429
 - Step 1 test 7: the 11th failed sign-in in 15 minutes is locked out; sign-up is refused; nothing creates a second user
 
 ## Tickets

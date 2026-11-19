@@ -22,8 +22,10 @@
 #   PR #51's five changes carry into this PR. Four stand; the fifth (T-B10's poll interval) goes with T-B10. #51 can
 #   close unmerged in favour of this one.
 #
-# For Javaris to approve with this plan:
-# 1. CR-43 (Step 1 without the CLI). T-B14 builds the clients routes, which CR-31 put in Step 4, so it can't start
+# Approved by Javaris, Nov 18 (to OSA: "approve 5 to 9"): CR-43 accepted (Zero's sign-off pending); spike 2 runs as CR-30
+# says, with @dbos-inc/dbos-sdk (MIT) in T-B13 only; sprint-04 goes before CR-W31, whose part (a) heads sprint-05.
+# As proposed:
+# 1. CR-43 (Step 1 without the CLI): accepted. T-B14 builds the clients routes, which CR-31 put in Step 4, so it can't start
 #    until CR-43 is accepted (E9).
 # 2. New dependency (E5), T-B13: @dbos-inc/dbos-sdk, MIT, for spike 2 (CR-30 decision 2 already approved the spike).
 #    If DBOS loses, it leaves with the spike's code, and the lockfile goes back to what it was.
@@ -33,8 +35,8 @@
 #    every receipt.
 #
 # When it renders: render.py refuses this sprint while T-B9 is unmerged, because T-B9 also changes app.ts (T-B15),
-# package.json and the lockfile (T-B13). Approve the plan now; Axis renders it into this PR once T-B9 merges, and
-# Rigg's first tests dispatch starts from that render.
+# package.json and the lockfile (T-B13). The plan is on main from #56; its render follows in a sprint-folder-only
+# PR once T-B9 merges (CR-42 item 2), and Rigg's first tests dispatch starts from that render.
 
 lane = "backend"
 sprint = "sprint-04"
@@ -47,14 +49,14 @@ goals = [
 ]
 done_when = [
   "Step 0 and Step 1 plan, Step 1 tests 10 and 11, written against the Jobs interface: they run, and T-B13's review gives spike 2's verdict against CR-30 section 6",
-  "Step 1 test 2 (as CR-43 proposes): a client's output has exactly ClientDto's fields and no internal column",
-  "Step 1 test 4 (as CR-43 proposes): creating a client replays with the same key and body; another body is 409; a duplicate sent while the first runs is 409",
+  "Step 1 test 2 (CR-43): a client's output has exactly ClientDto's fields and no internal column",
+  "Step 1 test 4 (CR-43): creating a client replays with the same key and body; another body is 409; a duplicate sent while the first runs is 409",
   "Step 1 test 12: the loader reads factory.yaml at a given SHA; an unmerged change has no effect; a merge by anyone but the factory's GitHub App isn't selectable and raises an alert; a replayed webhook delivery is ignored",
   "Step 1 test 13, for this sprint's writes: each leaves exactly one activity row",
 ]
 sources = [
   { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 items 1 (the webhook), 8 (activity log), 9 (jobs), 10 (events), 11 (the factory repo); the rate limits (webhook); tests 2, 4, 10, 11, 12, 13" },
-  { path = "docs/design/CR-43 Step 1 without the CLI.md", why = "proposed: tests 2, 4 and 13 on the clients routes; step-up and CLI login leave Step 1" },
+  { path = "docs/design/CR-43 Step 1 without the CLI.md", why = "accepted Nov 18: tests 2, 4 and 13 on the clients routes; step-up and CLI login leave Step 1" },
   { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 3 (hand-built or DBOS) and section 6 (spike 2's eight checks, its pass and fail rules)" },
   { path = "docs/design/Jobs and workers.md", why = "the jobs design the tests hold either engine to: claims, the reaper, retries, one live job per key, consumers" },
   { path = "docs/design/Backend modules and build plan.md", why = "section 4: onboarding owns clients, audit owns activity_log, knowledge owns factory_versions, platform owns jobs and webhook_deliveries; the loader is a platform utility with no table" },
@@ -155,7 +157,7 @@ title = "The clients routes (8 to 11) and the activity log, carrying Step 1's DT
 goal = "The operator can create, list, read and edit clients through the API, a retried write never makes a second client, and every client write leaves one activity row."
 rigor = "standard"
 refs = [
-  "CR-43 (proposed): Step 1 tests 2, 4 and 13 on the clients routes; it must be accepted before this ticket starts",
+  "CR-43 (accepted Nov 18): Step 1 tests 2, 4 and 13 on the clients routes",
   "Step 0 and Step 1 plan, Step 1 item 8 (activity log), tests 2, 4, 6 and 13",
   "API routes.md, routes 8 to 11 and the rules on every write",
   "Build rules E12 (onboarding owns clients, audit owns activity_log) and E13",

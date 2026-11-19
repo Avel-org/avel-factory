@@ -1,6 +1,6 @@
-# CR-43: Step 1 without the CLI (proposed)
+# CR-43: Step 1 without the CLI (accepted)
 
-Nov 18, 2026 · drafted by Axis for @javaris · **proposed, not accepted**
+Nov 18, 2026 · drafted by Axis for @javaris · **accepted Nov 18 by Javaris** (to OSA: "approve 5 to 9"; item 5 of his brief). Zero's sign-off is still to come, because it changes CR-W30 B and C (I3)
 
 - **What:** Step 1 doesn't build CLI login (item 7, routes 1 to 5) or step-up (item 6). CLI login moves to Step 5, where the CLI is built. Step-up moves to Step 4, where its first credential actions are. Step 1 builds the clients routes (8 to 11) instead, so its middleware tests still run on real routes.
 - **Why:**

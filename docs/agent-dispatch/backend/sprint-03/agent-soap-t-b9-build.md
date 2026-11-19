@@ -44,7 +44,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 4. `docs/agent-dispatch/backend/sprint-03/codebase-analysis.md`: the codebase in short
 5. `docs/design/Step 0 and Step 1 plan.md`: Step 1 items 2 (middleware order), 4 (idempotency), 5 (Better Auth), 6 (step-up), 7 (CLI login), 8 (activity log); the rate limits; tests 2, 4, 5, 7, 8, 9, 13
 6. `docs/design/CR-31 Step 1 without the sample route and approval page.md`: no sample route and no approval page in Step 1
-7. `docs/design/CR-43 Step 1 without the CLI.md`: proposed: step-up moves to Step 4 and CLI login to Step 5; test 5 is sign-in's limit
+7. `docs/design/CR-43 Step 1 without the CLI.md`: accepted Nov 18: step-up moves to Step 4 and CLI login to Step 5; test 5 is sign-in's limit
 8. `docs/design/Backend modules and build plan.md`: section 8: auth decisions, the order inside Step 1, Breach's attacks; module table: platform owns Better Auth's tables, cli_sessions, step_up_grants, idempotency_keys; audit owns activity_log
 9. `docs/design/API routes.md`: routes 1 to 5 and the rules on every write
 10. `docs/design/Build rules.md`: C4 (full rigor), E5 (dependencies), E6 (no secrets), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6
