@@ -13,8 +13,8 @@ Your five seats are OSA, the two leads and the two building tabs, plus a sixth t
 | 1 OSA | Operator agent | OSA, always on | DeepSeek V4.1 Flash, Kimi K2.6 for briefs (MIOSA AI, CR-29) | The checkout, read only | `osa.env` | Its MIOSA key; a GitHub token that files issues, reads PRs and merges clear and clean PRs (CR-36) | Pushes, merges anything CR-36 doesn't allow, approves, writes code |
 | 2 Axis | Backend lead | Claude Code, interactive | Opus | Its own worktree, `../avel-factory-wt/axis` | `leads.env` | The leads' GitHub token (can merge standard PRs) | Reviews or merges its own work |
 | 3 Zero | Frontend lead | Claude Code, interactive | Opus | `../avel-factory-wt/zero` | `leads.env` | The same | The same |
-| 4 Backend | Soap, builder (left); Rigg, checker (right) | One dispatch per session: the lane loop opens each ready task doc in the agent's pane with `claude --agent <name>` and `/dispatch` | Sonnet; Opus on full-rigor tickets | The ticket's worktree | `agents.env` | The agents' GitHub token (push `t/*` branches, open PRs) | Merges; the builder never edits the checker's tests |
-| 5 Frontend | Fantem, builder (left); Fenn, checker (right) | The same | Sonnet; the builder on Opus for full rigor | The ticket's worktree | `agents.env` | The same | The same |
+| 4 Backend | Soap, builder (left); Rigg, checker (right) | One dispatch per session: the lane loop opens each ready task doc in the agent's pane with `claude --agent <name>` and `/dispatch` | Soap on Opus; Rigg on Sonnet, and Opus for full-rigor reviews | The ticket's worktree | `agents.env` | The agents' GitHub token (push `t/*` branches, open PRs) | Merges; the builder never edits the checker's tests |
+| 5 Frontend | Fantem, builder (left); Fenn, checker (right) | The same | Fantem on Opus; Fenn on Sonnet | The ticket's worktree | `agents.env` | The same | The same |
 | 6 Ops | You | Your shell | — | The checkout | Your own logins | Everything | — |
 
 ### The layout

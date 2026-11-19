@@ -1,0 +1,285 @@
+# backend/sprint-04: the sprint's plan. Axis writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Rigg's tests, Soap's build, Rigg's review.
+# Check it:   scripts/render.py --check backend/sprint-04
+# Render it:  scripts/render.py backend/sprint-04   (rendered with the plan, in one PR, as Javaris asked on Nov 18)
+#
+# Re-planned toward the first real mission. Javaris (Nov 18, via OSA): "lets not owrk on the cli right now lets foucs
+# more on building the needed modules to run the first real mission". The first mission needs every step up to 14, and
+# E9 runs them in order, so the fastest route is to close Step 1 without the CLI and go on to Step 2 (rooms and the
+# model proxy). The critical path is 0 → 1 → 2 → 4 → 8 → 9a → 9b (Backend modules section 1).
+#
+# Three tickets, each a full session, one builder at a time (B7), after sprint-03's T-B9 merges (B8):
+#   T-B13 spike 2: tests 10 and 11 against a small Jobs interface, run over DBOS (CR-30 section 6)      ~120 min  full, new dependency
+#   T-B14 the clients routes 8 to 11 and the activity log (tests 2, 4 and 13, under CR-43)              ~120 min  standard
+#   T-B15 the factory repo loader and the GitHub webhook (items 1 and 11, test 12)                      ~120 min  full
+# Sprint-05 closes Step 1: the jobs engine that wins spike 2 (under T-B13's tests), event consumers (the rest of
+# test 11) and the step's done-when report (C5). It's planned once T-B13's verdict is in, because the verdict decides
+# what the engine ticket builds. Then Step 2.
+#
+# What happens to sprint-03's CLI work (CR-43, proposed):
+#   T-B10 (step-up and CLI login, routes 1 to 3) is withdrawn before it started. It keeps its ID and is re-planned in
+#   two parts: step-up in Step 4, and CLI login in Step 5. T-B12 (routes 4 and 5) was never rendered and goes to Step 5.
+#   PR #51's five changes carry into this PR. Four stand; the fifth (T-B10's poll interval) goes with T-B10. #51 can
+#   close unmerged in favour of this one.
+#
+# Approved by Javaris, Nov 18 (to OSA: "approve 5 to 9"): CR-43 accepted (Zero's sign-off pending); spike 2 runs as CR-30
+# says, with @dbos-inc/dbos-sdk (MIT) in T-B13 only; sprint-04 goes before CR-W31, whose part (a) heads sprint-05.
+# As proposed:
+# 1. CR-43 (Step 1 without the CLI): accepted. T-B14 builds the clients routes, which CR-31 put in Step 4, so it can't start
+#    until CR-43 is accepted (E9).
+# 2. New dependency (E5), T-B13: @dbos-inc/dbos-sdk, MIT, for spike 2 (CR-30 decision 2 already approved the spike).
+#    If DBOS loses, it leaves with the spike's code, and the lockfile goes back to what it was.
+# 3. Spike 2 stays as CR-30 decision 2 says. Or skip it: CR-30 already recommends the hand-built engine unless DBOS
+#    clearly wins, and skipping saves a session and a dependency. If you skip it, T-B13 becomes the hand-built engine
+#    under the same tests, and item 2 falls away. Axis recommends running the spike, because the engine sits under
+#    every receipt.
+#
+# When it renders: render.py refuses this sprint while T-B9 is unmerged, because T-B9 also changes app.ts (T-B15),
+# package.json and the lockfile (T-B13). The plan is on main from #56; its render follows in a sprint-folder-only
+# PR once T-B9 merges (CR-42 item 2), and Rigg's first tests dispatch starts from that render.
+
+lane = "backend"
+sprint = "sprint-04"
+step = 1
+title = "Step 1, cycle 4: jobs on trial, clients, and the factory repo"
+goals = [
+  "We know from our own tests on real Postgres whether DBOS keeps every jobs guarantee, before the engine is built",
+  "The operator can create, list, read and edit clients, and every client write replays safely and leaves one activity row",
+  "A merged factory-repo PR shows up as a factory version, and a merge by anyone but the factory's GitHub App raises an alert and can't be pinned",
+]
+done_when = [
+  "Step 0 and Step 1 plan, Step 1 tests 10 and 11, written against the Jobs interface: they run, and T-B13's review gives spike 2's verdict against CR-30 section 6",
+  "Step 1 test 2 (CR-43): a client's output has exactly ClientDto's fields and no internal column",
+  "Step 1 test 4 (CR-43): creating a client replays with the same key and body; another body is 409; a duplicate sent while the first runs is 409",
+  "Step 1 test 12: the loader reads factory.yaml at a given SHA; an unmerged change has no effect; a merge by anyone but the factory's GitHub App isn't selectable and raises an alert; a replayed webhook delivery is ignored",
+  "Step 1 test 13, for this sprint's writes: each leaves exactly one activity row",
+]
+sources = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 items 1 (the webhook), 8 (activity log), 9 (jobs), 10 (events), 11 (the factory repo); the rate limits (webhook); tests 2, 4, 10, 11, 12, 13" },
+  { path = "docs/design/CR-43 Step 1 without the CLI.md", why = "accepted Nov 18: tests 2, 4 and 13 on the clients routes; step-up and CLI login leave Step 1" },
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 3 (hand-built or DBOS) and section 6 (spike 2's eight checks, its pass and fail rules)" },
+  { path = "docs/design/Jobs and workers.md", why = "the jobs design the tests hold either engine to: claims, the reaper, retries, one live job per key, consumers" },
+  { path = "docs/design/Backend modules and build plan.md", why = "section 4: onboarding owns clients, audit owns activity_log, knowledge owns factory_versions, platform owns jobs and webhook_deliveries; the loader is a platform utility with no table" },
+  { path = "docs/design/Build rules.md", why = "C4 (full rigor), E5 (dependencies), E8 (nothing built for later), E10 (real Postgres), E12 (table owners), E13 (four tests per route), F2, H6" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7.0.2, Biome, Vitest 5; Hono 4.13.16, oRPC 1.16.2, Zod 4, Effect 4.1.1 inside packages/server; Drizzle 0.45.4 and node-postgres 8.23.1; Postgres 17"
+layout = "packages/contract, packages/db (schema and migrations), packages/server (src/platform: app, effect-handler, errors, ids, logger, request-id, idempotency and rate-limit from T-B8, auth and the caller from T-B9; src/platform/db: db, tx, events, errors)"
+conventions = [
+  "AGENTS.md is the rulebook: Architecture rules (durable work), API rules (DTOs, errors, writes, rate limits) and Writing Effect rules 1 to 10",
+  "packages/server/src/platform/errors.ts holds the one table from a tagged error to a contract code; a tag with no row doesn't compile through effectHandler (T-B1)",
+  "Db.withTransaction gives a program Tx and maps database violations to tagged errors (T-B3, T-B4); Events.append needs Tx, and Db.commitWithEvents takes seq under the advisory lock as the last statement",
+  "T-B8's Idempotency store and RateLimit service; T-B9's Caller, client IP and Idempotency-Key header in the request scope",
+  "Tests run against real Postgres from scripts/pg-local.sh; test/db/support/database.ts makes a migrated database per file (T-B3)",
+]
+notes = [
+  "One builder at a time (B7): T-B13, then T-B14, then T-B15. Rigg writes the next ticket's tests while Soap builds. The sprint starts once sprint-03's last PR is merged (B8)",
+  "T-B13 and T-B15 are full rigor (C4: the jobs engine and claims; a webhook signature that decides which factory commits can be pinned): Javaris merges, and Zero's second review follows the security checklist (G7). T-B14 is standard",
+  "Review (Build rules G5, Javaris Nov 18): one review, no round 2. Only a P0 or P1 sends the PR back, and the checker then confirms only those fixes. Every P2 goes to a later ticket or the backlog, named in the PR text",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B13"
+slug = "jobs-spike-dbos"
+title = "Spike 2: Step 1's jobs and events tests against a small Jobs interface, run over DBOS"
+goal = "We know, from our own tests on real Postgres, whether DBOS keeps every jobs guarantee AVEL's receipts depend on, before anyone builds the engine."
+rigor = "full"
+refs = [
+  "CR-30 section 3 (option B) and section 6 (spike 2, checks 1 to 8, the pass and fail rules); decision 2",
+  "Step 0 and Step 1 plan, Step 1 items 9 and 10, tests 10 and 11",
+  "Jobs and workers.md",
+  "Build rules E5 (@dbos-inc/dbos-sdk, approved in this plan)",
+]
+depends_on = []
+may_change = [
+  "packages/server/src/platform/jobs/**",
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+]
+must_not_change = [
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 3's DBOS feature table and open questions; section 6's eight checks and the pass rule (1 to 8 hold, and clearly less code to own than the hand-built engine)" },
+  { path = "docs/design/Jobs and workers.md", why = "the guarantees the tests hold DBOS to: claims for 30 s, check-ins about every 10 s, the reaper, backoff 10 s, 30 s, 2 min, 10 min, then dead after 5 tries, one live job per key, consumers" },
+  { path = "packages/server/src/platform/db/db.ts", why = "Db.withTransaction and commitWithEvents: an enqueue inside a transaction must commit or roll back with it, and seq stays the last statement; read only" },
+  { path = "packages/server/src/platform/db/events.ts", why = "Events.append needs Tx; read only" },
+  { path = "packages/db/src/schema/platform.ts", why = "jobs and consumer_cursors as the hand-built engine would use them; DBOS doesn't write them" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "The Jobs interface, in platform/jobs/jobs.ts, as an Effect service: enqueue(kind, key, payload) inside Tx (it commits or rolls back with the caller's writes); a worker that claims and runs a handler; checkIn, finish and fail for the running job; and a consumer that reads events after its cursor and acts on each once. Handlers are a pure decide and an apply. Keep the interface as small as tests 10 and 11 need: nothing for later (E8)",
+  "Spike 2 builds that interface over DBOS Transact (option B), in platform/jobs/dbos/**. DBOS's tables live in their own Postgres schema, in our database, outside the Drizzle migrations, and never hold a record a receipt depends on (CR-30 check 7). Pin an exact version at least two weeks old and report its version and installed size",
+  "Time from Clock and the timings as Schedules. Where DBOS reads the wall clock and TestClock can't drive it, say so in the report: that's a finding against DBOS, not a reason to sleep in a test (F4)",
+  "If a check can't pass over DBOS, don't work around it. Finish the rest, and report which check failed and why. A failed check is a valid result for a spike",
+  "The report ends with the spike's evidence: each of CR-30's checks 1 to 8 with its test and result, and the lines of code the DBOS layer needs against the hand-built engine's size as Jobs and workers.md describes it",
+  "If DBOS loses, this PR doesn't merge. Sprint-05's engine ticket takes these locked tests unchanged and builds the hand-built engine under them, so nothing is written twice (CR-30 section 6). If DBOS wins, Javaris decides it, with the DATABASE.md change request CR-30 section 7 asks for, before this merges",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/jobs/**"]
+behaviours = [
+  "a job enqueued in a transaction that rolls back never runs, and leaves no event and no job (test 11)",
+  "a job whose worker is killed mid-run is picked up by another worker within a minute (TestClock) and does its work once (test 10)",
+  "a worker killed after its side effect but before its save leaves a retry that finds the effect done, records it and doesn't repeat it (test 10; CR-30 check 8)",
+  "a paused worker whose job was recovered elsewhere has its late save refused (test 10's out-of-date claim; CR-30 check 2)",
+  "two workers never claim the same job, under concurrent claims (test 10)",
+  "a job that keeps failing retries after 10 s, 30 s, 2 min and 10 min, and ends dead after 5 tries (TestClock; test 10; CR-30 check 6)",
+  "one live job per key: a second enqueue with the same key while the first is queued or running is refused or returns the first; after it finishes, a new one runs (CR-30 check 3)",
+  "jobs with the same partition key (a mission) never run two at once, while other partitions run in parallel (CR-30 check 4)",
+  "a worker stopped with work in flight and replaced by a new one finishes or safely resumes that work (CR-30 check 5)",
+  "under concurrent transactions, events' seq order equals commit order with no gaps a reader can miss, and two copies of one consumer never both act on an event (test 11)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B14"
+slug = "clients-routes"
+title = "The clients routes (8 to 11) and the activity log, carrying Step 1's DTO, idempotency and activity tests"
+goal = "The operator can create, list, read and edit clients through the API, a retried write never makes a second client, and every client write leaves one activity row."
+rigor = "standard"
+refs = [
+  "CR-43 (accepted Nov 18): Step 1 tests 2, 4 and 13 on the clients routes",
+  "Step 0 and Step 1 plan, Step 1 item 8 (activity log), tests 2, 4, 6 and 13",
+  "API routes.md, routes 8 to 11 and the rules on every write",
+  "Build rules E12 (onboarding owns clients, audit owns activity_log) and E13",
+]
+depends_on = ["T-B9"]
+may_change = [
+  "packages/server/src/onboarding/**",
+  "packages/server/src/audit/**",
+  "packages/server/src/platform/router.ts",
+  "packages/server/src/main.ts",
+]
+must_not_change = [
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/idempotency.ts",
+  "packages/server/src/platform/rate-limit.ts",
+  "packages/server/src/platform/auth/**",
+  "packages/server/package.json",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "packages/contract/src/routes/clients.ts", why = "routes 8 to 11: inputs, outputs, ClientDto, the rowVersion on update" },
+  { path = "docs/design/API routes.md", why = "routes 8 to 11 (the internal client only with ?kind=internal) and the rules on every write" },
+  { path = "packages/db/src/schema", why = "clients (kind, the one internal client, CR-13) and activity_log" },
+  { path = "docs/design/DATABASE.md", why = "clients and activity_log: who, what, on which target and why" },
+  { path = "packages/server/src/platform/idempotency.ts", why = "T-B8's store: every write takes an Idempotency-Key; read only" },
+  { path = "packages/server/src/platform/auth", why = "T-B9's Caller and the request scope's Idempotency-Key header; read only" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Routes 8 to 11 in the onboarding module (src/onboarding/clients/), which owns the clients table (E12). Every route needs the Caller; with no session it's 401 with the contract's body",
+  "One mapper, toClientDto; outputs are validated against the contract, and no internal column leaves it (AGENTS.md API rules: DTOs)",
+  "Writes (routes 9 and 11) go through T-B8's Idempotency store with the Caller's user id as the principal. Route 11 checks rowVersion: stale is 409. Database violations come back through the Db service's mapping (409 or 422); never a duplicated CHECK as the only guard",
+  "The internal client (CR-13) can't be created through route 9: the seed makes it. Route 8 lists it only with ?kind=internal",
+  "Activity log (item 8): an audit module (src/audit/) with one call that records who, what, on which target and why, in the same transaction as the change. Each write leaves exactly one row, and a failed write leaves none",
+  "Routing: platform/router.ts composes the health router and routes 8 to 11; main.ts passes it to createApp. app.ts doesn't change",
+  "E13: each route gets its happy path with the DTO checked, the error body with requestId, the idempotent replay for writes, and the stale rowVersion for route 11",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/clients/**"]
+behaviours = [
+  "route 9 creates a client whose output has exactly ClientDto's fields and no internal column, checked against the contract (test 2)",
+  "route 9 replays: the same key and body return the first response and make one client; another body is 409 IDEMPOTENCY_KEY_REUSED; a duplicate sent while the first runs is 409 IDEMPOTENCY_IN_PROGRESS (test 4)",
+  "routes 10 and 11: an unknown client is 404 with the contract's body and the request's requestId (test 3)",
+  "route 11 edits a client; a stale rowVersion is 409; a value the database's CHECK refuses is 422 (test 6)",
+  "route 8 pages clients and leaves out the internal client unless ?kind=internal; route 9 can't create an internal client",
+  "every route without a session is 401 with the contract's body",
+  "each write (routes 9 and 11) leaves exactly one activity_log row naming the operator, the action and the client, and a refused write leaves none (test 13)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B15"
+slug = "factory-repo-webhook"
+title = "The factory repo loader and the GitHub webhook: factory.yaml by commit, merges as factory versions, alerts on a merge the App didn't make"
+goal = "A factory-repo PR merged by the factory's GitHub App shows up as a selectable factory version, a merge by anyone else raises an alert and can't be pinned, and the service reads factory.yaml at any merged commit the App made."
+rigor = "full"
+refs = [
+  "Step 0 and Step 1 plan, Step 1 items 1 (the webhook) and 11 (the factory repo), test 12; the rate limits section (webhook, 60 a minute)",
+  "Design v0.6 Main, Factory as code",
+  "AGENTS.md, Architecture rules (the webhook: raw-body signature, deduplicated on X-GitHub-Delivery)",
+  "Build rules E8 (factory.yaml is parsed by the first step that reads a section of it)",
+]
+depends_on = ["T-B9"]
+may_change = [
+  "packages/server/src/platform/webhooks/**",
+  "packages/server/src/platform/factory-repo/**",
+  "packages/server/src/knowledge/**",
+  "packages/server/src/platform/app.ts",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/rate-limit.ts",
+  "packages/server/src/platform/auth/**",
+  "packages/server/src/main.ts",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/design/Design v0.6 Main.md", why = "Factory as code: what factory.yaml holds, merges only by the factory's GitHub App, the webhook checks who merged, a merge by anyone else raises an alert and freezes finalize, every merged commit listed in factory_versions" },
+  { path = "packages/db/src/schema/knowledge.ts", why = "factory_versions: sha, merged_at, approved_by, merged_by_app, summary, pr_number" },
+  { path = "packages/db/src/schema/platform.ts", why = "webhook_deliveries: one row per X-GitHub-Delivery" },
+  { path = "packages/contract/src/events.ts", why = "system.alert.raised, written by platform" },
+  { path = "packages/server/src/platform/app.ts", why = "where POST /api/webhooks/github mounts, outside the contract, keeping X-Request-Id and X-Contract-Version" },
+  { path = "packages/server/src/platform/rate-limit.ts", why = "T-B8's limiter: the webhook name, 60 a minute; read only" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "The webhook (item 1): POST /api/webhooks/github, outside the contract, in app.ts. It checks X-Hub-Signature-256 over the raw body with a constant-time compare against GITHUB_WEBHOOK_SECRET from Config (Redacted; never logged). A bad or missing signature is 401 and writes nothing. It's rate-limited at 60 a minute through T-B8's webhook limit, and deduplicated on X-GitHub-Delivery through webhook_deliveries, in the same transaction as what the delivery does",
+  "A merged pull request on the factory repo's main (the repo and the factory App's identity from Config) adds one factory_versions row, with merged_by_app true only when the App made the merge. A merge by anyone else is stored with merged_by_app false and raises system.alert.raised in the same transaction. Other events and other repos are acknowledged and ignored. approved_by is the operator's user id (one operator)",
+  "The loader (item 11), a platform utility with no table, in platform/factory-repo/: reads factory.yaml at a given SHA from a local mirror of the factory repo (its path from Config), fetching the mirror with a timeout when the SHA is missing (Writing Effect rule 5). It answers only for a SHA that has a factory_versions row with merged_by_app true; any other SHA is refused. Git runs as a child process with a timeout; no git library",
+  "factory.yaml isn't parsed here: the loader returns the file's text at a merged SHA. Its shape isn't written down yet, and each section is parsed by the step that first reads it (Step 6 packages, Step 8 budgets; B9, E8). No new dependency. If something in Step 1 needs a section read, stop with needs-cr",
+  "Tests use a local bare repo and recorded webhook payloads, signed in the test with a throwaway secret. No test calls GitHub (Step 1 plan, risks; E10)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/factory-repo/**"]
+behaviours = [
+  "a delivery with a bad or missing X-Hub-Signature-256 is 401 and writes nothing",
+  "a signed merge of a factory-repo PR by the factory App adds one factory_versions row with merged_by_app true, and the loader reads factory.yaml at that SHA (test 12)",
+  "a merge by anyone else adds a row with merged_by_app false and one system.alert.raised event in the same transaction, and the loader refuses that SHA (test 12)",
+  "a commit on an unmerged branch has no effect: no factory_versions row, and the loader refuses its SHA (test 12)",
+  "a replayed X-GitHub-Delivery is acknowledged and ignored: no second row and no second event (test 12)",
+  "the 61st delivery in a minute is 429 with the contract's body and a requestId",
+  "a merged SHA with no factory.yaml at the repo root is refused with a typed error naming the SHA",
+  "a mirror missing the SHA is fetched once, and a fetch that hangs ends within its timeout (TestClock) as a typed error",
+]

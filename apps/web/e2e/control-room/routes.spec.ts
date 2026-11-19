@@ -15,6 +15,8 @@ test.describe("T-F7-05: #/ hash routes move between pages without a reload", () 
   test("Decisions, Live, Library and Settings open by hash, and back returns", async ({
     page,
   }, info) => {
+    // Quarantined (Build rules F5, Javaris's OK, Nov 18): flaky in CI, issue #57. T-F15 un-quarantines it.
+    test.skip(true, "Quarantined (F5): flaky in CI, issue #57");
     const errors = watchErrors(page);
     await page.goto("/");
     await booted(page, "Decisions");
