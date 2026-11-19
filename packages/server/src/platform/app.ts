@@ -89,8 +89,9 @@ export function createApp(options: AppOptions = {}) {
       idempotencyKey: c.req.header(IDEMPOTENCY_KEY_HEADER) ?? null,
       caller: auth === undefined ? Effect.succeedNone : auth.caller(request.headers),
     };
+    // Any other /api/auth/* path falls through to the contract, which has none: 404 NOT_FOUND.
     const response =
-      auth !== undefined && c.req.path.startsWith("/api/auth/")
+      auth?.serves(request) === true
         ? await runEdge(auth.runtime, auth.handle(request), scope)
         : await serveContract(request, scope);
     const headers = new Headers(response.headers);

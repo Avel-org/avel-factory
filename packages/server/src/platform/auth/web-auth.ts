@@ -20,7 +20,15 @@ export interface AuthOptions {
   readonly secureCookies: boolean;
 }
 
-const SIGN_IN_PATH = "/api/auth/sign-in/email";
+const SIGN_IN = "POST /api/auth/sign-in/email";
+
+/**
+ * The only endpoints Better Auth serves: the three the web reads (login.md section 1). Any other
+ * /api/auth/* path, change-password and verify-password included, never reaches it.
+ */
+const SERVED = new Set([SIGN_IN, "GET /api/auth/get-session", "POST /api/auth/sign-out"]);
+
+const endpointOf = (request: Request) => `${request.method} ${new URL(request.url).pathname}`;
 
 /** The pool's timeouts, as DbLive's defaults. */
 const CONNECT_TIMEOUT_MS = 5_000;
@@ -131,7 +139,9 @@ const signIn = (auth: BetterAuth, request: Request) =>
 export interface WebAuth {
   /** The sign-in guard's rate limiter and lockout, built once per app. */
   readonly runtime: ManagedRuntime.ManagedRuntime<RateLimit | Lockout, never>;
-  /** Answers a request under /api/auth/*. */
+  /** Whether a request is one of the endpoints Better Auth serves. */
+  readonly serves: (request: Request) => boolean;
+  /** Answers a request `serves` accepts. */
   readonly handle: (
     request: Request,
   ) => Effect.Effect<Response, never, RateLimit | Lockout | RequestId | ClientIp>;
@@ -154,10 +164,11 @@ export function makeWebAuth(
   );
   return {
     runtime,
-    handle: (request: Request) => {
-      const isSignIn = request.method === "POST" && new URL(request.url).pathname === SIGN_IN_PATH;
-      return isSignIn ? signIn(auth, request) : Effect.promise(() => auth.handler(request));
-    },
+    serves: (request: Request) => SERVED.has(endpointOf(request)),
+    handle: (request: Request) =>
+      endpointOf(request) === SIGN_IN
+        ? signIn(auth, request)
+        : Effect.promise(() => auth.handler(request)),
     caller: (headers: Headers) =>
       Effect.promise(() => auth.api.getSession({ headers, query: { disableRefresh: true } })).pipe(
         Effect.map((found) =>
