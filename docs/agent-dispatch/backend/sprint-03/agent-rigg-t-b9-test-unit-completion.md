@@ -14,8 +14,8 @@ Branch `t/B9-sign-in`, start commit `946d755`. I ran `pnpm install --frozen-lock
 | `pnpm lint` | exit 0 (2 warnings, none in `test/auth`) |
 | `pnpm test` | exit 1: 9 files fail, all the new tests, plus `@avel/repo-checks` T-B2-04 (see Limitations); 970 others pass |
 | `pnpm --filter @avel/server test` | exit 1: the 8 new files only |
-| `pnpm --filter @avel/server typecheck` | exit 1: `src/seed.ts` missing, `auth` not in `AppOptions`, `fetch(request, peer)` takes 1 argument, `src/platform/auth.ts` missing |
-| `pnpm --filter @avel/server check:effect` | exit 1: `caller.test.ts` can't type `Caller`/`ClientIp` until `auth.ts` exists |
+| `pnpm --filter @avel/server typecheck` | exit 1: `src/seed.ts` missing, `auth` not in `AppOptions`, `fetch(request, peer)` takes 1 argument, `src/platform/auth/index.ts` missing |
+| `pnpm --filter @avel/server check:effect` | exit 1: `caller.test.ts` can't type `Caller`/`ClientIp` until `auth/index.ts` exists |
 | `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | exit 1 at typecheck, for the same reasons |
 
 All red results are the failing-first state asked for. They turn green when the build supplies the seams.
@@ -25,7 +25,7 @@ All red results are the failing-first state asked for. They turn green when the 
 `pnpm --filter @avel/server test` on the start commit (`946d755`) plus these test files:
 
 ```
-FAIL test/auth/caller.test.ts        Error: Cannot find module '../../src/platform/auth.ts'
+FAIL test/auth/caller.test.ts        Error: Cannot find module '../../src/platform/auth/index.ts'
 FAIL test/auth/fixation.test.ts      Error: Cannot find module '../../src/seed.ts' (imported from test/auth/support.ts)
 FAIL test/auth/lockout.test.ts       Error: Cannot find module '../../src/seed.ts'
 FAIL test/auth/rate-limit.test.ts    Error: Cannot find module '../../src/seed.ts'
@@ -44,7 +44,7 @@ All under `packages/server/test/auth/`, plus this report.
 
 | File | Task | Behaviour |
 | --- | --- | --- |
-| `support.ts` | all | The harness: names the seams (header comment), `authApp`, `testClock` (a `TestClock` at a whole minute, advanced without sleeping), `signIn`, `sessionCookie`, `operatorPassword` (a fresh throwaway password per run, E6) |
+| `support.ts` | all | The harness: names the seams (header comment), `authApp`, `testClock` (a `TestClock` at a whole minute, advanced without sleeping), `signIn`, `sessionCookie`, `operatorPassword` and `SECRET` (fresh random values per run, E6) |
 | `sign-in.test.ts` | 01 | Right password: 200 `{ user }`, cookie httpOnly and SameSite=Lax, no Secure in tests, Secure with `secureCookies: true`, a row in `auth_sessions` and the adapter's `users`/`auth_accounts` mapping, `get-session` reads it. Wrong password and unknown email: 401 `INVALID_EMAIL_OR_PASSWORD`, no cookie, no session row |
 | `sign-up.test.ts` | 02 | `sign-up/email` is a 4xx signed out and signed in; users stay 1; a seed run with another email creates no user |
 | `lockout.test.ts` | 03 | 10 failures (spaced to stay under the rate limit): the 11th with the right password is 429, `X-Retry-After` 61 to 900 s, `TOO_MANY_ATTEMPTS`, no session; still locked at +10 min; 200 once 15 minutes pass. Failures older than 15 minutes don't count |
@@ -64,7 +64,7 @@ All under `packages/server/test/auth/`, plus this report.
 
 ## Seams the build must provide (for Axis to confirm before the lock)
 
-- `src/platform/auth.ts`: `Caller` `{ userId, sessionId }` (read with `Effect.serviceOption`), `ClientIp` (string), `RequestIdempotencyKey` (`string | null`); all three provided by `effectHandler`.
+- `src/platform/auth/index.ts` (Territory is the folder `src/platform/auth/**`): `Caller` `{ userId, sessionId }` (read with `Effect.serviceOption`), `ClientIp` (string), `RequestIdempotencyKey` (`string | null`); all three provided by `effectHandler`.
 - `createApp({ ..., clock?: Clock.Clock, auth?: { databaseUrl, secret, baseUrl, secureCookies } })`; `fetch(request, peer?: { address })`. The rate limiter and lockout are built once per app and read time from `clock` (the live one by default). The test's TestClock is shared across requests, so the limiter can't be built per request.
 - `src/seed.ts`: `seedOperator({ databaseUrl, email, password })`.
 - The session cookie is Better Auth's default name `better-auth.session_token`; the lockout answers 429 with code `TOO_MANY_ATTEMPTS` and the rate limit `TOO_MANY_REQUESTS`, both with `X-Retry-After` in seconds (per `login.md`).
@@ -78,7 +78,7 @@ All under `packages/server/test/auth/`, plus this report.
 ## Limitations
 
 - I couldn't run these against a working build. Whether Better Auth's actual answers match (for example 400 vs 403 on sign-up, or the exact cookie format) is unchecked; the tests assert only what `login.md` and the plan say, with 4xx for sign-up.
-- `pnpm --filter @avel/repo-checks test` T-B2-04 ("check:effect exits 0 on the server") fails now only because `caller.test.ts` can't type until `auth.ts` exists. It passes on `main` and turns green with the build.
+- `pnpm --filter @avel/repo-checks test` T-B2-04 ("check:effect exits 0 on the server") fails now only because `caller.test.ts` can't type until `auth/index.ts` exists. It passes on `main` and turns green with the build.
 - The lockout test assumes the account lockout counts only failed attempts and unlocks 15 minutes after the 10th failure (the mock's rule in `login.md`).
 - Secure cookies are tested only through the `secureCookies` option, not over TLS.
 - Better Auth's own hashing speed makes each file take a few seconds; the 60 s test timeout is plenty.
@@ -87,6 +87,11 @@ All under `packages/server/test/auth/`, plus this report.
 
 - T-B9: packages/server/test/auth/support.ts, packages/server/test/auth/sign-in.test.ts, packages/server/test/auth/sign-up.test.ts, packages/server/test/auth/lockout.test.ts, packages/server/test/auth/rate-limit.test.ts, packages/server/test/auth/caller.test.ts, packages/server/test/auth/fixation.test.ts, packages/server/test/auth/seed.test.ts, packages/server/test/auth/defect-message.test.ts @ <branch tip>
 
+## Attempt a2 (Axis's two changes, relayed by OSA)
+
+Both done in the tests only: (1) `caller.test.ts` and the `support.ts` seam comment now name `src/platform/auth/index.ts`; (2) `SECRET` in `support.ts` is `test-secret-` plus 24 random bytes per run. Other seams confirmed by Axis as written: Caller/ClientIp/RequestIdempotencyKey provided by effectHandler; `createApp({ clock?, auth? })`; `fetch(request, peer?)`; `seedOperator({ databaseUrl, email, password })`.
+Re-run on the a2 tree: the same 7 files fail on a missing module (`auth/index.ts`, `seed.ts`) and T-B9-08 fails on `expected 'Internal server error' to be 'Something went wrong'`. Pre-flight is unchanged from the table above (build 0, lint 0, typecheck/test/check:effect 1 for the missing seams). Note: a fresh worktree needs `pnpm install --frozen-lockfile` and `pnpm build` before server tests can resolve `@avel/contract` and `@avel/db`; node came from nvm v24.22.2.
+
 ## Messages received
 
-None.
+- OSA, relaying Axis (backend lead): change the import to `auth/index.ts` and the seam comment; make SECRET random per run; nothing else. Followed both; no other change made.

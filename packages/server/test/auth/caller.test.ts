@@ -5,7 +5,7 @@
  */
 import { Effect, Option } from "effect";
 import { describe, expect, it } from "vitest";
-import { Caller, ClientIp, RequestIdempotencyKey } from "../../src/platform/auth.ts";
+import { Caller, ClientIp, RequestIdempotencyKey } from "../../src/platform/auth/index.ts";
 import { testDatabase } from "../db/support/database.ts";
 import {
   authApp,

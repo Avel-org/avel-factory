@@ -2,7 +2,7 @@
  * Harness for T-B9's acceptance tests. It names the seams the build must provide (listed in the
  * report for the lead to confirm before the lock):
  *
- *   src/platform/auth.ts   Caller: an Effect service { userId, sessionId } (the operator's users.id
+ *   src/platform/auth/index.ts   Caller: an Effect service { userId, sessionId } (the operator's users.id
  *                            and the auth_sessions.id). A procedure reads it with
  *                            `Effect.serviceOption(Caller)`: None without a valid session cookie.
  *                          ClientIp: a service holding a string, the socket peer's address (or the
@@ -69,7 +69,7 @@ export async function testClock(): Promise<Handle> {
   return { clock, advance: (ms) => Effect.runPromise(clock.adjust(ms)) };
 }
 
-export const SECRET = "test-secret-not-a-real-one-0123456789abcdef";
+export const SECRET = `test-secret-${randomBytes(24).toString("hex")}`;
 
 export interface AuthAppOptions {
   readonly databaseUrl: string;
