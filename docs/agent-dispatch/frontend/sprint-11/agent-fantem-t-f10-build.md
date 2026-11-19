@@ -8,7 +8,7 @@ seat: builder
 kind: build
 role: build
 rigor: standard
-model: sonnet
+model: opus
 branch: t/F10-control-room-rules
 checkout: branch
 after: [agent-fenn-t-f10-test-e2e]
@@ -26,7 +26,7 @@ report: docs/agent-dispatch/frontend/sprint-11/agent-fantem-t-f10-build-completi
 | Lane | frontend · lead Zero |
 | Sprint | sprint-11 · Step 1 |
 | Ticket | T-F10 · rigor standard |
-| Dispatch | build · Fantem (builder) · model sonnet |
+| Dispatch | build · Fantem (builder) · model opus |
 | Works on | `t/F10-control-room-rules` |
 | Done when | CI is green and the acceptance tests pass. Nothing else (C1, C3). |
 

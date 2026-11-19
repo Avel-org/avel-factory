@@ -26,7 +26,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | Task doc | Agent | Kind | Model |
 | --- | --- | --- | --- |
 | `agent-fenn-t-f10-test-e2e.md` | Fenn | tests | sonnet |
-| `agent-fantem-t-f10-build.md` | Fantem | build | sonnet |
+| `agent-fantem-t-f10-build.md` | Fantem | build | opus |
 | `agent-fenn-t-f10-review.md` | Fenn | review | sonnet |
 
 ## Territory map
