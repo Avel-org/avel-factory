@@ -84,6 +84,34 @@ function betterAuthFor(options: AuthOptions, clock: Clock.Clock, logLine: (line:
 
 type BetterAuth = ReturnType<typeof betterAuthFor>;
 
+/** The Postgres code in an error's cause chain, if one is there. */
+const pgCodeIn = (error: unknown): string | undefined => {
+  const seen = new Set<unknown>();
+  for (let at = error; at instanceof Error && !seen.has(at); at = at.cause) {
+    if (at instanceof pg.DatabaseError) return at.code;
+    seen.add(at);
+  }
+  return undefined;
+};
+
+/**
+ * A call into Better Auth. A rejection becomes a defect with only the error's name and the
+ * Postgres code in its cause chain: its message and its cause can carry a bound value, such as
+ * the session token in a failed query's params (t-b9-axis-01), the same rule as DbLive's.
+ */
+const intoBetterAuth = <A>(call: () => Promise<A>) =>
+  Effect.promise(call).pipe(
+    Effect.catchDefect((defect) => {
+      const name = defect instanceof Error ? defect.name : typeof defect;
+      const code = pgCodeIn(defect);
+      return Effect.die(
+        new Error(
+          `Better Auth failed: ${name}${code === undefined ? "" : ` (database error ${code})`}`,
+        ),
+      );
+    }),
+  );
+
 /** The email a sign-in names, read as Better Auth reads it (JSON or a form) and lower-cased. */
 const emailOf = (request: Request) =>
   Effect.promise(async () => {
@@ -130,7 +158,7 @@ const signIn = (auth: BetterAuth, request: Request) =>
       }),
     );
     if (refusal !== undefined) return refusal;
-    const response = yield* Effect.promise(() => auth.handler(request));
+    const response = yield* intoBetterAuth(() => auth.handler(request));
     if (response.status === 401 && email !== undefined) yield* lockout.recordFailure(email);
     return response;
   });
@@ -168,9 +196,9 @@ export function makeWebAuth(
     handle: (request: Request) =>
       endpointOf(request) === SIGN_IN
         ? signIn(auth, request)
-        : Effect.promise(() => auth.handler(request)),
+        : intoBetterAuth(() => auth.handler(request)),
     caller: (headers: Headers) =>
-      Effect.promise(() => auth.api.getSession({ headers, query: { disableRefresh: true } })).pipe(
+      intoBetterAuth(() => auth.api.getSession({ headers, query: { disableRefresh: true } })).pipe(
         Effect.map((found) =>
           found === null
             ? Option.none<CallerIdentity>()
