@@ -137,3 +137,6 @@ Copied byte for byte from `/mnt/c/Users/javar/Desktop/avel-control-room` (the de
 - `src/mock/operations.json`: M3's first try gains a read step quoting a client's note with <b>, <script> and a javascript: link, so the test can prove an agent trail shows them as text (T-F10-04).
 - `src/mock/library.json`: the client entry gts-language ends with a run sheet note as typed, holding <b>, <script> and a javascript: link, so the test can prove a Library entry shows them as text (T-F10-04).
 - `src/pages/project/CanonPage.jsx`: the interview's message list takes keyboard focus (tabIndex 0), because with the OSA bar on it scrolls with nothing focusable inside and failed axe's scrollable-region-focusable (T-F10-03).
+- `src/app/uploads.js`: with OSA's flag off, what OSA sent shows as yours, so no tray row, Drive row, filter, file or version names OSA (CR-29, T-F10-05).
+- `src/pages/uploads/UploadStates.jsx`: with OSA's flag off, the Drive region's live line doesn't name OSA (CR-29, T-F10-05).
+- `src/pages/uploads/UploadsPages.jsx`: the upload states page is told whether OSA's flag is on (T-F10-05).

@@ -14,7 +14,7 @@ export function UploadsPage({ vals }) {
   if (id === "toFile") return <ToFile t={up.toFile} I={up.I} />;
   if (id === "file") return up.file && up.file.missing ? <FileMissing id={up.file.missing} /> : <FilePage f={up.file} I={up.I} />;
   if (id === "files") return <ProjectFiles p={vals.projectFiles} I={up.I} pick={up.pick} />;
-  if (id === "uploadStates") return <UploadStatesPage I={up.I} />;
+  if (id === "uploadStates") return <UploadStatesPage I={up.I} osa={!!vals.osaBar} />;
   return null;
 }
 

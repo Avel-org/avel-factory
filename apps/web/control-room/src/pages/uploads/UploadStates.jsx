@@ -18,7 +18,7 @@ const row = (I, key, name, kind, size, line, tone, extra) =>
     extra,
   );
 
-function Region({ name, where, I }) {
+function Region({ name, where, I, live }) {
   return (
     <div className="ups-region">
       <h3>{name}</h3>
@@ -56,7 +56,7 @@ function Region({ name, where, I }) {
             Live <span className="ups-live" aria-hidden="true"></span>
           </figcaption>
           <p className="ups-new">
-            <b>{LIVE[name]}</b>
+            <b>{live[name]}</b>
             <span className="up-muted">just now</span>
           </p>
           <p className="up-muted">Arrives from the event stream and settles in place. No refresh button.</p>
@@ -86,8 +86,10 @@ const LIVE = {
   "Module inputs": "requirements-v3.pdf added to the reading list",
 };
 
-export function UploadStatesPage({ I }) {
+export function UploadStatesPage({ I, osa }) {
   const noop = () => {};
+  // CR-29: with OSA's flag off, the Drive line doesn't name it
+  const live = osa ? LIVE : Object.assign({}, LIVE, { Drive: "brief.pdf arrived" });
   const tray = [
     row(I, "a", "walkthrough.mp4", "video", "2 GB", "Uploading 41% · 820 MB of 2 GB", "live", { pct: 41, state: "uploading" }),
     row(I, "b", "walkthrough.mp4", "video", "1.4 GB", "Reconnecting… resumes where it stopped", "live", { pct: 63, state: "reconnecting" }),
@@ -248,7 +250,7 @@ export function UploadStatesPage({ I }) {
         </header>
         <p className="up-muted">Ready is the screen itself. Live means it changes from the event stream with no refresh.</p>
         {["Drive", "Uploads", "Where it’s used", "Versions", "Read by", "Client files", "Project files", "Module inputs"].map((n) => (
-          <Region key={n} name={n} where={WHERE[n]} I={I} />
+          <Region key={n} name={n} where={WHERE[n]} I={I} live={live} />
         ))}
       </section>
     </div>
