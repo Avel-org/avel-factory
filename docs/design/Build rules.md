@@ -211,11 +211,16 @@ CI is green and the acceptance tests pass. Nothing else.
   | --- | --- | --- |
   | P0 | Broken, unsafe, or loses data | Yes |
   | P1 | Wrong behaviour, a missed requirement, or a broken rule | Yes |
-  | P2 | Should be better | Only in round 1 |
+  | P2 | Should be better | Only in round 1 (backend from T-B9: never; it goes to a later ticket, G5) |
   | P3 | Nice to have | Never; goes to the backlog |
 
 - **G4. The builder filters the findings.** It fixes what's in scope and answers the rest with a reason.
 - **G5. At most two rounds.** After round 2, only a P0 or P1 blocks.
+  - **The backend lane, from T-B9 on (Javaris, Nov 18): one review, no round 2.**
+    - Only a P0 or P1 sends the PR back. The builder fixes it, and the checker confirms only that each P0 or P1 it named is fixed. That's a check of the fix, not a new review, and it raises nothing new.
+    - A P2 doesn't block. The lead puts it in a later ticket's plan or the sprint's backlog, and the PR text lists it with that destination.
+    - A P3 goes to the backlog, as before.
+    - G7's second review (the other lane's lead) and Javaris's merge still apply to full rigor.
 - **G6. Review in batches,** once per cycle.
 - **G7. Full rigor gets three reviews:**
   1. the lane's checker (on Opus);
