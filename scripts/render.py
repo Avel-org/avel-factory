@@ -42,11 +42,14 @@ except ModuleNotFoundError:  # Python 3.10
     except ModuleNotFoundError:
         sys.exit("render.py needs Python 3.11+, or the tomli package (sudo apt install python3-tomli)")
 
-RENDERER = "avel-render 2"
+RENDERER = "avel-render 3"
 # A package keeps the renderer it was rendered with, so a kit change never invalidates one in flight:
 # --verify renders it again with the version its MANIFEST.json names. 2 adds the "Messages received"
-# report section (CR-37) and the comma-separated lock line.
-RENDERERS = ("avel-render 1", "avel-render 2")
+# report section (CR-37) and the comma-separated lock line. 3 puts every build on Opus (Javaris, Nov 18:
+# "builders should be on opus not sonnet"); before 3, only a full-rigor build was.
+RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3")
+# The renderers that gave a standard-rigor build Sonnet.
+OPUS_BUILDS_BEFORE = ("avel-render 1", "avel-render 2")
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -351,8 +354,12 @@ def branch_of(t):
     return f"t/{t['id'][2:]}-{t['slug']}"
 
 
-def dispatches(plan):
-    """The three dispatches of each ticket, in dependency order."""
+def dispatches(plan, renderer=RENDERER):
+    """The three dispatches of each ticket, in dependency order.
+
+    The model is the one a session starts on (cmd_info, the latest rule) or, for an older package, the one
+    its docs were rendered with (render_package). Builds are always Opus from avel-render 3; tests are
+    Sonnet, and a review is Opus only for full rigor."""
     s = plan["_seats"]
     out = []
     for tid in plan["_order"]:
@@ -363,7 +370,7 @@ def dispatches(plan):
         out.append(dict(base, kind="tests", role=role, agent=s["checker"], seat="checker", model="sonnet",
                         doc=f"agent-{s['checker']}-{tid_l(tid)}-{role}", checkout="branch"))
         out.append(dict(base, kind="build", role="build", agent=s["builder"], seat="builder",
-                        model="opus" if full else "sonnet",
+                        model="opus" if full or renderer not in OPUS_BUILDS_BEFORE else "sonnet",
                         doc=f"agent-{s['builder']}-{tid_l(tid)}-build", checkout="branch"))
         out.append(dict(base, kind="review", role="review", agent=s["checker"], seat="checker",
                         model="opus" if full else "sonnet",
@@ -645,7 +652,7 @@ def render_package(plan, owned, renderer=RENDERER):
                                            if plan["commands"].get(k)] + ["```", ""]
     files["codebase-analysis.md"] = "\n".join(ca)
 
-    ds = dispatches(plan)
+    ds = dispatches(plan, renderer)
     s = plan["_seats"]
     dm = [f"# DISPATCH: {lane}/{sprint}: {plan['title']}", "",
           "<!-- Rendered by scripts/render.py from plan.toml. Never edit this file. -->", "",

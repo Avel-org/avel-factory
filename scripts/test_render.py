@@ -369,6 +369,33 @@ class Flow(unittest.TestCase):
         p = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
         self.assertNotIn("Messages received", read(p).decode())
 
+    def test_every_build_is_on_opus_and_tests_stay_on_sonnet(self):
+        # Javaris, Nov 18: "builders should be on opus not sonnet". T-B1 is standard rigor, T-B3 full.
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        d = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01")
+        for doc, model in (("agent-soap-t-b1-build", "opus"), ("agent-soap-t-b3-build", "opus"),
+                           ("agent-rigg-t-b1-test-unit", "sonnet"), ("agent-rigg-t-b1-review", "sonnet"),
+                           ("agent-rigg-t-b3-review", "opus")):
+            self.assertIn(f"model: {model}", read(os.path.join(d, doc + ".md")).decode(), doc)
+
+    def test_a_build_rendered_before_v3_keeps_its_doc_but_starts_on_opus(self):
+        r = self.r
+        r.run("python3 - <<'PY'\n"
+              "import os, sys\n"
+              "sys.path.insert(0, 'scripts')\n"
+              "import render\n"
+              "plan, _ = render.load_plan('backend', 'sprint-01', render.load_json('roster.json'))\n"
+              "files = render.render_package(plan, render.owned_paths([plan]), 'avel-render 2')\n"
+              "for name, body in files.items():\n"
+              "    open(os.path.join(render.folder('backend', 'sprint-01'), name), 'w').write(body)\n"
+              "PY")
+        r.run("git add -A && git commit -qm 'a v2 package'")
+        self.assertIn("matches a fresh render", r.run("python3 scripts/render.py --verify backend/sprint-01").stdout)
+        p = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
+        self.assertIn("model: sonnet", read(p).decode())
+        info = r.run("python3 scripts/render.py --info backend/sprint-01 agent-soap-t-b1-build").stdout
+        self.assertIn("MODEL=opus", info)
+
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")

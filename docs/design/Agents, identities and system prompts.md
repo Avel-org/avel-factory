@@ -87,7 +87,7 @@ The mission agents' identities are **separate files** from the build team's, eve
 name: soap
 description: One line: the slot and what it's judged on.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: sonnet
+model: opus
 ---
 
 # Soap: backend builder
