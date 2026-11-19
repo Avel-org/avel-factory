@@ -133,8 +133,21 @@ class RenderChecks(unittest.TestCase):
         self.assertEqual(first, second)
 
     def test_overlapping_territories_are_refused(self):
-        self.check_fails(example().replace('"packages/server/src/idempotency/**"', '"packages/server/src/http/idem/**"'),
+        # T-B2 and T-B3 both wait only for T-B1, so they can run together.
+        self.check_fails(example().replace('"packages/server/src/platform/db/**"', '"packages/server/src/http/db/**"'),
                          "could change the same files")
+
+    def test_tickets_chained_by_depends_on_may_share_files(self):
+        # CR-42 item 4 (Zero, Nov 18): T-B4 depends on T-B2, and every dispatch of T-B4 waits for T-B2 to merge,
+        # so they never run together. The same holds through a chain: T-B4 → T-B2 → T-B1.
+        direct = example().replace('"packages/server/src/idempotency/**"', '"packages/server/src/http/idem/**"')
+        self.r.plan(direct)
+        out = self.r.run("python3 scripts/render.py --check backend/sprint-01", check=False)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        chained = example().replace('"packages/server/src/idempotency/**"', '"packages/server/src/spike/idem/**"')
+        self.r.plan(chained)
+        out = self.r.run("python3 scripts/render.py --check backend/sprint-01", check=False)
+        self.assertEqual(out.returncode, 0, out.stderr)
 
     def test_forbidden_paths_are_refused(self):
         self.check_fails(example().replace('"packages/server/src/main.ts"', '"apps/web/src/main.ts"'), "never changed")

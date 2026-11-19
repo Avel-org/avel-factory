@@ -228,10 +228,18 @@ export const fixtures: {
   step1Missions: MissionListRowDto[];
   /** Route 8's clients that match `step1`; createMock serves them unless told otherwise. */
   step1Clients: ClientDto[];
+  /** The one operator the auth mock signs in. The password is a mock-only test value, never a real one. */
+  operator: { id: string; email: string; name: string; password: string };
 } = {
   empty: [],
   step1,
   many,
   step1Missions,
   step1Clients,
+  operator: {
+    id: "0193a000-0000-7000-8000-000000000001",
+    email: "operator@avel.test",
+    name: "Operator",
+    password: "avel-mock-only",
+  },
 };
