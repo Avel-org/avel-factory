@@ -8,10 +8,17 @@
 # E9 runs them in order, so the fastest route is to close Step 1 without the CLI and go on to Step 2 (rooms and the
 # model proxy). The critical path is 0 → 1 → 2 → 4 → 8 → 9a → 9b (Backend modules section 1).
 #
-# Three tickets, each a full session, one builder at a time (B7), after sprint-03's T-B9 merges (B8):
+# Four tickets, each a full session, one builder at a time (B7), after sprint-03's T-B9 merges (B8):
 #   T-B13 spike 2: tests 10 and 11 against a small Jobs interface, run over DBOS (CR-30 section 6)      ~120 min  full, new dependency
 #   T-B14 the clients routes 8 to 11 and the activity log (tests 2, 4 and 13, under CR-43)              ~120 min  standard
 #   T-B15 the factory repo loader and the GitHub webhook (items 1 and 11, test 12)                      ~120 min  full
+#   T-B16 sign-in in the real server: main.ts mounts Better Auth, with T-B9's routed findings (after T-B14) ~90 min  full
+# Changes at render (Axis, Nov 18, after T-B9's reviews):
+# - T-B16 is new. It takes the findings routed from T-B9 (t-b9-rigg-02, t-b9-rigg-03, t-b9-axis-06), which
+#   were first routed to T-B14. Mounting sign-in in the real server is a C4 area, so it's its own full-rigor
+#   ticket and T-B14 stays standard. It depends on T-B14 because both change main.ts (chained, #60).
+# - T-B13's tests un-quarantine T-B8-02 (#61, F5) as a guard (CR-42 item 5), and its build removes the
+#   docs/quarantine.md row.
 # Sprint-05 closes Step 1: the jobs engine that wins spike 2 (under T-B13's tests), event consumers (the rest of
 # test 11) and the step's done-when report (C5). It's planned once T-B13's verdict is in, because the verdict decides
 # what the engine ticket builds. Then Step 2.
@@ -46,6 +53,7 @@ goals = [
   "We know from our own tests on real Postgres whether DBOS keeps every jobs guarantee, before the engine is built",
   "The operator can create, list, read and edit clients, and every client write replays safely and leaves one activity row",
   "A merged factory-repo PR shows up as a factory version, and a merge by anyone but the factory's GitHub App raises an alert and can't be pinned",
+  "The running server signs the operator in, and a failure inside sign-in never prints a token",
 ]
 done_when = [
   "Step 0 and Step 1 plan, Step 1 tests 10 and 11, written against the Jobs interface: they run, and T-B13's review gives spike 2's verdict against CR-30 section 6",
@@ -103,6 +111,7 @@ may_change = [
   "packages/server/src/platform/jobs/**",
   "packages/server/package.json",
   "pnpm-lock.yaml",
+  "docs/quarantine.md",
 ]
 must_not_change = [
   "packages/server/src/platform/db/**",
@@ -130,12 +139,16 @@ notes = [
   "Time from Clock and the timings as Schedules. Where DBOS reads the wall clock and TestClock can't drive it, say so in the report: that's a finding against DBOS, not a reason to sleep in a test (F4)",
   "If a check can't pass over DBOS, don't work around it. Finish the rest, and report which check failed and why. A failed check is a valid result for a spike",
   "The report ends with the spike's evidence: each of CR-30's checks 1 to 8 with its test and result, and the lines of code the DBOS layer needs against the hand-built engine's size as Jobs and workers.md describes it",
+  "docs/quarantine.md: once the locked guard for T-B8-02 passes, remove its row (#61). Nothing else in that file changes",
   "If DBOS loses, this PR doesn't merge. Sprint-05's engine ticket takes these locked tests unchanged and builds the hand-built engine under them, so nothing is written twice (CR-30 section 6). If DBOS wins, Javaris decides it, with the DATABASE.md change request CR-30 section 7 asks for, before this merges",
 ]
 
 [ticket.tests]
 role = "test-unit"
-paths = ["packages/server/test/jobs/**"]
+paths = ["packages/server/test/jobs/**", "packages/server/test/platform-hardening/pool-timeouts.test.ts"]
+guards = [
+  "T-B8-02 (pool-timeouts.test.ts) is back on (#61) and holds in a full parallel run: the connect timeout leaves headroom inside the 4 s guard, or the proxy counts attempts where it listens, so CPU load can't beat the proxy's accept",
+]
 behaviours = [
   "a job enqueued in a transaction that rolls back never runs, and leaves no event and no job (test 11)",
   "a job whose worker is killed mid-run is picked up by another worker within a minute (TestClock) and does its work once (test 10)",
@@ -200,7 +213,7 @@ notes = [
   "Writes (routes 9 and 11) go through T-B8's Idempotency store with the Caller's user id as the principal. Route 11 checks rowVersion: stale is 409. Database violations come back through the Db service's mapping (409 or 422); never a duplicated CHECK as the only guard",
   "The internal client (CR-13) can't be created through route 9: the seed makes it. Route 8 lists it only with ?kind=internal",
   "Activity log (item 8): an audit module (src/audit/) with one call that records who, what, on which target and why, in the same transaction as the change. Each write leaves exactly one row, and a failed write leaves none",
-  "Routing: platform/router.ts composes the health router and routes 8 to 11; main.ts passes it to createApp. app.ts doesn't change",
+  "Routing: platform/router.ts composes the health router and routes 8 to 11; main.ts passes it to createApp. app.ts doesn't change. Don't mount sign-in in main.ts: that's T-B16, which follows this ticket",
   "E13: each route gets its happy path with the DTO checked, the error body with requestId, the idempotent replay for writes, and the stale rowVersion for route 11",
 ]
 
@@ -282,4 +295,63 @@ behaviours = [
   "the 61st delivery in a minute is 429 with the contract's body and a requestId",
   "a merged SHA with no factory.yaml at the repo root is refused with a typed error naming the SHA",
   "a mirror missing the SHA is fetched once, and a fetch that hangs ends within its timeout (TestClock) as a typed error",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B16"
+slug = "sign-in-in-production"
+title = "Sign-in in the real server: main.ts mounts Better Auth from Config, with its resources scoped and its failures value-free"
+goal = "The running server signs the operator in, and a database failure inside sign-in answers the contract's 500 without ever printing a token."
+rigor = "full"
+refs = [
+  "Step 0 and Step 1 plan, Step 1 item 5; T-B9's build report, Limitations (production doesn't mount auth yet)",
+  "T-B9's findings routed here: t-b9-rigg-02 (Better Auth's pool and runtime are never released, and its timeouts are constants), t-b9-rigg-03 (a Better Auth database failure answers 500 with an empty body and no requestId), t-b9-axis-06 (that failure prints the query's params, the session token among them, to stderr)",
+  "AGENTS.md, Writing Effect rules 5 and 6; Build rules E6",
+]
+depends_on = ["T-B14"]
+may_change = [
+  "packages/server/src/platform/auth/**",
+  "packages/server/src/main.ts",
+  "packages/server/src/server.ts",
+]
+must_not_change = [
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/rate-limit.ts",
+  "packages/server/package.json",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "packages/server/src/platform/auth/web-auth.ts", why = "T-B9's Better Auth: the three served endpoints, the sign-in guard, intoBetterAuth" },
+  { path = "packages/server/src/main.ts", why = "the entry point: T-B14's router, and no auth yet" },
+  { path = "packages/server/src/platform/db/db.ts", why = "how DbLive reads its timeouts from Config and scopes the pool; read only" },
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 item 5: the password comes from the host, never the repo" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "src/server.ts: startServer(config) builds the app with T-B14's router and the auth options, serves it through @hono/node-server, and returns a handle whose close() stops the server and releases Better Auth's pool and runtime. main.ts reads the config and calls it. Tests start it on a free port; nothing listens on a fixed one",
+  "Config: AVEL_AUTH_SECRET (Config.Redacted, at least 32 characters), AVEL_WEB_ORIGIN (the baseUrl), and Better Auth's pool timeouts with DbLive's defaults. Secure cookies are on unless AVEL_WEB_ORIGIN is plain http. A missing or short secret stops startup with a message that names the variable and never its value. List every new variable in the build report; .env.example is outside every agent's Territory, so Javaris adds them (and T-B9's AVEL_OPERATOR_EMAIL and AVEL_OPERATOR_PASSWORD)",
+  "t-b9-rigg-02: Better Auth's pg pool and the ManagedRuntime get a lifetime (acquireRelease, or close() on the handle) and are released on shutdown and on a failed startup",
+  "t-b9-rigg-03 and t-b9-axis-06: a non-API error inside one of Better Auth's endpoints must not be answered by better-call's own empty 500, and must not reach console.error. Let it reach intoBetterAuth (Better Auth's onAPIError with throw, or an onError that writes nothing and rethrows), so runEdge answers the contract's 500 with the requestId and logs only a value-free line. Better Auth's own 4xx answers (the 401 the lockout counts, the 404s) must still come back as responses",
+  "The peer address reaches ClientIp from @hono/node-server's env.incoming (T-B9's app.ts already reads it); no X-Forwarded-For",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/server/**"]
+behaviours = [
+  "startServer with a seeded operator answers POST /api/auth/sign-in/email with a session cookie that is Secure for an https origin, and GET /api/auth/get-session then names the operator",
+  "startServer without AVEL_AUTH_SECRET, or with one shorter than 32 characters, fails to start, and its error names the variable and never contains the value given",
+  "the 6th sign-in in a minute from one socket address is 429, counted from the socket's address with any X-Forwarded-For ignored",
+  "a database failure inside sign-in (auth_sessions renamed in the test) answers 500 with the contract's body and the request's requestId, and neither stderr nor any log line contains the query's params or a session token (t-b9-rigg-03, t-b9-axis-06)",
+  "a wrong password is still a 401 response and still counts toward the lockout: the 11th failure in 15 minutes is locked (a regression check on the error path change)",
+  "close() leaves no open Better Auth database client: pg_stat_activity shows none from its pool afterwards (t-b9-rigg-02)",
 ]
