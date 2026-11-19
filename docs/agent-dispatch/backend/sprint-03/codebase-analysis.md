@@ -19,8 +19,8 @@ packages/contract, packages/db (schema and migrations), packages/server (src/pla
 
 ## Notes
 
-- One builder at a time (B7): T-B11, then T-B8, then T-B9, then T-B10. Rigg writes the next ticket's tests while Soap builds, once the ticket it depends on is merged
-- T-B8 to T-B10 are full rigor (C4: tokens, sign-in, step-up, sessions): Javaris merges, and Axis's second review follows the security checklist. T-B11 is standard but contract-labelled: Zero signs off (I3)
+- One builder at a time (B7): T-B11, then T-B8, then T-B9. Rigg writes the next ticket's tests while Soap builds, once the ticket it depends on is merged
+- T-B8 and T-B9 are full rigor (C4: tokens, sign-in, sessions): Javaris merges, and Axis's second review follows the security checklist. T-B11 is standard but contract-labelled: Zero signs off (I3)
 
 ## Commands
 
