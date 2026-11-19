@@ -104,6 +104,8 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-W23 | TanStack DB in the control room | Proposed (frontend) |
 | CR-W24 | The Learning screens | Proposed (frontend); reads CR-28 |
 | CR-W29 | The control room comes from the design export: Javaris's control room JSX runs at `/` in apps/web with its sample world; the old shell goes; T-F5 dropped, T-F6, T-F3 and T-F4 withdrawn; temporary exceptions to E2, E4, E14 and E16 | Accepted Nov 17 (`CR-W29 The control room from the design export.md`); built in frontend sprints 07 to 10 as T-F7 to T-F10; the setup.css question is open |
+| CR-W30 | The web's auth wire and a minified contract: A the auth mock, B the step-up wire, C the mock's routes 1 to 7, D the minified router | Accepted Nov 17 (`CR-W30 The web's auth wire and a minified contract.md`); A and D in T-B11; B and C's routes 1 to 5 wait with the CLI (CR-43) |
+| CR-W31 | contract-mock serves the first mission's routes, over a world with one mission from draft to release | Accepted Nov 18 (`CR-W31 contract-mock serves the first mission's routes.md`); part (a) built by the frontend lane as T-F22, on Axis's conditions; parts (b) and (c) open |
 
 ## Known drift in the frozen docs
 

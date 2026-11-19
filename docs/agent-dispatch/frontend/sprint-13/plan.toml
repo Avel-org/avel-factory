@@ -3,32 +3,34 @@
 # Check it:   scripts/render.py --check frontend/sprint-13
 # Render it:  scripts/render.py frontend/sprint-13   (after approval), then commit the folder.
 #
-# Javaris's build order (Nov 17, to OSA): the typed API client with the first screens it moves to
-# real routes, then sign-in and session handling (T-F12), then the CLI login approval with step-up,
-# paired with the backend's step-up and CLI login (backend sprint-03). One ticket, per his "fewer,
-# bigger tickets". Settings is the first live screen because its routes (4 to 7) are the ones the
-# backend ships next. Decisions (routes 52 and 54) moves to Step 6 or 7 (CR-31), and its client
-# wouldn't fit /'s budget today.
-# Javaris approved it Nov 17 ("approve all"), with CR-W30 accepted and the session limit raised (#45).
-# Renders only when: T-F12 is merged; CR-W30 B, C and D are on main; #45 is merged; Zero has
-# written docs/ui-contracts/cli-approval.md on CR-W30 B's wire.
+# Re-planned Nov 18 (Zero's re-plan, approved by Javaris, item 9 of his brief). T-F13 (the CLI login
+# approval and Settings live) is withdrawn; CR-43 moves the CLI out of Step 1. This sprint wires the
+# first mission's first screens to contract-mock: your approvals (T-F16) and a mission's start
+# (T-F17), whose routes are CR-W31 part (a). It also moves CI's end-to-end tests to the production
+# build (T-F15), which waited for T-F12 because both change playwright.config.ts. The screens whose
+# routes are in CR-W31's later parts (Canon, plan and dispatch, the build, release) are sprint-14.
+# Renders when T-F12, T-F14 and T-F22 (CR-W31 part (a)) are merged, and render.py puts builders
+# on Opus (Javaris, Nov 18). CR-42: plan and render in one PR; one review round.
 
 lane = "frontend"
 sprint = "sprint-13"
 step = 1
-title = "The control room talks to the API: Settings live, and the CLI login approved with step-up"
+title = "Your approvals and a mission's start, live on contract-mock"
 goals = [
-  "Settings shows the real CLI sessions and health, and you approve an `avel login` from the web app with your password again",
+  "What's waiting on you comes from the API, and approving moves the mission on",
+  "You add a client, start a project, and see it on its overview",
+  "CI's end-to-end tests run against the build you ship",
 ]
 done_when = [
-  "Step 0 and Step 1 plan, test 9 as the web shows it (approval needs step-up; a wrong password gets no grant), against the mock, then against the real API once the backend's CLI login is on main",
+  "Each ticket's states (loading, empty, error with the error map's sentence, offline, not found, ready) render against contract-mock under AVEL_API=mock, and each passes WCAG 2.2 AA at 390 and 1280, light and night (E17)",
+  "/ stays at most 235 KB gzipped (CR-W29 decision 6, second amendment); every other route at most 150 KB (E16)",
+  "T-F7-05 is back from quarantine and passes 10 runs in a row against the production build",
 ]
 sources = [
-  { path = "docs/ui-contracts/cli-approval.md", why = "the approval page and the step-up dialog (Zero writes it on CR-W30 B)" },
-  { path = "docs/ui-contracts/login.md", why = "section 2: the 401 handling this ticket finishes" },
-  { path = "docs/design/CR-W30 The web's auth wire and a minified contract.md", why = "B (the step-up wire), C (routes 1 to 7 in the mock), D (the minified contract)" },
-  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Settings: routes 4 to 7, its states" },
-  { path = "docs/design/Step 0 and Step 1 plan.md", why = "items 6 and 7 (step-up grants, CLI login), tests 8 and 9" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "every screen: its routes by number, its states and their words" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "the rules that aren't obvious: Decisions is home, approvals never ask for a password, no money, nothing polls" },
+  { path = "docs/design/API routes.md", why = "each route by number" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "the decision card, Undo and the stale state" },
 ]
 
 [commands]
@@ -38,48 +40,97 @@ lint = "pnpm lint"
 test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
 
 [analysis]
-stack = "As sprint-12, plus @orpc/client 1.16.2 and @orpc/openapi-client 1.16.2 (already in apps/web), over @avel/contract's minified router (CR-W30 D)"
-layout = "apps/web/src/data (the client and the error map), apps/web/src/auth (T-F12's session and the step-up call), apps/web/control-room (the export: Settings), apps/web/src/routes (the approval page)"
+stack = "As sprint-12. The client is src/data/client.ts over @avel/contract/minified (T-F14); the export reaches it only through control-room/src/lib/api.js; each screen group reads one source in control-room/src/sources/"
+layout = "apps/web/control-room/src/sources/{decisions,missions,canon,plan,build,release}.js (T-F14), the pages under control-room/src/pages, each ticket's log in control-room/changes/<ticket id>.md"
 conventions = [
-  "AGENTS.md; CR-W29 E4; no new dependency; screens never call fetch, the data layer does",
+  "AGENTS.md; CR-W29 E4; no new dependency; screens never call fetch or the client: their source does",
+  "E15: no money except AI cost against its cap; agent, client and Canon text renders as plain text; approvals never ask for a password",
+  "A screen ticket switches its own source to the API and changes only that source, its own pages and its changes file. If logic.js, operations.js or another source needs a change, stop with out-of-scope and say what",
 ]
 notes = [
-  "Measured Nov 17 with esbuild: the client over the full contract is about 24 KB gzipped, over a minified router about 9 KB. It loads with Settings and the approval page, never in /'s first load",
+  "The sample world stays for every source this sprint doesn't switch, and for the export's own review switches (?sim=every, ?osa=1)",
+  "Run only your ticket's specs while you work; CI runs the whole suite",
 ]
 
 [[ticket]]
-id = "T-F13"
-slug = "api-settings-cli-approval"
-title = "The typed client, Settings live, and the CLI login approval with step-up"
-goal = "Settings lists your real CLI sessions and lets you revoke one, shows health and the doctor's checks, and an `avel login` code is approved from the web app after you type your password again."
-rigor = "full"
-refs = ["CR-W30 B, C, D", "E16 (the data layer from the minified contract)", "CR-W29 E2 (each screen's wiring moves it to the oRPC client over contract-mock)", "Step 0 and Step 1 plan, items 6 and 7, tests 8 and 9", "Javaris, Nov 17: build order item 1 and 3; fewer, bigger tickets"]
+id = "T-F15"
+slug = "e2e-production-build"
+title = "The end-to-end suite runs against the build you ship"
+goal = "CI's end-to-end tests run against the production build, so a lazy page never waits on the dev server's first compile, and the suite gives the same answer every run; T-F7-05 is back from quarantine."
+rigor = "standard"
+refs = ["F5 and issue #57 (T-F7-05 quarantined Nov 18, #58)", "F6 (end-to-end tests in CI)", "build review item 3.6 (sessions run only their ticket's specs)", "Fenn's P3 t-f9-fenn-01 (loose route titles)"]
 depends_on = ["T-F12"]
 may_change = [
-  "apps/web/src/data/**",
-  "apps/web/src/auth/**",
-  "apps/web/src/routes/cli.approve.tsx",
-  "apps/web/src/routeTree.gen.ts",
-  "apps/web/control-room/src/pages/settings/**",
-  "apps/web/control-room/src/lib/api.js",
-  "apps/web/control-room/SOURCE.md",
+  "apps/web/playwright.config.ts",
+  "apps/web/vite.config.ts",
+  ".github/workflows/ci.yml",
+  "docs/quarantine.md",
 ]
 must_not_change = [
   "packages/**",
   "apps/web/package.json",
   "pnpm-lock.yaml",
-  "apps/web/control-room/src/mock/**",
-  "apps/web/control-room/contract/**",
-  "apps/web/src/routes/__root.tsx",
+  "apps/web/src/**",
+  "apps/web/control-room/**",
 ]
 context = [
-  { path = "apps/web/src/data/client.ts", why = "today's client over one route group with full schemas; it moves to the minified router and the whole contract" },
-  { path = "packages/contract/src/errors.ts", why = "every error code the error map covers" },
-  { path = "docs/ui-contracts/cli-approval.md", why = "the approval page, the step-up dialog, their states and copy" },
-  { path = "docs/ui-contracts/login.md", why = "section 2's 401 rule (LG-06), finished here now that screens call the API" },
-  { path = "apps/web/control-room/src/pages/settings/SettingsPage.jsx", why = "the screen that moves from the sample world to the client" },
-  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Settings' routes and states" },
-  { path = "apps/web/e2e/budget.spec.ts", why = "/'s budget (235 KB from T-F12), unchanged by this ticket; each other route at most 150 KB (E16)" },
+  { path = "apps/web/playwright.config.ts", why = "today's two web servers, both vite dev (with and without AVEL_API=mock); T-F12 added the sign-in setup project" },
+  { path = "apps/web/vite.config.ts", why = "the mock middleware is apply: serve, configureServer only; vite preview needs it too" },
+  { path = ".github/workflows/ci.yml", why = "the web e2e job" },
+  { path = "docs/quarantine.md", why = "T-F7-05's row, removed when it's back" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Both web servers run vite build, then vite preview, under the same AVEL_API values. The mock middleware runs in preview too (configurePreviewServer), never in a deployed build. Local runs may keep vite dev through an env switch the report names; CI always uses the build",
+  "Remove T-F7-05's row from docs/quarantine.md once the checker's un-skipped test passes, and close #57 in the PR text (Fixes #57)",
+  "The PR changes .github/workflows/ci.yml, so Javaris merges it (CR-36's guardrail exclusion)",
+  "Report the suite's time in CI before and after, as numbers",
+  "Review: one round (CR-42); the full-diff rule applies as in T-F14",
+  "Size: about 60 minutes",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/e2e/control-room/routes.spec.ts", "apps/web/e2e/control-room-screens/routes.ts", "apps/web/e2e/e2e-build/**"]
+behaviours = [
+  "e2e (behaviour): the server the suite runs against serves the production build: the page loads hashed scripts under /assets/ and never /@vite/client",
+  "e2e (behaviour): under AVEL_API=mock, the preview server still answers /api with contract-mock (route 52 returns the mock's rows)",
+  "e2e (guard): T-F7-05's test runs again (the quarantine's test.skip removed) and passes with --repeat-each 10 in one run",
+  "e2e (guard): t-f9-fenn-01, each project tab and the Library's three pages are told apart by a per-tab marker (aria-current or a data-testid beside the h1), not the mission name alone",
+]
+
+[[ticket]]
+id = "T-F16"
+slug = "decisions-live"
+title = "Decisions live: what's waiting on you, approved in one tap"
+goal = "Decisions shows what's waiting on you from the API; you approve a checkpoint, a plan, a package, a pass or a release in one tap with Undo for 6 seconds, a card someone else changed says so and refreshes, and no approval asks for your password."
+rigor = "full"
+refs = ["CR-W31 part (a) (T-F22)", "handoff port order step 3 (Decisions)", "E15", "login.md section 2 (LG-06, the end-to-end check)", "C4: release and pass approval bind the receipt hash"]
+depends_on = ["T-F12", "T-F14", "T-F22"]
+may_change = [
+  "apps/web/control-room/src/sources/decisions.js",
+  "apps/web/control-room/src/app/decisions.js",
+  "apps/web/control-room/src/pages/decisions/**",
+  "apps/web/control-room/changes/T-F16.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/**",
+  "apps/web/control-room/src/app/logic.js",
+  "apps/web/control-room/src/mock/**",
+]
+context = [
+  { path = "apps/web/control-room/src/sources/decisions.js", why = "the source this ticket switches to the API (T-F14)" },
+  { path = "apps/web/control-room/src/app/decisions.js", why = "approveCallFor, rejectCallFor and describeCall: each card's contract call" },
+  { path = "docs/ui-contracts/decisions-approval-page.md", why = "the card, Undo, the 409 stale state, the 422 allowed moves" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "/ at most 235 KB" },
 ]
 verify = [
   "pnpm --filter @avel/web exec vitest run",
@@ -89,27 +140,75 @@ verify = [
   "pnpm lint",
 ]
 notes = [
-  "The client: data/client.ts covers all of contract 1.0.0 through the minified router (CR-W30 D), with the Zod schemas left out of the browser bundle. One error map gives every code in errors.ts a plain sentence. Where screens.md or a UI contract names a state's words, use them. The report lists each code and its sentence",
-  "The export reaches the client through one module, control-room/src/lib/api.js, so pages never import fetch or the client directly. Settings is the only page moved off the sample world in this ticket. Every other page keeps its mock JSON",
-  "Settings: GET /api/cli/sessions (route 4), DELETE /api/cli/sessions/{sessionId} (route 5, with an Idempotency-Key, its replay answered as the first response), GET /api/health (6), GET /api/doctor (7). States: loading, empty (the export's No CLI sessions), ready, a check failing, and error with the error map's sentence. Refetched when opened (screens.md: nothing polls)",
-  "The approval page follows cli-approval.md. Approving calls the step-up endpoint with the password, then route 2 with the grant, as CR-W30 B fixes the carrier. Approvals elsewhere never ask for a password (E15); this page does because route 2 is a credential action. The password is never stored, logged or kept in state after the request",
-  "401 from any contract route: the session in __root's context becomes null, and the page goes once to /login?next=…&reason=expired with replace (login.md section 2, LG-06). No loop, and one navigation per burst",
-  "Budget: nothing of the client in /'s first load. Copy budget.spec's / figure and the Settings and approval routes' sizes into the report and the PR text as numbers. Over a limit, stop with needs-cr",
-  "Against the real API: once the backend's CLI login is on main, run the approval e2e against the real server too (handoff port order: the mock first, then the real API), and say in the report whether it ran. If the real server isn't there yet, the mock run stands",
-  "Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. The full-diff rule applies: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
-  "Size: more than 60 minutes. It runs under #45's session limit (120 minutes, 150 turns). If the build can't finish, report blocked with what's done, Settings first. Don't cut a state or a rule",
+  "Reads: route 52 (the 10-kind PendingDecisionDto union), 53 (one proposal) and 104 (the waiting total, alerts and stallAfterMs). Writes, each card's own call: 54 (decide), 40 (approve a checkpoint), 44 (answer a question), 28 (finalize), 114 (confirm the package commit), 29 (pass approval) and 30 (release, with the receipt hash the row names). Every write sends an Idempotency-Key and the row's rowVersion or bound hash",
+  "Undo: a tap holds the call for 6 seconds with Undo; Undo sends nothing. A 409 marks the card stale with the error map's sentence and refetches route 52; a 422 shows the allowed moves",
+  "Kinds the first mission doesn't raise (factory changes, follow-ups) keep their cards and calls as the export has them, against the mock",
+  "Budget: the client now loads on /. Move the sample JSON / imports for Decisions (pending-decisions.json, evidence-details.json) behind a lazy import in the source, so the sample world loads only when a review switch asks for it. Copy budget.spec's / figure into the report and the PR text as a number. Over 235 KB, stop with needs-cr",
+  "Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. One review round (CR-42). The full-diff rule: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
+  "Size: a full session (#45)",
 ]
 
 [ticket.tests]
 role = "test-e2e"
-paths = ["apps/web/test/api/**", "apps/web/test/cli-approval/**", "apps/web/e2e/settings-live/**", "apps/web/e2e/cli-approval/**"]
+paths = ["apps/web/test/decisions-live/**", "apps/web/e2e/decisions-live/**"]
 behaviours = [
-  "unit: the client's procedure list equals the contract's routes 1 to the last, by number, method and path, and the browser bundle's client chunk holds no Zod schema",
-  "unit: every code in packages/contract/src/errors.ts has a sentence in the error map, and none is the raw code or message",
-  "e2e: Settings lists the mock's CLI sessions; revoking one removes it, and a replayed revoke changes nothing. Empty and error states render with their copy. Every Settings state passes the WCAG 2.2 AA check (E17)",
-  "e2e: Settings shows health and the doctor's checks, with a failing check shown as failing",
-  "e2e: approving a device login asks for the password, then approves; a wrong password gets no grant and the code stays pending; an unknown or expired code shows its state; at 390 and 1280, light and night, every state passes the WCAG 2.2 AA check",
-  "e2e: route 2 called without a grant is refused (403 STEP_UP_REQUIRED), and the page shows the step-up dialog, not an error",
-  "e2e: LG-06, a 401 from a contract route sends you once to /login?next=…&reason=expired, with the expired notice and no second navigation",
-  "e2e: no page's HTML, storage or URL holds the password or a grant id after the approval",
+  "e2e (behaviour): Decisions lists route 52's rows from the mock, with route 104's waiting total in the top bar",
+  "e2e (behaviour): approving a checkpoint 0.1 card calls route 40 once after 6 seconds, the card leaves, and route 52 no longer lists it; Undo within 6 seconds sends nothing",
+  "e2e (behaviour): finalize, package commit, pass approval and release each send their route with an Idempotency-Key and the row's version or hash, and no approval shows a password field",
+  "e2e (behaviour): a 409 on approve marks the card stale with the error map's sentence and refetches; a 422 shows the allowed moves",
+  "e2e (behaviour): LG-06, a 401 on route 52 sends you once to /login?next=...&reason=expired with the expired notice, and no second navigation",
+  "e2e (behaviour): loading, empty (nothing waiting), error (500, offline) render with their words",
+  "e2e (guard): every Decisions state passes WCAG 2.2 AA at 390 and 1280, light and night; / stays at most 235 KB; no '$' on the page (E15)",
+]
+
+[[ticket]]
+id = "T-F17"
+slug = "mission-start-live"
+title = "A mission starts: clients, projects and the overview, live"
+goal = "You add a client, start a project for it, and find it in All projects and on its overview with the gate strip and its modules, all from the API."
+rigor = "standard"
+refs = ["CR-W31 part (a) (T-F22)", "handoff port order step 4 (Projects) and 9 (Clients)", "CR-43 (the clients routes in Step 1)"]
+depends_on = ["T-F12", "T-F14", "T-F22"]
+may_change = [
+  "apps/web/control-room/src/sources/missions.js",
+  "apps/web/control-room/src/pages/project/NewProjectPage.jsx",
+  "apps/web/control-room/src/pages/project/ProjectOverviewPage.jsx",
+  "apps/web/control-room/changes/T-F17.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/**",
+  "apps/web/control-room/src/app/**",
+  "apps/web/control-room/src/mock/**",
+]
+context = [
+  { path = "apps/web/control-room/src/sources/missions.js", why = "the source this ticket switches to the API (T-F14)" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Clients, All projects, New project, Progress: routes and states" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Reads: route 8 (clients; AVEL itself only with ?kind=internal), 10 (one client), 19 (missions), 21 (one mission: state, gate strip, onboarding progress), 108 (a module run row). Writes: 9 (create a client) and 20 (create a mission with {name, clientId?}; no kind, Canon's first question decides it), each with an Idempotency-Key",
+  "Leads, follow-ups, repo connections and proof consent (routes 11 to 17, 117 to 122) keep the sample world: the first mission doesn't need them",
+  "Review: one round (CR-42); the full-diff rule applies as in T-F16",
+  "Size: a full session (#45)",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/test/mission-start/**", "apps/web/e2e/mission-start/**"]
+behaviours = [
+  "e2e (behaviour): adding a client calls route 9 once and the client shows in Clients; a replayed create changes nothing",
+  "e2e (behaviour): New project for that client calls route 20 and opens the new mission's overview, read from route 21",
+  "e2e (behaviour): All projects lists route 19's rows, and the internal kind shows only under its filter",
+  "e2e (behaviour): the overview shows route 21's gate strip and route 108's module rows; an unknown mission id shows not found",
+  "e2e (behaviour): loading, empty (no clients, no projects) and error (422 on create with its field message, 500, offline) render with their words",
+  "e2e (guard): every state passes WCAG 2.2 AA at 390 and 1280, light and night; each route at most 150 KB; no '$' (E15)",
 ]

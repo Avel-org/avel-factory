@@ -1,0 +1,293 @@
+# frontend/sprint-14: the sprint's plan. Zero writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Fenn's tests, Fantem's build, Fenn's review.
+# Check it:   scripts/render.py --check frontend/sprint-14
+# Render it:  scripts/render.py frontend/sprint-14   (after approval), then commit the folder.
+#
+# Re-planned Nov 18 (Zero's re-plan, approved by Javaris as "sprint-13 (T-F16 to T-F21)"). These four
+# tickets moved here from sprint-13 because their routes are in CR-W31's later parts (b and c: the
+# streams 34, 63 and 64, and the reads and writes part (a) leaves out), which aren't built yet. Who
+# builds them, Axis's lane or this one after T-F22, is Javaris's call (asked Nov 18).
+# Renders when sprint-13's tickets are merged and the routes each ticket names are served by
+# contract-mock on main. A ticket whose routes aren't there yet moves to the next sprint.
+
+lane = "frontend"
+sprint = "sprint-14"
+step = 1
+title = "The rest of the first mission, live on contract-mock: Canon, the plan, the build and the release"
+goals = [
+  "You onboard a mission with Canon, read its plan and package, watch it build, and release the commit its receipt names, all against contract-mock",
+]
+done_when = [
+  "Each ticket's states (loading, empty, error with the error map's sentence, offline, not found, ready) render against contract-mock under AVEL_API=mock, and each passes WCAG 2.2 AA at 390 and 1280, light and night (E17)",
+  "Every route at most 150 KB of JavaScript gzipped (E16), / at most 235 KB; no money (E15); untrusted text as text",
+]
+sources = [
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "every screen: its routes by number, its states and their words" },
+  { path = "docs/ui-reference/control-room-handoff/README.md", why = "the rules that aren't obvious: untrusted text, nothing polls, motion" },
+  { path = "docs/design/API routes.md", why = "each route by number" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test"
+
+[analysis]
+stack = "As sprint-12. The client is src/data/client.ts over @avel/contract/minified (T-F14); the export reaches it only through control-room/src/lib/api.js; each screen group reads one source in control-room/src/sources/"
+layout = "apps/web/control-room/src/sources/{decisions,missions,canon,plan,build,release}.js (T-F14), the pages under control-room/src/pages, each ticket's log in control-room/changes/<ticket id>.md"
+conventions = [
+  "AGENTS.md; CR-W29 E4; no new dependency; screens never call fetch or the client: their source does",
+  "E15: no money except AI cost against its cap; agent, client and Canon text renders as plain text; approvals never ask for a password",
+  "A screen ticket switches its own source to the API and changes only that source, its own pages and its changes file. If logic.js, operations.js or another source needs a change, stop with out-of-scope and say what",
+]
+notes = [
+  "The sample world stays for every source this sprint doesn't switch, and for the export's own review switches (?sim=every, ?osa=1)",
+  "Run only your ticket's specs while you work; CI runs the whole suite",
+]
+
+[[ticket]]
+id = "T-F18"
+slug = "canon-live"
+title = "Canon onboarding live"
+goal = "You talk to Canon and its reply streams in as plain text, you answer the question deck, and you edit, generate, approve, ask for changes on or reopen each checkpoint, all from the API."
+rigor = "standard"
+refs = [
+  "CR-W31 part (b) or (c): routes 33, 34, 105, 38 to 43",
+  "handoff port order step 6 (Canon onboarding)",
+  "CR-W19 (streaming replies, the question deck)",
+  "J3 and E15 (untrusted text renders as text)",
+]
+depends_on = ["T-F14"]
+may_change = [
+  "apps/web/control-room/src/sources/canon.js",
+  "apps/web/control-room/src/app/canon.js",
+  "apps/web/control-room/src/pages/project/CanonPage.jsx",
+  "apps/web/control-room/src/pages/project/CanonDock.jsx",
+  "apps/web/control-room/changes/T-F18.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/**",
+  "apps/web/control-room/src/app/logic.js",
+  "apps/web/control-room/src/app/operations.js",
+  "apps/web/control-room/src/mock/**",
+]
+context = [
+  { path = "apps/web/control-room/src/sources/canon.js", why = "the source this ticket switches to the API (T-F14)" },
+  { path = "apps/web/control-room/src/app/canon.js", why = "the onboarding journey, checkpoints and question deck" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Onboarding: routes and states" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Reads: 21 (the onboarding journey and checkpoints), 33 (the chat history), 105 (re-attach to a reply still streaming; STREAM_GONE once it's finished). Writes: 34 (your turn; Canon's CanonStreamChunk reply renders as it arrives, and leaving the page aborts the request), 44 (answer: an option, or other in your own words), 38 to 42 (edit a section, generate, approve, ask for changes, reopen), 43 (confirm or reject a fact), each with an Idempotency-Key and the rowVersion",
+  "Canon's text, and anything a client wrote, renders as plain text: markdown with HTML off, links shown as text unless they're http(s), and nothing executes",
+  "Voice (106) and uploads (35 to 37, CR-34) keep the sample world",
+  "Review: one round (CR-42). The full-diff rule: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
+  "Size: a full session (#45). Run only this ticket's specs while you work",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = [
+  "apps/web/test/canon-live/**",
+  "apps/web/e2e/canon-live/**",
+]
+behaviours = [
+  "e2e (behaviour): sending a message calls route 34, and Canon's reply streams in chunk by chunk; a reload while it streams re-attaches through route 105",
+  "e2e (behaviour): a reply holding <b>, <script> and a javascript: link renders as its literal text, and nothing executes",
+  "e2e (behaviour): answering a question with an option and with other calls route 44, and the deck moves to the next question",
+  "e2e (behaviour): approving checkpoint 0.1 calls route 40 and the journey shows 0.2; asking for changes and reopening call 41 and 42; a stale rowVersion shows the 409 sentence",
+  "e2e (behaviour): loading, empty (a fresh draft), error (500, offline, STREAM_GONE) render with their words",
+  "e2e (guard): every state passes WCAG 2.2 AA at 390 and 1280, light and night; each route at most 150 KB; no '$' (E15)",
+]
+
+[[ticket]]
+id = "T-F19"
+slug = "plan-dispatch-live"
+title = "Plan and dispatch live"
+goal = "You read the mission's plan by version, its dispatch package and each of its files, and confirm the package commit, all from the API."
+rigor = "standard"
+refs = [
+  "CR-W31 part (b) or (c): routes 46, 49, 100 to 102",
+  "CR-W11 (the package commit)",
+  "CR-16 (the dispatch package)",
+]
+depends_on = ["T-F14"]
+may_change = [
+  "apps/web/control-room/src/sources/plan.js",
+  "apps/web/control-room/changes/T-F19.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/**",
+  "apps/web/control-room/src/app/logic.js",
+  "apps/web/control-room/src/app/operations.js",
+  "apps/web/control-room/src/mock/**",
+]
+context = [
+  { path = "apps/web/control-room/src/sources/plan.js", why = "the source this ticket switches to the API (T-F14)" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Plan and Dispatch: routes and states" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Reads: 46 (the plan, ?version=), 49 (the dispatches, with DISPATCH.md), 100 (the package manifest), 101 (one file, text/markdown, rendered as plain text with HTML off), 102 (the archive, a download link). Writes: 114 (confirm the package commit, bound to packageHash, with an Idempotency-Key)",
+  "Plan and Dispatch render through operations.js and OpsPages.jsx, which this ticket doesn't change: the source gives them the values in the shapes they read today. If a page needs a change, stop with out-of-scope",
+  "Review: one round (CR-42). The full-diff rule: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
+  "Size: a full session (#45). Run only this ticket's specs while you work",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = [
+  "apps/web/test/plan-dispatch-live/**",
+  "apps/web/e2e/plan-dispatch-live/**",
+]
+behaviours = [
+  "e2e (behaviour): Plan shows route 46's plan, and choosing an older version reads it with ?version=",
+  "e2e (behaviour): Dispatch lists route 100's files, opening one reads route 101 and shows it as text, and the archive link is route 102",
+  "e2e (behaviour): confirming the package commit calls route 114 with the manifest's packageHash; a 409 (the package changed) shows its sentence and rereads 100",
+  "e2e (behaviour): loading, empty (no plan yet), error (404, 500, offline) render with their words",
+  "e2e (guard): every state passes WCAG 2.2 AA at 390 and 1280, light and night; each route at most 150 KB; no '$' (E15)",
+]
+
+[[ticket]]
+id = "T-F20"
+slug = "build-live"
+title = "Watch the build, live from the streams"
+goal = "The factory floor and the module page stay live from the event and trace streams: the retry ladder, cost against its cap, each agent step and each landing, with nothing polling but the stall check."
+rigor = "standard"
+refs = [
+  "CR-W31 part (b) or (c): routes 49, 56, 63, 64, 104, 108, 109",
+  "handoff port order step 5 (Live)",
+  "README: nothing polls except the stall check",
+  "CR-W20 section 3 (AI cost only against its cap)",
+]
+depends_on = ["T-F14"]
+may_change = [
+  "apps/web/control-room/src/sources/build.js",
+  "apps/web/control-room/src/pages/live/**",
+  "apps/web/control-room/src/pages/operations/ModulePage.jsx",
+  "apps/web/control-room/src/lib/live.js",
+  "apps/web/control-room/changes/T-F20.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/**",
+  "apps/web/control-room/src/app/logic.js",
+  "apps/web/control-room/src/app/operations.js",
+  "apps/web/control-room/src/mock/**",
+]
+context = [
+  { path = "apps/web/control-room/src/sources/build.js", why = "the source this ticket switches to the API (T-F14)" },
+  { path = "apps/web/control-room/src/lib/stream.js", why = "T-F14's route 63 reader, with resume and the stall check" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Live, Watch the work, Module: routes and states" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Reads: 104 (slots, stallAfterMs), 49 (dispatches), 108 (a module run: ladder, cost against its cap, attempts, findings), 109 (an attempt's steps, to backfill), 56 (an integration commit). Streams: 63 (events, through lib/stream.js) and 64 (traces, view=steps, one per open terminal, closed when it closes), each resuming with Last-Event-ID",
+  "Cost shows only as used against its cap, or a percent: no '$' (E15). Agent step text renders as plain text",
+  "The stall check is the only timer: no event within stallAfterMs shows the still amber dot",
+  "Review: one round (CR-42). The full-diff rule: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
+  "Size: a full session (#45). Run only this ticket's specs while you work",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = [
+  "apps/web/test/build-live/**",
+  "apps/web/e2e/build-live/**",
+]
+behaviours = [
+  "e2e (behaviour): an event on route 63 updates the factory floor and the module page without a reload, and a dropped stream resumes with Last-Event-ID and misses nothing",
+  "e2e (behaviour): the module page shows route 108's ladder and cost against its cap, backfills steps from 109, then follows route 64's live steps",
+  "e2e (behaviour): with no event within stallAfterMs the stalled state shows, and the next event clears it; no other request repeats on a timer",
+  "e2e (behaviour): agent step text holding <script> renders as text",
+  "e2e (behaviour): loading, empty (nothing running), error (500, offline, a stream that won't reconnect) render with their words",
+  "e2e (guard): every state passes WCAG 2.2 AA at 390 and 1280, light and night; each route at most 150 KB; no '$' (E15)",
+]
+
+[[ticket]]
+id = "T-F21"
+slug = "release-live"
+title = "Gates, findings and the release, live"
+goal = "You see each gate and its integration commit, confirm, dismiss or accept findings with a reason, check the receipt, and release the exact commit it names, all from the API."
+rigor = "full"
+refs = [
+  "CR-W31 part (b) or (c): routes 21, 29, 30, 55, 56, 58 to 61, 107",
+  "handoff port order step 7 (Release)",
+  "C4: gates and receipts",
+  "CR-W21 (the receipt's proof check)",
+]
+depends_on = ["T-F14"]
+may_change = [
+  "apps/web/control-room/src/sources/release.js",
+  "apps/web/control-room/src/pages/operations/ReceiptPage.jsx",
+  "apps/web/control-room/changes/T-F21.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/src/**",
+  "apps/web/control-room/src/app/logic.js",
+  "apps/web/control-room/src/app/operations.js",
+  "apps/web/control-room/src/mock/**",
+]
+context = [
+  { path = "apps/web/control-room/src/sources/release.js", why = "the source this ticket switches to the API (T-F14)" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "Gates, Findings, Release, Receipt: routes and states" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Reads: 21, 55 (gate evaluations and integration commits), 56, 58 (findings, filtered by state, route and module run), 61 (the receipt, ?verify=1 rechecks the hash), 107 (one proof file, at most 2 MB, shown as text or a download, never run). Writes: 59 (confirm or dismiss, with a reason), 60 (accept, with a reason; caps the verdict at pass), 29 (pass approval with the receipt hash), 30 (release with the receipt hash and, for a pass, the pass approval id), each with an Idempotency-Key",
+  "Release sends only the receipt hash the page read; a 409 (a newer receipt) shows its sentence and rereads 61. Approving a pass or a release never asks for a password (E15)",
+  "Gates, Findings and Release render through operations.js and OpsPages.jsx, which this ticket doesn't change. If a page needs a change, stop with out-of-scope",
+  "Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. One round (CR-42). The full-diff rule applies as in the other tickets: anything outside this build's may-change list, its locked tests, its reports or locks.md is a P1",
+  "Size: a full session (#45). Run only this ticket's specs while you work",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = [
+  "apps/web/test/release-live/**",
+  "apps/web/e2e/release-live/**",
+]
+behaviours = [
+  "e2e (behaviour): Gates lists route 55's evaluations, and opening an integration commit reads route 56",
+  "e2e (behaviour): confirming, dismissing and accepting a finding call 59 and 60 with the reason typed; accepting caps the shown verdict at pass",
+  "e2e (behaviour): the receipt reads route 61, Check calls ?verify=1 and shows the result; a proof file reads 107 and never runs",
+  "e2e (behaviour): Release calls route 30 with the receipt hash read from 61 (and the pass approval id from 29 for a pass), no password field shows, and a 409 shows its sentence and rereads the receipt",
+  "e2e (behaviour): loading, empty (no findings), error (404, 422 with the allowed moves, 500, offline) render with their words",
+  "e2e (guard): every state passes WCAG 2.2 AA at 390 and 1280, light and night; each route at most 150 KB; no '$' (E15)",
+]

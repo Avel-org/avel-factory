@@ -3,22 +3,30 @@
 # Check it:   scripts/render.py --check frontend/sprint-12
 # Render it:  scripts/render.py frontend/sprint-12   (after approval), then commit the folder.
 #
-# The wiring sprint's first ticket (CR-W29, E14: "Sign-in is the first ticket of the wiring sprint,
-# before any screen talks to the API"). Javaris, Nov 17 (to OSA): fewer, bigger tickets; a night
-# makes a few substantial PRs. T-F13 (sprint-13) brings the typed client, Settings live and the
-# CLI login approval with step-up.
-# Javaris approved it Nov 17 ("approve all"): CR-W30 accepted, and / held to 235 KB (CR-W29 decision 6,
-# second amendment), which this ticket's tests write into budget.spec.ts.
-# Renders only when T-F10 is merged and CR-W30 A (the auth mock) is on main.
-
+# Re-planned Nov 18. Javaris, to OSA: "lets not owrk on the cli right now lets foucs more on building
+# the needed modules to run the first real mission". He approved the re-plan (Zero's draft, Nov 18,
+# item 9 of his brief: "approve 5 to 9"). This sprint is the ground the mission's screens stand on:
+# sign-in first (E14), then the data layer and the seam that lets the screen tickets in sprints 13
+# and 14 run without sharing a file (B7). T-F15 (e2e on the production build) is in sprint-13, because
+# it changes playwright.config.ts, which T-F12's tests change too.
+# T-F13 is withdrawn (its ID isn't reused, C6); its typed client is T-F14's. CR-43 moves the CLI
+# out of Step 1. CR-42 (accepted Nov 18): the plan and its render go in one PR; tickets in one
+# sprint don't depend on each other unless they share a file; guard tests may pass first.
+# Renders when T-F10 (sprint-11) is merged and T-B11 (#55, CR-W30 A and D) is on main, with
+# @avel/contract's ./minified subpath export, render.py puts builders on Opus (Javaris, Nov 18), and
+# render.py lets the frontend lane change packages/contract-mock/** for T-F22 (Javaris approved T-F22,
+# CR-W31 part (a), Nov 18; today render.py refuses it as I3).
 lane = "frontend"
 sprint = "sprint-12"
 step = 1
-title = "Sign-in guards the control room"
+title = "The ground the first mission's screens stand on"
 goals = [
+  "contract-mock walks one mission from draft to release, so the first screens run against it",
   "Signed out, every path lands on Sign in. Signing in returns you where you were going, and Settings signs you out",
+  "Every contract route has a typed call and every error code a plain sentence, and nothing on screen changes yet",
 ]
 done_when = [
+  "T-F14: no screen of the control room imports fetch or the client; each screen's data comes through its source module, and every screen renders as it does on main",
   "Step 0 and Step 1 plan, test 7 as the web shows it (the 11th failed sign-in is refused, against the mock), and login.md's LG scenarios that this ticket owns pass under AVEL_API=mock",
 ]
 sources = [
@@ -87,9 +95,9 @@ verify = [
 notes = [
   "The wire is login.md section 1, called with fetch from apps/web/src/auth/api.ts only. It returns only the named fields: never token, ipAddress or the password. Nothing goes in localStorage, sessionStorage or a URL except next",
   "The guard is server-side: __root's beforeLoad calls a createServerFn that forwards the request's cookie to GET /api/auth/get-session and returns { session } or null. Signed out on any path but /login, it redirects to /login?next=… (login.md section 2, safeNext exactly as written there, hash kept), so the shell is never drawn signed out. A failed session read counts as signed out. Signed in on /login, it redirects to next or /",
-  "login.md's QueryClient becomes the router context: the session lives in __root's context, and sign-in calls router.invalidate() before navigating. The 401-from-a-contract-route path (login.md section 2, LG-06) waits for T-F13, because no screen calls the API yet",
+  "login.md's QueryClient becomes the router context: the session lives in __root's context, and sign-in calls router.invalidate() before navigating. The 401-from-a-contract-route path (login.md section 2, LG-06) is T-F14's, in the data layer; this ticket doesn't build it",
   "/login is its own TanStack route outside the control room, ssr: true, styled with the export's tokens (fidelity spec). login.md section 3 gives its markup, states and copy. Where it names mh, Button or StatusGlyph, use the export's own equivalents and name them in a comment",
-  "Sign-out (login.md section 4) is an Account section in the export's SettingsPage.jsx: Signed in as {email}, and Sign out. On 200 it navigates to /login with replace. Log the change in SOURCE.md",
+  "Sign-out (login.md section 4) is an Account section in the export's SettingsPage.jsx: Signed in as {email}, and Sign out. On 200 it navigates to /login with replace. Log the change in SOURCE.md. Also add one line under its \"Changed for apps/web\" heading: from T-F14 on, each ticket logs its changes to the export in apps/web/control-room/changes/<ticket id>.md, so tickets that run in the same sprint never share SOURCE.md (B7)",
   "Budget: / may load at most 235 KB gzipped, with a warning over 225 KB (CR-W29 decision 6, second amendment). The guard should still add next to nothing to /'s first load (the server function's stub only). Copy budget.spec's figure into the report and the PR text as a number. If / goes over 235 KB, stop with needs-cr",
   "Review, full rigor (G7): Fenn's review, then the second review against docs/review/security-checklist.md, then Javaris merges. The reviewer also applies the full-diff rule: run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
   "Size: about 60 minutes. If the build can't finish, report blocked with what's done. Don't cut a state or a rule",
@@ -114,4 +122,127 @@ behaviours = [
   "e2e: LG-22, Sign out from Settings lands on /login, and Back lands there too",
   "e2e: budget.spec holds / to 235 KB gzipped and warns over 225 KB (CR-W29 decision 6, second amendment). Only LIMIT, WARN and their comment change; what it measures stays T-F8's",
   "e2e: LG-23, a setup project signs in once and saves storageState, and every existing spec (T-F7 to T-F11) runs signed in and unchanged. The LG specs start signed out",
+]
+
+[[ticket]]
+id = "T-F14"
+slug = "data-layer-seam"
+title = "The data layer, and one source per screen group"
+goal = "Every contract route has a typed call, every error code a plain sentence, the event stream reconnects by itself, and an expired session sends you to Sign in once; the control room reads its data through one source module per screen group, and nothing on screen changes yet."
+rigor = "full"
+refs = ["CR-W30 D (the minified router)", "E16 (the data layer from the minified contract)", "login.md section 2 (LG-06)", "handoff README, port order step 1 (the oRPC client, the event stream hook, the error map)", "Zero's re-plan, approved Nov 18: T-F13's client moves here"]
+depends_on = ["T-F10"]
+may_change = [
+  "apps/web/src/data/**",
+  "apps/web/control-room/src/lib/api.js",
+  "apps/web/control-room/src/lib/stream.js",
+  "apps/web/control-room/src/sources/**",
+  "apps/web/control-room/src/app/logic.js",
+  "apps/web/control-room/src/app/canon.js",
+  "apps/web/control-room/src/app/operations.js",
+  "apps/web/control-room/src/app/decisions.js",
+  "apps/web/control-room/changes/T-F14.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/control-room/src/mock/**",
+  "apps/web/control-room/src/pages/**",
+  "apps/web/control-room/contract/**",
+  "apps/web/control-room/SOURCE.md",
+  "apps/web/src/auth/**",
+  "apps/web/src/routes/**",
+]
+context = [
+  { path = "apps/web/src/data/client.ts", why = "today's client over one route group with full schemas; it moves to the minified router and the whole contract" },
+  { path = "packages/contract/src/minified.ts", why = "every route's key path, method, path, number, write and stepUp, with no schema (T-B11, CR-W30 D)" },
+  { path = "packages/contract/src/errors.ts", why = "every error code the error map covers" },
+  { path = "docs/ui-contracts/login.md", why = "section 2: the 401 rule (LG-06) and the expired notice T-F12 draws" },
+  { path = "docs/ui-reference/control-room-handoff/screens.md", why = "each screen's routes and the words its states use" },
+  { path = "apps/web/control-room/src/app/logic.js", why = "where each page's state is decided today (the valid states, c.w, worldErr and errCode, near renderVals' page state) and the sample imports that move into sources" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "/ at most 235 KB gzipped, warning over 225 KB" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "The client: apps/web/src/data/client.ts covers every route in @avel/contract/minified (imported by that subpath only, never the package index), with no Zod schema in the browser bundle. One error map in src/data/errors.ts gives every code in errors.ts a plain sentence; where screens.md or a UI contract names a state's words, use them. The report lists each code and its sentence",
+  "The door: control-room/src/lib/api.js is the export's only way to the client. lib/stream.js reads route 63 (GET /api/events/stream) through it, resumes with Last-Event-ID after a drop, backs off between tries, and marks the stream stalled when no event arrives within StatusDto.stallAfterMs (route 104). Time comes from an injected clock, so tests never sleep (F4). Nothing else polls (handoff README)",
+  "The sources: control-room/src/sources/{decisions,missions,canon,plan,build,release}.js. Each owns the sample JSON its screens read today (the imports move out of logic.js, canon.js and operations.js, unchanged) and exposes the same values in the same shapes, plus a status: ready, loading, empty, or error with a code. logic.js decides each page's state from its source's status, through the state handling it already has (valid states, errCode, the skeleton). This ticket sets every source to the sample world, so every screen renders exactly as on main. Sprints 13 and 14's tickets each switch one source to the API and change only that source, its pages and their own changes file",
+  "Which screens read which source: decisions (Decisions); missions (Clients, All projects, New project, the project overview and Progress); canon (Onboarding); plan (Plan, Dispatch); build (Live, Watch the work, the module page); release (Gates, Findings, Release, Receipt). Every other page keeps its sample imports where they are",
+  "LG-06 lives in the data layer: on a 401 from any contract route it navigates once to /login?next={path, search and hash}&reason=expired with replace, and a burst of 401s makes one navigation. It reads nothing from __root and changes no route file: T-F12's /login draws the expired notice and its guard handles the rest. The end-to-end LG-06 check comes with the first screen that calls the API (T-F16)",
+  "Log every export file this ticket changes, with its reason, in control-room/changes/T-F14.md (T-F12 adds the pointer in SOURCE.md)",
+  "Budget: / doesn't grow. Copy budget.spec's / figure into the report and the PR text as a number. Over 235 KB, stop with needs-cr",
+  "Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. One review round (CR-42). The full-diff rule applies: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
+  "Size: a full session (#45: 120 minutes, 150 turns). If the build can't finish, report blocked with what's done, the client and the error map first. Run only this ticket's specs while building; CI runs the whole suite",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/test/data/**", "apps/web/test/sources/**", "apps/web/e2e/sources/**"]
+behaviours = [
+  "unit (behaviour): the client's procedures equal @avel/contract/minified's routes, by number, method and path, and the built client chunk holds no Zod schema and doesn't import the package index",
+  "unit (behaviour): every code in packages/contract/src/errors.ts has a sentence in the error map, and none is the raw code or message",
+  "unit (behaviour): the stream reader parses route 63's events, resumes with Last-Event-ID after a drop, and reports stalled after stallAfterMs with no event, on a fake clock",
+  "unit (behaviour): LG-06, a 401 from a contract call navigates once to /login?next=...&reason=expired with replace, and three 401s at once make one navigation",
+  "unit (behaviour): no file under control-room/src/app or control-room/src/pages imports a mock JSON that a source owns, calls fetch, or imports src/data; only sources/** and lib/api.js do",
+  "unit (behaviour): each source in sample mode returns exactly the sample world's values its screens read today, with status ready",
+  "e2e (behaviour): forcing a source's status (a test hook in sources/) to loading, empty, and error with 404, 409 and 500 shows that screen's skeleton, empty state and error panel with the error map's sentence, for one screen of each source",
+  "e2e (guard): every screen in the page registry still opens with its title and no console error (T-F9's specs, unchanged), and / stays at most 235 KB",
+]
+
+[[ticket]]
+id = "T-F22"
+slug = "mock-mission-world"
+title = "contract-mock walks a mission from draft to release (CR-W31 part a)"
+goal = "contract-mock serves the routes Decisions and a mission's start use, over a world with one mission whose state moves the way the contract's state machine says, so sprint-13's first screens run against it."
+rigor = "standard"
+labels = ["mock"]
+cr = "CR-W31"
+refs = ["CR-W31 part (a): Javaris, Nov 18, \"approve T-F22\"; built by the frontend lane on Axis's three conditions", "E2 (the web builds against contract-mock)", "docs/design/API routes.md"]
+depends_on = []
+may_change = ["packages/contract-mock/src/**"]
+must_not_change = [
+  "packages/contract/**",
+  "packages/db/**",
+  "apps/**",
+  "pnpm-lock.yaml",
+  "packages/contract-mock/package.json",
+]
+context = [
+  { path = "packages/contract-mock/src/mock.ts", why = "implement(contract) through OpenAPIHandler: idempotency, MockFailure, recorded requests, and T-B11's auth" },
+  { path = "packages/contract-mock/src/world.ts", why = "the sample world the mock grows from" },
+  { path = "packages/contract/src/routes", why = "each new route's input, output and errors" },
+  { path = "docs/design/API routes.md", why = "routes 9, 10, 20, 21, 28, 29, 30, 40, 44, 104, 108 and 114" },
+  { path = "docs/design/DATABASE.md", why = "the mission, checkpoint and proposal state machines the world follows" },
+]
+verify = [
+  "pnpm --filter @avel/contract-mock test",
+  "pnpm build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Axis's conditions (Nov 18): the mock stays implement(contract) with output validation, and each new route's test checks its output against the contract; state moves follow the contract's value lists and state machines (422 with the allowed moves, stale is 409); anything the contract doesn't say is a CR-W, so stop with needs-cr rather than invent it",
+  "Routes in part (a) (Axis's split, Nov 18: 8, 9, 10, 19, 20, 21, 28 to 30, 40, 44, 52 to 54, 104, 108, 114): 9 and 10 (create and read a client), 20 and 21 (create and read a mission), 108 (a module run), 104 (status), and the approve calls Decisions makes: 28 (finalize), 29 (pass approval), 30 (release), 40 (approve a checkpoint), 44 (answer a question), 114 (confirm the package commit). Routes 8, 19 and 52 to 54 are served already, and in part (a) they read the same world (Axis's split, Nov 18): a client made on 9 shows in 8, a mission made on 20 shows in 19, and an approval on 28 to 30, 40 or 44 removes its row from 52. The streams (34, 63, 64) and every other read stay out",
+  "The world: one internal client and one mission, seeded at a state a test picks (draft, each checkpoint 0.1 to 0.4, finalized, building, at Gate 5, awaiting release, delivered). An approve call moves it on, and route 52's pending list follows. Every write keeps Idempotency-Key replay, rowVersion or the bound hash, and the contract's error body",
+  "Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in",
+  "Review: one round (CR-42); the full-diff rule applies as in T-F14",
+  "Size: a full session (#45)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/contract-mock/test/mission-world.test.ts", "packages/contract-mock/test/mission-routes.test.ts"]
+behaviours = [
+  "unit (behaviour): a client made on route 9 is listed by route 8, a mission made on route 20 by route 19, and an approval on 28, 29, 30, 40 or 44 removes its row from route 52",
+  "unit (behaviour): each part (a) route answers with a body its contract output schema accepts, with X-Request-Id and X-Contract-Version",
+  "unit (behaviour): a mission seeded at checkpoint 0.1 moves through 0.4, finalization, pass approval and release only by the routes, and route 52's pending rows follow each move",
+  "unit (behaviour): a move the state machine doesn't allow is 422 with the allowed moves; a stale rowVersion or receipt hash is 409; a replayed Idempotency-Key returns the first response",
+  "unit (behaviour): MockFailure works on every part (a) route (any status and code, or a network failure), and recorded requests name the route by number",
 ]
