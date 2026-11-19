@@ -48,6 +48,7 @@ export * from "./dto/receipts.js";
 export * from "./dto/your-work.js";
 export * from "./errors.js";
 export * from "./events.js";
+export * from "./minified.js";
 export * from "./plain-templates.js";
 export { type Contract, contract } from "./routes/index.js";
 export { type RouteOptions, route } from "./routes/route.js";

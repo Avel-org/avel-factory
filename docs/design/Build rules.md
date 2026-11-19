@@ -15,10 +15,10 @@ This replaces that guide's team (section 3), its review team (section 7, items 1
 | **Operator** | Javaris | — | Approves each cycle's ticket lists, full-rigor merges, step closes, change requests and new dependencies. Answers escalations. | — |
 | **Operator agent** | OSA | MIOSA AI: DeepSeek V4.1 Flash for everyday work, Kimi K2.6 for briefs (CR-29) | Runs the cycle for Javaris: files the approved tickets, starts and watches sessions, keeps the board, writes digests and decision briefs, merges clear and clean PRs (CR-36) and what Javaris approves (CR-41), relays instructions to running sessions (CR-37) | Approves, merges anything but a clear and clean PR (CR-36) or one Javaris approved in his own words (CR-41), writes product code or tests, changes rules, or decides anything (CR-29: OSA prepares, Javaris decides) |
 | **Backend lead** | Axis | Opus | Plans backend tickets, answers the backend builder and checker, merges green backend work, drafts change requests | Writes most of the code, or reviews its own tickets |
-| **Backend builder** | Soap | Sonnet; Opus on full-rigor tickets | Builds one backend ticket per session to pass its acceptance tests | Edits the acceptance tests, or reviews |
+| **Backend builder** | Soap | Opus (Javaris, Nov 18) | Builds one backend ticket per session to pass its acceptance tests | Edits the acceptance tests, or reviews |
 | **Backend checker** | Rigg | Sonnet; Opus for full-rigor reviews | Writes each ticket's acceptance tests first, then reviews the builder's pull request | Writes product code |
 | **Frontend lead** | Zero | Opus | The same as Axis, for the web app | The same |
-| **Frontend builder** | Fantem | Sonnet; Opus on full-rigor tickets | Builds one frontend ticket per session | Edits the acceptance tests, or reviews |
+| **Frontend builder** | Fantem | Opus (Javaris, Nov 18) | Builds one frontend ticket per session | Edits the acceptance tests, or reviews |
 | **Frontend checker** | Fenn | Sonnet | Writes the frontend acceptance tests and end-to-end tests first, then reviews | Writes product code |
 
 Each lead's two helpers are a **builder** and a **checker**, so no work grades itself: the checker's tests decide the builder's ticket, and the checker reviews what the builder made. It's the factory's own rule (tests first, by someone who doesn't build) applied to building the factory. The four helpers carry `Roster.md` names by default. Rename them if you like: the names don't change the rules, but each name must match its identity file and the renderer's role table.
@@ -211,11 +211,16 @@ CI is green and the acceptance tests pass. Nothing else.
   | --- | --- | --- |
   | P0 | Broken, unsafe, or loses data | Yes |
   | P1 | Wrong behaviour, a missed requirement, or a broken rule | Yes |
-  | P2 | Should be better | Only in round 1 |
+  | P2 | Should be better | Only in round 1 (backend from T-B9: never; it goes to a later ticket, G5) |
   | P3 | Nice to have | Never; goes to the backlog |
 
 - **G4. The builder filters the findings.** It fixes what's in scope and answers the rest with a reason.
 - **G5. At most two rounds.** After round 2, only a P0 or P1 blocks.
+  - **The backend lane, from T-B9 on (Javaris, Nov 18): one review, no round 2.**
+    - Only a P0 or P1 sends the PR back. The builder fixes it, and the checker confirms only that each P0 or P1 it named is fixed. That's a check of the fix, not a new review, and it raises nothing new.
+    - A P2 doesn't block. The lead puts it in a later ticket's plan or the sprint's backlog, and the PR text lists it with that destination.
+    - A P3 goes to the backlog, as before.
+    - G7's second review (the other lane's lead) and Javaris's merge still apply to full rigor.
 - **G6. Review in batches,** once per cycle.
 - **G7. Full rigor gets three reviews:**
   1. the lane's checker (on Opus);

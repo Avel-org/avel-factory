@@ -100,6 +100,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-38 | A contract error code for defects (500) | Accepted Nov 17, Zero signed off (I3) (`CR-38 A contract error code for defects.md`); built in backend sprint-02 as T-B6 |
 | CR-39 | Effect's language service on TypeScript 7: `@effect/tsgo` replaces `@effect/language-service`, run in the editor and CI | Accepted Nov 17, decisions 1 and 2 (`CR-39 Effect's language service on TypeScript 7.md`); built next cycle as backend T-B2 |
 | CR-41 | OSA merges a PR Javaris approves in his own words in its session, with `scripts/agents/merge.py`; CI green, mergeable, `Refs:` and no hold still required; his words posted on the PR | Proposed Nov 18 (`CR-41 OSA merges with Javaris's approval.md`) |
+| CR-43 | Step 1 without the CLI: step-up moves to Step 4 and CLI login to Step 5; the clients routes (8 to 11) come back into Step 1 and carry tests 2, 4 and 13; test 5 is sign-in's limit | Accepted Nov 18 by Javaris (`CR-43 Step 1 without the CLI.md`); Zero signed off Nov 18 (I3); built in backend sprint-04 as T-B14 |
 | CR-W1 to CR-W22 | The web's contract changes | Decided Nov 12 and built in contract 1.0.0 |
 | CR-W23 | TanStack DB in the control room | Proposed (frontend) |
 | CR-W24 | The Learning screens | Proposed (frontend); reads CR-28 |
