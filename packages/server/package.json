@@ -8,6 +8,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",
     "dev": "node --experimental-strip-types src/main.ts",
+    "seed": "node --experimental-strip-types src/seed.ts",
     "check:effect": "sh -c 'if [ \"$1\" = -- ]; then shift; fi; if [ $# -eq 0 ]; then effect-tsgo diagnostics --project \"$PWD/tsconfig.json\"; else s=0; for f in \"$@\"; do effect-tsgo diagnostics --file \"$f\" || s=1; done; exit $s; fi' --"
   },
   "dependencies": {
