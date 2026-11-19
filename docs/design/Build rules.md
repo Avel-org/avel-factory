@@ -13,12 +13,12 @@ This replaces that guide's team (section 3), its review team (section 7, items 1
 | Role | Who | Model | Does | Never |
 | --- | --- | --- | --- | --- |
 | **Operator** | Javaris | — | Approves each cycle's ticket lists, full-rigor merges, step closes, change requests and new dependencies. Answers escalations. | — |
-| **Operator agent** | OSA | MIOSA AI: DeepSeek V4.1 Flash for everyday work, Kimi K2.6 for briefs (CR-29) | Runs the cycle for Javaris: files the approved tickets, starts and watches sessions, keeps the board, writes digests and decision briefs, merges clear and clean PRs (CR-36), relays instructions to running sessions (CR-37) | Approves, merges anything but a clear and clean PR (CR-36), writes product code or tests, changes rules, or decides anything (CR-29: OSA prepares, Javaris decides) |
+| **Operator agent** | OSA | MIOSA AI: DeepSeek V4.1 Flash for everyday work, Kimi K2.6 for briefs (CR-29) | Runs the cycle for Javaris: files the approved tickets, starts and watches sessions, keeps the board, writes digests and decision briefs, merges clear and clean PRs (CR-36) and what Javaris approves (CR-41), relays instructions to running sessions (CR-37) | Approves, merges anything but a clear and clean PR (CR-36) or one Javaris approved in his own words (CR-41), writes product code or tests, changes rules, or decides anything (CR-29: OSA prepares, Javaris decides) |
 | **Backend lead** | Axis | Opus | Plans backend tickets, answers the backend builder and checker, merges green backend work, drafts change requests | Writes most of the code, or reviews its own tickets |
-| **Backend builder** | Soap | Sonnet; Opus on full-rigor tickets | Builds one backend ticket per session to pass its acceptance tests | Edits the acceptance tests, or reviews |
+| **Backend builder** | Soap | Opus (Javaris, Nov 18) | Builds one backend ticket per session to pass its acceptance tests | Edits the acceptance tests, or reviews |
 | **Backend checker** | Rigg | Sonnet; Opus for full-rigor reviews | Writes each ticket's acceptance tests first, then reviews the builder's pull request | Writes product code |
 | **Frontend lead** | Zero | Opus | The same as Axis, for the web app | The same |
-| **Frontend builder** | Fantem | Sonnet; Opus on full-rigor tickets | Builds one frontend ticket per session | Edits the acceptance tests, or reviews |
+| **Frontend builder** | Fantem | Opus (Javaris, Nov 18) | Builds one frontend ticket per session | Edits the acceptance tests, or reviews |
 | **Frontend checker** | Fenn | Sonnet | Writes the frontend acceptance tests and end-to-end tests first, then reviews | Writes product code |
 
 Each lead's two helpers are a **builder** and a **checker**, so no work grades itself: the checker's tests decide the builder's ticket, and the checker reviews what the builder made. It's the factory's own rule (tests first, by someone who doesn't build) applied to building the factory. The four helpers carry `Roster.md` names by default. Rename them if you like: the names don't change the rules, but each name must match its identity file and the renderer's role table.
@@ -33,14 +33,14 @@ Each lead's two helpers are a **builder** and a **checker**, so no work grades i
 | Write acceptance and end-to-end tests | Yes | **No** | — | **No** | **Yes** |
 | Review a pull request | Yes | **No** | Full-rigor second review | **No** | **Yes**, their own lane |
 | Merge to `main` | Yes | **Yes**, only when every CR-36 condition holds | **Yes**: green, reviewed, not full-rigor | **No** | **No** |
-| Merge a full-rigor PR | **Yes** | **No** | Recommends | — | — |
+| Merge a full-rigor PR | **Yes** | Only with Javaris's approval, in his words (CR-41) | Recommends | — | — |
 | Change `packages/contract` or `packages/db` | Approves | **No** | Axis only, through a `contract` or `schema` ticket (I3) | Axis's builder, inside such a ticket | — |
 | Add a dependency | **Approves** | — | Requests | — | — |
 | Write or accept a change request | **Accepts** | Briefs it | **Write it** | Flag the need | Flag the need |
 | Close a build step | **Yes** | Prepares the report | Recommend | — | — |
 | Push to any remote | **Only when Javaris says** | No | No | No | No |
 
-- **A1.** Javaris decides; OSA prepares. OSA merges only a PR that meets every CR-36 condition, by squash merge, and has no other write access to `main`. It still has no approve button anywhere, and its session can't use one (CR-29).
+- **A1.** Javaris decides; OSA prepares. OSA merges only a PR that meets every CR-36 condition, or that Javaris approved in his own words in its session (CR-41), by squash merge, and has no other write access to `main`. It still has no approve button anywhere, and its session can't use one (CR-29).
 - **A2.** A lead never reviews or merges a ticket it built itself.
 - **A3.** A builder never changes a file outside its ticket's "may change" list, and never edits a test its checker wrote. CI checks both (H6).
 - **A4.** A lead may push a fix of 10 lines or fewer straight to an open PR (a typo, a missed import) and says so in the PR. Anything bigger is a ticket.
@@ -56,7 +56,7 @@ PLAN → TESTS → BUILD → CHECK → REVIEW → MERGE
 - **B3. Build.** Once the tests are locked in `locks.md`, OSA starts the builder's **build dispatch** on the same branch. The session ends with its completion report, which becomes the pull request's description.
 - **B4. Check.** CI runs on every PR (H4).
 - **B5. Review.** The checker's **review dispatch** reviews each PR on a detached checkout, once per cycle (section G).
-- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7).
+- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41).
 - **B7. Work in progress:**
   - At most 4 sessions run at once: one builder and one checker per lane.
   - A checker can write tests for the next ticket while the builder works on the current one, because they touch different files.

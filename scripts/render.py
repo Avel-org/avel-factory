@@ -42,11 +42,14 @@ except ModuleNotFoundError:  # Python 3.10
     except ModuleNotFoundError:
         sys.exit("render.py needs Python 3.11+, or the tomli package (sudo apt install python3-tomli)")
 
-RENDERER = "avel-render 2"
+RENDERER = "avel-render 3"
 # A package keeps the renderer it was rendered with, so a kit change never invalidates one in flight:
 # --verify renders it again with the version its MANIFEST.json names. 2 adds the "Messages received"
-# report section (CR-37) and the comma-separated lock line.
-RENDERERS = ("avel-render 1", "avel-render 2")
+# report section (CR-37) and the comma-separated lock line. 3 puts every build on Opus (Javaris, Nov 18:
+# "builders should be on opus not sonnet"); before 3, only a full-rigor build was.
+RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3")
+# The renderers that gave a standard-rigor build Sonnet.
+OPUS_BUILDS_BEFORE = ("avel-render 1", "avel-render 2")
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -132,6 +135,11 @@ def overlaps(a, b):
     return la.startswith(lb) or lb.startswith(la)
 
 
+def within(p, area):
+    """Is every file glob p can match inside area (a folder glob ending in /**)?"""
+    return area.endswith("/**") and (p == area or p.startswith(area[:-2]))
+
+
 def bad_path(p):
     return p.startswith("/") or ".." in p.split("/") or p.strip() != p or p == ""
 
@@ -204,6 +212,8 @@ def load_plan(lane, sprint, roster):
     prefix = seats["prefix"]
     contract = roster["contract_paths"]
     never = roster["never"] + seats["never"]
+    # A lane's exceptions to its never list and to I3's paths, each needing a label and an accepted CR.
+    allow = seats.get("allow", {})
     for n, t in enumerate(tickets, 1):
         where = f"ticket {n}"
         tid = str(t.get("id", ""))
@@ -250,11 +260,22 @@ def load_plan(lane, sprint, roster):
             errors.append(f"{where}: tests.behaviours is empty: list what the tests prove")
         tests.setdefault("paths", [])
         tests.setdefault("behaviours", [])
+        # CR-42 item 5: guard tests (accessibility, budgets, standing rules, regressions) may pass on main.
+        # The behaviours stay fail-first, so a ticket always has at least one test that fails first.
+        tests.setdefault("guards", [])
+        if not isinstance(tests["guards"], list) or not all(isinstance(g, str) and g.strip() for g in tests["guards"]):
+            errors.append(f"{where}: tests.guards must be a list of behaviours, one line each")
 
         for p in t["may_change"] + tests["paths"] + t["must_not_change"]:
             if bad_path(p):
                 errors.append(f"{where}: {p!r} isn't a repo-relative path")
         for p in t["may_change"] + tests["paths"]:
+            granted = next((a for a in allow if within(p, a)), None)
+            if granted:
+                label, cr = allow[granted]["label"], allow[granted]["cr"]
+                if label not in t["labels"] or str(t["cr"]).strip() != cr:
+                    errors.append(f"{where}: {p} needs labels = [\"{label}\"] and cr = \"{cr}\" ({allow[granted]['why']})")
+                continue
             for nv in never:
                 if overlaps(p, nv):
                     errors.append(f"{where}: {p} is never changed by the {lane} lane's agents ({nv})")
@@ -336,6 +357,8 @@ def territory_clashes(plans):
 
 # ------------------------------------------------------------------ rendering
 
+GUARD_LINE = (" Guard tests are the exception (CR-42): accessibility, budget, standing-rule and regression checks"
+              " may already pass on `main`, and your report lists them as passing.")
 ROLE_LINE = {
     "tests": "You write this ticket's acceptance tests before anything is built. They must fail on `main`, and once the lead locks them, they decide whether the build is done.",
     "build": "You build this ticket until its locked acceptance tests pass, changing only the files in Part 5.",
@@ -351,8 +374,12 @@ def branch_of(t):
     return f"t/{t['id'][2:]}-{t['slug']}"
 
 
-def dispatches(plan):
-    """The three dispatches of each ticket, in dependency order."""
+def dispatches(plan, renderer=RENDERER):
+    """The three dispatches of each ticket, in dependency order.
+
+    The model is the one a session starts on (cmd_info, the latest rule) or, for an older package, the one
+    its docs were rendered with (render_package). Builds are always Opus from avel-render 3; tests are
+    Sonnet, and a review is Opus only for full rigor."""
     s = plan["_seats"]
     out = []
     for tid in plan["_order"]:
@@ -363,7 +390,7 @@ def dispatches(plan):
         out.append(dict(base, kind="tests", role=role, agent=s["checker"], seat="checker", model="sonnet",
                         doc=f"agent-{s['checker']}-{tid_l(tid)}-{role}", checkout="branch"))
         out.append(dict(base, kind="build", role="build", agent=s["builder"], seat="builder",
-                        model="opus" if full else "sonnet",
+                        model="opus" if full or renderer not in OPUS_BUILDS_BEFORE else "sonnet",
                         doc=f"agent-{s['builder']}-{tid_l(tid)}-build", checkout="branch"))
         out.append(dict(base, kind="review", role="review", agent=s["checker"], seat="checker",
                         model="opus" if full else "sonnet",
@@ -403,7 +430,11 @@ def activation(plan, d):
         f"Your task is ticket {t['id']}, \"{t['title']}\": the {d['kind']} dispatch. "
         f"Your whole briefing is `{doc}`. Read it in full, then its Context in order, before you change anything.",
     ]
-    if d["kind"] == "tests":
+    if d["kind"] == "tests" and t["tests"]["guards"]:
+        lines.append(f"Write the acceptance tests on branch `{d['branch']}`, only in the test paths in Part 5. "
+                     "Prove each behaviour test fails on the ticket's start commit, and paste that output into your report. "
+                     "Guard tests may pass there (CR-42); report each one's result too.")
+    elif d["kind"] == "tests":
         lines.append(f"Write the acceptance tests on branch `{d['branch']}`, only in the test paths in Part 5. "
                      "Prove each one fails on the ticket's start commit, and paste that output into your report.")
     elif d["kind"] == "build":
@@ -462,7 +493,7 @@ def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
     out.append("## 1. Identity\n")
     out.append(f"You are **{me}** (`.claude/agents/{d['agent']}.md`). Lead: {cap(s['lead'])}. "
                f"Builder: {cap(s['builder'])}. Checker: {cap(s['checker'])}.\n")
-    out.append(ROLE_LINE[kind] + "\n")
+    out.append(ROLE_LINE[kind] + (GUARD_LINE if kind == "tests" and t["tests"]["guards"] else "") + "\n")
 
     out.append("## 2. Context: read these first, in order\n")
     ctx = [
@@ -514,6 +545,19 @@ def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
         else:
             out.append(f"### {n}: check: {b}\n")
             out.append("- Is it built, and does a locked test actually prove it? Cite the test and the code.\n")
+    for i, g in enumerate(t["tests"]["guards"], 1):
+        n = f"{t['id']}-G{i:02d}"
+        if kind == "tests":
+            out.append(f"### {n}: a guard test for: {g}\n")
+            out.append(f"- **Write:** one test, in the test paths, that holds this rule.")
+            out.append(f"- **Verify:** `{test_cmd}` runs it. It may pass on the start commit (a guard, CR-42); "
+                       "report whether it passed or failed there.\n")
+        elif kind == "build":
+            out.append(f"### {n}: keep it true: {g}\n")
+            out.append(f"- **Verify:** its locked test passes: " + ", ".join(f"`{v}`" for v in t["verify"]) + "\n")
+        else:
+            out.append(f"### {n}: check: {g}\n")
+            out.append("- Does a locked guard test hold it after the build? Cite the test.\n")
     if kind == "review":
         out.append(f"### {t['id']}-R: the rules\n")
         out.append("- The diff stays inside the build's territory (Part 5) and touches no locked test (A3, H6).")
@@ -608,7 +652,9 @@ def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
                 "Limitations: what isn't covered, or couldn't be checked"]
     v1 = renderer == "avel-render 1"
     if kind == "tests":
-        sections.insert(1, "Failing first: the output of the tests failing on the start commit")
+        sections.insert(1, "Failing first: the output of the behaviour tests failing on the start commit, and each guard "
+                           "test's result there (behaviour or guard, per test)" if t["tests"]["guards"] else
+                        "Failing first: the output of the tests failing on the start commit")
         if v1:
             sections.append(f"Lock line, for the lead to copy into locks.md: `- {t['id']}: <test paths> @ <your last commit>`")
         else:
@@ -645,7 +691,7 @@ def render_package(plan, owned, renderer=RENDERER):
                                            if plan["commands"].get(k)] + ["```", ""]
     files["codebase-analysis.md"] = "\n".join(ca)
 
-    ds = dispatches(plan)
+    ds = dispatches(plan, renderer)
     s = plan["_seats"]
     dm = [f"# DISPATCH: {lane}/{sprint}: {plan['title']}", "",
           "<!-- Rendered by scripts/render.py from plan.toml. Never edit this file. -->", "",
@@ -971,6 +1017,7 @@ paths = ["<the test files {checker} writes>"]
 behaviours = [
   "<one behaviour per test>",
 ]
+# guards = ["<a rule that may already hold on main: accessibility, a budget, a standing rule, a regression (CR-42)>"]
 '''
 
 LOCKS = '''# Locks: {lane}/{sprint}

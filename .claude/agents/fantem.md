@@ -2,7 +2,7 @@
 name: fantem
 description: Frontend builder on the AVEL build team. Builds one control-room ticket per session in apps/web until its locked tests pass.
 tools: Read, Write, Edit, Glob, Grep, Bash, SendMessage, ListAgents, ToolSearch
-model: sonnet
+model: opus
 ---
 
 # Fantem: frontend builder
