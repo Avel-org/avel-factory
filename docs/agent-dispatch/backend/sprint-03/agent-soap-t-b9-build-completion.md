@@ -1,6 +1,95 @@
 status: done
 ticket: T-B9
 
+This is attempt a3. It fixes Axis's G7 finding **t-b9-axis-01 (P1)** in commit **`95dc183`**, and nothing else, as Axis's ruling asked. All eight tasks still pass: T-B9-01 to T-B9-08, the 8 locked files in `packages/server/test/auth/`, 12 tests.
+
+**The finding:** a database failure during the Caller lookup wrote the session token to the log.
+- `caller` wrapped `auth.api.getSession` in `Effect.promise`.
+- On a database error, Better Auth rethrows an `APIError` whose cause is Drizzle's query error, which ends `params: <session token>`.
+- `effectHandler` logs `Cause.pretty(cause)`, which prints the whole `[cause]` chain.
+- T-B8's `withoutValues` covers only the `Db` service, and Better Auth runs its own Drizzle instance.
+
+**The fix (Axis's, relayed by OSA):**
+- Every call into Better Auth in `web-auth.ts` now goes through one helper, `intoBetterAuth`. That covers `auth.api.getSession` in `caller`, and `auth.handler` in `handle` and in `signIn`.
+- A rejection becomes a defect whose message is `Better Auth failed: <error name>`, plus ` (database error <code>)` when a `pg.DatabaseError` is in the cause chain. The error's message and its cause are never kept. This is the same rule as `withoutValues` in `db.ts`, which I read and didn't change.
+
+**Commits on `t/B9-sign-in` since the lock (`522b980`),** all with `Refs: T-B9`:
+- a1: `114bece`, `5379e14`, `b10aca7`, `0cb894d` (report);
+- a2: `99f855b` (rigg-01), `5e0724c` (report);
+- a3: **`95dc183`** (axis-01), then this report.
+
+## Pre-flight (a3)
+
+The Postgres came from `scripts/pg-local.sh start` (D5). The worktree was fresh, so I ran `pnpm install --frozen-lockfile` first, and the lockfile didn't change.
+
+**Before any change, on `5e0724c`:** `pnpm build` exited 0, and `pnpm --filter @avel/server test` passed 25 of 25 files and 66 of 66 tests.
+
+**axis-01 failed first.** I checked it with a throwaway probe file, which I deleted afterwards and never committed. The probe:
+1. seeds the operator and signs in;
+2. renames `auth_sessions`, so Better Auth's queries fail with 42P01;
+3. then sends `GET /api/health` with the cookie (the Caller lookup), `GET /api/auth/get-session`, `POST /api/auth/sign-out` and a fresh sign-in;
+4. and collects every line the app's `logLine` receives.
+
+Results:
+- **On `5e0724c`,** the probe failed. The `unhandled defect` line held `APIError: Failed to get session { [cause]: Error: Failed query: select ... from "auth_sessions" where "auth_sessions"."token" = $1 params: <the session token>`.
+- **On `95dc183`,** it passed. That line is now `Error: Better Auth failed: APIError (database error 42P01)` with a stack, and no app log line holds the token or the password. `/api/health` still answers 500 with `{ code: "INTERNAL_SERVER_ERROR", message: "Something went wrong", requestId }`.
+
+**The verification, in Part 7's order, on `95dc183`:**
+
+| Command | Result |
+| --- | --- |
+| `pnpm build` | exit 0 |
+| `pnpm typecheck` | exit 0 |
+| `pnpm lint` | exit 0. 246 files; 2 warnings, both already there and outside this ticket (`apps/web/e2e/control-room-budget/budget.spec.ts` lines 73 and 89) |
+| `pnpm test` | exit 0. 63 files, 983 tests passed |
+| `pnpm --filter @avel/server test` | exit 0. 25 files, 66 tests passed |
+| `pnpm --filter @avel/server typecheck` | exit 0 |
+| `pnpm --filter @avel/server check:effect` | exit 0. 0 errors. The 6 warnings and 2 messages are all in tests outside this ticket (`test/db/errors.test.ts`, `test/platform-hardening/idempotency.test.ts` and `rate-limit.test.ts`); none is in `src/` |
+| `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | exit 0. 63 files, 983 tests passed |
+
+**Other checks:**
+- `git diff 522b980 HEAD -- packages/server/test` is empty: no locked test changed.
+- a3's code diff is one file, `packages/server/src/platform/auth/web-auth.ts`, which is in Part 5's Territory. With this report, that's two files.
+- The T-B8-02 flake didn't show up in a3's three full runs.
+
+## What changed (a3)
+
+| File | Why |
+| --- | --- |
+| `packages/server/src/platform/auth/web-auth.ts` | `pgCodeIn` walks an error's `cause` chain, guarding against a loop, and returns the first `pg.DatabaseError`'s code. `intoBetterAuth(call)` is `Effect.promise(call)` plus `Effect.catchDefect`, which dies with the value-free error. `caller`, `handle` and `signIn` now call Better Auth only through it |
+
+## Contract to files (a3)
+
+| Requirement | Where |
+| --- | --- |
+| t-b9-axis-01: no session token or other bound value in a defect from Better Auth | `web-auth.ts` (`intoBetterAuth`, `pgCodeIn`) |
+| AGENTS.md "No secrets in ... logs", E6 | the same |
+
+## Deviations (a3)
+
+None. a3 does only what Axis's ruling says.
+
+## Limitations (a3)
+
+- **A second path still prints the token, outside the app's logger. This needs Axis's ruling.**
+  - When an endpoint behind `auth.handler` hits a non-API error, Better Auth's router (better-call 1.4.5, `dist/router.mjs:93`) doesn't reject. It calls `console.error("# SERVER_ERROR: ", error)` and returns its own empty 500.
+  - The probe showed this on a sign-in while the table was gone. stderr got the whole DrizzleQueryError: the insert into `auth_sessions` with `params:` holding the new session token, the user id and the times.
+  - `intoBetterAuth` never sees this error, because the promise resolves to a 500 Response. axis-01 names only rejections, and the ruling says nothing else goes in this attempt, so I left it.
+  - **A possible fix, still inside `web-auth.ts`:** set Better Auth's `onAPIError: { throw: true }` so the router rethrows. `intoBetterAuth` would then turn the error into the value-free defect, and `runEdge` would answer with the contract's 500. It needs checking that 4xx `APIError`s (the 401 for a wrong password) still come back as responses, not rejections.
+  - Until then, that same 500 is also not the contract's error body.
+- **The fix is checked only by the probe above,** not by a locked test. A locked test for "a Better Auth database failure logs no token" would be Rigg's to add.
+- **The defect keeps a stack trace.** It's the new error's own stack, which has file paths and no values.
+
+## Messages received (a3)
+
+| # | From | Instruction | What I did |
+| --- | --- | --- | --- |
+| 1 | OSA, relaying Axis | Fix only t-b9-axis-01 (P1), inside the ticket. Route every call into Better Auth in `web-auth.ts` (`auth.api.getSession` in `caller`, `auth.handler` in `handle` and `signIn`) through one helper. The helper turns a rejection into a defect carrying only the error's name, plus the Postgres code if one is in the cause chain, never the message or the cause, the same shape as `withoutValues`. Read `db.ts` but don't change it. No locked test changes. Name the commit that fixes axis-01 | **Followed.** It narrows the ticket, and the file is in Territory. Done in `95dc183`, named at the top of this report. `db.ts` and the locked tests are unchanged. I found the second path above and left it unfixed, as the ruling asked, and flagged it to OSA |
+
+---
+
+# Attempt a2 (as written)
+
 This is attempt a2. It fixes review finding **t-b9-rigg-01 (P1)** in commit **`99f855b`**, and nothing else, as Axis's ruling asked (G5). All eight tasks still pass: T-B9-01 to T-B9-08, the 8 locked files in `packages/server/test/auth/`, 12 tests.
 
 **The finding (Rigg's review a1):** with a session cookie, the password could be guessed without limit through `/api/auth/change-password` and `/api/auth/verify-password`. The sign-in guard covered only `/sign-in/email`, and Better Auth's own limiter is off.
