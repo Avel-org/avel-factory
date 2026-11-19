@@ -316,7 +316,18 @@ def load_plan(lane, sprint, roster):
 
 def territory_clashes(plans):
     """Tickets that may run together never share a file: builder paths and test paths, across every plan given.
-    A merged ticket (its build report on main, ticket_merged) can't run again, so it clashes with nothing."""
+    A merged ticket (its build report on main, ticket_merged) can't run again, so it clashes with nothing.
+    Nor do two tickets chained by depends_on, directly or through others: every dispatch of the later one,
+    its tests included, waits for the earlier one to merge, so they never run together (B7; CR-42 item 4)."""
+    deps = {t["id"]: set(t["depends_on"]) for plan in plans for t in plan["ticket"]}
+
+    def reaches(a, b, seen=None):
+        seen = set() if seen is None else seen
+        for d in deps.get(a, ()):
+            if d == b or (d not in seen and not seen.add(d) and reaches(d, b, seen)):
+                return True
+        return False
+
     owned = []
     for plan in plans:
         for t in plan["ticket"]:
@@ -329,7 +340,7 @@ def territory_clashes(plans):
     errors = []
     for i, (ta, ka, pa) in enumerate(owned):
         for tb, kb, pb in owned[i + 1:]:
-            if ta != tb and overlaps(pa, pb):
+            if ta != tb and overlaps(pa, pb) and not (reaches(ta, tb) or reaches(tb, ta)):
                 errors.append(f"{ta} ({ka} {pa}) and {tb} ({kb} {pb}) could change the same files")
     return errors
 
