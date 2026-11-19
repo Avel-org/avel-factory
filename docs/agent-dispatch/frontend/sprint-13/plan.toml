@@ -224,7 +224,7 @@ rigor = "standard"
 labels = ["mock"]
 cr = "CR-W31"
 refs = ["CR-W31 part (b): routes 33, 34, 105, 63, 64, 109", "Javaris, Nov 18: \"yes i approve\" (the frontend lane builds CR-W31 (b) and (c) as sprint-13 tickets after T-F22), on Axis's three conditions", "E2 (the web builds against contract-mock)", "docs/design/API routes.md"]
-depends_on = []
+depends_on = ["T-F22"]
 may_change = ["packages/contract-mock/src/**"]
 must_not_change = [
   "packages/contract/**",
