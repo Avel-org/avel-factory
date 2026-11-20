@@ -1,8 +1,9 @@
 /**
- * The real server (Step 1 item 5): T-B14's router, and Better Auth at /api/auth/*, from the
- * configuration, served over HTTP by @hono/node-server. Its resources (Better Auth's pool, the
- * sign-in guard's runtime, the listening socket) live in one scope, closed by `close()` or by a
- * failed startup (Writing Effect rule 6).
+ * The real server (Step 1 items 1, 5 and 11): T-B14's router, Better Auth at /api/auth/*, and the
+ * GitHub webhook at /api/webhooks/github, from the configuration, served over HTTP by
+ * @hono/node-server. Its resources (the router's and the webhook's Db pool, Better Auth's pool,
+ * the sign-in guard's runtime, the listening socket) live in one scope, closed by `close()` or by
+ * a failed startup (Writing Effect rule 6).
  */
 import { createAdaptorServer, type ServerType } from "@hono/node-server";
 import {
@@ -13,11 +14,14 @@ import {
   Data,
   Effect,
   Exit,
+  Layer,
   Option,
   Redacted,
   Scope,
 } from "effect";
 import { createApp } from "./platform/app.ts";
+import { DbLive } from "./platform/db/db.ts";
+import { IdempotencyLive } from "./platform/idempotency.ts";
 import { makeRouter } from "./platform/router.ts";
 
 /** Better Auth signs the session cookie with it; shorter is refused at startup. */
@@ -33,7 +37,7 @@ export interface ServerDeps {
 export interface ServerHandle {
   /** The port it listens on: PORT, or a free one when PORT is 0. */
   readonly port: number;
-  /** Stops listening, then releases Better Auth's pool and the sign-in guard's runtime. */
+  /** Stops listening, then releases every pool and runtime the server opened. */
   close(): Promise<void>;
 }
 
@@ -72,6 +76,36 @@ const settings = Effect.gen(function* () {
   };
 });
 
+/** The webhook's settings: all of them, or none (then the server has no webhook). */
+const WEBHOOK_SETTINGS = "GITHUB_WEBHOOK_SECRET, FACTORY_REPO and FACTORY_APP_LOGIN";
+
+/** A webhook setting that is set and not empty; its message names the variable, never a value. */
+const required = <A>(name: string, value: Option.Option<A>, text: (value: A) => string) =>
+  Option.isSome(value) && text(value.value) !== ""
+    ? Effect.succeed(value.value)
+    : Effect.fail(
+        new InvalidSetting({
+          message: `${name} is missing or empty: the GitHub webhook needs ${WEBHOOK_SETTINGS}`,
+        }),
+      );
+
+/**
+ * The GitHub webhook's settings: GITHUB_WEBHOOK_SECRET (redacted), FACTORY_REPO ("owner/name")
+ * and FACTORY_APP_LOGIN (the factory App's login). With none of them set there is no webhook;
+ * with any of them set, each must be set and not empty.
+ */
+const webhookSettings = Effect.gen(function* () {
+  const secret = yield* Config.option(Config.Redacted("GITHUB_WEBHOOK_SECRET"));
+  const repo = yield* Config.option(Config.String("FACTORY_REPO"));
+  const appLogin = yield* Config.option(Config.String("FACTORY_APP_LOGIN"));
+  if (Option.isNone(secret) && Option.isNone(repo) && Option.isNone(appLogin)) return undefined;
+  return {
+    secret: yield* required("GITHUB_WEBHOOK_SECRET", secret, Redacted.value),
+    repo: yield* required("FACTORY_REPO", repo, String),
+    appLogin: yield* required("FACTORY_APP_LOGIN", appLogin, String),
+  };
+});
+
 type Fetch = ReturnType<typeof createApp>["fetch"];
 
 /** Listens on the port for the scope; the socket's peer reaches the app as its client IP. */
@@ -97,16 +131,23 @@ const portOf = (server: ServerType) => {
   return typeof address === "object" && address !== null ? address.port : 0;
 };
 
-/** The app, with Better Auth's pool and runtime released when the scope closes. */
+/**
+ * The app, with its resources released when the scope closes: the router's and the webhook's
+ * Db, built once from the env's DATABASE_URL and pool timeouts, and Better Auth's pool and
+ * runtime.
+ */
 const serve = (deps: ServerDeps) =>
   Effect.gen(function* () {
     const config = yield* settings;
+    const webhook = yield* webhookSettings;
     const databaseUrl = Redacted.value(config.databaseUrl);
+    const services = yield* Layer.build(IdempotencyLive.pipe(Layer.provideMerge(DbLive)));
     const { app } = yield* Effect.acquireRelease(
       Effect.sync(() => {
         const held = { release: Effect.void };
         const app = createApp({
-          router: makeRouter({ databaseUrl }),
+          router: makeRouter({ services }),
+          ...(webhook === undefined ? {} : { webhook: { db: services, ...webhook } }),
           ...(deps.clock === undefined ? {} : { clock: deps.clock }),
           ...(deps.logLine === undefined ? {} : { logLine: deps.logLine }),
           auth: {
@@ -141,9 +182,11 @@ const reasonOf = (cause: Cause.Cause<unknown>) => {
 
 /**
  * Starts the server from `env` (process.env's shape): DATABASE_URL, PORT (0 for a free port),
- * AVEL_AUTH_SECRET (at least 32 characters), AVEL_WEB_ORIGIN, and optionally
- * DATABASE_CONNECT_TIMEOUT_MS and DATABASE_STATEMENT_TIMEOUT_MS. It rejects, with everything it
- * opened released, when a setting is missing or invalid or the port can't be had.
+ * AVEL_AUTH_SECRET (at least 32 characters), AVEL_WEB_ORIGIN, optionally
+ * DATABASE_CONNECT_TIMEOUT_MS and DATABASE_STATEMENT_TIMEOUT_MS, and the webhook's
+ * GITHUB_WEBHOOK_SECRET, FACTORY_REPO and FACTORY_APP_LOGIN (all or none). It rejects, with
+ * everything it opened released, when a setting is missing or invalid, the database can't be
+ * reached, or the port can't be had.
  */
 export async function startServer(
   env: Record<string, string | undefined>,

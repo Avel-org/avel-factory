@@ -241,9 +241,7 @@ export function makeWebAuth(
     runtime,
     serves: (request: Request) => SERVED.has(endpointOf(request)),
     handle: (request: Request) =>
-      endpointOf(request) === SIGN_IN
-        ? signIn(auth, request)
-        : answerOf(auth, request),
+      endpointOf(request) === SIGN_IN ? signIn(auth, request) : answerOf(auth, request),
     caller: (headers: Headers) =>
       intoBetterAuth(() => auth.api.getSession({ headers, query: { disableRefresh: true } })).pipe(
         Effect.map((found) =>

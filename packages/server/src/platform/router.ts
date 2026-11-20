@@ -1,34 +1,36 @@
-import { ConfigProvider, Layer, ManagedRuntime } from "effect";
+import { ConfigProvider, type Context, Effect, Layer, ManagedRuntime } from "effect";
 import { clientsRouter } from "../onboarding/clients/routes.ts";
-import { DbLive } from "./db/db.ts";
+import { type Db, DbLive } from "./db/db.ts";
 import { healthRouter } from "./health.ts";
-import { IdempotencyLive } from "./idempotency.ts";
-
-export interface RouterOptions {
-  /** The database routes 8 to 11 use; DbLive's other settings still come from the environment. */
-  readonly databaseUrl: string;
-}
+import { type Idempotency, IdempotencyLive } from "./idempotency.ts";
 
 /**
- * The contract's procedures, for createApp: route 6, and routes 8 to 11. Their Db and
- * Idempotency services are built once, on the first request that needs them, and kept for the
- * life of the process: one pool for every request.
+ * The services routes 8 to 11 use: `services`, built and released by the owner (startServer's
+ * scope), or their own pool on `databaseUrl`, whose other settings come from the environment
+ * and which lives as long as the process.
  */
-export function makeRouter(options: RouterOptions) {
-  const services = ManagedRuntime.make(
+export type RouterOptions =
+  | { readonly services: Context.Context<Db | Idempotency> }
+  | { readonly databaseUrl: string };
+
+/** Db and Idempotency on their own pool, built on the first request that needs them. */
+const ownServices = (databaseUrl: string) =>
+  ManagedRuntime.make(
     Layer.orDie(
       IdempotencyLive.pipe(
         Layer.provideMerge(DbLive),
         Layer.provide(
-          ConfigProvider.layerAdd(
-            ConfigProvider.fromUnknown({ DATABASE_URL: options.databaseUrl }),
-            {
-              asPrimary: true,
-            },
-          ),
+          ConfigProvider.layerAdd(ConfigProvider.fromUnknown({ DATABASE_URL: databaseUrl }), {
+            asPrimary: true,
+          }),
         ),
       ),
     ),
-  );
-  return { ...healthRouter, clients: clientsRouter(services.contextEffect) };
+  ).contextEffect;
+
+/** The contract's procedures, for createApp: route 6, and routes 8 to 11. */
+export function makeRouter(options: RouterOptions) {
+  const services =
+    "services" in options ? Effect.succeed(options.services) : ownServices(options.databaseUrl);
+  return { ...healthRouter, clients: clientsRouter(services) };
 }

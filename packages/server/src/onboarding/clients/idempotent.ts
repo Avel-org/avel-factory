@@ -3,12 +3,7 @@ import { ErrorBody, errorMap, errorStatus } from "@avel/contract";
 import { Cause, Effect, Exit, Option } from "effect";
 import * as z from "zod/mini";
 import { type CallerIdentity, RequestIdempotencyKey } from "../../platform/auth/index.ts";
-import {
-  BadRequest,
-  type ErrorTag,
-  errorTable,
-  type MappedError,
-} from "../../platform/errors.ts";
+import { BadRequest, type ErrorTag, errorTable, type MappedError } from "../../platform/errors.ts";
 import { Idempotency } from "../../platform/idempotency.ts";
 
 /** A refused write's stored answer: the error body without the first request's ID. */
