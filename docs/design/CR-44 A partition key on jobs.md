@@ -17,6 +17,7 @@ Nov 19, 2026 · drafted by Axis for Javaris · **accepted Nov 19 by Javaris, via
 | `packages/db/src/schema/platform.ts` | The column and the index |
 | `packages/db/drizzle/` | Migration 0004 and its down file, with the meta snapshot and journal |
 | `packages/db/test/helpers/changes.ts` | A CR-44 entry, like CR-6's, so the done-when tests still compare the schema against the database map plus the accepted changes. `AVEL Database Map.html` doesn't change (CR-6's precedent) |
+| `packages/db/test/done-when-2.count.test.ts` | The pinned totals: 89 unique and partial-unique indexes, 554 rules (found in T-B17's build, Nov 19) |
 | `docs/generated/erd.md` | Regenerated |
 | `Jobs and workers.md` | A job's life, step 2: "A job with a partition (a mission) isn't claimed while another job in that partition is claimed." The settings don't change |
 | `CR-30`, section 3, option A | "Nothing changes in DATABASE.md" now reads "Nothing changes in DATABASE.md but CR-44's partition key" |

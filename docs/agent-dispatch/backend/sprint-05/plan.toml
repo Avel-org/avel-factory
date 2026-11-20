@@ -66,6 +66,10 @@
 # 2. T-B17 and T-B19 may build at the same time (two Soap sessions), for this pair only. The rest stay one at a time.
 # 3. Not changed: T-B19 stays one full-rigor ticket, as recommended.
 # 4. Open: Javaris adds the variables above to .env.example.
+#
+# Amended Nov 19 (T-B17 build a1's test-dispute, upheld by Javaris: "fix the count"): CR-44's index makes
+# done-when 2's pinned totals 89 uniques and 554 rules, so packages/db/test/done-when-2.count.test.ts joins
+# T-B17's Territory, and CR-44's Touches table names it. T-B17's build a2 updates the totals.
 
 lane = "backend"
 sprint = "sprint-05"
@@ -139,6 +143,7 @@ may_change = [
   "packages/db/src/**",
   "packages/db/drizzle/**",
   "packages/db/test/helpers/changes.ts",
+  "packages/db/test/done-when-2.count.test.ts",
   "docs/generated/erd.md",
   "docs/design/DATABASE.md",
   "docs/design/Jobs and workers.md",
