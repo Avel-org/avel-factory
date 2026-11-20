@@ -2,7 +2,8 @@
 
 Nov 20, 2026 · drafted by OSA at Javaris's request · changes `Build rules.md` sections B, F, G and H, CR-36's conditions, `.github/workflows/ci.yml`, `tools/repo-checks/src/check-locks.ts` and `scripts/agents/merge.py`
 
-**Proposed.** Each decision below stands alone. Javaris accepts or declines each one by number, and his merge of this PR accepts the ones he accepted.
+**Accepted, all six decisions** (Javaris, Nov 20, to OSA: "i approve all"). Merging this PR accepts it.
+Until decision 3's `--standing` lands in `merge.py`, OSA merges under it with `--approved`, quoting these words.
 
 ## In short
 
