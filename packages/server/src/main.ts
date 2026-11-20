@@ -1,8 +1,8 @@
-import { serve } from "@hono/node-server";
-import { createApp } from "./platform/app.ts";
-import { makeRouter } from "./platform/router.ts";
+import { startServer } from "./server.ts";
 
-const port = Number(process.env.PORT ?? 3000);
-const databaseUrl = process.env.DATABASE_URL;
-if (databaseUrl === undefined) throw new Error("DATABASE_URL is not set");
-serve({ fetch: createApp({ router: makeRouter({ databaseUrl }) }).fetch, port });
+const server = await startServer(process.env);
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.once(signal, () => {
+    void server.close();
+  });
+}
