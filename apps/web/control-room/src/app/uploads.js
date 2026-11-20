@@ -14,6 +14,8 @@ const LIMIT = { video: 2 * 1024 ** 3, other: 200 * 1024 ** 2 };
 const KEEP_DAYS = 14;
 const SOON_DAYS = 10;
 const SENDER = { you: "You", osa: "OSA", avel_os: "Avel OS" };
+// CR-29: with OSA's flag off nothing names it, so what it sent for you shows as yours
+const who = (logic, k) => (k === "osa" && !logic.state.osa ? "you" : k);
 const KIND = {
   image: ["image", "Image"],
   pdf: ["file-text", "PDF"],
@@ -548,7 +550,7 @@ export function uploadsVals(logic, c) {
       key: t.id,
       name: t.name,
       size: t.count ? t.count + " files · " + fmtBytes(t.sizeBytes) : fmtBytes(t.sizeBytes),
-      from: t.sentBy !== "you" ? "From " + SENDER[t.sentBy] : null,
+      from: who(logic, t.sentBy) !== "you" ? "From " + SENDER[t.sentBy] : null,
       thumb: thumb(t.kind),
       line,
       tone,
@@ -663,7 +665,7 @@ export function uploadsVals(logic, c) {
       thumb: thumb(it.kind),
       type: it.sniffed,
       size: fmtBytes(it.sizeBytes),
-      from: SENDER[it.sentBy],
+      from: SENDER[who(logic, it.sentBy)],
       age: ago(it.createdAt),
       expires: "expires in " + left + (left === 1 ? " day" : " days"),
       soon: left <= SOON_DAYS ? "true" : undefined,
@@ -699,7 +701,7 @@ export function uploadsVals(logic, c) {
   const fx = logic.state.up.fsel;
   const KINDW = (k) => (KIND[k] || KIND.other)[1];
   const facetDefs = [
-    { key: "from", name: "Sent by", get: (i) => [i.sentBy], label: (v) => SENDER[v], order: SENT },
+    { key: "from", name: "Sent by", get: (i) => [who(logic, i.sentBy)], label: (v) => SENDER[v], order: SENT },
     { key: "type", name: "Type", get: (i) => [KINDW(i.kind)], label: (v) => v },
     { key: "flag", name: "Flagged", get: (i) => [i.scanStatus === "flagged" ? "Flagged" : "Not flagged"], label: (v) => v, order: ["Flagged", "Not flagged"] },
     { key: "soon", name: "Expiring", get: (i) => [daysLeft(i.expiresAt) <= SOON_DAYS ? "Expiring soon" : "Not soon"], label: (v) => v, order: ["Expiring soon", "Not soon"] },
@@ -996,10 +998,10 @@ function fileVals(logic, id, { I, thumb, W }) {
     thumb: thumb(f.kind),
     type: f.sniffed,
     size: fmtBytes(shown.sizeBytes),
-    from: (SENDER[shown.by] || "You") + " · " + when(shown.at),
+    from: (SENDER[who(logic, shown.by)] || "You") + " · " + when(shown.at),
     scan: f.purged ? null : waitingInbox && waitingInbox.scanStatus !== "clean" ? (waitingInbox.scanStatus === "flagged" ? ["bad", "Held: " + ((waitingInbox.flag || {}).reason || "flagged")] : ["live", "Scanning"]) : ["ok", "Scan clean"],
     purged: f.purged
-      ? { at: when(f.purged.at), reason: f.purged.reason, hash: shown.sha256, by: SENDER[f.purged.by] || "You" }
+      ? { at: when(f.purged.at), reason: f.purged.reason, hash: shown.sha256, by: SENDER[who(logic, f.purged.by)] || "You" }
       : null,
     inbox: waitingInbox
       ? {
@@ -1026,7 +1028,7 @@ function fileVals(logic, id, { I, thumb, W }) {
         key: "v" + v.v,
         label: "v" + v.v,
         when: when(v.at),
-        by: SENDER[v.by] || "You",
+        by: SENDER[who(logic, v.by)] || "You",
         size: fmtBytes(v.sizeBytes),
         hash: shortHash(v.sha256),
         current: v.current ? "true" : undefined,
@@ -1087,7 +1089,7 @@ export function fileRow(logic, fid) {
     kind: f.kind,
     icon: logic.icon((KIND[f.kind] || KIND.other)[0], 20),
     type: f.sniffed,
-    meta: "v" + cur.v + " · " + fmtBytes(cur.sizeBytes) + " · " + (SENDER[cur.by] || "You") + ", " + fmtDate(cur.at),
+    meta: "v" + cur.v + " · " + fmtBytes(cur.sizeBytes) + " · " + (SENDER[who(logic, cur.by)] || "You") + ", " + fmtDate(cur.at),
     purged: f.purged ? "Purged at the client’s request" : null,
     uses: live.map((l) => ({ key: l.key, label: l.dest.label.replace(/^.*? · /, (m) => (l.dest.kind === "module" ? m : "")) || l.dest.label, state: l.state, why: l.why })),
     useCount: live.length,
