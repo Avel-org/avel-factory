@@ -127,17 +127,35 @@ describe("T-B18-07 · one database blip under a running worker and consumer", ()
         const fresh = yield* enqueue("t18.fresh", "fresh");
         const claimed = yield* until(c, () => (starts.fresh ?? 0) >= 1, 10_000);
         expect(claimed.ok, "a job enqueued after the blip was never claimed").toBe(true);
+        const freshDone = yield* until(
+          c,
+          async () => (await saved(c)).some((r) => r.note === "fresh-finished"),
+          10_000,
+        );
+        expect(freshDone.ok, "the fresh job never finished").toBe(true);
         expect((yield* jobs.get(fresh.id))?.state).toBe("done");
 
         // 2. The doomed worker's expired claim is reaped, and the job runs again.
         const reaped = yield* until(c, () => (starts.doomed ?? 0) >= 2, 60_000);
         expect(reaped.ok, "the expired claim was never reaped after the blip").toBe(true);
+        const doomedDone = yield* until(
+          c,
+          async () => (await saved(c)).some((r) => r.note === "reaped-and-rerun"),
+          10_000,
+        );
+        expect(doomedDone.ok, "the rerun never finished").toBe(true);
         expect((yield* jobs.get(doomedJob.id))?.state).toBe("done");
 
         // 3. The consumer acts on a new event.
         yield* emit("t18.blip", { secret: SECRET, n: 1 });
         const next = yield* until(c, () => consumed.length === 2, 10_000);
         expect(next.ok, "the consumer never acted on an event after the blip").toBe(true);
+        const cursorMoved = yield* until(
+          c,
+          async () => (await cursorOf(c, "blipper"))?.lastSeq === consumed[1],
+          10_000,
+        );
+        expect(cursorMoved.ok, "the cursor never moved to the new event").toBe(true);
         expect((yield* Effect.promise(() => cursorOf(c, "blipper")))?.lastSeq).toBe(consumed[1]);
 
         // 4. The long run kept checking in: well past one claim's 30 s it is still the same run.

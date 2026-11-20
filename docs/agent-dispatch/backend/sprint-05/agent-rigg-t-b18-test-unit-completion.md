@@ -1,5 +1,66 @@
-status: done
+status: blocked
 ticket: T-B18
+
+# T-B18 · tests · Rigg: completion report (attempt a2, F2 harness fix)
+
+Attempt a2 fixes the locked tests' harness (F2, Javaris: "Rigg fixes the harness"), assertions unchanged. Both fixes are in. The 10-run proof is **not** green: 5 of 10 runs fail, always at the same assertion of T-B18-07, which is not one of the fixed waits. I stop with `blocked` rather than loosen that assertion. Details below. The a1 report is kept further down.
+
+## a2: Pre-flight (engine at `2cf9e88` on the branch)
+
+| Command | Result |
+| --- | --- |
+| `pnpm build` | exit 0 |
+| `pnpm typecheck` | exit 0 |
+| `pnpm lint` | exit 0 |
+| `pnpm test` | exit 1: 1084 of 1085 pass; the one failure is T-B18-07 (below). An earlier run failed 76 because my Postgres container had stopped (ECONNREFUSED); restarted and rerun |
+| `pnpm --filter @avel/server test` | 10 runs, see below |
+| `pnpm --filter @avel/server typecheck` | exit 0 |
+| `pnpm --filter @avel/server check:effect` | exit 0 |
+
+## a2: What changed
+
+- `packages/server/test/consumers/support.ts`: `advance` and `until` are now defined here instead of re-exported from `../jobs/support.ts` (T-B17's, read only). Their `settle` no longer counts cheap `select 1` round trips alone: it keeps going until no other connection of the test database has had a statement active (not waiting on a lock) for 4 checks in a row, bounded at 400 rounds. A test's own held lock (the blip) and a handler held open mid-way (T-B18-02) don't count as work in flight. No wall-clock sleep.
+- `database-blip.test.ts` (T-B18-07): the three reads of committed state now first `until()` on the committed fact: `saved()` has `fresh-finished`, `saved()` has `reaped-and-rerun`, and `cursorOf` reaches `consumed[1]`. Assertions unchanged.
+- `many-events.test.ts` (T-B18-06): waits for alpha's cursor to reach the 4th seq before reading `stuck`.
+
+## a2: Proof runs (10 in a row, one vitest at a time, `pnpm --filter @avel/server test`)
+
+| Run | Result |
+| --- | --- |
+| 1 | 1 failed, 137 passed |
+| 2 | 138 passed |
+| 3 | 1 failed, 137 passed |
+| 4 | 138 passed |
+| 5 | 138 passed |
+| 6 | 1 failed, 137 passed |
+| 7 | 138 passed |
+| 8 | 138 passed |
+| 9 | 1 failed, 137 passed |
+| 10 | 1 failed, 137 passed |
+
+Every failure is T-B18-07 at `database-blip.test.ts:163`: `expected 2 to be 1` (`starts.long`). The other 137 tests, including T-B18-02 and T-B18-06, passed in all 10 runs, so the two named flakes (simulated time outrunning a commit; reads before commit) are gone. Alone (`vitest run test/consumers/database-blip`) it failed 1 in 3, 1 in 12 and 1 in 11 runs with the same line.
+
+## a2: What the remaining failure is
+
+The long run's claim is lost: its claim expiry stays at the claim time + 30 s, never pushed out after the blip, until the reaper takes it and the job starts again (`claim_no` 2). Probes (since removed):
+- In a failing run the logged defects after the blip were the claim loop, the consume pass and the reaper only. The run's check-in and the consumer's check-in were **not** logged, in 3 of 3 captured failing runs (a passing run logs five lines, per Soap).
+- So the two check-in loops neither hit a defect nor wrote again: they did not run after the blip. A check-in due during the 12 s the tables are locked is either never started or never finishes.
+- That is not a read-before-commit and not simulated time outrunning an engine commit (the probe saw check-ins missing for 16+ simulated seconds with the engine otherwise quiet), so I don't think more harness waiting fixes it. I could not tell from the tests alone whether the engine's check-in turn can hang (for example waiting for a pool connection while the other loops' blocked statements hold them) or whether `Effect.schedule` with `Schedule.fixed` skips a tick that fell due while a turn was blocked. That is `engine.ts` (T-B17/T-B18 build territory), not mine to change.
+
+Ask for Axis: decide whether this is a build defect for Soap (my read: the "a run's check-in carries on after a blip" requirement of T-B18-07 is what fails, which is the ticket's point) or a test change.
+
+## a2: Lock line
+
+Not ready to relock: the proof is not green. The files changed are the same set as the a1 lock line below.
+
+## a2: Messages received
+
+None.
+
+---
+
+# a1 report (kept)
+
 
 # T-B18 · tests · Rigg: completion report
 

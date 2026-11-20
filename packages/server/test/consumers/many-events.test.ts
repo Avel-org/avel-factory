@@ -128,6 +128,12 @@ describe("T-B18-06 · two consumers with different names", () => {
         const alphaDone = yield* until(c, () => alpha.length >= 4, 30_000);
         expect(alphaDone.ok, "alpha never saw its events").toBe(true);
         // Beta is held at its failing event while alpha is at the end: separate cursors.
+        const alphaMoved = yield* until(
+          c,
+          async () => (await cursorOf(c, "alpha"))?.lastSeq === (await seqsOf(c, "t18.names"))[3],
+          10_000,
+        );
+        expect(alphaMoved.ok, "alpha's cursor never reached its last event").toBe(true);
         stuck.push({
           alpha: (yield* Effect.promise(() => cursorOf(c, "alpha")))?.lastSeq,
           beta: (yield* Effect.promise(() => cursorOf(c, "beta")))?.lastSeq,
