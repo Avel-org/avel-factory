@@ -108,6 +108,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - `packages/db/src/**`
 - `packages/db/drizzle/**`
 - `packages/db/test/helpers/changes.ts`
+- `packages/db/test/done-when-2.count.test.ts`
 - `docs/generated/erd.md`
 - `docs/design/DATABASE.md`
 - `docs/design/Jobs and workers.md`
