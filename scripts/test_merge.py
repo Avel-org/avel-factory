@@ -37,6 +37,8 @@ if args[:2] == ["pr", "checks"]:
         print("no required checks reported"); sys.exit(1)
     out(state["prs"][args[2]]["checks"])
 if args[:2] == ["run", "list"]:
+    if "--branch" in args:
+        out(state.get("main_runs", []))
     out(state["runs"].get(args[args.index("--commit") + 1], []))
 if args[:2] == ["pr", "comment"]:
     sys.exit(0)
@@ -185,15 +187,51 @@ class MergeTool(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("condition 3 fails: review a2", out)
 
-    def test_prs_merge_in_order_and_stop_when_main_goes_red(self):
+    def run_calls(self):
+        with open(self.log) as f:
+            return [json.loads(l) for l in f if json.loads(l)[:2] == ["run", "list"]]
+
+    def test_a_list_merges_back_to_back_and_waits_for_main_only_after_the_last(self):
         self.review("T-X1", 1)
-        self.add(pr(15, "t/X1-a-thing", ["a.ts"]), main_ci=("success", "failure"))
+        self.add(pr(15, "t/X1-a-thing", ["a.ts"]))
         self.add(pr(16, "t/X1-a-thing", ["b.ts"]))
         code, out = self.run_tool("merge", "15", "16")
+        self.assertEqual(code, 0, out)
+        self.assertEqual([c[2] for c in self.calls("merge")], ["15", "16"])
+        waited = [c[c.index("--commit") + 1] for c in self.run_calls() if "--commit" in c]
+        self.assertNotIn(f"m{15:039d}", waited)
+        self.assertIn(f"m{16:039d}", waited)
+        self.assertIn("checked before the next merge", out)
+        self.assertIn("main green", out)
+
+    def test_a_red_main_stops_the_next_merge(self):
+        self.review("T-X1", 1)
+        self.add(pr(20, "t/X1-a-thing", ["a.ts"]))
+        self.add(pr(21, "t/X1-a-thing", ["b.ts"]))
+        self.state["main_runs"] = [{"name": "CI", "status": "completed", "conclusion": "failure", "headSha": "c" * 40}]
+        code, out = self.run_tool("merge", "20", "21")
         self.assertEqual(code, 1, out)
-        self.assertIn("main is not green after #15", out)
-        self.assertIn("not merged: #16", out)
-        self.assertEqual([c[2] for c in self.calls("merge")], ["15"])
+        self.assertIn("main is red (CI=failure on ccccccc)", out)
+        self.assertIn("not merged: #20, #21", out)
+        self.assertEqual(self.calls("merge"), [])
+
+    def test_a_superseded_run_on_main_is_not_red(self):
+        self.review("T-X1", 1)
+        self.add(pr(22, "t/X1-a-thing", ["a.ts"]), main_ci=("success", "cancelled"))
+        self.state["main_runs"] = [
+            {"name": "CI", "status": "completed", "conclusion": "cancelled", "headSha": "d" * 40},
+            {"name": "CI", "status": "completed", "conclusion": "success", "headSha": "e" * 40},
+            {"name": "Docs", "status": "in_progress", "conclusion": "", "headSha": "d" * 40}]
+        code, out = self.run_tool("merge", "22")
+        self.assertEqual(code, 0, out)
+        self.assertEqual([c[2] for c in self.calls("merge")], ["22"])
+
+    def test_the_last_merge_still_waits_and_reports_a_red_main(self):
+        self.review("T-X1", 1)
+        self.add(pr(23, "t/X1-a-thing", ["a.ts"]), main_ci=("success", "failure"))
+        code, out = self.run_tool("merge", "23")
+        self.assertEqual(code, 1, out)
+        self.assertIn("main is not green after #23: CI1=failure", out)
 
     def test_a_failed_condition_stops_the_rest_of_the_list(self):
         self.review("T-X1", 1)
