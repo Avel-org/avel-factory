@@ -140,3 +140,4 @@ Copied byte for byte from `/mnt/c/Users/javar/Desktop/avel-control-room` (the de
 - `src/app/uploads.js`: with OSA's flag off, what OSA sent shows as yours, so no tray row, Drive row, filter, file or version names OSA (CR-29, T-F10-05).
 - `src/pages/uploads/UploadStates.jsx`: with OSA's flag off, the Drive region's live line doesn't name OSA (CR-29, T-F10-05).
 - `src/pages/uploads/UploadsPages.jsx`: the upload states page is told whether OSA's flag is on (T-F10-05).
+- `src/app/logic.js`: a deep link's page opens with its title, as a route change has since T-F8. The control room sets the world once the first page's code has loaded (or after 9 s, when the skeleton shows), Canon's view is preloaded like the other pages' views, and the masthead waits for the world. Before this, the title stood over the page's skeleton for a moment, and a check that read the page once its title showed found it empty (T-F10-04).
