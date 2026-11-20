@@ -142,6 +142,20 @@ const intoBetterAuth = <A>(call: () => Promise<A>) =>
     }),
   );
 
+/**
+ * An answer from Better Auth's handler. Its own 4xx answers come back as they are; a 5xx (such
+ * as get-session's after a database error, which it catches itself) is a defect with only the
+ * status, so runEdge answers the contract's 500 with the request's ID, as for sign-in.
+ */
+const answerOf = (auth: BetterAuth, request: Request) =>
+  Effect.gen(function* () {
+    const response = yield* intoBetterAuth(() => auth.handler(request));
+    if (response.status >= 500) {
+      return yield* Effect.die(new Error(`Better Auth answered ${response.status}`));
+    }
+    return response;
+  });
+
 /** The email a sign-in names, read as Better Auth reads it (JSON or a form) and lower-cased. */
 const emailOf = (request: Request) =>
   Effect.promise(async () => {
@@ -188,7 +202,7 @@ const signIn = (auth: BetterAuth, request: Request) =>
       }),
     );
     if (refusal !== undefined) return refusal;
-    const response = yield* intoBetterAuth(() => auth.handler(request));
+    const response = yield* answerOf(auth, request);
     if (response.status === 401 && email !== undefined) yield* lockout.recordFailure(email);
     return response;
   });
@@ -229,7 +243,7 @@ export function makeWebAuth(
     handle: (request: Request) =>
       endpointOf(request) === SIGN_IN
         ? signIn(auth, request)
-        : intoBetterAuth(() => auth.handler(request)),
+        : answerOf(auth, request),
     caller: (headers: Headers) =>
       intoBetterAuth(() => auth.api.getSession({ headers, query: { disableRefresh: true } })).pipe(
         Effect.map((found) =>
