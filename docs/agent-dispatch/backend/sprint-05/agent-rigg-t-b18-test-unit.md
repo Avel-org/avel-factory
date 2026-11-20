@@ -72,6 +72,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - A consumer that enqueues a follow-up job does it in the same transaction as its cursor move, so a crash leaves both or neither
 - Under concurrent writers, including one that rolls back, the consumer sees every committed seq once, in order, with none skipped and none repeated
 - No consumer kind is registered in the running server: Step 1 has none (E8). Keep T-B13's tests passing unchanged
+- t-b17-rigg-01 (T-B17's review; Javaris, Nov 20: "add the fix to T-B18"): every loop iteration in engine.ts survives a database defect: a claim and run, a reap, a consume pass and a check-in. Each logs the defect once, with no values (withoutValues), and runs again on its schedule. Today Effect.repeat stops on the first defect and Effect.ignore keeps only failures, so one blip ends the worker, its reaper, its check-ins or a consumer for good, with no log
 
 ## 4. Tasks
 
@@ -101,6 +102,11 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
 
 ### T-B18-06: a failing test for: two consumers with different names each see every event, and each keeps its own cursor
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
+
+### T-B18-07: a failing test for: after one database blip under a running worker and consumer (their connections ended with pg_terminate_backend), a job enqueued after it is claimed and finished, an expired claim is still reaped, a run's check-ins carry on, and the consumer acts on a new event, all within T-B13's budgets under TestClock; each defect is logged once with no values (t-b17-rigg-01)
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
