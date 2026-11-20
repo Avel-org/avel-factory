@@ -15,6 +15,7 @@ import { type RequestScope, resolveRequestId, runEdge } from "./effect-handler.t
 import { healthRouter } from "./health.ts";
 import { type Ids, IdsLive } from "./ids.ts";
 import { stdoutLogLine } from "./logger.ts";
+import { makeGithubWebhook, type WebhookOptions } from "./webhooks/index.ts";
 
 export interface AppOptions {
   /** The procedures to serve; defaults to route 6 alone. */
@@ -28,6 +29,8 @@ export interface AppOptions {
   clock?: Clock.Clock;
   /** Better Auth at /api/auth/*, and each request's Caller from its session; without it, neither. */
   auth?: AuthOptions;
+  /** POST /api/webhooks/github, for the factory repo's merges; without it, no webhook. */
+  webhook?: WebhookOptions;
 }
 
 /**
@@ -58,6 +61,8 @@ export function createApp(options: AppOptions = {}) {
   const logLine = options.logLine ?? stdoutLogLine;
   const auth =
     options.auth === undefined ? undefined : makeWebAuth(options.auth, options.clock, logLine);
+  const webhook =
+    options.webhook === undefined ? undefined : makeGithubWebhook(options.webhook, options.clock);
 
   const serveContract = async (request: Request, scope: RequestScope) => {
     // A handler per request, so its error encoder writes this request's ID.
@@ -90,10 +95,14 @@ export function createApp(options: AppOptions = {}) {
       caller: auth === undefined ? Effect.succeedNone : auth.caller(request.headers),
     };
     // Any other /api/auth/* path falls through to the contract, which has none: 404 NOT_FOUND.
-    const response =
-      auth?.serves(request) === true
-        ? await runEdge(auth.runtime, auth.handle(request), scope)
-        : await serveContract(request, scope);
+    let response: Response;
+    if (auth?.serves(request) === true) {
+      response = await runEdge(auth.runtime, auth.handle(request), scope);
+    } else if (webhook?.serves(request) === true) {
+      response = await runEdge(webhook.runtime, webhook.handle(request), scope);
+    } else {
+      response = await serveContract(request, scope);
+    }
     const headers = new Headers(response.headers);
     headers.set(REQUEST_ID_HEADER, requestId);
     headers.set(CONTRACT_VERSION_HEADER, CONTRACT_VERSION);
