@@ -7,13 +7,13 @@ import { expect, test } from "@playwright/test";
 import { attachShot, expectNoViolations } from "./support/page";
 import { PREVIEW_PORT } from "./support/ports";
 
-// E16 as changed by CR-W29 decision 6: at most 220 KB of JavaScript for /, a warning over
-// 200 KB (T-F8 holds it to 220 KB, CR-W29 as amended Nov 17). Measured on the production build, gzipped,
+// E16 as changed by CR-W29 decision 6: at most 235 KB of JavaScript for /, a warning over
+// 225 KB (T-F12 holds it to 235 KB, CR-W29 decision 6, second amendment). Measured on the production build, gzipped,
 // for everything / loads before the Decisions home is interactive, scripts fetched after
 // hydration included (the page is client-only, so the server's HTML names almost none).
 // KB means 1024 bytes here, not 1000.
-const LIMIT = 220 * 1024;
-const WARN = 200 * 1024;
+const LIMIT = 235 * 1024;
+const WARN = 225 * 1024;
 
 const root = join(import.meta.dirname, "..");
 
