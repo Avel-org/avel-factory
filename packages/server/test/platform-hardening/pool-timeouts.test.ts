@@ -78,6 +78,16 @@ async function proxy(target: string) {
   };
 }
 
+/**
+ * Waits, in turns of the event loop and bounded by a count, for the proxy to have accepted a
+ * connection: the kernel completed it already, and a loaded process runs the accept late.
+ */
+async function proxySaw(p: { hungConnections: () => number }) {
+  for (let i = 0; i < 10_000 && p.hungConnections() === 0; i++) {
+    await new Promise((r) => setImmediate(r));
+  }
+}
+
 /** The program's exit, or "hung" if it hasn't ended inside the guard. */
 async function within<A, E>(
   start: (signal: AbortSignal) => Promise<Exit.Exit<A, E>>,
@@ -99,9 +109,10 @@ async function within<A, E>(
 }
 
 describe("T-B8-02 · Postgres that stops answering after the layer is built", () => {
-  // Quarantined (Build rules F5, Javaris's OK, Nov 18): flaky under a full parallel run, issue #61.
-  // T-B13's tests un-quarantine it.
-  it.skip("withTransaction fails as a defect within the connect timeout, and an interruption ends it", async () => {
+  // T-B13-G01 (#61): back on. Under CPU load the pool's connect timer can fire before this process
+  // has run the proxy's accept, so the proxy's count is waited for where it listens, not read the
+  // instant the program ends; and the timeout leaves headroom inside the guard.
+  it("withTransaction fails as a defect within the connect timeout, and an interruption ends it", async () => {
     const d = await database();
 
     // Timeout: built in pass-through, then hang; the connect gives up on its own.
@@ -116,7 +127,7 @@ describe("T-B8-02 · Postgres that stops answering after the layer is built", ()
               const started = performance.now();
               const inner = yield* Effect.exit(db.withTransaction(Effect.void));
               return { inner, ms: performance.now() - started };
-            }).pipe(Effect.provide(dbLayerFor(p1.url, { DATABASE_CONNECT_TIMEOUT_MS: "400" }))),
+            }).pipe(Effect.provide(dbLayerFor(p1.url, { DATABASE_CONNECT_TIMEOUT_MS: "1000" }))),
             { signal },
           ),
         p1,
@@ -129,6 +140,7 @@ describe("T-B8-02 · Postgres that stops answering after the layer is built", ()
         expect(Exit.isFailure(inner) && hasDie(inner.cause)).toBe(true);
       }
       expect(run.ms).toBeLessThan(GUARD_MS - 500);
+      await proxySaw(p1);
       expect(
         p1.hungConnections(),
         "no new connection reached the proxy after the switch: the failure wasn't a pending connect",
@@ -159,6 +171,7 @@ describe("T-B8-02 · Postgres that stops answering after the layer is built", ()
       );
       expect(run.result, "the interruption didn't end the pending connect").not.toBe("hung");
       expect(run.ms).toBeLessThan(GUARD_MS - 500);
+      await proxySaw(p2);
       expect(
         p2.hungConnections(),
         "no new connection reached the proxy after the switch: the connect wasn't pending",
