@@ -91,3 +91,5 @@ Commits: `ca2752b` (audit), `814d3d6` (onboarding), `8e6b8be` (router and main),
 ## Messages received
 
 None.
+
+At the finish I tried to message OSA with my status and this report's path, but no session named OSA was reachable (`ListAgents` showed only the T-B15 build and the T-F10 build). I sent nothing to any other session.
