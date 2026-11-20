@@ -179,12 +179,18 @@ export const jobs = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     rowVersion: integer("row_version").notNull().default(1),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    // CR-44: a mission; at most one claimed job per partition
+    partitionKey: text("partition_key"),
   },
   (t): PgTableExtraConfigValue[] => [
     // CR-6: 'leased' -> 'claimed'
     uniqueIndex("jobs_one_live_key_uq")
       .on(t.key)
       .where(sql`(state = ANY (ARRAY['queued'::text, 'claimed'::text]))`),
+    // CR-44
+    uniqueIndex("jobs_one_claimed_per_partition_uq")
+      .on(t.partitionKey)
+      .where(sql`((state = 'claimed'::text) AND (partition_key IS NOT NULL))`),
     check("jobs_state_ck", oneOf(t.state, JobState)),
     // CR-6 (the name is CR-6's)
     check(

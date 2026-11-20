@@ -89,8 +89,11 @@ describe("T-F11: the web's e2e tests run in CI", () => {
     expect(on).toMatch(/^ {2}pull_request:/m);
     expect(on).toMatch(/^ {2}push:\s*\n\s+branches:\s*\[main\]/m);
     const job = e2eJob();
-    // No job-level `if:` (four spaces); a step's `if: always()` sits deeper.
-    expect(job).not.toMatch(/^ {4}if:/m);
+    // The only job-level `if:` (four spaces) is CR-45's path condition; a step's `if: always()` sits deeper.
+    const ifs = job.match(/^ {4}if:.*$/gm) ?? [];
+    expect(ifs.map((l) => l.trim())).toEqual(
+      ifs.length ? ["if: needs.changes.outputs.web == 'true'"] : [],
+    );
     expect(job).toMatch(/timeout-minutes:\s*30\s*$/m);
     expect(job).not.toMatch(/continue-on-error/);
     expect(job).not.toMatch(/\|\|/);
@@ -98,6 +101,28 @@ describe("T-F11: the web's e2e tests run in CI", () => {
     expect(job).not.toMatch(/PLAYWRIGHT_RETRIES|retries/i);
     const runLine = /run:\s*(pnpm --filter @avel\/web exec playwright test[^\n]*)/.exec(job)?.[1];
     expect(runLine, "a playwright test step").toBeDefined();
+  });
+
+  test("T-F11-05 (CR-45 decision 1): on a pull request it runs when the web, the contract, the mock, the lockfile or the workflows change; on a push, always", () => {
+    const job = e2eJob();
+    if (!/^ {4}if:/m.test(job)) return; // no condition: it always runs, which T-F11-02 already allows
+    expect(job).toMatch(/^ {4}needs:\s*changes\s*$/m);
+    const changes = jobs().get("changes");
+    expect(changes, "the changes job the condition reads").toBeDefined();
+    const c = changes as string;
+    expect(c).toMatch(/web: \$\{\{ steps\.diff\.outputs\.web \}\}/);
+    // Anything but a pull request (a push to main) always runs the e2e tests.
+    expect(c).toMatch(/github\.event_name \}\}" != "pull_request"[\s\S]*?web=true/);
+    for (const path of [
+      "apps/web/",
+      "packages/contract/",
+      "packages/contract-mock/",
+      "pnpm-lock",
+      "\\.github/workflows/",
+    ]) {
+      expect(c, `the filter names ${path}`).toContain(path);
+    }
+    expect(c).toMatch(/fetch-depth:\s*0/);
   });
 
   test("T-F11-03: it uploads apps/web/test-results with actions/upload-artifact under if: always(), after the tests", () => {

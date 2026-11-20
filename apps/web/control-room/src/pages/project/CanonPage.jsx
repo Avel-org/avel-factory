@@ -106,7 +106,7 @@ function Chat({ cv }) {
           </span>
         </span>
       </header>
-      <ol className="cv-msgs" ref={list} onScroll={onScroll} aria-live="polite" aria-busy={ch.busy}>
+      <ol className="cv-msgs" ref={list} onScroll={onScroll} tabIndex={0} aria-live="polite" aria-busy={ch.busy}>
         {ch.messages.map((x) => (
           <li
             key={x.key}

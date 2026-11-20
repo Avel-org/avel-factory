@@ -126,6 +126,7 @@ erDiagram
     timestamptz created_at
     integer row_version
     timestamptz updated_at
+    text partition_key "optional"
   }
   step_up_grants {
     uuid id PK

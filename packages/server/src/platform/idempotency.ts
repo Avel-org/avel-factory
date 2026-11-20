@@ -44,6 +44,12 @@ export class Idempotency extends Context.Service<
       response: unknown,
       options: { readonly sensitive: boolean },
     ) => Effect.Effect<void>;
+    /**
+     * Gives up a key whose request died before it had an answer, so a retry with the same key
+     * and body runs again instead of waiting out the 24 hours as in progress. A completed row is
+     * left as it is.
+     */
+    readonly release: (principal: string, key: string) => Effect.Effect<void>;
   }
 >()("avel/Idempotency") {}
 
@@ -148,6 +154,20 @@ export const IdempotencyLive = Layer.effect(
         )
         .pipe(Effect.orDie);
 
-    return { begin, complete };
+    const release = (principal: string, key: string) =>
+      db
+        .withTransaction(
+          Effect.gen(function* () {
+            const tx = yield* Tx;
+            yield* Effect.promise(() =>
+              tx
+                .delete(idempotencyKeys)
+                .where(and(thisKey(principal, key), eq(idempotencyKeys.status, "in_progress"))),
+            );
+          }),
+        )
+        .pipe(Effect.orDie);
+
+    return { begin, complete, release };
   }),
 );

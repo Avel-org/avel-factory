@@ -1,0 +1,411 @@
+# backend/sprint-05: the sprint's plan. Axis writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Rigg's tests, Soap's build, Rigg's review.
+# Check it:   scripts/render.py --check backend/sprint-05
+# Render it:  scripts/render.py backend/sprint-05   (after approval, in its own sprint-folder PR once sprint-04 has merged, CR-42 item 2)
+#
+# Sprint-05 closes Step 1. Spike 2 is decided: DBOS failed CR-30 checks 1, 2, 6 and 8, and held check 5 only in part
+# (T-B13's build report, 52b7fe5). Under CR-30 section 6 that means build A, the hand-built engine. T-B13's PR closes
+# unmerged, and its locked tests move into T-B17 unchanged, as sprint-04 promised ("nothing is written twice").
+#
+# Four tickets (one per module, about a full session each, as Javaris asked on Nov 18):
+#   T-B17 the hand-built jobs engine under T-B13's relocked tests, with CR-44's partition key   ~150 min  full, schema (CR-44)
+#   T-B18 event consumers: the rest of Step 1 item 10 and test 11 (after T-B17)                  ~90 min   full
+#   T-B19 platform follow-ups: the P2s from T-B14, T-B15 and T-B16's reviews                     ~120 min  full
+#   T-B20 Step 1's done-when tests and report (C5) (after T-B17, T-B18 and T-B19)                ~60 min   full
+#
+# Order and parallel builds:
+#   - T-B17 and T-B19 share no file (builder or test paths), so they could build at the same time if Javaris allows
+#     two builders at once (decision 2). Otherwise T-B17 goes first: it's on the critical path to Step 2.
+#   - T-B18 is chained after T-B17 (both change platform/jobs/**). T-B20 is chained after all three.
+#   - Rigg writes T-B19's tests while Soap builds T-B17, and T-B18's while Soap builds T-B19 (B7).
+#   - T-B19 starts from a main that has T-B15 (#66), T-B16 and PR #68 merged: it changes their files.
+#
+# How T-B17's branch gets T-B13's tests without DBOS (no DBOS code, no dependency, no lockfile change):
+#   - The tests dispatch cuts t/B17-jobs-engine from main as usual. Rigg then copies the tests by path only, from the
+#     T-B13 relock: git checkout 330b6ec -- packages/server/test/jobs packages/server/test/platform-hardening/pool-timeouts.test.ts
+#     330b6ec holds the tests commit 989cc3f plus the upheld dispute fix 9155427 (createSaved makes its table if
+#     missing and empties it). A checkout by path brings nothing from src/, package.json or pnpm-lock.yaml.
+#   - Rigg checks `git diff 330b6ec -- packages/server/test/jobs packages/server/test/platform-hardening` is empty for
+#     the copied files, adds only the CR-44 test (partition-index.test.ts), and commits. Axis locks the whole set
+#     (lock from a detached worktree, then fast-forward the t/* branch).
+#   - Soap's build copies Soap's engine-neutral interface by path too: git show 330b6ec:packages/server/src/platform/jobs/jobs.ts.
+#     index.ts is rewritten to export JobsLive from the hand-built engine; nothing under platform/jobs/dbos/ comes over.
+#   - Verify proves it: `git diff main -- packages/server/package.json pnpm-lock.yaml` is empty, and no file imports @dbos-inc.
+#
+# Not in this sprint:
+#   - t-b16-rigg-01 (P1, the real server didn't start on operator.ts's parameter property) is hotfixed outside the sprint
+#     in PR #68, with erasableSyntaxOnly and the start-up smoke test packages/server/test/entry/start.test.ts.
+#   - t-b16-rigg-04 (P3, sign-out during a database failure answers 200 but the session stays live; Better Auth's
+#     behaviour), t-b15-rigg-04 and t-b15-rigg-05 (P3s), and t-b14-rigg-04 (P3) go to the backlog.
+#   - Starting workers or consumers in the running server: no Step 1 job kind or consumer exists yet (E8). The first
+#     step that adds a job kind starts its worker in server.ts.
+#
+# CR-44 (a partition key on jobs) is accepted (Javaris, Nov 19, via OSA: "Accept CR-44"), and committed with this plan.
+#
+# Decisions for Javaris:
+# 1. CR-W31 part (a). Sprint-04's header said part (a) heads sprint-05. Eight minutes later the same evening, Javaris
+#    approved T-F22 (frontend sprint-12): the frontend lane builds part (a) on Axis's three conditions, and roster.json
+#    on main gives the frontend packages/contract-mock/src/** and test/** for it. A backend ticket for it would build
+#    the same thing twice and share T-F22's files. Axis's part is condition 3: Axis reads part (a)'s state module for
+#    fidelity before T-F22 merges, as a check and not a G7 review. Axis puts that read at the head of this sprint's lead
+#    work, so the frontend isn't waiting on it, and plans no ticket. Approve that, or say the backend builds part (a)
+#    instead. Then T-F22 is withdrawn, and a T-B21 takes its routes and its tests.
+# 2. Two builders at once (B7). T-B17 and T-B19 share no file, so render.py's overlap check passes with both live.
+#    Allow them to build in parallel (two Soap sessions, about 2.5 hours sooner to Step 1 done), or keep one builder at
+#    a time (T-B17, then T-B19, T-B18, T-B20). Axis recommends parallel for this pair only: their territories don't
+#    meet, and each is full rigor with its own review.
+# 3. T-B19's size. It carries eight P2s across auth, the webhook, idempotency, onboarding and the server's shutdown, as
+#    one full-rigor ticket (Javaris, Nov 18: bigger tickets, fewer PRs). The other choice is to split the webhook's
+#    three (t-b15-rigg-01 to 03) into their own ticket, with a smaller diff for Zero's G7 review. Axis recommends one.
+# 4. .env.example. T-B19 adds GITHUB_WEBHOOK_SECRET and the factory repo's settings to the running server's Config.
+#    .env.example is outside every agent's Territory, so Javaris adds them, with T-B16's four (AVEL_OPERATOR_EMAIL,
+#    AVEL_OPERATOR_PASSWORD, AVEL_AUTH_SECRET, AVEL_WEB_ORIGIN). The build report lists each by name.
+#
+# Approved by Javaris, Nov 19 (to OSA: "approve sprint-05, T-F22 keeps it, build T-B17 and T-B19 parallel"):
+# 1. CR-W31 part (a) stays with T-F22; the backend does the fidelity read only, and no backend ticket is planned.
+# 2. T-B17 and T-B19 may build at the same time (two Soap sessions), for this pair only. The rest stay one at a time.
+# 3. Not changed: T-B19 stays one full-rigor ticket, as recommended.
+# 4. Open: Javaris adds the variables above to .env.example.
+#
+# Amended Nov 19 (T-B17 build a1's test-dispute, upheld by Javaris: "fix the count"): CR-44's index makes
+# done-when 2's pinned totals 89 uniques and 554 rules, so packages/db/test/done-when-2.count.test.ts joins
+# T-B17's Territory, and CR-44's Touches table names it. T-B17's build a2 updates the totals.
+#
+# Amended Nov 20 (T-B17's review; Javaris: "add the fix to T-B18"): T-B18 takes t-b17-rigg-01, so its consumers
+# don't inherit loops that die on one database defect. A note and a test behaviour; its Territory is unchanged.
+
+lane = "backend"
+sprint = "sprint-05"
+step = 1
+title = "Step 1, cycle 5: the jobs engine, event consumers, the review follow-ups, and Step 1 done"
+goals = [
+  "A job survives a killed or frozen worker, retries on the planned backoff and ends dead after 5 tries, on our own engine and tables",
+  "Jobs in one mission run one at a time, and the database refuses a second claim in the same mission",
+  "A consumer acts on every committed event once, in order, and picks up where it left off after a crash or a restart",
+  "The running server serves the webhook, answers every sign-in failure with the contract's body, and shuts down without a stuck pool",
+  "Every Step 1 done-when test has a passing test behind it, and the report says so",
+]
+done_when = [
+  "Step 0 and Step 1 plan, Step 1 test 10 (jobs), held by T-B13's locked tests over the hand-built engine (CR-30 option A)",
+  "Step 1 test 11 (events): seq order equals commit order with no gaps a reader can miss; a rolled-back transaction leaves no event and no job; two copies of one consumer never both act on an event",
+  "CR-44: at most one claimed job per partition key, enforced by the database",
+  "Step 1 test 3 (errors) and test 12 (factory repo) hold in the running server, not only in createApp",
+  "C5: Step 1's done-when report maps each of tests 1 to 13 (2, 4 and 13 as CR-43 restates them) to a passing test",
+]
+sources = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Step 1 items 1, 5, 8, 9, 10, 11; tests 1 to 13 and what CR-31 and CR-43 removed or moved" },
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 3 option A (the hand-built engine) and section 6 (spike 2's verdict: build A)" },
+  { path = "docs/design/CR-44 A partition key on jobs.md", why = "accepted Nov 19: the partition_key column, its partial unique index, and the docs it touches" },
+  { path = "docs/design/CR-43 Step 1 without the CLI.md", why = "tests 2, 4 and 13 on the clients routes; step-up and CLI login leave Step 1" },
+  { path = "docs/design/Jobs and workers.md", why = "claims, check-ins, the reaper, the backoff, one live job per key, consumers and their cursors" },
+  { path = "docs/design/Build rules.md", why = "C4, C5, E3, E5, E7, E8, E10, E12, F2, F4, G5, G7, H6, I3" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7.0.2 (erasableSyntaxOnly from #68), Biome, Vitest 5; Hono 4.13.16, oRPC 1.16.2, Zod 4, Effect 4.1.1 inside packages/server; Drizzle 0.45.4 and node-postgres 8.23.1; Postgres 17; Better Auth 1.7.16"
+layout = "packages/contract, packages/db (schema, migrations 0000 to 0003, the done-when db suite), packages/server (src/platform: app, router, effect-handler, errors, ids, logger, idempotency, rate-limit, auth, webhooks, factory-repo, db; src/onboarding, src/audit, src/knowledge; src/server.ts and src/main.ts from T-B16)"
+conventions = [
+  "AGENTS.md is the rulebook: Architecture rules (durable work, the database enforces its rules), API rules and Writing Effect rules 1 to 10",
+  "Db.withTransaction gives a program Tx and maps database violations to tagged errors; Events.append needs Tx, and Db.commitWithEvents takes seq under the advisory lock as the last statement",
+  "packages/server/src/platform/errors.ts holds the one table from a tagged error to a contract code",
+  "Time comes from Clock, timings are Schedules, and tests drive them with TestClock; no wall-clock sleeps (F4)",
+  "Tests run against real Postgres from scripts/pg-local.sh; test/db/support/database.ts makes a migrated database per file",
+  "Source files use only erasable TypeScript syntax (no parameter properties or enums): Node runs src/main.ts with type stripping (#68)",
+]
+notes = [
+  "Review (G5): one review, no round 2. Only a P0 or P1 sends a PR back. Every P2 goes to a later ticket or the backlog, named in the PR text",
+  "All four tickets are full rigor (C4: jobs, claims, the reaper and events; sign-in and the webhook's signature). Javaris merges, and Zero's second review follows the security checklist (G7)",
+  "Lock from a detached worktree, then fast-forward the t/* branch; merge main into a ticket branch before its build starts",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B17"
+slug = "jobs-engine"
+title = "The hand-built jobs engine under T-B13's relocked tests, with CR-44's partition key"
+goal = "A job survives a killed or frozen worker, does its work once, retries on 10 s, 30 s, 2 min and 10 min and ends dead after 5 tries, and jobs in one mission never run two at once, on our own jobs table."
+rigor = "full"
+refs = [
+  "CR-30 section 3 option A and section 6 (spike 2's verdict: build A, T-B13's build report)",
+  "CR-44 (accepted Nov 19 by Javaris, via OSA): partition_key and jobs_one_claimed_per_partition_uq",
+  "Step 0 and Step 1 plan, Step 1 items 9 and 10, tests 10 and 11",
+  "Jobs and workers.md",
+  "Build rules I3 (a schema ticket naming an accepted CR), E5 (no new dependency), E7 (docs move with the schema)",
+]
+depends_on = []
+labels = ["schema"]
+cr = "CR-44"
+may_change = [
+  "packages/server/src/platform/jobs/**",
+  "packages/db/src/**",
+  "packages/db/drizzle/**",
+  "packages/db/test/helpers/changes.ts",
+  "packages/db/test/done-when-2.count.test.ts",
+  "docs/generated/erd.md",
+  "docs/design/DATABASE.md",
+  "docs/design/Jobs and workers.md",
+  "docs/design/CR-30 Effect in the server, durable jobs and spans.md",
+  "docs/quarantine.md",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/router.ts",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/errors.ts",
+  "packages/server/src/server.ts",
+  "packages/server/src/main.ts",
+  "packages/contract/**",
+  "docs/design/AVEL Database Map.html",
+]
+context = [
+  { path = "docs/design/CR-44 A partition key on jobs.md", why = "the column, the partial unique index, the Touches table (each doc and file this ticket changes), and why the claim treats the index's refusal as skip" },
+  { path = "docs/design/Jobs and workers.md", why = "the engine to build: FOR UPDATE SKIP LOCKED, claim_no + 1 and claim_expires_at, conditional saves, check-ins every 10 s, the 10 s reaper, the backoff table, one live job per key, consumers' cursors by compare-and-swap" },
+  { path = "docs/design/CR-30 Effect in the server, durable jobs and spans.md", why = "section 3 option A: the engine's shape inside Effect; section 6's checks 1 to 8, which T-B13's tests hold" },
+  { path = "packages/db/src/schema/platform.ts", why = "jobs and consumer_cursors, and the indexes that exist: jobs_one_live_key_uq, jobs_claimable_ix, jobs_expired_claims_ix" },
+  { path = "packages/db/test/helpers/changes.ts", why = "CR-6's entry is the precedent for CR-44's: the db suite compares the schema against the database map plus the accepted changes" },
+  { path = "packages/server/src/platform/db/db.ts", why = "Db.withTransaction, Tx and commitWithEvents: an enqueue in Tx commits or rolls back with the caller's writes, and seq stays the last statement; read only" },
+  { path = "packages/server/src/platform/db/events.ts", why = "Events.append and the events table a consumer reads after its cursor; read only" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/db test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm --filter @avel/docs drift",
+  "pnpm --filter @avel/docs generate && git diff --exit-code docs/generated",
+  "git diff --exit-code main -- packages/server/package.json pnpm-lock.yaml",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Start from Soap's engine-neutral interface on the T-B13 branch: git show 330b6ec:packages/server/src/platform/jobs/jobs.ts > packages/server/src/platform/jobs/jobs.ts. Keep it unless a locked test can't be met through it; any change to its shape goes in the build report. Rewrite index.ts to export JobsLive from the hand-built engine. Nothing from platform/jobs/dbos/ comes over, no file imports @dbos-inc, and package.json and the lockfile don't change (E5)",
+  "The engine (CR-30 option A), in platform/jobs/: enqueue inside Tx with one live job per key (jobs_one_live_key_uq; a second enqueue while one is queued or claimed returns it with created false, and never aborts the caller's transaction); a claim with FOR UPDATE SKIP LOCKED that raises claim_no and sets claim_expires_at to 30 s; checkIn extends it; finish runs the save and marks the job done in one transaction, conditional on the current claim_no, so a late save from an out-of-date claim is refused as ClaimLost; fail schedules the next try at 10 s, 30 s, 2 min, 10 min from Clock, and the 5th failure is dead; the reaper every 10 s puts expired claims back in the queue",
+  "Handlers stay a pure decide and an apply (Writing Effect rule 10). A retry after a kill between the side effect and the save finds the effect done and doesn't repeat it (CR-30 check 8): the handler's own already-done check plus the claim fence",
+  "CR-44: partition_key (nullable text) and the partial unique index jobs_one_claimed_per_partition_uq on (partition_key) where state = 'claimed' and partition_key is not null, in packages/db/src/schema/platform.ts, as migration 0004 with its down file, meta snapshot and journal. enqueue's { partition } option sets it. The claim skips a partition that already has a claimed job, and treats the index's unique violation as skip, never as a 500 or a defect (AGENTS.md: the database enforces its rules)",
+  "The docs move with the schema (E7), exactly as CR-44's Touches table says: DATABASE.md's jobs table and its comment line, Jobs and workers.md (a job's life, step 2), CR-30 section 3 option A's sentence, CR-44's entry in packages/db/test/helpers/changes.ts, and docs/generated/erd.md regenerated. AVEL Database Map.html doesn't change (CR-6's precedent). Nothing else in a design doc changes (E3)",
+  "startConsumer is built only as far as T-B13-10 needs: a consumer reads events after its cursor in consumer_cursors and moves it by compare-and-swap, so two copies never both act. T-B18 builds the rest of item 10; don't build ahead of it (E8)",
+  "Time comes from Clock and every timing is a Schedule, so TestClock drives the claims, the reaper and the backoff. T-B13's budgets (30 s of TestClock to a first claim) must hold without a wall-clock poll (F4)",
+  "docs/quarantine.md: once the locked T-B8-02 guard passes, remove its row (#61). Nothing else in that file changes",
+  "Verify includes the full parallel run: T-B13's tests must pass in a whole-file run, not only one at a time with -t (the dispute fix 9155427 made that possible)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = [
+  "packages/server/test/jobs/**",
+  "packages/server/test/platform-hardening/pool-timeouts.test.ts",
+]
+guards = [
+  "T-B8-02 (pool-timeouts.test.ts, from 330b6ec) is back on (#61) and holds in a full parallel run",
+]
+behaviours = [
+  "T-B13-01 to T-B13-10, copied unchanged from 330b6ec (git checkout 330b6ec -- packages/server/test/jobs packages/server/test/platform-hardening/pool-timeouts.test.ts): rollback, the killed worker, the kill after the effect, the frozen worker's late save, concurrent claims, retries and dead, one live key, partitions, the deploy in flight, events and consumers. They fail on main because platform/jobs doesn't exist there. Their assertions don't change; if one can't hold over option A, that's a test-dispute",
+  "partition-index.test.ts (new, CR-44): with two jobs in one partition, a direct second update to state 'claimed' in that partition is refused by the database with a unique violation, while a claim in another partition and a job with no partition both succeed",
+  "partition-index.test.ts (new, CR-44): two workers claiming at once in one partition never fail a claim with a 500 or a defect; one holds it, the other skips to another partition's job or finds none",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B18"
+slug = "event-consumers"
+title = "Event consumers: claimed, resumable, compare-and-swap cursors that act on each committed event once"
+goal = "A consumer acts on every committed event once and in order, keeps its place across a crash, a restart or a failing handler, and a consumer that outlived its claim can't move the cursor."
+rigor = "full"
+refs = [
+  "Step 0 and Step 1 plan, Step 1 item 10 (consumers are claimed jobs that move their cursor only by compare-and-swap) and test 11",
+  "Jobs and workers.md, Event consumers: a cursor moved only by compare-and-swap, and a claim number of its own",
+  "AGENTS.md, Architecture rules (durable work: a state change, its event and any follow-up job in one transaction)",
+]
+depends_on = ["T-B17"]
+may_change = [
+  "packages/server/src/platform/jobs/**",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/server.ts",
+  "packages/server/src/main.ts",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/design/Jobs and workers.md", why = "Event consumers: what a consumer reacts to, its cursor and its claim number" },
+  { path = "packages/server/src/platform/jobs/jobs.ts", why = "T-B17's Jobs interface: startConsumer and ConsumedEvent" },
+  { path = "packages/db/src/schema/platform.ts", why = "consumer_cursors: one row per consumer, its last seq and its claim number" },
+  { path = "packages/server/src/platform/db/db.ts", why = "commitWithEvents takes seq under the advisory lock as the last statement; why a reader can't miss a gap; read only" },
+  { path = "packages/server/test/jobs/consumers.test.ts", why = "T-B13-10, which T-B17 already passes; these tests go beyond it and must not repeat it; read only" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "A consumer is a claimed job (item 10): one claim per consumer name, with its own claim_no and expiry, checked in and reaped like any job. A copy whose claim was taken over can't move the cursor: the compare-and-swap is on the cursor's seq and the claim number together",
+  "The handler's act and the cursor's move commit in one transaction when the handler writes through Tx, so an event is acted on once. A handler that fails leaves the cursor where it was; the same event is retried on T-B17's backoff and never skipped. Say in the report what happens after the 5th failure (dead, and the consumer stops) and how the operator would see it; if the design doesn't say, stop with needs-cr rather than choose (E3)",
+  "A consumer that enqueues a follow-up job does it in the same transaction as its cursor move, so a crash leaves both or neither",
+  "Under concurrent writers, including one that rolls back, the consumer sees every committed seq once, in order, with none skipped and none repeated",
+  "No consumer kind is registered in the running server: Step 1 has none (E8). Keep T-B13's tests passing unchanged",
+  "t-b17-rigg-01 (T-B17's review; Javaris, Nov 20: \"add the fix to T-B18\"): every loop iteration in engine.ts survives a database defect: a claim and run, a reap, a consume pass and a check-in. Each logs the defect once, with no values (withoutValues), and runs again on its schedule. Today Effect.repeat stops on the first defect and Effect.ignore keeps only failures, so one blip ends the worker, its reaper, its check-ins or a consumer for good, with no log",
+  "F2, Nov 20 (T-B18 build a1's test-dispute, upheld by Javaris; his choice: \"Rigg fixes the harness\"): Rigg's tests a2 fixes the locked tests on the branch, with assertions unchanged. (1) Every assertion that reads committed state (a job's state, a cursor, a saved row) first waits for it with until(), as T-B13's tests and T-B18-07's own longDone do: three waits in T-B18-07 and one in T-B18-06 read it while the handler's transaction was still open (Soap's build report). (2) The harness must not let simulated time outrun the engine's work in flight: under a parallel run of test/consumers and test/jobs, advance moved 20 s or more past one commit, so a claim that checks in every 10 s expired (T-B18-07 starts.long 2 or 3, T-B18-02 no takeover; OSA measured 2 of 5 runs passing with (1) alone). Prove it with 10 runs in a row of pnpm --filter @avel/server test against the engine on the branch (vitest's own workers supply the parallel load), all green, and report them. Never start more than one vitest at a time: 10 at once ran 330 node processes and ran WSL out of memory twice (Nov 20). Then the lead relocks (F2)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/consumers/**"]
+behaviours = [
+  "a consumer stopped after acting on event n and started again (a new copy, same name) resumes at n + 1 from consumer_cursors, and acts on nothing twice",
+  "a consumer copy killed mid-handle has its claim expire and taken over within a minute (TestClock); the new copy handles that event once, and the dead copy's late cursor move is refused",
+  "a handler that fails leaves the cursor unchanged; the same event is retried after 10 s (TestClock) and the events after it aren't acted on first",
+  "a handler that writes through Tx and enqueues a follow-up job commits both with the cursor move; a failure in the same transaction leaves no write, no job and the cursor where it was",
+  "with 20 concurrent writer transactions, some rolled back, a consumer started before them acts on exactly the committed events, once each, in seq order (test 11)",
+  "two consumers with different names each see every event, and each keeps its own cursor",
+  "after one database blip under a running worker and consumer (their connections ended with pg_terminate_backend), a job enqueued after it is claimed and finished, an expired claim is still reaped, a run's check-ins carry on, and the consumer acts on a new event, all within T-B13's budgets under TestClock; each defect is logged once with no values (t-b17-rigg-01)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B19"
+slug = "platform-follow-ups"
+title = "Platform follow-ups: the P2s from T-B14, T-B15 and T-B16's reviews, with the webhook mounted in the running server"
+goal = "The running server serves the GitHub webhook from its Config and refuses an oversized or unsigned body before buffering it, every sign-in and client error answers the contract's body, a failed write never holds its idempotency key for a day, and shutdown releases every pool at once."
+rigor = "full"
+refs = [
+  "t-b14-rigg-01 (P2): the 401 and 400 on the clients routes are answered outside errors.ts's table (Writing Effect rule 3)",
+  "t-b14-rigg-02 (P2): a defect leaves the Idempotency-Key in_progress for 24 hours",
+  "t-b14-rigg-03 (P2): route 9 has no code guard against kind internal; it relies on the seed's row",
+  "t-b15-rigg-01 (P2): the webhook buffers an unsigned body of any size before it checks the signature",
+  "t-b15-rigg-02 (P2): a direct push to the factory's main (an admin bypass) raises no alert, and a merged PR whose payload doesn't parse is dropped with no alert",
+  "t-b15-rigg-03 (P2): no ticket reads the webhook's and loader's settings from Config or mounts the webhook in the running server; the secret is a plain string and an empty one isn't refused",
+  "t-b16-rigg-02 (P2): a database failure in GET /api/auth/get-session answers Better Auth's own 500, not the contract's body with requestId",
+  "t-b16-rigg-03 (P2): close() leaves the router's DbLive pool and runtime open, so SIGTERM after a clients request takes 10 s",
+  "Design v0.6 Main, Factory as code (a merge by anyone but the App raises an alert, including an admin bypass)",
+]
+depends_on = ["T-B15", "T-B16"]
+may_change = [
+  "packages/server/src/server.ts",
+  "packages/server/src/main.ts",
+  "packages/server/src/platform/router.ts",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/errors.ts",
+  "packages/server/src/platform/idempotency.ts",
+  "packages/server/src/platform/auth/**",
+  "packages/server/src/platform/webhooks/**",
+  "packages/server/src/platform/factory-repo/**",
+  "packages/server/src/knowledge/**",
+  "packages/server/src/onboarding/**",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/jobs/**",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/effect-handler.ts",
+  "packages/server/src/platform/rate-limit.ts",
+  "packages/server/src/audit/**",
+  "packages/server/test/entry/start.test.ts",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "packages/server/src/server.ts", why = "T-B16's startServer: one Scope, acquireRelease around the app and the socket; where the router's pool and the webhook's settings join it" },
+  { path = "packages/server/src/platform/router.ts", why = "T-B14's router builds its own DbLive and runtime (router.ts:23-28), which close() never releases, and reads its timeouts from process.env" },
+  { path = "packages/server/src/platform/auth/web-auth.ts", why = "onAPIError throw and intoBetterAuth: sign-in already answers the contract's 500; get-session doesn't" },
+  { path = "packages/server/src/platform/webhooks/github.ts", why = "T-B15's webhook: the raw body read at :223 before the signature, decideDelivery, and the apply transaction" },
+  { path = "packages/server/src/platform/idempotency.ts", why = "T-B8's store: what complete and release do, and why a defect between commit and complete leaves the key in_progress" },
+  { path = "packages/server/src/onboarding/clients", why = "operator.ts's 401 and the 400s answered outside the error table; route 9's create (after #68's erasable-syntax fix)" },
+  { path = "docs/design/Design v0.6 Main.md", why = "Factory as code: merges only by the App; anything else raises an alert and freezes finalize" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm --filter @avel/server exec vitest run test/entry/start.test.ts",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Start from a main with T-B15 (#66), T-B16 and #68 merged; merge main into the branch before the build starts. #68's packages/server/test/entry/start.test.ts must keep passing and is read only",
+  "t-b16-rigg-03: the router's database layer joins startServer's Scope. Build it once in server.ts from the env given to startServer (timeouts included, not process.env) and pass it to the router, so close() releases it with the rest and SIGTERM after a clients request exits promptly",
+  "t-b15-rigg-03: startServer reads GITHUB_WEBHOOK_SECRET as Config.Redacted, refuses an empty or missing one at startup with a message naming the variable and never the value, reads the factory repo, the App's login and the mirror's path from Config, and mounts the webhook in the running server. The webhook's database access goes through the same scoped layer. List every variable by name in the build report; Javaris adds them to .env.example",
+  "t-b15-rigg-01: the webhook refuses a body over a fixed limit before buffering it (Content-Length first, then a capped read), with 413 and the contract's body, before any signature work or database call. Pick the limit from GitHub's documented payload cap and say which in the report",
+  "t-b15-rigg-02: a signed push to the factory repo's main that isn't the App's merge commit raises system.alert.raised in the same transaction as its delivery row, and its SHA is never selectable. A signed pull_request closed-and-merged payload that doesn't parse raises an alert instead of being dropped. Other events and repos stay acknowledged and ignored",
+  "t-b16-rigg-02: a database failure inside get-session (and any other served Better Auth endpoint) answers the contract's 500 with the request's requestId, value-free, like sign-in. Better Auth's own 4xx answers still come back as responses",
+  "t-b14-rigg-01: the clients routes' 401 and 400 come from tagged errors through errors.ts's table, so the body and status come from one place (Writing Effect rule 3). The answers on the wire don't change",
+  "t-b14-rigg-02: a write that dies with a defect after taking its Idempotency-Key releases it (or marks it failed) so a retry with the same key and body runs again instead of getting 409 IDEMPOTENCY_IN_PROGRESS for 24 hours. The key's normal replay and reuse rules don't change",
+  "t-b14-rigg-03: route 9 refuses kind internal in code, with 422 and the contract's body, whether or not the seed's internal client exists",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/follow-ups/**"]
+behaviours = [
+  "startServer mounts POST /api/webhooks/github: a signed delivery reaches it and adds its factory_versions row; startServer without GITHUB_WEBHOOK_SECRET, or with an empty one, fails to start, naming the variable and never a value (t-b15-rigg-03)",
+  "a webhook body over the limit is 413 with the contract's body and requestId, and nothing is written; a body sent without Content-Length is cut off at the limit (t-b15-rigg-01)",
+  "a signed push to the factory repo's main that isn't the App's merge raises exactly one system.alert.raised and leaves its SHA unselectable; a merged pull_request payload that doesn't parse raises an alert (t-b15-rigg-02)",
+  "a database failure inside GET /api/auth/get-session answers 500 with the contract's body and the request's requestId, and no log line or stderr holds the query's params or a token (t-b16-rigg-02)",
+  "after a clients request, close() leaves no open database client from the server's pools in pg_stat_activity, and returns within 2 s (t-b16-rigg-03)",
+  "a client write that dies with a defect after taking its key can be retried with the same key and body and runs (no 409 IDEMPOTENCY_IN_PROGRESS); a replay of a completed write still returns the first response (t-b14-rigg-02)",
+  "route 9 with kind internal is 422 with the contract's body, on a database where the seed's internal client doesn't exist (t-b14-rigg-03)",
+  "the clients routes' 401 without a session and 400 on a missing Idempotency-Key answer the same status and body as before, from errors.ts's table (t-b14-rigg-01; a test that maps each tag through the table)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B20"
+slug = "step-1-done"
+title = "Step 1's done-when tests and report (C5): each of tests 1 to 13 traced to a passing test, and the running server end to end"
+goal = "Anyone can see Step 1 is done: a report names, for each Step 1 test, the test that proves it, a check fails if a named test is missing, and one run of the real server exercises every Step 1 area."
+rigor = "full"
+refs = [
+  "Build rules C5 (a step's done-when tests are tickets of their own, written by the checker and owned by the lead)",
+  "Step 0 and Step 1 plan, Tests that say Step 1 is done (1 to 13; 14 and 15 removed by CR-31), with CR-43's tests 2, 4 and 13 and test 12's Step 7 limit",
+  "Backend modules and build plan.md, section 1 (Rigg writes the done-when tests first)",
+]
+depends_on = ["T-B17", "T-B18", "T-B19"]
+may_change = [
+  "docs/steps/step-1-done.md",
+  "packages/server/src/**",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/db/**",
+  "packages/contract/**",
+  "docs/design/**",
+]
+context = [
+  { path = "docs/design/Step 0 and Step 1 plan.md", why = "Tests that say Step 1 is done, and Not in Step 1" },
+  { path = "docs/design/CR-43 Step 1 without the CLI.md", why = "tests 2, 4 and 13 restated on the clients routes; tests 5, 8 and 9 leave Step 1 with step-up and CLI login" },
+  { path = "docs/agent-dispatch/backend", why = "each sprint's locks.md: the locked tests that already prove a Step 1 test, by ticket" },
+  { path = "packages/server/src/server.ts", why = "startServer, which the end-to-end test drives on a free port" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "docs/steps/step-1-done.md, the done-when report: one row per Step 1 test 1 to 13, with what it says, the test file and test ID that proves it, and the ticket that locked it. Tests moved out of Step 1 (5, 8, 9 under CR-43; 14 and 15 under CR-31) name where they went. Test 12's finalize half names Step 7. The report is the build's main output; the lead owns it (C5) and signs it in the PR",
+  "Any source change is only what a done-when test shows is missing. If a test fails for a reason bigger than a small fix, stop with blocked and say which test; it becomes a ticket, not part of this one",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/step-1/**"]
+guards = [
+  "the real server, started with startServer on a free port, signs the operator in, creates a client with an Idempotency-Key and leaves one activity row, accepts a signed factory merge on the webhook, and answers an unknown route with the contract's error body and X-Contract-Version",
+]
+behaviours = [
+  "done-when.test.ts: docs/steps/step-1-done.md exists and has a row for each of Step 1's tests 1 to 13; every test file and test ID it names exists in the repo, and none of them is skipped or quarantined (fails on main: the report doesn't exist)",
+]
