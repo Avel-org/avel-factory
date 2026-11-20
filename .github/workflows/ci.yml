@@ -57,10 +57,37 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
 
+  # CR-45 decision 1: on a pull request, the web's end-to-end tests run only when the web, the
+  # contract, the mock, the lockfile or the workflows change. Pushes to main always run them.
+  changes:
+    name: what changed
+    runs-on: ubuntu-24.04
+    outputs:
+      web: ${{ steps.diff.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "web=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          files=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          echo "$files"
+          if echo "$files" | grep -q -E '^(apps/web/|packages/contract/|packages/contract-mock/|pnpm-lock\.yaml$|\.github/workflows/)'; then
+            echo "web=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "web=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # The web's end-to-end tests (Build rules H4, H5, F6). A red test makes the job red; the
-  # screenshots, videos and traces are kept on every run.
+  # screenshots, videos and traces are kept on every run. Skipped (which counts as passing) when
+  # nothing the web depends on changed (CR-45 decision 1).
   e2e:
     name: web e2e (Playwright)
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
