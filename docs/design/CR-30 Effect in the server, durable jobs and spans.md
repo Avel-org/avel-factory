@@ -104,7 +104,7 @@ So the server writes one `Db` service of its own:
 
 Step 1 item 9 builds the jobs engine: claims, `claim_no`, the reaper, retries, one live job per key. There are three ways to get it.
 
-**A. Hand-built, written in Effect (the default).** Exactly the design in Jobs and workers: the same table, the same rules, the same numbers, with workers as fibers and the timings as `Schedule`s. Nothing changes in DATABASE.md.
+**A. Hand-built, written in Effect (the default).** Exactly the design in Jobs and workers: the same table, the same rules, the same numbers, with workers as fibers and the timings as `Schedule`s. Nothing changes in DATABASE.md but CR-44's partition key.
 
 **B. DBOS Transact (spike first).** DBOS is an open-source (MIT) library for durable workflows that runs inside our process. It keeps its state in Postgres and needs no extra server. Several of its features match ours one for one:
 

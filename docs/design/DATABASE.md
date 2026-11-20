@@ -808,9 +808,11 @@ design_systems   key (slug, version) { layer: 'global'|'client', client_id? → 
 
 ```
 jobs             { kind, key, payload: jsonb, state: 'queued'|'claimed'|'done'|'failed'|'dead',
-                   claim_expires_at?, claimed_by?, claim_no, attempts, run_after, last_error?, finished_at? }
+                   claim_expires_at?, claimed_by?, claim_no, attempts, run_after, last_error?, finished_at?,
+                   partition_key? }
                  // each claim raises claim_no and sets claim_expires_at; a write with an old claim_no is refused
                  // (CR-6); one live job (queued or claimed) per key; jobs is the outbox
+                 // at most one claimed job per partition_key (a mission): the integrator runs one integration commit at a time (CR-44)
 events           key (seq) { schema_version, mission_id?, dispatch_id?, attempt_id?, kind, payload: jsonb, at }
                  // seq is taken under an advisory lock as the last statement before commit; no FKs (see rules)
 consumer_cursors key (consumer) { last_seq, claim_no }
