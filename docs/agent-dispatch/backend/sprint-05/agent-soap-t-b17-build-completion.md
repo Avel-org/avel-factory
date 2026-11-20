@@ -126,4 +126,4 @@ They pass in whole-file runs, not only one at a time with `-t`.
 
 ## Messages received
 
-None in attempt 2. No instruction arrived from OSA or anyone else.
+None in attempt 2. No instruction arrived from OSA or anyone else. When I finished, I tried to message OSA with this status, but `ListAgents` didn't list OSA. The only other session was a T-B19 review, which I didn't message. This report is the record.
