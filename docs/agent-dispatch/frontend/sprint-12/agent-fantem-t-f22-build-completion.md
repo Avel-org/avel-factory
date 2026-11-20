@@ -112,3 +112,5 @@ The first run of command 4, on `7c1547e`, failed: Playwright's dev server couldn
 ## Messages received
 
 None.
+
+My closing status message to OSA wasn't delivered: no OSA session was running (`ListAgents` listed no other session). This report is the record.
