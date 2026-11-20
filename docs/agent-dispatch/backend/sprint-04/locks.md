@@ -11,3 +11,4 @@ second line for the ticket ending (F2 relock), at the new tip. Lines are only ev
 <!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ abc1234 -->
 <!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ def5678 (F2 relock) -->
 - T-B15: packages/server/test/factory-repo/support.ts, packages/server/test/factory-repo/webhook.test.ts, packages/server/test/factory-repo/loader.test.ts @ 273ce4775f03bb71727a5ca809c1a27c870cfe6a
+- T-B15: packages/server/test/factory-repo/support.ts, packages/server/test/factory-repo/webhook.test.ts, packages/server/test/factory-repo/loader.test.ts @ fd374939c064b4c31f2ee1b720e810ac963c1150 (F2 relock)
