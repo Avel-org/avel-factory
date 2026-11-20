@@ -105,8 +105,17 @@ describe("T-B15-08 · the mirror fetch", () => {
       });
       try {
         const fiber = yield* Effect.forkChild(Effect.flip(repo.readFactoryYaml(newer)));
-        // Let the loader reach its fetch, then move the clock past the timeout. Nothing sleeps on
-        // the wall clock: each turn only yields to the event loop.
+        // Wait until the loader's git fetch has started (the wrapper logs it), so the clock moves
+        // past the timeout only while the fetch hangs. Under load, starting git can outlast many
+        // event-loop turns, and moving the clock first timed out before any fetch (main, Nov 20).
+        for (
+          let i = 0;
+          i < 1_000 && wrapper.fetches() === 0 && fiber.pollUnsafe() === undefined;
+          i++
+        ) {
+          yield* Effect.promise(() => new Promise((r) => setTimeout(r, 10)));
+        }
+        // Then move the clock past the timeout. Nothing else waits on the wall clock.
         let exit = fiber.pollUnsafe();
         for (let i = 0; i < 200 && exit === undefined; i++) {
           yield* Effect.promise(() => new Promise((r) => setTimeout(r, 0)));
