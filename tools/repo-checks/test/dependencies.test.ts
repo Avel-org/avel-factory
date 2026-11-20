@@ -105,16 +105,22 @@ describe("dependencies (E5)", () => {
     expect(server.devDependencies).toMatchObject({ "@types/pg": "8.23.1" });
   });
 
-  test("apps/web has exactly the scripts dev, preview, test and e2e, and sideEffects for css", () => {
+  test("apps/web has exactly the scripts dev, preview, test and e2e, plus T-F10's check:contract, and sideEffects for css", () => {
     const web = manifest("apps/web/package.json");
     expect(web.private).toBe(true);
     expect(web.type).toBe("module");
-    expect(web.scripts).toEqual({
+    // T-F10-01 (frontend sprint-11) adds one script, the export's contract check, and nothing else.
+    // It may be absent until T-F10 lands; when present it must be exactly this.
+    const { "check:contract": checkContract, ...scripts } = web.scripts ?? {};
+    expect(scripts).toEqual({
       dev: "vite dev",
       preview: "vite preview",
       test: "vitest run",
       e2e: "playwright test",
     });
+    if (checkContract !== undefined) {
+      expect(checkContract).toBe("node control-room/tools/check-contract.mjs");
+    }
     expect(web.scripts).not.toHaveProperty("build");
     expect(web.scripts).not.toHaveProperty("typecheck");
     expect(web.sideEffects).toEqual(["**/*.css"]);
