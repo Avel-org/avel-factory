@@ -14,12 +14,12 @@ import { Clock, type Context, Effect } from "effect";
 import { recordActivity } from "../../audit/activity.ts";
 import { Db, Tx } from "../../platform/db/db.ts";
 import { requireUpdated } from "../../platform/db/errors.ts";
-import { NotFound } from "../../platform/errors.ts";
+import { BadRequest, NotFound, Unprocessable } from "../../platform/errors.ts";
 import type { Idempotency } from "../../platform/idempotency.ts";
 import { Ids } from "../../platform/ids.ts";
 import { toClientDto } from "./dto.ts";
 import { idempotentWrite } from "./idempotent.ts";
-import { operatorHandler, Refused } from "./operator.ts";
+import { operatorHandler } from "./operator.ts";
 
 const os = implement(contract);
 
@@ -37,7 +37,7 @@ const jsonb = (value: unknown) => sql`${JSON.stringify(value)}::jsonb`;
 const list = (input: ListClientsInput) =>
   Effect.gen(function* () {
     if (input.cursor !== undefined && !Uuid.safeParse(input.cursor).success) {
-      return new Refused("BAD_REQUEST");
+      return yield* new BadRequest({ message: errorMap.BAD_REQUEST.message });
     }
     const limit = input.limit ?? DEFAULT_LIMIT;
     const db = yield* Db;
@@ -70,11 +70,15 @@ const list = (input: ListClientsInput) =>
   });
 
 /**
- * Route 9. The internal client is the seed's (CR-13): a second one breaks
- * `clients_one_internal_uq`, which the Db service answers as 409.
+ * Route 9. The internal client is the seed's alone (CR-13), so a create of kind internal is
+ * refused here (422), whether or not the seed has run; `clients_one_internal_uq` still guards
+ * the table.
  */
 const create = (input: CreateClientInput, userId: string) =>
   Effect.gen(function* () {
+    if (input.kind === "internal") {
+      return yield* new Unprocessable({ message: "Only the seed makes the internal client" });
+    }
     const db = yield* Db;
     const ids = yield* Ids;
     const id = yield* ids.uuidv7;

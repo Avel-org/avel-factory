@@ -6,7 +6,10 @@ import { Data } from "effect";
  * row here doesn't compile through `effectHandler`. The code's status comes from the contract.
  */
 export const errorTable = {
+  BadRequest: "BAD_REQUEST",
+  Unauthorized: "UNAUTHORIZED",
   NotFound: "NOT_FOUND",
+  Unprocessable: "UNPROCESSABLE_CONTENT",
   AlreadyExists: "ALREADY_EXISTS",
   ConstraintViolation: "CONSTRAINT_VIOLATION",
   DeleteRefused: "DELETE_REFUSED",
@@ -15,6 +18,7 @@ export const errorTable = {
   IdempotencyInProgress: "IDEMPOTENCY_IN_PROGRESS",
   TokenReplayed: "TOKEN_REPLAYED",
   TooManyRequests: "TOO_MANY_REQUESTS",
+  PayloadTooLarge: "MESSAGE_TOO_LONG",
 } as const satisfies Record<string, ErrorCode>;
 
 export type ErrorTag = keyof typeof errorTable;
@@ -25,6 +29,16 @@ export interface MappedError {
   readonly message: string;
   readonly details?: ErrorBody["details"];
 }
+
+/** A request the route's schema can't judge, such as a write without its Idempotency-Key (400). */
+export class BadRequest extends Data.TaggedError("BadRequest")<{
+  message: string;
+}> {}
+
+/** A route for a signed-in caller, called with no live session (401). */
+export class Unauthorized extends Data.TaggedError("Unauthorized")<{
+  message: string;
+}> {}
 
 export class NotFound extends Data.TaggedError("NotFound")<{
   message: string;
@@ -52,6 +66,11 @@ export class DeleteRefused extends Data.TaggedError("DeleteRefused")<{
   details: ConstraintDetails;
 }> {}
 
+/** A request the schema accepts that the route still refuses, such as a second internal client (422). */
+export class Unprocessable extends Data.TaggedError("Unprocessable")<{
+  message: string;
+}> {}
+
 /** A versioned write that matched no row: the body's version isn't current (409). */
 export class StaleVersion extends Data.TaggedError("StaleVersion")<{
   message: string;
@@ -77,4 +96,10 @@ export class TokenReplayed extends Data.TaggedError("TokenReplayed")<{
 export class TooManyRequests extends Data.TaggedError("TooManyRequests")<{
   message: string;
   details: { readonly retryAfterMs: number };
+}> {}
+
+/** A body over the route's byte limit (413), refused before it's read to the end. */
+export class PayloadTooLarge extends Data.TaggedError("PayloadTooLarge")<{
+  message: string;
+  details: { readonly maxChars: number };
 }> {}
