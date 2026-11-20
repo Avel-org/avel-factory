@@ -11,7 +11,10 @@ import type { MappedError } from "../../platform/errors.ts";
  * error table has no row for either code, so these are answered here, with the contract's body.
  */
 export class Refused {
-  constructor(readonly code: "UNAUTHORIZED" | "BAD_REQUEST") {}
+  readonly code: "UNAUTHORIZED" | "BAD_REQUEST";
+  constructor(code: "UNAUTHORIZED" | "BAD_REQUEST") {
+    this.code = code;
+  }
 }
 
 /** The services `effectHandler` gives a program. */

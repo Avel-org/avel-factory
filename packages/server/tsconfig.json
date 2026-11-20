@@ -4,6 +4,7 @@
   "compilerOptions": {
     "noEmit": true,
     "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
     "plugins": [
       {
         "name": "@effect/language-service",
