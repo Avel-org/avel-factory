@@ -60,6 +60,12 @@
 # 4. .env.example. T-B19 adds GITHUB_WEBHOOK_SECRET and the factory repo's settings to the running server's Config.
 #    .env.example is outside every agent's Territory, so Javaris adds them, with T-B16's four (AVEL_OPERATOR_EMAIL,
 #    AVEL_OPERATOR_PASSWORD, AVEL_AUTH_SECRET, AVEL_WEB_ORIGIN). The build report lists each by name.
+#
+# Approved by Javaris, Nov 19 (to OSA: "approve sprint-05, T-F22 keeps it, build T-B17 and T-B19 parallel"):
+# 1. CR-W31 part (a) stays with T-F22; the backend does the fidelity read only, and no backend ticket is planned.
+# 2. T-B17 and T-B19 may build at the same time (two Soap sessions), for this pair only. The rest stay one at a time.
+# 3. Not changed: T-B19 stays one full-rigor ticket, as recommended.
+# 4. Open: Javaris adds the variables above to .env.example.
 
 lane = "backend"
 sprint = "sprint-05"
