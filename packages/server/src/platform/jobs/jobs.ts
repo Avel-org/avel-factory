@@ -71,10 +71,18 @@ export class Jobs extends Context.Service<
       readonly name: string;
       readonly handlers: ReadonlyArray<Handler<unknown>>;
     }) => Effect.Effect<Worker, never, Scope.Scope>;
-    /** Acts on each committed event once, in seq order; copies of one name share the work. */
+    /**
+     * Acts on each committed event once, in seq order (Step 1 item 10). A consumer is a claimed
+     * job of kind `consumer`, keyed `consumer:<name>`: one copy of a name holds its claim at a
+     * time, checks in, and a copy that stops checking in loses it once it expires. `handle` runs
+     * in the transaction that moves the cursor by compare-and-swap on its seq and its own claim
+     * number, so its writes, its follow-up jobs and its events commit with the move or not at all.
+     * A failed `handle` leaves the cursor where it was and the event is tried again on the
+     * backoff; the consumer's job counts those failures in `attempts`, and the 5th makes it dead.
+     */
     readonly startConsumer: (options: {
       readonly name: string;
-      readonly handle: (event: ConsumedEvent) => Effect.Effect<void, unknown>;
+      readonly handle: (event: ConsumedEvent) => Effect.Effect<void, unknown, Tx>;
     }) => Effect.Effect<Worker, never, Scope.Scope>;
   }
 >()("avel/Jobs") {}
