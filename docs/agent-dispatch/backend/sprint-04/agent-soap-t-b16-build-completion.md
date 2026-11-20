@@ -80,3 +80,5 @@ Before any change, `pnpm test` had exactly 8 failures, all T-B16's (`test/server
 ## Messages received
 
 None.
+
+The completion message to OSA (CR-37) wasn't delivered: `SendMessage` found no session named OSA, and `ListAgents` showed no other session running on this machine. This report is the record.
