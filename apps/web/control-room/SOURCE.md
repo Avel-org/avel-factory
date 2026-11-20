@@ -123,6 +123,8 @@ Copied byte for byte from `/mnt/c/Users/javar/Desktop/avel-control-room` (the de
 
 ## Changed for apps/web
 
+From T-F14 on, each ticket logs its changes to the export in `apps/web/control-room/changes/<ticket id>.md`, so tickets that run in the same sprint never share this file (Build rules B7).
+
 - `src/app/ControlRoom.jsx`: React 19 drops defaultProps, so the defaults are parameter defaults, and showDock defaults to import.meta.env.DEV so the Prototype dock shows only in a dev build.
 - `src/main.jsx`: apps/web's route mounts the control room, so this entry keeps the 28 stylesheets in the same order and exports ControlRoom instead of calling createRoot.
 - `tools/check-contract.mjs`: the three console-log calls are process.stdout.write (none under control-room/); console.error is unchanged.
@@ -141,3 +143,4 @@ Copied byte for byte from `/mnt/c/Users/javar/Desktop/avel-control-room` (the de
 - `src/pages/uploads/UploadStates.jsx`: with OSA's flag off, the Drive region's live line doesn't name OSA (CR-29, T-F10-05).
 - `src/pages/uploads/UploadsPages.jsx`: the upload states page is told whether OSA's flag is on (T-F10-05).
 - `src/app/logic.js`: a deep link's page opens with its title, as a route change has since T-F8. The control room sets the world once the first page's code has loaded (or after 9 s, when the skeleton shows), Canon's view is preloaded like the other pages' views, and the masthead waits for the world. Before this, the title stood over the page's skeleton for a moment, and a check that read the page once its title showed found it empty (T-F10-04).
+- `src/pages/settings/SettingsPage.jsx`: the Account section is apps/web's own (`apps/web/src/auth/AccountSection.tsx`, in the export's markup): it shows Signed in as {email} from the session and signs out through /api/auth/sign-out, then opens /login, instead of the fixed Javaris row and the sample world's sign-out (login.md section 4, T-F12).

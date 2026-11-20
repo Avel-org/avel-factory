@@ -2,27 +2,13 @@
 import { Fragment } from "react";
 import { list } from "../../lib/dc";
 import { EmptyArtFor } from "../../kit/EmptyState";
+import { AccountSection } from "@/auth/AccountSection";
 
 export function SettingsPage({ vals }) {
-  const { depthOpts, ic, runDoctor, signOut, themeOpts, osaSet } = vals;
+  const { depthOpts, ic, runDoctor, themeOpts, osaSet } = vals;
   return (
     <div className="cr-settings">
-      <section className="lib-card cr-sec" aria-labelledby="set-account">
-        <div className="cr-sec-head">
-          <h2 className="scr-h2" id="set-account">
-            Account
-          </h2>
-          <p>The operator signed in on this device.</p>
-        </div>
-        <div className="cr-sec-row">
-          <span className="cr-sec-k">
-            Javaris<small>Operator</small>
-          </span>
-          <button type="button" className="av-btn" data-ui="Button" data-variant="secondary" onClick={signOut}>
-            {ic?.logout16}Sign out
-          </button>
-        </div>
-      </section>
+      <AccountSection icon={ic?.logout16} />
       {osaSet ? (
         <section className="lib-card cr-sec" aria-labelledby="set-osa" data-ui="OsaSettings">
           <div className="cr-sec-head">
