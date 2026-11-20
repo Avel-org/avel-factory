@@ -121,6 +121,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - `packages/db/src/**`
 - `packages/db/drizzle/**`
 - `packages/db/test/helpers/changes.ts`
+- `packages/db/test/done-when-2.count.test.ts`
 - `docs/generated/erd.md`
 - `docs/design/DATABASE.md`
 - `docs/design/Jobs and workers.md`

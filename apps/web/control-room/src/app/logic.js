@@ -7,6 +7,7 @@ import { DCLogic } from "../lib/dc";
 import { sawLiveEvent } from "../lib/live";
 import {
   AgentRosterPage,
+  CanonPage,
   FactoryLivePage,
   LibraryPage,
   OpsPage,
@@ -79,6 +80,7 @@ const VIEWS = {
   progress: ProjectOverviewPage,
   live: FactoryLivePage,
   watch: FactoryLivePage,
+  canon: CanonPage,
 };
 OPS_PAGES.forEach((id) => {
   VIEWS[id] = OpsPage;
@@ -1250,9 +1252,12 @@ export class ControlRoomLogic extends DCLogic {
     this.onMq = () => this.applyHtml();
     this.mq.addEventListener("change", this.onMq);
     this.applyHtml();
+    // A deep link's page opens with its title, as a route change does (T-F10): the world arrives once
+    // that page's code has, so the first title never stands over a skeleton
     Promise.all([
       import("../kit/icons.json").then((m) => m.default),
       import("../mock/world.json").then((m) => m.default),
+      pageReady(this.parse(location.hash).page, 9e3),
     ])
       // route 52's response, in contract 1.0.0's shapes, read through the decisions adapter
       .then(([icons, world]) => {
@@ -4825,7 +4830,8 @@ export class ControlRoomLogic extends DCLogic {
     const pkgName = isProj && m.packageKey ? PKG[m.packageKey] || m.packageKey : null;
     const pg = {
       id: c.id,
-      showMast: !["live", "template", "templateNew", "library", "knowledge"].includes(c.id),
+      // no title before the world has arrived (T-F10)
+      showMast: c.w && !["live", "template", "templateNew", "library", "knowledge"].includes(c.id),
       idShort: isProj ? m.id.slice(0, 8) : undefined,
       idFull: isProj ? m.id : undefined,
       watch:

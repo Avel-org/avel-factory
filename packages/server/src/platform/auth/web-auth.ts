@@ -18,6 +18,16 @@ export interface AuthOptions {
   readonly baseUrl: string;
   /** Marks the session cookie Secure; on everywhere but tests over plain http. */
   readonly secureCookies: boolean;
+  /** How long a connect to Better Auth's pool may take; DbLive's default, 5 s. */
+  readonly connectTimeoutMs?: number;
+  /** How long a statement may run on Better Auth's pool; DbLive's default, 30 s. */
+  readonly statementTimeoutMs?: number;
+  /**
+   * Given, once, the release of Better Auth's pool and the sign-in guard's runtime; whoever owns
+   * the app runs it on shutdown (Writing Effect rule 6). Without it, both live as long as the
+   * process.
+   */
+  readonly onRelease?: (release: Effect.Effect<void>) => void;
 }
 
 const SIGN_IN = "POST /api/auth/sign-in/email";
@@ -30,12 +40,14 @@ const SERVED = new Set([SIGN_IN, "GET /api/auth/get-session", "POST /api/auth/si
 
 const endpointOf = (request: Request) => `${request.method} ${new URL(request.url).pathname}`;
 
-/** The pool's timeouts, as DbLive's defaults. */
+/** The pool's default timeouts, DbLive's. */
 const CONNECT_TIMEOUT_MS = 5_000;
 const STATEMENT_TIMEOUT_MS = 30_000;
+/** How long past the statement timeout node-postgres waits before it gives up, as DbLive's. */
+const QUERY_TIMEOUT_MARGIN_MS = 5_000;
 
-function betterAuthFor(options: AuthOptions, clock: Clock.Clock, logLine: (line: string) => void) {
-  const log = (level: string, message: string) =>
+const logWith =
+  (clock: Clock.Clock, logLine: (line: string) => void) => (level: string, message: string) =>
     logLine(
       JSON.stringify({
         level,
@@ -43,13 +55,26 @@ function betterAuthFor(options: AuthOptions, clock: Clock.Clock, logLine: (line:
         message,
       }),
     );
+
+function poolFor(options: AuthOptions, log: (level: string, message: string) => void) {
+  const statementTimeoutMs = options.statementTimeoutMs ?? STATEMENT_TIMEOUT_MS;
+  const onIdleClientError = (error: Error & { code?: string }) =>
+    log("Error", `idle database client error ${error.code ?? ""}`.trim());
   const pool = new pg.Pool({
     connectionString: options.databaseUrl,
-    connectionTimeoutMillis: CONNECT_TIMEOUT_MS,
-    statement_timeout: STATEMENT_TIMEOUT_MS,
-  }).on("error", (error: Error & { code?: string }) =>
-    log("Error", `idle database client error ${error.code ?? ""}`.trim()),
-  );
+    connectionTimeoutMillis: options.connectTimeoutMs ?? CONNECT_TIMEOUT_MS,
+    statement_timeout: statementTimeoutMs,
+    query_timeout: statementTimeoutMs + QUERY_TIMEOUT_MARGIN_MS,
+  }).on("error", onIdleClientError);
+  const end = Effect.promise(() => pool.end().finally(() => pool.off("error", onIdleClientError)));
+  return { pool, end };
+}
+
+function betterAuthFor(
+  options: AuthOptions,
+  pool: pg.Pool,
+  log: (level: string, message: string) => void,
+) {
   return betterAuth({
     appName: "AVEL",
     baseURL: options.baseUrl,
@@ -71,6 +96,11 @@ function betterAuthFor(options: AuthOptions, clock: Clock.Clock, logLine: (line:
     telemetry: { enabled: false },
     // The message only: Better Auth's extra arguments can carry request values.
     logger: { level: "error", log: (level, message) => log(level, message) },
+    // An error inside an endpoint is rethrown, unlogged: better-call still answers its own API
+    // errors (the 401 the lockout counts), and anything else reaches intoBetterAuth instead of
+    // better-call's empty 500 and console.error, which print the failed query's params
+    // (t-b9-rigg-03, t-b9-axis-06).
+    onAPIError: { throw: true },
     advanced: {
       database: { generateId: false },
       // No __Secure- prefix: the cookie keeps the name the web reads (login.md section 1).
@@ -182,7 +212,9 @@ export function makeWebAuth(
   clock: Clock.Clock | undefined,
   logLine: (line: string) => void,
 ): WebAuth {
-  const auth = betterAuthFor(options, clock ?? Clock.Clock.defaultValue(), logLine);
+  const log = logWith(clock ?? Clock.Clock.defaultValue(), logLine);
+  const { pool, end } = poolFor(options, log);
+  const auth = betterAuthFor(options, pool, log);
   const runtime = ManagedRuntime.make(
     Layer.mergeAll(
       RateLimitLive,
@@ -190,6 +222,7 @@ export function makeWebAuth(
       clock === undefined ? Layer.empty : Layer.succeed(Clock.Clock)(clock),
     ),
   );
+  options.onRelease?.(Effect.andThen(runtime.disposeEffect, end));
   return {
     runtime,
     serves: (request: Request) => SERVED.has(endpointOf(request)),
