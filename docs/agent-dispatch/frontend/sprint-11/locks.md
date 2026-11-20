@@ -10,3 +10,5 @@ second line for the ticket ending (F2 relock), at the new tip. Lines are only ev
 
 <!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ abc1234 -->
 <!-- - T-B1: packages/server/test/health.test.ts, packages/server/test/errors.test.ts @ def5678 (F2 relock) -->
+
+- T-F10: apps/web/test/control-room-rules/contract-check.test.ts, apps/web/test/control-room-rules/no-money-in-mock.test.ts, apps/web/e2e/control-room-rules/no-money.spec.ts, apps/web/e2e/control-room-rules/untrusted-text.spec.ts, apps/web/e2e/control-room-rules/osa-flag.spec.ts @ e92879d

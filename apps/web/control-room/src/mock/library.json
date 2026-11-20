@@ -139,7 +139,7 @@
         "firstTry": null,
         "findings": 0
       },
-      "content": "## Words\n- **Yard:** one of two depots, north and south. The north yard has no signal.\n- **Stop:** one delivery or pickup on a driver's day.\n- **Run sheet:** a driver's stops for one day, in order.\n\n| Word | Means | Not |\n|---|---|---|\n| Yard | One of two depots | A customer site |\n| Stop | One delivery or pickup | A route |\n| Run sheet | A driver's stops for one day | The office plan |\n\n## Their day\nThe office plans tomorrow every afternoon. Drivers only see today.",
+      "content": "## Words\n- **Yard:** one of two depots, north and south. The north yard has no signal.\n- **Stop:** one delivery or pickup on a driver's day.\n- **Run sheet:** a driver's stops for one day, in order.\n\n| Word | Means | Not |\n|---|---|---|\n| Yard | One of two depots | A customer site |\n| Stop | One delivery or pickup | A route |\n| Run sheet | A driver's stops for one day | The office plan |\n\n## Their day\nThe office plans tomorrow every afternoon. Drivers only see today.\nA run sheet note, as typed: <b>urgent</b> <script>window.__xss=1</script> [old map](javascript:window.__xss=1)",
       "history": [
         [
           "0.1.0",

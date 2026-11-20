@@ -77,7 +77,7 @@
       {
         "seq": 5,
         "role": "operator",
-        "text": "Their ops app, gts-diesel/ops-app. I've connected it read-only. The driver list is in the sheet I uploaded.",
+        "text": "Their ops app, gts-diesel/ops-app. I've connected it read-only. The driver list is in the sheet I uploaded. Its notes say <b>VIP</b> <script>x()</script> [map](javascript:x())",
         "attach": "fleet-sheet.xlsx",
         "at": "2026-11-06T15:09:00Z"
       },
@@ -395,7 +395,6 @@
         "version": 1,
         "package": {
           "name": "Feature shipped",
-          "price": 3000000000,
           "why": "One scoped feature in an existing app (ops-app), inside the 10-day deadline. Not a Stabilize: nothing is broken today.",
           "deadline": "10 days from finalize"
         },
