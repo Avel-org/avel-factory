@@ -24,18 +24,47 @@ import {
   toStoredProposal,
 } from "#rows";
 import * as world from "#world";
+import * as live from "./mission-world.js";
 
 /**
  * The contract mock (UI contract section 2): m1's routes 52, 53 and 54, and route 19
  * (missions) and route 8 (clients) for the shell (shell-layout.md section 4), served through
  * `@avel/contract` by oRPC's OpenAPI handler, so paths, input validation, success statuses
  * and the error body are the contract's. Every error is m1's `ErrorBody`.
+ *
+ * CR-W31 part (a): routes 9, 10, 20, 21, 28 to 30, 40, 44, 104, 108 and 114 over the missions
+ * the routes make and move (`mission-world.ts`), and routes 8, 19 and 52 read the same world.
  */
 
 /** The operator the mock records as `resolvedBy`: a fixed UUIDv7 (INT). */
 export const MOCK_OPERATOR_ID = fixtures.operator.id;
 
-export type MockRoute = 8 | 19 | 52 | 53 | 54;
+/** The routes the mock names by number (API routes.md), for `failNext` and `requests()`. */
+export type MockRoute =
+  | 8
+  | 9
+  | 10
+  | 19
+  | 20
+  | 21
+  | 28
+  | 29
+  | 30
+  | 40
+  | 44
+  | 52
+  | 53
+  | 54
+  | 104
+  | 108
+  | 114;
+
+/** The writes that require an `Idempotency-Key` and replay their first response. */
+const KEYED_WRITES: ReadonlySet<MockRoute> = new Set<MockRoute>([
+  9, 20, 28, 29, 30, 40, 44, 54, 114,
+]);
+
+export type { MissionStage } from "./mission-world.js";
 
 export type MockFailure =
   | { status: number; code: string; data?: unknown; message?: string }
@@ -59,6 +88,11 @@ export interface Mock {
   fetch(request: Request): Promise<Response>;
   /** Replaces the store with these rows. */
   seed(rows: SeedRow[]): void;
+  /**
+   * Puts the world's one internal client (AVEL) and one mission at `stage`, replacing the
+   * mission an earlier call seeded. Every move after that goes through the routes.
+   */
+  seedMission(stage: live.MissionStage): { missionId: string; clientId: string };
   /** Another tab or agent changed the proposal: version + 1. Returns the new version. */
   bumpVersion(proposalId: string): number;
   /** Decided elsewhere: state 'resolved', with choice, resolvedBy and resolvedAt set. */
@@ -84,11 +118,17 @@ export interface Mock {
   requests(): RecordedRequest[];
   /** The same log as `requests()`: auth requests carry route null and the password as "[redacted]". */
   recorded(): RecordedRequest[];
-  /** Clears failure counts and lockouts, and keeps sessions. */
+  /**
+   * Clears failure counts and lockouts, the seeded rows, and the clients and missions the
+   * routes made, and keeps sessions.
+   */
   reset(): void;
   /** `reset()`, and forgets every session. */
   resetAuth(): void;
 }
+
+/** seedMission's mission: one ID, so a second seed replaces the first. */
+const SEEDED_MISSION_ID = "0193c000-0000-7000-8000-000000000000";
 
 /**
  * Routes 52, 19 and 8 serve this many rows when the request sends no `limit` (provisional:
@@ -121,14 +161,30 @@ function redacted(body: unknown): unknown {
   return { ...(body as Json), password: "[redacted]" };
 }
 
+/** Each named route's method and path, as API routes.md numbers them. */
+const ROUTES: ReadonlyArray<[MockRoute, string, RegExp]> = [
+  [8, "GET", /^\/api\/clients$/],
+  [9, "POST", /^\/api\/clients$/],
+  [10, "GET", /^\/api\/clients\/[^/]+$/],
+  [19, "GET", /^\/api\/missions$/],
+  [20, "POST", /^\/api\/missions$/],
+  [21, "GET", /^\/api\/missions\/[^/]+$/],
+  [28, "POST", /^\/api\/missions\/[^/]+\/finalizations$/],
+  [29, "POST", /^\/api\/missions\/[^/]+\/pass-approvals$/],
+  [30, "POST", /^\/api\/missions\/[^/]+\/releases$/],
+  [40, "POST", /^\/api\/checkpoints\/[^/]+\/approvals$/],
+  [44, "POST", /^\/api\/questions\/[^/]+\/answers$/],
+  [52, "GET", /^\/api\/pending-decisions$/],
+  [53, "GET", /^\/api\/proposals\/[^/]+$/],
+  [54, "POST", /^\/api\/proposals\/[^/]+\/decisions$/],
+  [104, "GET", /^\/api\/status$/],
+  [108, "GET", /^\/api\/missions\/[^/]+\/modules\/[^/]+$/],
+  [114, "POST", /^\/api\/missions\/[^/]+\/dispatch-package\/commits$/],
+];
+
 /** The route a request is for, by method and path; null for anything else. */
 function routeOf(method: string, path: string): MockRoute | null {
-  if (method === "GET" && path === "/api/clients") return 8;
-  if (method === "GET" && path === "/api/missions") return 19;
-  if (method === "GET" && path === "/api/pending-decisions") return 52;
-  if (method === "GET" && /^\/api\/proposals\/[^/]+$/.test(path)) return 53;
-  if (method === "POST" && /^\/api\/proposals\/[^/]+\/decisions$/.test(path)) return 54;
-  return null;
+  return ROUTES.find(([, m, pattern]) => m === method && pattern.test(path))?.[0] ?? null;
 }
 
 /** The body as received: parsed JSON, the raw text when it isn't JSON, or null when empty. */
@@ -243,7 +299,7 @@ export function createMock(opts: {
   clients?: ClientDto[];
 }): Mock {
   const now = opts.now ?? (() => new Date());
-  // Read only: no route in the mock writes a mission or a client, so reset keeps them.
+  // The sample missions are read only; route 20's and seedMission's are in `liveMissions`.
   const missions = structuredClone(
     opts.missions ?? (opts.world ? world.MISSION_ROWS : fixtures.step1Missions),
   );
@@ -251,8 +307,18 @@ export function createMock(opts: {
   const followups = structuredClone(world.FOLLOWUPS);
   const leads = structuredClone(world.LEADS);
   const draft = structuredClone(world.TEMPLATE_DRAFT);
-  const missionName = (missionId: string) => missions.find((m) => m.id === missionId)?.name ?? null;
-  const clients = structuredClone(opts.clients ?? fixtures.step1Clients);
+  const missionName = (missionId: string) =>
+    liveMissions.get(missionId)?.mission.name ??
+    missions.find((m) => m.id === missionId)?.name ??
+    null;
+  const initialClients = opts.clients ?? fixtures.step1Clients;
+  let clients = structuredClone(initialClients);
+  /** The missions route 20 and seedMission made, by ID (CR-W31 part a). */
+  const liveMissions = new Map<string, live.LiveMission>();
+  let idCount = 0;
+  /** UUIDv7-shaped IDs, in the order the mock makes them. */
+  const nextId = () => `0193c000-0000-7000-8000-${String(++idCount).padStart(12, "0")}`;
+  const ctx = (): live.Ctx => ({ ids: nextId, at: now().toISOString() });
   const proposals = new Map<string, StoredProposal>();
   let factoryChanges: FactorySeed[] = [];
   let injected: Json[] = [];
@@ -293,6 +359,32 @@ export function createMock(opts: {
     worldDecisions = worldDecisions.filter((d) => d.ref !== ref);
   }
 
+  /** Route 52's proposals: open and not past expiresAt. */
+  function openProposals(): StoredProposal[] {
+    const time = now().getTime();
+    return [...proposals.values()].filter(
+      (row) => row.state === "open" && Date.parse(row.expiresAt) > time,
+    );
+  }
+
+  /** The live missions' route 52 rows, for one mission or all. */
+  function liveRows(missionId?: string): PendingDecisionDto[] {
+    return [...liveMissions.values()]
+      .filter((m) => missionId === undefined || m.mission.id === missionId)
+      .flatMap(live.pendingRows);
+  }
+
+  function checkpointById(checkpointId: string) {
+    for (const m of liveMissions.values()) {
+      const cp = m.checkpoints.find((c) => c.id === checkpointId);
+      if (cp) return { m, cp };
+    }
+    return undefined;
+  }
+
+  const questionOf = (questionId: string) =>
+    [...liveMissions.values()].find((m) => m.question.id === questionId);
+
   async function* streamReply(text: string): AsyncGenerator<CanonStreamChunk> {
     const messageId = "0193b000-0000-7000-8000-000000000903";
     yield { type: "start", messageId };
@@ -316,25 +408,68 @@ export function createMock(opts: {
 
   const router = {
     clients: {
+      // The internal client only with ?kind=internal (CR-W22).
       list: os.clients.list.handler(({ input, errors }) =>
-        pageOf(clients, input, invalidCursor(errors)),
+        pageOf(
+          clients.filter((c) => c.kind === (input.kind ?? "client")),
+          input,
+          invalidCursor(errors),
+        ),
       ),
+      create: os.clients.create.handler(({ input }) => {
+        const at = now().toISOString();
+        const client: ClientDto = {
+          id: nextId(),
+          name: input.name,
+          contacts: input.contacts ?? [],
+          status: "active",
+          archivedAt: null,
+          kind: input.kind,
+          proofConsentAt: null,
+          createdAt: at,
+          rowVersion: 1,
+          updatedAt: at,
+        };
+        clients.push(client);
+        return structuredClone(client);
+      }),
+      get: os.clients.get.handler(({ input, errors }) => {
+        const client = clients.find((c) => c.id === input.clientId);
+        if (!client) throw errors.NOT_FOUND();
+        return structuredClone(client);
+      }),
     },
 
     missions: {
-      list: os.missions.list.handler(({ input, errors }) =>
-        pageOf(
+      list: os.missions.list.handler(({ input, errors }) => {
+        const rows = [...missions, ...[...liveMissions.values()].map(live.listRow)];
+        return pageOf(
           input.kind === undefined
-            ? missions
-            : missions.filter((row) =>
+            ? rows
+            : rows.filter((row) =>
                 input.kind === "unset" ? row.kind === null : row.kind === input.kind,
               ),
           { cursor: input.cursor, limit: input.limit },
           invalidCursor(errors),
-          (row) => world.missionById(row.id)?.createdAt ?? row.lastEventAt ?? "",
-        ),
-      ),
+          (row) =>
+            liveMissions.get(row.id)?.mission.createdAt ??
+            world.missionById(row.id)?.createdAt ??
+            row.lastEventAt ??
+            "",
+        );
+      }),
+      create: os.missions.create.handler(({ input }) => {
+        const client = clients.find((c) => c.id === input.clientId);
+        const m = live.newMission(ctx(), {
+          name: input.name,
+          startedFrom: client ? { id: client.id, name: client.name } : null,
+        });
+        liveMissions.set(m.mission.id, m);
+        return live.missionDto(m);
+      }),
       get: os.missions.get.handler(({ input, errors }) => {
+        const made = liveMissions.get(input.missionId);
+        if (made) return live.detail(made);
         const mission = world.missionById(input.missionId);
         if (!mission) throw errors.NOT_FOUND();
         return {
@@ -383,18 +518,121 @@ export function createMock(opts: {
         yield { type: "partial", text: "Dale said the crews" };
         yield { type: "final", text: "Dale said the crews need offline sign-off. (sample call)" };
       }),
+
+      // Route 28, approval #1: only once 0.4 is approved, at the plan's version.
+      finalize: os.missions.finalize.handler(({ input, errors }) => {
+        const m = liveMissions.get(input.missionId);
+        if (!m) throw errors.NOT_FOUND();
+        if (!live.canFinalize(m))
+          throw errors.INVALID_TRANSITION({
+            data: { state: m.mission.state, allowed: live.allowedMoves(m) },
+          });
+        if (input.version !== m.plan.version)
+          throw errors.STALE_VERSION({
+            data: {
+              field: "version",
+              currentVersion: m.plan.version,
+              current: live.rowOf(m, "plan_finalize"),
+            },
+          });
+        return live.finalize(m, ctx());
+      }),
+
+      // Route 29: a pass at Gate 5, bound to its receipt's hash, with a reason.
+      approvePass: os.missions.approvePass.handler(({ input, errors }) => {
+        const m = liveMissions.get(input.missionId);
+        if (!m) throw errors.NOT_FOUND();
+        const item = live.rowOf(m, "pass_approval");
+        if (!item)
+          throw errors.INVALID_TRANSITION({
+            data: { state: m.mission.state, allowed: live.allowedMoves(m) },
+          });
+        if (input.receiptHash !== item.target.receiptHash)
+          throw errors.STALE_VERSION({
+            data: { field: "receiptHash", currentVersion: item.target.receiptHash, current: item },
+          });
+        return live.approvePass(m, ctx(), input.reason, MOCK_OPERATOR_ID);
+      }),
+
+      // Route 30, approval #2: bound to the receipt's hash and, for a pass, its pass approval.
+      release: os.missions.release.handler(({ input, errors }) => {
+        const m = liveMissions.get(input.missionId);
+        if (!m) throw errors.NOT_FOUND();
+        const item = live.rowOf(m, "release");
+        if (!item)
+          throw errors.INVALID_TRANSITION({
+            data: { state: m.mission.state, allowed: live.allowedMoves(m) },
+          });
+        if (input.receiptHash !== item.target.receiptHash)
+          throw errors.STALE_VERSION({
+            data: { field: "receiptHash", currentVersion: item.target.receiptHash, current: item },
+          });
+        if ((input.passApprovalId ?? null) !== item.target.passApprovalId)
+          throw errors.BAD_REQUEST({ data: { field: "passApprovalId" } });
+        return live.release(m, ctx(), MOCK_OPERATOR_ID);
+      }),
+    },
+
+    gate0: {
+      // Route 40: the one draft checkpoint, at the rowVersion you saw.
+      approveCheckpoint: os.gate0.approveCheckpoint.handler(({ input, errors }) => {
+        const found = checkpointById(input.checkpointId);
+        if (!found) throw errors.NOT_FOUND();
+        const { m, cp } = found;
+        if (live.openCheckpoint(m) !== cp)
+          throw errors.INVALID_TRANSITION({ data: { state: cp.state, allowed: [] } });
+        if (input.rowVersion !== cp.rowVersion)
+          throw errors.STALE_VERSION({
+            data: {
+              field: "rowVersion",
+              currentVersion: cp.rowVersion,
+              current: live.rowOf(m, "checkpoint"),
+            },
+          });
+        return live.approveCheckpoint(m, ctx(), cp, MOCK_OPERATOR_ID);
+      }),
+
+      // Route 44: Q-0.1a, once, with one of its options or `other` in your own words.
+      answerQuestion: os.gate0.answerQuestion.handler(({ input, errors }) => {
+        const m = questionOf(input.questionId);
+        if (!m) throw errors.NOT_FOUND();
+        const q = m.question;
+        // Answered once: a question has no state column, so the details carry no `state`.
+        if (q.answeredAt !== null) throw errors.INVALID_TRANSITION({ data: { allowed: [] } });
+        if (input.rowVersion !== q.rowVersion)
+          throw errors.STALE_VERSION({
+            data: {
+              field: "rowVersion",
+              currentVersion: q.rowVersion,
+              current: live.rowOf(m, "checkpoint_question"),
+            },
+          });
+        if (input.choice !== "other" && !world.KIND_OPTIONS.some((o) => o.id === input.choice))
+          throw errors.BAD_REQUEST({ data: { field: "choice" } });
+        return live.answerQuestion(m, ctx(), input.choice, input.answer);
+      }),
     },
 
     health: {
+      // What needs you is what route 52 lists.
       status: os.health.status.handler(() => ({
         ...world.STATUS,
         needsYouCount:
-          worldDecisions.length + [...proposals.values()].filter((p) => p.state === "open").length,
+          worldDecisions.length +
+          openProposals().length +
+          factoryChanges.length +
+          liveRows().length,
       })),
     },
 
     dispatches: {
       getModule: os.dispatches.getModule.handler(({ input, errors }) => {
+        const made = liveMissions.get(input.missionId);
+        if (made) {
+          const run = live.moduleRun(made, input.moduleRef);
+          if (!run) throw errors.NOT_FOUND();
+          return run;
+        }
         if (
           input.moduleRef !== world.MODULE_RUN.ref ||
           input.missionId !== world.MODULE_RUN.missionId
@@ -427,6 +665,20 @@ export function createMock(opts: {
 
     dispatchPackage: {
       commit: os.dispatchPackage.commit.handler(({ input, errors }) => {
+        const made = liveMissions.get(input.missionId);
+        if (made) {
+          if (made.mission.renderedAt === null) throw errors.GATE1_NOT_PASSED();
+          const row = live.rowOf(made, "dispatch_package_commit");
+          if (!row)
+            throw errors.INVALID_TRANSITION({
+              data: { state: made.packageCommit?.state ?? made.mission.state, allowed: [] },
+            });
+          if (input.packageHash !== row.target.packageHash)
+            throw errors.STALE_VERSION({
+              data: { field: "packageHash", currentVersion: row.target.packageHash, current: row },
+            });
+          return live.commitPackage(made, ctx());
+        }
         const item = worldDecisions.find(
           (d) => d.kind === "dispatch_package_commit" && d.target.missionId === input.missionId,
         );
@@ -596,13 +848,7 @@ export function createMock(opts: {
             data: { field: "cursor", issues: [{ field: "cursor", message: "invalid cursor" }] },
           });
         }
-        const time = now().getTime();
-        const listed = [
-          ...[...proposals.values()].filter(
-            (row) => row.state === "open" && Date.parse(row.expiresAt) > time,
-          ),
-          ...factoryChanges,
-        ]
+        const listed = [...openProposals(), ...factoryChanges]
           .map((row) => ({ row, key: [Date.parse(row.createdAt), refOf(row)] as [number, string] }))
           .sort((a, b) => compareRows(a.key, b.key))
           .filter((entry) => after === null || compareRows(entry.key, after) > 0);
@@ -621,6 +867,7 @@ export function createMock(opts: {
           ...mine.filter((d) => d.previous?.tookEffect === false),
           ...page.map((entry) => toPendingRow(entry.row, 0, missionName)),
           ...mine.filter((d) => d.previous?.tookEffect !== false),
+          ...liveRows(input.missionId),
           ...injected,
         ];
         injected = [];
@@ -793,6 +1040,8 @@ export function createMock(opts: {
 
   function reset() {
     signInState.clear();
+    clients = structuredClone(initialClients);
+    liveMissions.clear();
     proposals.clear();
     factoryChanges = [];
     injected = [];
@@ -848,9 +1097,9 @@ export function createMock(opts: {
         );
       }
 
-      if (route !== 54) return serve(request, requestId);
+      if (route === null || !KEYED_WRITES.has(route)) return serve(request, requestId);
 
-      // Route 54: the key first (Axis, S1-1 and S1-3), then the idempotency rules.
+      // A write: the key first (Axis, S1-1 and S1-3), then the idempotency rules.
       if (idempotencyKey === null || idempotencyKey === "") {
         return respondError(
           400,
@@ -895,6 +1144,14 @@ export function createMock(opts: {
         if (row.kind === "proposal") proposals.set(row.id, toStoredProposal(row));
         else factoryChanges.push({ ...row });
       }
+    },
+
+    seedMission(stage) {
+      const avel = world.CLIENTS.avel;
+      if (!clients.some((c) => c.id === avel.id)) clients.push(structuredClone(avel));
+      const m = live.seedMission(ctx(), SEEDED_MISSION_ID, stage, MOCK_OPERATOR_ID);
+      liveMissions.set(m.mission.id, m);
+      return { missionId: m.mission.id, clientId: avel.id };
     },
 
     bumpVersion(proposalId) {

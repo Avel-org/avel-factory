@@ -301,6 +301,26 @@ const base = (m: MissionDto | null, n: number) => ({
   previous: null,
 });
 
+/** Q-0.1a's three answers (CR-W22): the project's kind. */
+export const KIND_OPTIONS = [
+  {
+    id: "template",
+    label: "Internal template",
+    consequence:
+      "It ships to the templates repo, and you publish it to Templates once it's verified.",
+  },
+  {
+    id: "client",
+    label: "Client project",
+    consequence: "Canon asks which client it's for next.",
+  },
+  {
+    id: "internal",
+    label: "Internal tool",
+    consequence: "It's AVEL's own software, built like a client project with you as the client.",
+  },
+];
+
 export const DECISIONS: PendingDecisionDto[] = [
   {
     ...base(fleet, 1),
@@ -439,25 +459,7 @@ export const DECISIONS: PendingDecisionDto[] = [
       text: "Is this a client project, or an internal template?",
       subject: { checkpoint: "0.1", moduleRef: null, risk: null, label: "0.1 What it is" },
       blocking: true,
-      options: [
-        {
-          id: "template",
-          label: "Internal template",
-          consequence:
-            "It ships to the templates repo, and you publish it to Templates once it's verified.",
-        },
-        {
-          id: "client",
-          label: "Client project",
-          consequence: "Canon asks which client it's for next.",
-        },
-        {
-          id: "internal",
-          label: "Internal tool",
-          consequence:
-            "It's AVEL's own software, built like a client project with you as the client.",
-        },
-      ],
+      options: KIND_OPTIONS,
       recommended: "template",
       why: "You described a starter every field-service client would begin from, and no client is attached.",
       after: null,
