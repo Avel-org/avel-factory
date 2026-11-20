@@ -58,7 +58,7 @@ PLAN → TESTS → BUILD → CHECK → REVIEW → MERGE
 - **B5. Review.** The checker's **review dispatch** reviews each PR on a detached checkout, once per cycle (section G).
 - **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41).
 - **B7. Work in progress:**
-  - At most 4 sessions run at once: one builder and one checker per lane.
+  - At most 4 sessions run at once: one checker per lane, and up to two builders per lane when their tickets share no file and neither depends on the other (CR-45). A session that runs the web's Playwright suite counts as two.
   - A checker can write tests for the next ticket while the builder works on the current one, because they touch different files.
   - Two tickets running at the same time never share a file.
 - **B8. A new cycle doesn't start** until the last one's PRs are merged, sent back, or re-planned.
@@ -246,7 +246,7 @@ CI is green and the acceptance tests pass. Nothing else.
   - commitlint on the PR title;
   - the contract's OpenAPI diff;
   - the secret scan;
-  - for the web: the bundle budget, accessibility and end-to-end tests.
+  - for the web: the bundle budget, accessibility and end-to-end tests. On a pull request the end-to-end tests run only when the web, the contract, the mock, the lockfile or the workflows change (CR-45); a push to `main` always runs them.
 - **H5. A red check blocks.** Nobody merges red, retries CI to get a green, or marks a check optional.
 - **H6. Lock checks:** CI fails a PR if the builder's commits touch a file outside the build task doc's Territory, or any file listed in `locks.md`. The lists are read from the rendered task doc and `locks.md`, never from the issue. CI also fails a PR whose task docs differ from what `render.py` renders from the plan.
 - **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.

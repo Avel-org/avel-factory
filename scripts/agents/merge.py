@@ -21,9 +21,12 @@ must cover every PR named. The tool posts them on each PR before merging it, wit
 the conditions his approval covered. The merge is pinned to that head (--match-head-commit), so a push after
 the approval fails the merge and OSA asks again.
 
-PRs merge in the order given, one at a time. After each, the tool waits for main's CI on the merge commit
-and stops at the first failure. It never updates a branch, re-runs a check or resolves a conflict: a PR
-that fails a condition is reported with where it goes (L2), and the rest of the list doesn't merge.
+PRs merge in the order given, one at a time and back to back (CR-45 decision 6). Before each merge the
+tool checks main: if main's latest finished run of any workflow failed, nothing more merges (H5). After the
+last merge it waits for main's CI on that commit. A cancelled run on main was superseded by a newer push
+(the CI workflow cancels in progress), so it isn't a failure. The tool never updates a branch, re-runs a
+check or resolves a conflict: a PR that fails a condition is reported with where it goes (L2), and the rest
+of the list doesn't merge.
 """
 
 import argparse
@@ -230,10 +233,23 @@ def wait_for_main(sha):
     while time.time() < deadline:
         runs = gh("run", "list", "--commit", sha, "--json", "name,status,conclusion")
         if runs and all(r["status"] == "completed" for r in runs):
-            bad = [f"{r['name']}={r['conclusion']}" for r in runs if r["conclusion"] not in ("success", "skipped")]
+            # cancelled: a newer push to main superseded the run (ci.yml cancels in progress)
+            bad = [f"{r['name']}={r['conclusion']}" for r in runs
+                   if r["conclusion"] not in ("success", "skipped", "cancelled")]
             return (False, ", ".join(bad)) if bad else (True, ", ".join(r["name"] for r in runs))
         time.sleep(POLL)
     return False, f"main's CI on {sha[:7]} didn't finish in {MAIN_CI_TIMEOUT} s"
+
+
+def main_red():
+    """Each workflow's latest finished, not-superseded run on main; the failed ones (H5, CR-45 decision 6)."""
+    runs = gh("run", "list", "--branch", "main", "--limit", "30", "--json", "name,status,conclusion,headSha")
+    latest = {}
+    for r in runs:  # newest first
+        if r["status"] != "completed" or r["conclusion"] in ("cancelled", "skipped"):
+            continue
+        latest.setdefault(r["name"], r)
+    return [f"{n}={r['conclusion']} on {r['headSha'][:7]}" for n, r in latest.items() if r["conclusion"] != "success"]
 
 
 def merge_one(a, approved):
@@ -270,18 +286,23 @@ def main(argv=None):
             rest = args.prs[i + 1:]
             print(f"stopped at #{number}; not merged: {', '.join(f'#{n}' for n in [number, *rest])}")
             return 1
+        red = main_red()
+        if red:
+            print(f"  main is red ({', '.join(red)}): nothing merges until it's green (H5)")
+            print(f"stopped; not merged: {', '.join(f'#{n}' for n in args.prs[i:])}")
+            return 1
         try:
             sha = merge_one(a, args.approved)
         except GhError as e:
             print(f"  merge failed: {e}")
             return 1
+        if i < len(args.prs) - 1:
+            print(f"  merged as {sha[:7]}; main's CI is checked before the next merge and after the last (CR-45)")
+            continue
         print(f"  merged as {sha[:7]}; waiting for main's CI")
         green, detail = wait_for_main(sha)
         if not green:
-            rest = args.prs[i + 1:]
             print(f"  main is not green after #{number}: {detail}")
-            if rest:
-                print(f"stopped; not merged: {', '.join(f'#{n}' for n in rest)}")
             return 1
         print(f"  main green: {detail}")
     return 0
