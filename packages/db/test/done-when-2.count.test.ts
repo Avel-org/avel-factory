@@ -5,11 +5,11 @@ import { describe, expect, it } from "vitest";
 import { counts } from "./helpers/rules.ts";
 
 describe("done-when 2: the rule count", () => {
-  it("[done-when 2] 553 rules, each with its own test: 243 CHECKs (232 plain and 11 parent rules), 88 unique and partial-unique indexes, and 222 foreign keys (219 delete refusals and 3 Better Auth cascades); contract 1.0.0 adds 36 CHECKs, 5 uniques and 15 foreign keys", () => {
+  it("[done-when 2] 554 rules, each with its own test: 243 CHECKs (232 plain and 11 parent rules), 89 unique and partial-unique indexes, and 222 foreign keys (219 delete refusals and 3 Better Auth cascades); contract 1.0.0 adds 36 CHECKs, 5 uniques and 15 foreign keys, and CR-44 adds 1 unique", () => {
     expect(counts).toEqual({
       checks: 232,
       parentRules: 11,
-      uniques: 88,
+      uniques: 89,
       deleteRefusals: 219,
       deleteCascades: 3,
     });
@@ -19,6 +19,6 @@ describe("done-when 2: the rule count", () => {
         counts.uniques +
         counts.deleteRefusals +
         counts.deleteCascades,
-    ).toBe(553);
+    ).toBe(554);
   });
 });
