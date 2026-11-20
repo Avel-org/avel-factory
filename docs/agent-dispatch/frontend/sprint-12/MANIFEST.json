@@ -1,0 +1,21 @@
+{
+  "files": {
+    "DISPATCH-PROMPTS.md": "87eddad5cf9aed1e80b00c15a348a9b0f4a61274fef80e1b58ecf8f1a854edff",
+    "DISPATCH.md": "e8b0cd8d45049d4998295ec5760e3b4d2a7354b6a267a2e60c97ee4cee338462",
+    "agent-fantem-t-f12-build.md": "92eb0d107384261d951164cd047b49049c543a4be2eaaa479282dfdb588f4b91",
+    "agent-fantem-t-f14-build.md": "37d0aeb034be526773d187426386278035a953eef61fc0d13bfb57234cb8630a",
+    "agent-fantem-t-f22-build.md": "829e8a96fb0964ca8b3469b6ede7a24d936a0d13c2ea69a91ec139a5cd1ddccc",
+    "agent-fenn-t-f12-review.md": "dacd0df9e79a64098c5c321c88ebe79f093e6475798cb2451d11c6fd55d28955",
+    "agent-fenn-t-f12-test-e2e.md": "0ab0ef9fe19fd8ae7276a37587d1d78777f42dd01ba467ffaa84232cfff002bb",
+    "agent-fenn-t-f14-review.md": "f82b945cc5b596e10ae5ffb2123cd03d91c1ca68c16898811a5f18641c8da4d3",
+    "agent-fenn-t-f14-test-e2e.md": "822a986127fbf07138e3a4692189214a7048d2acfbe06d61fa80cdc25017ee11",
+    "agent-fenn-t-f22-review.md": "7f1f603d8d582ef42d713482f3ee4381d0dc23630e0c1496e04d498bdacf803e",
+    "agent-fenn-t-f22-test-unit.md": "d6c2066b35e7f635fa41295263bc985e96de578423f1938c83365bfb3f7c51b5",
+    "codebase-analysis.md": "03911743f57dd1770b93e980045783b96b9b321b0dc09b3519d38f77342ffe29"
+  },
+  "lane": "frontend",
+  "packageSha256": "5c14c0be78364eb149b20f8e6ccece4f61752875e2709a5be4a90e14871be878",
+  "plan_sha256": "64c8f84ea40ba2fa9fc004148d419577e83191f4838aaeada22866130fec980e",
+  "renderer": "avel-render 3",
+  "sprint": "sprint-12"
+}
