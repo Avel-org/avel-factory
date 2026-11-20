@@ -1,6 +1,107 @@
 status: test-dispute
 ticket: T-B18
 
+# T-B18 · build · Soap: completion report (attempt a2)
+
+Branch `t/B18-event-consumers`, on top of the F2 relock `683766b`. The engine is unchanged from a1's checkpoint `2cf9e88`, and this attempt commits only this report. Nothing is pushed. The a1 report is kept below.
+
+**In short:** Rigg's harness fix (tests a2) works. The one failure left, T-B18-07 at `database-blip.test.ts:163` (`expected 2 to be 1`, `starts.long`), isn't an engine defect. It's a race in the test itself: two claim loops race for the long job. It fails whenever the **doomed** worker, not the live one, claims the `t18.long` job. That worker is killed at the blip, so the run it holds stops checking in and is reaped and rerun. The design requires exactly that. Across 30 probed runs, all 4 failures had the doomed worker holding the long job, and all 26 passes had the live worker. No engine can avoid this without an arbitrary rule (below), so I've stopped with `test-dispute` (F2) instead of bending the engine.
+
+## Test dispute: T-B18-07, which worker claims `t18.long`
+
+**The lines:**
+- `database-blip.test.ts:91`: the doomed worker is started with `handlers: kinds(false)`, so it has handlers for `t18.doomed`, `t18.long` and `t18.fresh`.
+- Line 96: the live worker is started with `kinds(true)`.
+- Line 102: `t18.long` is enqueued while both workers' claim loops poll every 1 s.
+
+**What goes wrong:** both claim loops wake on the same 1 s tick of the TestClock, and whichever claims first gets the job.
+
+When the doomed worker wins:
+1. Line 113: `doomed.kill` ends its check-ins. That is `Worker.kill`'s contract: "nothing more is claimed, checked in or released".
+2. The claim expires 30 s after the claim (t0 + 31 s).
+3. The live worker's reaper puts the job back at t0 + 34 s, and the live worker runs it again.
+4. `starts.long` becomes 2, and line 163 fails.
+
+This is Jobs and workers.md, A job's life 5 ("Recovered") working as designed.
+
+**Why the engine can't settle it:**
+- Item 1 (lines 126–136) needs the live worker to claim and finish `t18.fresh` while its long run is still in flight (held on `gate` until step 4). So a worker must claim more jobs while one of its runs is in flight.
+- At line 102, the doomed worker is in the same state as the live worker will be: one run in flight (`Effect.never` versus the gated run), nothing else.
+- The two states are the same, so no engine rule can let the live worker claim a second job while refusing the doomed one. Any rule that did would be built around this test: a per-worker limit, a preference for one worker over another, or a delay. The design names none (E3, E8; AGENTS.md Writing Effect rule 7).
+
+**Evidence:**
+- **Method:** a temporary probe in `engine.ts` (removed, never committed; `engine.ts` matches `2cf9e88` byte for byte) recorded each claim with its TestClock time and which worker made it, and each check-in's start and end.
+- **Correlation:** 30 runs of `vitest run test/consumers/database-blip`, one at a time:
+
+  | Claimed `t18.long` | Runs | Passed | Failed at line 163 |
+  | --- | --- | --- | --- |
+  | live worker | 26 | 26 | 0 |
+  | doomed worker | 4 | 0 | 4 |
+
+- **A failing run's timeline:**
+  - `t18.long` is claimed by the doomed worker at T0 + 1 s.
+  - No check-in for it ever starts. The doomed worker's check-in fiber is killed with the worker at the blip.
+  - The consumer's check-in starts at T0 + 10 s, is blocked by the test's lock, and logs its defect at T0 + 14 s.
+  - The live worker claims `t18.long` again (claim 2) at T0 + 34 s.
+  - From then on, the live worker's check-ins for claim 2 succeed every 10 s.
+- **Passing runs:** the long run's check-in starts at T0 + 11 s, waits on the lock, and carries on every 10 s.
+- **Rigg's note:** his a2 report saw the run's check-in missing from the defect log in every captured failure. This is why: the check-in belonged to the killed worker.
+- **The full suite:** the combined chain below failed once on this same line, and the separate `pnpm test` passed. That matches a race lost about 1 run in 7.
+
+**Proposed fix (Rigg's call, assertions unchanged):** only the doomed worker should be able to claim `t18.doomed`, and it should never claim `t18.long`. For example, at line 91:
+
+```ts
+handlers: kinds(false).filter((h) => h.kind === "t18.doomed"),
+```
+
+The live worker keeps all three kinds, so its rerun of the reaped doomed job is unchanged, and so are item 1 and the long run's check-ins. `t18.fresh` already can't go to the doomed worker, because it's enqueued after the kill.
+
+## Pre-flight
+
+`DATABASE_URL` from `scripts/pg-local.sh start`. Engine at `2cf9e88` (unchanged), tests at `683766b` (F2 relock). Each command was run one at a time, never two vitests at once.
+
+| Command | Result |
+| --- | --- |
+| `pnpm build` (before any change, with `pnpm test`) | exit 0. `pnpm test` exit 0: 101 files, 1085 tests |
+| `pnpm build` | exit 0 |
+| `pnpm typecheck` | exit 0 |
+| `pnpm lint` | exit 0. 6 warnings, all in `apps/web/e2e/**` and already on `main` |
+| `pnpm test` | exit 0: 101 files, 1085 tests (the live worker won the race) |
+| `pnpm --filter @avel/server test` | exit 0: 59 files, 138 tests |
+| `pnpm --filter @avel/server typecheck` | exit 0 |
+| `pnpm --filter @avel/server check:effect` | exit 0: 0 errors, 13 warnings and 3 messages, none in `src/platform/jobs/**` |
+| `pnpm build && pnpm typecheck && pnpm lint && pnpm test` | exit 1: build, typecheck and lint pass. `pnpm test`: 1084 of 1085 pass. The one failure is T-B18-07 at `database-blip.test.ts:163`, `expected 2 to be 1` (the disputed race) |
+
+Before this attempt, Rigg's 10 proof runs on the same engine failed 5 times, all at this line (his a2 report). T-B18-01 to -06, T-B13 and T-B17 passed in every run seen here and in his.
+
+## What changed
+
+- `docs/agent-dispatch/backend/sprint-05/agent-soap-t-b18-build-completion.md`: this report, with the a1 report kept below it.
+- No code: `packages/server/src/platform/jobs/engine.ts` and `jobs.ts` are as a1 committed them (`2cf9e88`). The only change I made was the temporary probe, and it has been removed.
+
+## Contract to files
+
+As in a1 (below): every task maps to `engine.ts` and `jobs.ts` at `2cf9e88`. T-B18-07's item 4 ("a run's check-ins carry on") holds whenever the run belongs to the live worker, which is what that assertion means to test.
+
+## Deviations
+
+- None this attempt. a1's deviations stand (below): the worker runs its claimed jobs side by side, which item 1 requires; `CHECK_IN` uses `Schedule.fixed`; and a consumer job's `attempts` counts failures at its cursor.
+
+## Limitations
+
+- T-B18-07 fails about 1 run in 7 until the doomed worker can't claim `t18.long`. I couldn't run the 10-run proof green on this engine for that reason.
+- I didn't edit the locked test, not even to try the proposed fix (F2). The evidence is the probe's correlation, not a patched run.
+- The 5th failure (dead, and the consumer stops) and how the operator sees it: unchanged from a1, see "What happens after the 5th failure" below.
+
+## Messages received
+
+None.
+
+---
+
+# a1 report (kept)
+
+
 # T-B18 · build · Soap: completion report
 
 Branch `t/B18-event-consumers`. The engine checkpoint is `2cf9e88`; this report is committed on top of it. Nothing is pushed.
