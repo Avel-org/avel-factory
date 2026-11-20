@@ -112,3 +112,5 @@ This attempt changed only this report. These files came from attempt 1 (`3c5d7df
 ## Messages received
 
 None. No instruction from OSA arrived during this attempt.
+
+When I finished, I tried to tell OSA (CR-37), and `SendMessage` to `OSA` answered "No agent named 'OSA' is reachable". `ListAgents` showed only one other session, the frontend T-F10 builder. I'm allowed to message only OSA, so I sent nothing to it. This report is the record.
