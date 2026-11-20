@@ -128,7 +128,10 @@ describe("T-B15-03 · merge by anyone else", () => {
     expect(found[0]).toMatchObject({ sha, merged_by_app: false });
     const raised = await alerts(d.url);
     expect(raised).toHaveLength(1);
-    expect(raised[0]?.payload).toMatchObject({ kind: "unexpected_factory_merge", sha });
+    // The contract's payload: { alert: AlertDto }, the SHA carried in the alert's key (F2 ruling).
+    expect(raised[0]?.payload).toMatchObject({
+      alert: { kind: "unexpected_factory_merge", key: `unexpected_factory_merge:${sha}` },
+    });
 
     const { makeFactoryRepo } = await loadFactoryRepo();
     const repo = makeFactoryRepo({ databaseUrl: d.url, mirrorPath: mirror });
