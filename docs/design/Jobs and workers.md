@@ -25,7 +25,7 @@ A **job** is a to-do row in Postgres, such as "render this plan" or "run Gate 2 
 ## A job's life
 
 1. **Born in a transaction.** A state change, its numbered event and the job row are saved together, or not at all.
-2. **Claimed.** A worker takes the oldest queued job that's due. Postgres gives each row to one worker only (`FOR UPDATE SKIP LOCKED`). Claiming raises the job's claim number and sets its claim expiry.
+2. **Claimed.** A worker takes the oldest queued job that's due. Postgres gives each row to one worker only (`FOR UPDATE SKIP LOCKED`). Claiming raises the job's claim number and sets its claim expiry. A job with a partition (a mission) isn't claimed while another job in that partition is claimed.
 3. **Worked.** The worker checks in while it works, which pushes the claim expiry out. Every save it makes is conditional: "only if my claim number is still current".
 4. **Finished.** One transaction records the result, its event and any follow-up job, and marks the job `done`.
 5. **Recovered.** If a worker crashes, it stops checking in and its claim expires. The reaper puts the job back in the queue, and the next worker claims it with a higher claim number.

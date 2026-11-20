@@ -797,6 +797,15 @@ export const CHANGES: Change[] = [
       u.raw = true;
     },
   },
+  // CR-44: a partition key on jobs (migration 0004)
+  addColumn("jobs", col("partition_key", "text", false), "CR-44"),
+  addUnique(
+    "jobs",
+    "jobs_one_claimed_per_partition_uq",
+    ["partition_key"],
+    "((state = 'claimed'::text) AND (partition_key IS NOT NULL))",
+    "CR-44",
+  ),
   // CR-7, CR-8, CR-9, CR-16: the lists
   setCheck(
     "plan_modules",

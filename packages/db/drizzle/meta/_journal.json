@@ -29,6 +29,13 @@
       "when": 1794474459751,
       "tag": "0003_crw_contract_1_0",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795145126701,
+      "tag": "0004_cr44_partition_key",
+      "breakpoints": true
     }
   ]
 }
