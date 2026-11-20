@@ -131,3 +131,5 @@ The lead asked for this (E3). The design says it: Jobs and workers.md, "A job's 
 ## Messages received
 
 None.
+
+I couldn't send the CR-37 status message to OSA: SendMessage found no agent named OSA, and ListAgents showed no other session running on this machine. This report is the record.
