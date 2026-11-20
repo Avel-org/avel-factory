@@ -86,9 +86,11 @@ describe("T-B18-07 · one database blip under a running worker and consumer", ()
           db.withTransaction(jobs.enqueue(kind, `${SECRET}:${key}`, { secret: SECRET }));
 
         // A worker that will die holding a claim, so the live worker has something to reap later.
+        // Only the doomed kind: if it could claim t18.long too, it would sometimes take the long run and die
+        // holding it, and the reaper's rerun would be correct but fail starts.long (F2, Nov 20).
         const doomed = yield* jobs.startWorker({
           name: `${SECRET}-doomed`,
-          handlers: kinds(false),
+          handlers: kinds(false).filter((h) => h.kind === "t18.doomed"),
         });
         const doomedJob = yield* enqueue("t18.doomed", "doomed");
         expect((yield* until(c, () => starts.doomed === 1, 30_000)).ok).toBe(true);
