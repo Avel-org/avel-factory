@@ -24,7 +24,6 @@ import {
   toStoredProposal,
 } from "#rows";
 import * as world from "#world";
-import * as live from "./mission-world.js";
 
 /**
  * The contract mock (UI contract section 2): m1's routes 52, 53 and 54, and route 19
@@ -33,7 +32,7 @@ import * as live from "./mission-world.js";
  * and the error body are the contract's. Every error is m1's `ErrorBody`.
  *
  * CR-W31 part (a): routes 9, 10, 20, 21, 28 to 30, 40, 44, 104, 108 and 114 over the missions
- * the routes make and move (`mission-world.ts`), and routes 8, 19 and 52 read the same world.
+ * the routes make and move (`world.ts`, its mission state module), and routes 8, 19 and 52 read the same world.
  */
 
 /** The operator the mock records as `resolvedBy`: a fixed UUIDv7 (INT). */
@@ -64,7 +63,7 @@ const KEYED_WRITES: ReadonlySet<MockRoute> = new Set<MockRoute>([
   9, 20, 28, 29, 30, 40, 44, 54, 114,
 ]);
 
-export type { MissionStage } from "./mission-world.js";
+export type { MissionStage } from "#world";
 
 export type MockFailure =
   | { status: number; code: string; data?: unknown; message?: string }
@@ -92,7 +91,7 @@ export interface Mock {
    * Puts the world's one internal client (AVEL) and one mission at `stage`, replacing the
    * mission an earlier call seeded. Every move after that goes through the routes.
    */
-  seedMission(stage: live.MissionStage): { missionId: string; clientId: string };
+  seedMission(stage: world.MissionStage): { missionId: string; clientId: string };
   /** Another tab or agent changed the proposal: version + 1. Returns the new version. */
   bumpVersion(proposalId: string): number;
   /** Decided elsewhere: state 'resolved', with choice, resolvedBy and resolvedAt set. */
@@ -314,11 +313,11 @@ export function createMock(opts: {
   const initialClients = opts.clients ?? fixtures.step1Clients;
   let clients = structuredClone(initialClients);
   /** The missions route 20 and seedMission made, by ID (CR-W31 part a). */
-  const liveMissions = new Map<string, live.LiveMission>();
+  const liveMissions = new Map<string, world.LiveMission>();
   let idCount = 0;
   /** UUIDv7-shaped IDs, in the order the mock makes them. */
   const nextId = () => `0193c000-0000-7000-8000-${String(++idCount).padStart(12, "0")}`;
-  const ctx = (): live.Ctx => ({ ids: nextId, at: now().toISOString() });
+  const ctx = (): world.Ctx => ({ ids: nextId, at: now().toISOString() });
   const proposals = new Map<string, StoredProposal>();
   let factoryChanges: FactorySeed[] = [];
   let injected: Json[] = [];
@@ -371,7 +370,7 @@ export function createMock(opts: {
   function liveRows(missionId?: string): PendingDecisionDto[] {
     return [...liveMissions.values()]
       .filter((m) => missionId === undefined || m.mission.id === missionId)
-      .flatMap(live.pendingRows);
+      .flatMap(world.pendingRows);
   }
 
   function checkpointById(checkpointId: string) {
@@ -442,7 +441,7 @@ export function createMock(opts: {
 
     missions: {
       list: os.missions.list.handler(({ input, errors }) => {
-        const rows = [...missions, ...[...liveMissions.values()].map(live.listRow)];
+        const rows = [...missions, ...[...liveMissions.values()].map(world.listRow)];
         return pageOf(
           input.kind === undefined
             ? rows
@@ -460,16 +459,16 @@ export function createMock(opts: {
       }),
       create: os.missions.create.handler(({ input }) => {
         const client = clients.find((c) => c.id === input.clientId);
-        const m = live.newMission(ctx(), {
+        const m = world.newMission(ctx(), {
           name: input.name,
           startedFrom: client ? { id: client.id, name: client.name } : null,
         });
         liveMissions.set(m.mission.id, m);
-        return live.missionDto(m);
+        return world.missionDto(m);
       }),
       get: os.missions.get.handler(({ input, errors }) => {
         const made = liveMissions.get(input.missionId);
-        if (made) return live.detail(made);
+        if (made) return world.detail(made);
         const mission = world.missionById(input.missionId);
         if (!mission) throw errors.NOT_FOUND();
         return {
@@ -523,45 +522,45 @@ export function createMock(opts: {
       finalize: os.missions.finalize.handler(({ input, errors }) => {
         const m = liveMissions.get(input.missionId);
         if (!m) throw errors.NOT_FOUND();
-        if (!live.canFinalize(m))
+        if (!world.canFinalize(m))
           throw errors.INVALID_TRANSITION({
-            data: { state: m.mission.state, allowed: live.allowedMoves(m) },
+            data: { state: m.mission.state, allowed: world.allowedMoves(m) },
           });
         if (input.version !== m.plan.version)
           throw errors.STALE_VERSION({
             data: {
               field: "version",
               currentVersion: m.plan.version,
-              current: live.rowOf(m, "plan_finalize"),
+              current: world.rowOf(m, "plan_finalize"),
             },
           });
-        return live.finalize(m, ctx());
+        return world.finalize(m, ctx());
       }),
 
       // Route 29: a pass at Gate 5, bound to its receipt's hash, with a reason.
       approvePass: os.missions.approvePass.handler(({ input, errors }) => {
         const m = liveMissions.get(input.missionId);
         if (!m) throw errors.NOT_FOUND();
-        const item = live.rowOf(m, "pass_approval");
+        const item = world.rowOf(m, "pass_approval");
         if (!item)
           throw errors.INVALID_TRANSITION({
-            data: { state: m.mission.state, allowed: live.allowedMoves(m) },
+            data: { state: m.mission.state, allowed: world.allowedMoves(m) },
           });
         if (input.receiptHash !== item.target.receiptHash)
           throw errors.STALE_VERSION({
             data: { field: "receiptHash", currentVersion: item.target.receiptHash, current: item },
           });
-        return live.approvePass(m, ctx(), input.reason, MOCK_OPERATOR_ID);
+        return world.approvePass(m, ctx(), input.reason, MOCK_OPERATOR_ID);
       }),
 
       // Route 30, approval #2: bound to the receipt's hash and, for a pass, its pass approval.
       release: os.missions.release.handler(({ input, errors }) => {
         const m = liveMissions.get(input.missionId);
         if (!m) throw errors.NOT_FOUND();
-        const item = live.rowOf(m, "release");
+        const item = world.rowOf(m, "release");
         if (!item)
           throw errors.INVALID_TRANSITION({
-            data: { state: m.mission.state, allowed: live.allowedMoves(m) },
+            data: { state: m.mission.state, allowed: world.allowedMoves(m) },
           });
         if (input.receiptHash !== item.target.receiptHash)
           throw errors.STALE_VERSION({
@@ -569,7 +568,7 @@ export function createMock(opts: {
           });
         if ((input.passApprovalId ?? null) !== item.target.passApprovalId)
           throw errors.BAD_REQUEST({ data: { field: "passApprovalId" } });
-        return live.release(m, ctx(), MOCK_OPERATOR_ID);
+        return world.release(m, ctx(), MOCK_OPERATOR_ID);
       }),
     },
 
@@ -579,17 +578,17 @@ export function createMock(opts: {
         const found = checkpointById(input.checkpointId);
         if (!found) throw errors.NOT_FOUND();
         const { m, cp } = found;
-        if (live.openCheckpoint(m) !== cp)
+        if (world.openCheckpoint(m) !== cp)
           throw errors.INVALID_TRANSITION({ data: { state: cp.state, allowed: [] } });
         if (input.rowVersion !== cp.rowVersion)
           throw errors.STALE_VERSION({
             data: {
               field: "rowVersion",
               currentVersion: cp.rowVersion,
-              current: live.rowOf(m, "checkpoint"),
+              current: world.rowOf(m, "checkpoint"),
             },
           });
-        return live.approveCheckpoint(m, ctx(), cp, MOCK_OPERATOR_ID);
+        return world.approveCheckpoint(m, ctx(), cp, MOCK_OPERATOR_ID);
       }),
 
       // Route 44: Q-0.1a, once, with one of its options or `other` in your own words.
@@ -604,12 +603,12 @@ export function createMock(opts: {
             data: {
               field: "rowVersion",
               currentVersion: q.rowVersion,
-              current: live.rowOf(m, "checkpoint_question"),
+              current: world.rowOf(m, "checkpoint_question"),
             },
           });
         if (input.choice !== "other" && !world.KIND_OPTIONS.some((o) => o.id === input.choice))
           throw errors.BAD_REQUEST({ data: { field: "choice" } });
-        return live.answerQuestion(m, ctx(), input.choice, input.answer);
+        return world.answerQuestion(m, ctx(), input.choice, input.answer);
       }),
     },
 
@@ -629,7 +628,7 @@ export function createMock(opts: {
       getModule: os.dispatches.getModule.handler(({ input, errors }) => {
         const made = liveMissions.get(input.missionId);
         if (made) {
-          const run = live.moduleRun(made, input.moduleRef);
+          const run = world.moduleRun(made, input.moduleRef);
           if (!run) throw errors.NOT_FOUND();
           return run;
         }
@@ -668,7 +667,7 @@ export function createMock(opts: {
         const made = liveMissions.get(input.missionId);
         if (made) {
           if (made.mission.renderedAt === null) throw errors.GATE1_NOT_PASSED();
-          const row = live.rowOf(made, "dispatch_package_commit");
+          const row = world.rowOf(made, "dispatch_package_commit");
           if (!row)
             throw errors.INVALID_TRANSITION({
               data: { state: made.packageCommit?.state ?? made.mission.state, allowed: [] },
@@ -677,7 +676,7 @@ export function createMock(opts: {
             throw errors.STALE_VERSION({
               data: { field: "packageHash", currentVersion: row.target.packageHash, current: row },
             });
-          return live.commitPackage(made, ctx());
+          return world.commitPackage(made, ctx());
         }
         const item = worldDecisions.find(
           (d) => d.kind === "dispatch_package_commit" && d.target.missionId === input.missionId,
@@ -1149,7 +1148,7 @@ export function createMock(opts: {
     seedMission(stage) {
       const avel = world.CLIENTS.avel;
       if (!clients.some((c) => c.id === avel.id)) clients.push(structuredClone(avel));
-      const m = live.seedMission(ctx(), SEEDED_MISSION_ID, stage, MOCK_OPERATOR_ID);
+      const m = world.seedMission(ctx(), SEEDED_MISSION_ID, stage, MOCK_OPERATOR_ID);
       liveMissions.set(m.mission.id, m);
       return { missionId: m.mission.id, clientId: avel.id };
     },
