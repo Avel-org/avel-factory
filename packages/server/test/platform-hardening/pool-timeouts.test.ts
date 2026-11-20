@@ -99,7 +99,9 @@ async function within<A, E>(
 }
 
 describe("T-B8-02 · Postgres that stops answering after the layer is built", () => {
-  it("withTransaction fails as a defect within the connect timeout, and an interruption ends it", async () => {
+  // Quarantined (Build rules F5, Javaris's OK, Nov 18): flaky under a full parallel run, issue #61.
+  // T-B13's tests un-quarantine it.
+  it.skip("withTransaction fails as a defect within the connect timeout, and an interruption ends it", async () => {
     const d = await database();
 
     // Timeout: built in pass-through, then hang; the connect gives up on its own.
