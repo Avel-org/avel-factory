@@ -76,6 +76,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in
 - Review: one round (CR-42); the full-diff rule applies as in T-F14
 - Waits for T-F23: both change packages/contract-mock/src/** (CR-42 item 4: tickets in one sprint depend on each other only when they share a file)
+- CR-W32 (proposed Nov 21, in the same brief as this re-plan; Axis signed its contract half): route 34's first turn on a draft mission starts onboarding in that call. The mission moves from draft to onboarding and onboardingStartedAt is set, only while it's draft, so a second turn or two first turns at once move it once. Route 63 gets missions.mission.changed and the turn's onboarding.message.created, and no checkpoint changes: the session, its opener and Q-0.1a already exist from route 20. Answering Q-0.1a on route 44 sets the kind and doesn't move the state. Route 34 is refused with MISSION_NOT_IN_SCOPING from approved onward. If Javaris doesn't accept CR-W32, this note and its behaviour come out before the tests start
 - Size: a full session (#45)
 
 ## 4. Tasks
@@ -97,6 +98,10 @@ You review the builder's work on this ticket, from the diff and this document on
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
 ### T-F24-05: check: unit (behaviour): MockFailure works on every part (c) route, and recorded requests name the route by number
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
+### T-F24-06: check: unit (behaviour, CR-W32): a mission made on route 20 is draft with its session and Q-0.1a; answering Q-0.1a on route 44 sets its kind and leaves it draft; its first turn on route 34 moves it to onboarding with onboardingStartedAt set and no checkpoint added, route 63 sends missions.mission.changed and onboarding.message.created, two first turns at once move it once, and route 34 on an approved mission is MISSION_NOT_IN_SCOPING
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
@@ -136,6 +141,8 @@ You review the builder's work on this ticket, from the diff and this document on
 | T-F17 | tests | `apps/web/test/mission-start/**`, `apps/web/e2e/mission-start/**` |
 | T-F23 | builds | `packages/contract-mock/src/**` |
 | T-F23 | tests | `packages/contract-mock/test/mission-streams.test.ts`, `packages/contract-mock/test/world.test.ts` |
+| T-F25 | builds | `apps/web/control-room/src/sources/canon.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/uploads.js`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/changes/T-F25.md` |
+| T-F25 | tests | `apps/web/e2e/home-headroom/**`, `apps/web/test/sources/samples.test.ts` |
 
 ## 6. Execution protocol: review
 

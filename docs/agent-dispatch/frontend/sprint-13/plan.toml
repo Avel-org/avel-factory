@@ -14,6 +14,10 @@
 # on Opus (Javaris, Nov 18). CR-42: plan and render in one PR; one review round.
 # Amended Nov 21 (T-F23 build a1's question on route 63; Zero's ruling): T-F23's tests take
 # packages/contract-mock/test/world.test.ts, so Fenn can retire the seed's stub check on route 63 (F2).
+# Re-planned Nov 21 (Zero's sprint 13/14 re-plan, in OSA's brief with Axis's): T-F25 wins back /'s
+# headroom before the screens grow it (Javaris, Nov 21, to OSA: "Yes I approve"); T-F24 also builds
+# CR-W32's mock half (your first turn with Canon starts onboarding); T-F15's note drops the preview
+# mock T-F12 already built.
 
 lane = "frontend"
 sprint = "sprint-13"
@@ -23,6 +27,7 @@ goals = [
   "What's waiting on you comes from the API, and approving moves the mission on",
   "You add a client, start a project, and see it on its overview",
   "CI's end-to-end tests run against the build you ship",
+  "/ loads only what Decisions shows, with room again under the 225 KB warning",
   "contract-mock streams Canon, events and traces, and serves the rest of the mission's routes",
 ]
 done_when = [
@@ -79,7 +84,7 @@ must_not_change = [
 ]
 context = [
   { path = "apps/web/playwright.config.ts", why = "today's two web servers, both vite dev (with and without AVEL_API=mock); T-F12 added the sign-in setup project" },
-  { path = "apps/web/vite.config.ts", why = "the mock middleware is apply: serve, configureServer only; vite preview needs it too" },
+  { path = "apps/web/vite.config.ts", why = "mockApi() already serves contract-mock in vite dev and vite preview under AVEL_API=mock (T-F12)" },
   { path = ".github/workflows/ci.yml", why = "the web e2e job" },
   { path = "docs/quarantine.md", why = "T-F7-05's row, removed when it's back" },
 ]
@@ -90,7 +95,7 @@ verify = [
   "pnpm lint",
 ]
 notes = [
-  "Both web servers run vite build, then vite preview, under the same AVEL_API values. The mock middleware runs in preview too (configurePreviewServer), never in a deployed build. Local runs may keep vite dev through an env switch the report names; CI always uses the build",
+  "Both web servers run vite build, then vite preview, under the same AVEL_API values. T-F12 already serves the mock in preview (configurePreviewServer, under AVEL_API=mock only), so this ticket changes vite.config.ts only if the build switch needs it. Local runs may keep vite dev through an env switch the report names; CI always uses the build",
   "Remove T-F7-05's row from docs/quarantine.md once the checker's un-skipped test passes, and close #57 in the PR text (Fixes #57)",
   "The PR changes .github/workflows/ci.yml, so Javaris merges it (CR-36's guardrail exclusion)",
   "Report the suite's time in CI before and after, as numbers",
@@ -103,7 +108,7 @@ role = "test-e2e"
 paths = ["apps/web/e2e/control-room/routes.spec.ts", "apps/web/e2e/control-room-screens/routes.ts", "apps/web/e2e/e2e-build/**"]
 behaviours = [
   "e2e (behaviour): the server the suite runs against serves the production build: the page loads hashed scripts under /assets/ and never /@vite/client",
-  "e2e (behaviour): under AVEL_API=mock, the preview server still answers /api with contract-mock (route 52 returns the mock's rows)",
+  "e2e (guard): under AVEL_API=mock, the preview server still answers /api with contract-mock (route 52 returns the mock's rows); T-F12 built it, so this passes first (CR-42)",
   "e2e (guard): T-F7-05's test runs again (the quarantine's test.skip removed) and passes with --repeat-each 10 in one run",
   "e2e (guard): t-f9-fenn-01, each project tab and the Library's three pages are told apart by a per-tab marker (aria-current or a data-testid beside the h1), not the mission name alone",
 ]
@@ -308,6 +313,7 @@ notes = [
   "Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in",
   "Review: one round (CR-42); the full-diff rule applies as in T-F14",
   "Waits for T-F23: both change packages/contract-mock/src/** (CR-42 item 4: tickets in one sprint depend on each other only when they share a file)",
+  "CR-W32 (proposed Nov 21, in the same brief as this re-plan; Axis signed its contract half): route 34's first turn on a draft mission starts onboarding in that call. The mission moves from draft to onboarding and onboardingStartedAt is set, only while it's draft, so a second turn or two first turns at once move it once. Route 63 gets missions.mission.changed and the turn's onboarding.message.created, and no checkpoint changes: the session, its opener and Q-0.1a already exist from route 20. Answering Q-0.1a on route 44 sets the kind and doesn't move the state. Route 34 is refused with MISSION_NOT_IN_SCOPING from approved onward. If Javaris doesn't accept CR-W32, this note and its behaviour come out before the tests start",
   "Size: a full session (#45)",
 ]
 
@@ -320,4 +326,63 @@ behaviours = [
   "unit (behaviour): accepting a finding on route 60 caps the receipt's verdict at pass on route 61, and route 61 with ?verify=1 rechecks the hash",
   "unit (behaviour): route 100's packageHash is the hash route 114 binds; a stale one is 409",
   "unit (behaviour): MockFailure works on every part (c) route, and recorded requests name the route by number",
+  "unit (behaviour, CR-W32): a mission made on route 20 is draft with its session and Q-0.1a; answering Q-0.1a on route 44 sets its kind and leaves it draft; its first turn on route 34 moves it to onboarding with onboardingStartedAt set and no checkpoint added, route 63 sends missions.mission.changed and onboarding.message.created, two first turns at once move it once, and route 34 on an approved mission is MISSION_NOT_IN_SCOPING",
 ]
+
+[[ticket]]
+id = "T-F25"
+slug = "home-headroom"
+title = "/ loads only what Decisions shows"
+goal = "Opening the control room loads only what Decisions draws: Onboarding's and Uploads' sample worlds arrive when you open those screens, so / is back under the 225 KB warning before sprints 13 and 14 add screens to it."
+rigor = "standard"
+refs = ["Javaris, Nov 21, to OSA: \"Yes I approve\" (a frontend follow-up that wins back /'s headroom)", "CR-W29 decision 6, second amendment (235 KB, warning over 225 KB)", "E16"]
+depends_on = ["T-F12", "T-F14"]
+may_change = [
+  "apps/web/control-room/src/sources/canon.js",
+  "apps/web/control-room/src/app/canon.js",
+  "apps/web/control-room/src/app/uploads.js",
+  "apps/web/control-room/src/app/logic.js",
+  "apps/web/control-room/changes/T-F25.md",
+]
+must_not_change = [
+  "packages/**",
+  "apps/web/package.json",
+  "pnpm-lock.yaml",
+  "apps/web/vite.config.ts",
+  "apps/web/control-room/src/mock/**",
+  "apps/web/control-room/src/pages/**",
+  "apps/web/control-room/SOURCE.md",
+  "apps/web/src/**",
+]
+context = [
+  { path = "apps/web/control-room/src/app/uploads.js", why = "imports mock/uploads.json at the top, so Uploads' sample world (about 4.1 KB gzipped) is in /'s first load" },
+  { path = "apps/web/control-room/src/sources/canon.js", why = "owns mock/onboarding.json since T-F14 (about 5.2 KB gzipped, also in /'s first load); its status can be loading" },
+  { path = "apps/web/control-room/src/app/logic.js", why = "where the canon source and uploads are read, and the lazy imports the export already uses (osa.json, contract-mock-decisions.json, world.json)" },
+  { path = "apps/web/e2e/budget.spec.ts", why = "how /'s figure is measured: 235 KB limit, 225 KB warning" },
+]
+verify = [
+  "pnpm --filter @avel/web exec vitest run",
+  "pnpm --filter @avel/web exec playwright test",
+  "pnpm --filter @avel/web exec vite build",
+  "pnpm typecheck",
+  "pnpm lint",
+]
+notes = [
+  "Measured by Zero on T-F12's build (Nov 21): / is 226,587 B gzipped, against the 230,400 B warning. main's chunk carries the export's sample JSON, and two files Decisions never shows are in it whole: onboarding.json (about 5.2 KB gzipped) and uploads.json (about 4.1 KB). The framework chunk (React, the router, Start) and the guard are out of scope",
+  "The fix: those two files load with a dynamic import the first time their screen needs them, the way logic.js already loads osa.json and world.json. While the canon source's sample is on its way, its status is loading (T-F14's statuses), so Onboarding shows its skeleton for that moment and nothing else changes. If something drawn on / (a badge or a count) reads either file today, say so in the report and keep that one value eager: it's out-of-scope only if it needs a page change",
+  "Target: / at most 220 KB gzipped (225,280 B) by budget.spec's method. Copy the before and after figures into the report and the PR text as numbers. budget.spec's 235 KB limit and 225 KB warning stay as they are. If the two files don't get / under 220 KB, report the figure and what else in main's chunk Decisions doesn't use, and don't cut further",
+  "Log every export file this ticket changes in control-room/changes/T-F25.md",
+  "Review: one round (CR-42); the full-diff rule applies as in T-F14",
+  "Size: about 60 minutes",
+]
+
+[ticket.tests]
+role = "test-e2e"
+paths = ["apps/web/e2e/home-headroom/**", "apps/web/test/sources/samples.test.ts"]
+behaviours = [
+  "e2e (behaviour): signed in on the production preview, no script that / loads before Decisions' first card holds onboarding.json's or uploads.json's sample text (checked by distinctive strings from each file)",
+  "e2e (behaviour): opening Onboarding and Uploads from / still draws their sample world, with no console error, and passes WCAG 2.2 AA at 390 and 1280",
+  "unit (behaviour): the canon source in sample mode reports loading, then ready with exactly the sample world's values. T-F14-06's canon case changes to that and nothing else in samples.test.ts",
+  "e2e (guard): every screen in the page registry still opens with its title (T-F9's specs, unchanged), and / stays at most 235 KB",
+]
+

@@ -152,7 +152,7 @@ pnpm lint
 **Your report:** `docs/agent-dispatch/frontend/sprint-14/agent-fenn-t-f19-test-e2e-completion.md`. Its first lines are:
 
 ```
-status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope | stuck
 ticket: T-F19
 ```
 
@@ -168,4 +168,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F19, "Plan and dispatch live": the tests dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-14/agent-fenn-t-f19-test-e2e.md`. Read it in full, then its Context in order, before you change anything. Write the acceptance tests on branch `t/F19-plan-dispatch-live`, only in the test paths in Part 5. Prove each one fails on the ticket's start commit, and paste that output into your report. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-14/agent-fenn-t-f19-test-e2e-completion.md`, committed to the branch. Don't push.
+> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F19, "Plan and dispatch live": the tests dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-14/agent-fenn-t-f19-test-e2e.md`. Read it in full, then its Context in order, before you change anything. Write the acceptance tests on branch `t/F19-plan-dispatch-live`, only in the test paths in Part 5. Prove each one fails on the ticket's start commit, and paste that output into your report. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency, out-of-scope or stuck. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-14/agent-fenn-t-f19-test-e2e-completion.md`, committed to the branch. Don't push.

@@ -135,6 +135,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 | T-F17 | tests | `apps/web/test/mission-start/**`, `apps/web/e2e/mission-start/**` |
 | T-F24 | builds | `packages/contract-mock/src/**` |
 | T-F24 | tests | `packages/contract-mock/test/mission-reads.test.ts` |
+| T-F25 | builds | `apps/web/control-room/src/sources/canon.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/uploads.js`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/changes/T-F25.md` |
+| T-F25 | tests | `apps/web/e2e/home-headroom/**`, `apps/web/test/sources/samples.test.ts` |
 
 ## 6. Execution protocol: build
 

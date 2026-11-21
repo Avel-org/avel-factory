@@ -136,6 +136,8 @@ You review the builder's work on this ticket, from the diff and this document on
 | T-F23 | tests | `packages/contract-mock/test/mission-streams.test.ts`, `packages/contract-mock/test/world.test.ts` |
 | T-F24 | builds | `packages/contract-mock/src/**` |
 | T-F24 | tests | `packages/contract-mock/test/mission-reads.test.ts` |
+| T-F25 | builds | `apps/web/control-room/src/sources/canon.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/uploads.js`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/changes/T-F25.md` |
+| T-F25 | tests | `apps/web/e2e/home-headroom/**`, `apps/web/test/sources/samples.test.ts` |
 
 ## 6. Execution protocol: review
 
