@@ -1,6 +1,6 @@
 # CR-W32: your first turn with Canon starts onboarding
 
-Nov 21, 2026 · drafted by Zero · **proposed** (Javaris accepts). Axis signed the contract half on Nov 21, with four changes that are in this text (I3).
+Nov 21, 2026 · drafted by Zero · **accepted Nov 21** (Javaris, to OSA: "approve 1 to 3 with your recommendations", with the sprint 13/14 re-plan, #95). Axis signed the contract half on Nov 21, with four changes that are in this text (I3).
 
 **What:** a mission leaves `draft` for `onboarding` when the operator sends Canon the mission's first turn (route 34). "Onboarding starts" means exactly two things: `missions.state` moves from `draft` to `onboarding`, and `onboarding_started_at` is set. Nothing else marks it. Route 34 is the only way out of `draft`. Answering Q-0.1a (route 44) on a draft mission sets the mission's kind and doesn't move its state.
 
@@ -22,11 +22,11 @@ The onboarding session already exists in `draft`. Route 20 creates it with its o
 
 **Touches:**
 - **The design:** this CR adds the rule beside DATABASE.md's lifecycle row for `missions`, and beside route 34 in `API routes.md`. The frozen docs aren't edited (E7); this CR overrides them (I1).
-- **The contract (Axis's lane):** route 34's summary gains "on a draft mission, your first turn starts onboarding". It's a `fix(contract)` to 1.0.1, with `openapi.json` regenerated, in backend T-B25 by a sprint-06 amendment after this CR is accepted, labelled `contract` with `cr = "CR-W32"` (I3). No schema or catalog change.
+- **The contract (Axis's lane):** route 34's summary gains "on a draft mission, your first turn starts onboarding". It's a `fix(contract)` to 1.0.2 (the contract is at 1.0.1 since T-B6), with `openapi.json` regenerated, in backend T-B25 by a sprint-06 amendment after this CR is accepted, labelled `contract` with `cr = "CR-W32"` (I3). No schema or catalog change.
 - **contract-mock:** T-F24 (frontend sprint-13) builds it. Route 34's first turn on a draft moves the mission to `onboarding` and sets `onboardingStartedAt` in the same call. On route 63 it emits `missions.mission.changed` and the turn's `onboarding.message.created`, and nothing for checkpoints.
 - **The server:** the Canon module, in whichever step builds route 34, under "The move" above.
 - **The web:** T-F18 (frontend sprint-14). Onboarding on a fresh draft is its "empty (a fresh draft)" state, and sending the first message starts the interview.
 
 **Not changed:** Q-0.1a still opens on route 20 and stays answerable on route 44 in `draft` or `onboarding`. `kind` still has to be set before the mission leaves onboarding, and it still freezes at plan approval (CR-W22).
 
-**Decision asked:** accept CR-W32 as written. The alternative is that answering Q-0.1a starts onboarding. That would make the operator choose a kind before Canon has said anything, and it doesn't match the export.
+**Decided:** accepted as written. The alternative, that answering Q-0.1a starts onboarding, was declined: it would make the operator choose a kind before Canon has said anything, and it doesn't match the export.
