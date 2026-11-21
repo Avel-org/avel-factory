@@ -1,35 +1,36 @@
-status: test-dispute
+status: done
 ticket: T-F23
 
 # T-F23 build: report (Fantem)
 
-All 11 locked acceptance tests in `packages/contract-mock/test/mission-streams.test.ts` pass (and passed 3 runs in a row). One older test now fails, as Zero's ruling expects:
-`packages/contract-mock/test/world.test.ts > the mock serves the new routes > GET /api/events/stream yields one event of every kind`. It reads route 63 to its end (`await res.text()`) and expects `world.sampleEvents()`. Under ruling 5 of the locked header (confirmed by Zero, ruling A), route 63 replays the routes' own events and then waits, so that test times out after 5 s. Zero routes it to Fenn as an F2 tests attempt. This is the only dispute.
+This is build a2. It reran Part 7 on build a1's commits (`bd89dd0`) after Fenn's tests a2 (`1b98b89`) and Zero's F2 relock (`39f71ed`), as the lead's F2 note asks. It redid nothing. All of `packages/contract-mock/test/mission-streams.test.ts` (11 tests) and `world.test.ts` pass, including the rewritten route 63 test (T-F23-06). a2 changed no code. Its only commit is this report.
 
-Build commit: `bd89dd0` on `t/F23-mock-streams` (start `3ba25e1`, the lock).
+Checks on the branch before the run:
+- `git diff 1b98b89 HEAD -- packages/` is empty: the locked tests are exactly as relocked.
+- `git diff bd89dd0 HEAD -- packages/contract-mock/src` is empty: the code is a1's build.
+- `HEAD..origin/main` is empty: main (`b7fac15`) is already merged in.
 
 ## Pre-flight
 
-Postgres: `scripts/pg-local.sh start` (avel-pg-frontend-sprint-13-t-f23-build-a1).
+- Postgres: `scripts/pg-local.sh start` (database `avel_frontend_sprint_13_t_f23_build_a2_…`).
+- Node: v24.22.2 from `~/.nvm`, because the shell had no `node`. Dependencies came from `pnpm install --offline --frozen-lockfile`, with no change to the lockfile.
 
-Starting state, before any change: `pnpm --filter @avel/web exec vitest run` 8 files, 47 passed; `pnpm --filter @avel/web exec playwright test` 303 passed, 1 skipped (23.4 min); `pnpm --filter @avel/contract-mock test` 11 failed (all of mission-streams.test.ts), 53 passed.
-
-Part 7, in order, on `bd89dd0`:
+Part 7, in order, on `39f71ed`:
 
 | Command | Result |
 | --- | --- |
 | `pnpm build` | exit 0 |
-| `pnpm typecheck` | exit 0 (contract-mock included) |
-| `pnpm lint` | exit 0; 6 warnings, all in `apps/web` already, none in my files |
-| `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` | exit 0; vitest 8 files, 47 passed; Playwright 303 passed, 1 skipped (25.0 min) |
-| `pnpm --filter @avel/contract-mock test` | exit 1: 63 passed, 1 failed. mission-streams.test.ts 11/11 pass; the one failure is the world.test.ts test named above (timeout) |
+| `pnpm typecheck` | exit 0 |
+| `pnpm lint` | exit 0; 6 warnings, all already in `apps/web/e2e/**`, none in my files |
+| `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` | exit 0; vitest 8 files, 47 passed; Playwright 303 passed, 1 skipped (16.9 min) |
+| `pnpm --filter @avel/contract-mock test` | exit 0; 5 files, 64 passed (also 64/64 on an earlier run in this session) |
 | `pnpm build` | exit 0 |
 | `pnpm typecheck` | exit 0 |
 | `pnpm lint` | exit 0; the same 6 warnings |
 
-I also ran a scratch check outside the repo (not committed). It walked a mission through routes 20, 44, 40 (×4), 28, 114, 29, 30 and 34 and read route 63. All 36 events it sent parse as `EventDto`, including the kinds the locked tests don't read.
-
 ## What changed
+
+Build a2 changed only this report. Everything below is build a1's commit `bd89dd0`, unchanged:
 
 - `packages/contract-mock/src/world.ts` (the mission state module):
   - `Ctx` gains `emit(event)`; `NewEvent` is an event before its `seq`.
@@ -58,7 +59,7 @@ I also ran a scratch check outside the repo (not committed). It walked a mission
   - Every request first settles the replies whose time has passed.
   - `reset()` clears the log.
   - The old `streamReply` stub is removed, and route 63 no longer serves `world.sampleEvents()`. That function and its own test (world.test.ts:106) stay.
-- This report.
+- This report: build a1 wrote it as test-dispute, and build a2 rewrote it as done.
 
 ## Contract to files
 
@@ -79,10 +80,11 @@ I also ran a scratch check outside the repo (not committed). It walked a mission
   - `events.stream` replays the log after `Last-Event-ID` (`id` = `seq`), for all missions or `?missionId=`, then waits.
 - **T-F23-04 (routes 64, 109):** `traces.stream` with `view=steps` and `attemptId` streams `world.STEPS` for that attempt after `Last-Event-ID` (`id` = `traceSeq`), then waits. TraceStreamInput's refine makes "neither attemptId nor sessionId" a 400. Route 109's handler is unchanged; it gains its number.
 - **T-F23-05:** the six numbers in `MockRoute` and `ROUTES`; `failNext` runs before every check, as before.
+- **T-F23-06 (world.test.ts's route 63 test, F2):** nothing new was needed. a1's `follow()` already replays the routes' events from seq 1, waits, and stops on abort, which is what Fenn's rewritten test checks.
 
 ## Deviations
 
-- **world.test.ts's route 63 test fails on this branch**, by Zero's ruling A (relayed by OSA). It's left for Fenn's F2 fix, and I didn't touch the file (A3).
+- **Build a2 changed no code:** it only reran Part 7 and rewrote this report, as the F2 note says ("reruns Part 7 on a1's commits without redoing them").
 - **Changed moves in the state module**, as the lead's note asks me to name them: `newMission`, `answerQuestion`, `approveCheckpoint`, `finalize`, `commitPackage`, `approvePass` and `release` now emit events. No state they set changed. `newMission` builds its record into a local before returning it. `Ctx` has a new required `emit`.
 - **Route 34 no longer answers for missions the routes didn't make.** It answers NOT_FOUND where the old stub streamed a canned reply for any ID. Route 105 for those is NOT_FOUND too (it was STREAM_GONE). Route 33 still serves the sample world's `CANON_MESSAGES` for them, as before.
 - **Route 34 is keyed but not replayed** (`STREAMED_WRITES`): replaying a stream through the key store would have to read it whole, and that would run the script to its end past an abort.
@@ -101,6 +103,9 @@ I also ran a scratch check outside the repo (not committed). It walked a mission
 
 ## Messages received
 
+Build a2: none.
+
+Build a1, kept for the record:
 1. **OSA (relaying), after my question** on route 63 versus world.test.ts:159: "your route-63 question (A or B) has gone to Zero… Keep going on T-F23-01, 02, 04 and 05." Followed.
 2. **Zero, via OSA:** "ruling (A). Ruling 5 stands."
    - Build route 63 to replay the routes' events from seq 1 and then wait, and don't serve `world.sampleEvents()` on it: followed.
@@ -108,3 +113,5 @@ I also ran a scratch check outside the repo (not committed). It walked a mission
    - Don't touch world.test.ts; its route 63 test is expected to fail: followed.
    - When everything else passes, commit and stop with status test-dispute, naming only that test, without opening a PR: followed.
    - Push the branch (`git push -u origin t/F23-mock-streams`): **not done.** I ran exactly that command on its own. This session's permission check denied it, in line with the task doc's and `/dispatch`'s "Don't push". I didn't try another way. The branch is local only: it's committed in this worktree at the report commit, and someone with push rights has to push it.
+
+The branch was never pushed during a1. Build a2 pushes it as the activation prompt says (CR-46 B3, H7).
