@@ -152,8 +152,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 | Ticket | Kind | Paths |
 | --- | --- | --- |
-| T-F12 | builds | `apps/web/src/auth/**`, `apps/web/src/routes/__root.tsx`, `apps/web/src/routes/login.tsx`, `apps/web/src/routeTree.gen.ts`, `apps/web/control-room/src/pages/settings/SettingsPage.jsx`, `apps/web/control-room/SOURCE.md` |
-| T-F12 | tests | `apps/web/test/sign-in/**`, `apps/web/e2e/sign-in/**`, `apps/web/e2e/support/auth.setup.ts`, `apps/web/playwright.config.ts`, `apps/web/e2e/budget.spec.ts` |
+| T-F12 | builds | `apps/web/src/auth/**`, `apps/web/src/routes/__root.tsx`, `apps/web/src/routes/login.tsx`, `apps/web/src/routeTree.gen.ts`, `apps/web/control-room/src/pages/settings/SettingsPage.jsx`, `apps/web/control-room/SOURCE.md`, `apps/web/vite.config.ts` |
+| T-F12 | tests | `apps/web/test/sign-in/**`, `apps/web/e2e/sign-in/**`, `apps/web/e2e/support/auth.setup.ts`, `apps/web/playwright.config.ts`, `apps/web/e2e/budget.spec.ts`, `apps/web/e2e/control-room/prod.spec.ts`, `apps/web/e2e/control-room-budget/**`, `apps/web/e2e/support/preview-auth.ts` |
 | T-F22 | builds | `packages/contract-mock/src/**` |
 | T-F22 | tests | `packages/contract-mock/test/mission-world.test.ts`, `packages/contract-mock/test/mission-routes.test.ts` |
 
@@ -187,7 +187,7 @@ pnpm lint
 **Your report:** `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f14-build-completion.md`. Its first lines are:
 
 ```
-status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope | stuck
 ticket: T-F14
 ```
 
@@ -201,4 +201,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F14, "The data layer, and one source per screen group": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f14-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F14-data-layer-seam`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f14-build-completion.md`, committed to the branch. Don't push.
+> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F14, "The data layer, and one source per screen group": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f14-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F14-data-layer-seam`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency, out-of-scope or stuck. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f14-build-completion.md`, committed to the branch. Once it says done, push the branch (`git push -u origin t/F14-data-layer-seam`) and open its PR with `gh pr create`, the report as its description. Push nothing else, and never merge.

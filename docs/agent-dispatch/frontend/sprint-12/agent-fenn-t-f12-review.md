@@ -52,14 +52,18 @@ You review the builder's work on this ticket, from the diff and this document on
 12. `apps/web/control-room/src/pages/settings/SettingsPage.jsx`: the Account section and Sign out go here
 13. `apps/web/e2e/budget.spec.ts`: what / may load: 235 KB, warning over 225 KB, as this ticket's tests set it (CR-W29 decision 6, second amendment)
 14. `docs/ui-reference/control-room-design-fidelity.md`: the export's tokens, type and focus rules the Sign in card uses
-15. `apps/web/test/sign-in/**`: the locked acceptance tests: they define done
-16. `apps/web/e2e/sign-in/**`: the locked acceptance tests: they define done
-17. `apps/web/e2e/support/auth.setup.ts`: the locked acceptance tests: they define done
-18. `apps/web/playwright.config.ts`: the locked acceptance tests: they define done
-19. `apps/web/e2e/budget.spec.ts`: the locked acceptance tests: they define done
-20. `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build-completion.md`: the builder's completion report
-21. `docs/review/security-checklist.md`: full rigor: work through it item by item
-22. `docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review.md`: this document: follow it exactly
+15. `apps/web/vite.config.ts`: mockApi() serves contract-mock on /api in the dev server only (configureServer); the Nov 21 amendment adds vite preview
+16. `apps/web/test/sign-in/**`: the locked acceptance tests: they define done
+17. `apps/web/e2e/sign-in/**`: the locked acceptance tests: they define done
+18. `apps/web/e2e/support/auth.setup.ts`: the locked acceptance tests: they define done
+19. `apps/web/playwright.config.ts`: the locked acceptance tests: they define done
+20. `apps/web/e2e/budget.spec.ts`: the locked acceptance tests: they define done
+21. `apps/web/e2e/control-room/prod.spec.ts`: the locked acceptance tests: they define done
+22. `apps/web/e2e/control-room-budget/**`: the locked acceptance tests: they define done
+23. `apps/web/e2e/support/preview-auth.ts`: the locked acceptance tests: they define done
+24. `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build-completion.md`: the builder's completion report
+25. `docs/review/security-checklist.md`: full rigor: work through it item by item
+26. `docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review.md`: this document: follow it exactly
 
 ## 3. Domain
 
@@ -83,6 +87,8 @@ You review the builder's work on this ticket, from the diff and this document on
 - Budget: / may load at most 235 KB gzipped, with a warning over 225 KB (CR-W29 decision 6, second amendment). The guard should still add next to nothing to /'s first load (the server function's stub only). Copy budget.spec's figure into the report and the PR text as a number. If / goes over 235 KB, stop with needs-cr
 - Review, full rigor (G7): Fenn's review, then the second review against docs/review/security-checklist.md, then Javaris merges. The reviewer also applies the full-diff rule: run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1
 - Size: about 60 minutes. If the build can't finish, report blocked with what's done. Don't cut a state or a rule
+- Amended Nov 21 (F2; build a1's test-dispute; Javaris, to OSA: "go with your recommendations for both": Fantem's option 1). A production preview has no /api, so the guard rightly sends / to /login there, and five preview specs fail: budget.spec (T-F12-08), prod.spec's two T-F7-07 tests and control-room-budget's T-F8-02 and T-F8-03. Holding them red until T-F15 (option 2) is declined: CI stays green (H5). The fix: in apps/web/vite.config.ts, mockApi() gains a configurePreviewServer hook with the same /api middleware as configureServer (share one handler, don't copy it), still only when AVEL_API=mock and still through a dynamic import, so nothing of the mock reaches dist/ (budget.spec's second test keeps checking that). A preview without AVEL_API=mock still serves no /api. The guard is unchanged: a failed session read is still signed out
+- Order (F2): Fenn's tests a2 changes the preview starters on the branch, with every assertion unchanged: budget.spec.ts, control-room-budget/preview.ts (and its budget.spec.ts if the sign-in step goes there) and control-room/prod.spec.ts start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto (its sessions are its own, so the setup project's cookie doesn't count there). Any helper they share is apps/web/e2e/support/preview-auth.ts. The tests run red on the branch until the build adds the preview hook. Then Zero relocks (F2 relock), and Fantem's build a2 adds the hook on top of a1's commits, which stay. a2 doesn't redo a1's work: it reads a1's report (<git common dir>/avel/reports/frontend-sprint-12-agent-fantem-t-f12-build.a1.md, and the branch's own commits), adds the hook, and reruns Part 7. The PR text carries budget.spec's own / figure as a number
 
 ## 4. Tasks
 
@@ -122,6 +128,10 @@ You review the builder's work on this ticket, from the diff and this document on
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
+### T-F12-10: check: e2e (F2, Nov 21): the production-preview specs (budget.spec, control-room/prod.spec, control-room-budget) start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto; what each asserts is unchanged, and no built file holds the mock's operator id
+
+- Is it built, and does a locked test actually prove it? Cite the test and the code.
+
 ### T-F12-R: the rules
 
 - The diff stays inside the build's territory (Part 5) and touches no locked test (A3, H6).
@@ -142,6 +152,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - `apps/web/src/routeTree.gen.ts`
 - `apps/web/control-room/src/pages/settings/SettingsPage.jsx`
 - `apps/web/control-room/SOURCE.md`
+- `apps/web/vite.config.ts`
 
 **Never change, whatever the task says:**
 - `packages/**`
@@ -189,7 +200,7 @@ pnpm lint
 **Your report:** `docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review-completion.md`. Its first lines are:
 
 ```
-status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope | stuck
 verdict: pass | changes | block
 ticket: T-F12
 ```
@@ -203,4 +214,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F12, "Sign-in, the session guard and sign-out": the review dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review.md`. Read it in full, then its Context in order, before you change anything. You're on a detached checkout of the builder's result. Review the diff against the ticket, the locked tests and the rules. Every finding cites evidence and a severity. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review-completion.md`, left uncommitted. Don't push.
+> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F12, "Sign-in, the session guard and sign-out": the review dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review.md`. Read it in full, then its Context in order, before you change anything. You're on a detached checkout of the builder's result. Review the diff against the ticket, the locked tests and the rules. Every finding cites evidence and a severity. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency, out-of-scope or stuck. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review-completion.md`, left uncommitted. Don't push.
