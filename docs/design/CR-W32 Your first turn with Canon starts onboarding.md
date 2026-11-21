@@ -1,6 +1,6 @@
 # CR-W32: your first turn with Canon starts onboarding
 
-Nov 21, 2026 · drafted by Zero · **proposed** (Javaris accepts). Axis signed the contract half on Nov 21, with four changes that are in this text (I3).
+Nov 21, 2026 · drafted by Zero · **accepted Nov 21** (Javaris, to OSA: "approve 1 to 3 with your recommendations", with the sprint 13/14 re-plan, #95). Axis signed the contract half on Nov 21, with four changes that are in this text (I3).
 
 **What:** a mission leaves `draft` for `onboarding` when the operator sends Canon the mission's first turn (route 34). "Onboarding starts" means exactly two things: `missions.state` moves from `draft` to `onboarding`, and `onboarding_started_at` is set. Nothing else marks it. Route 34 is the only way out of `draft`. Answering Q-0.1a (route 44) on a draft mission sets the mission's kind and doesn't move its state.
 
@@ -29,4 +29,4 @@ The onboarding session already exists in `draft`. Route 20 creates it with its o
 
 **Not changed:** Q-0.1a still opens on route 20 and stays answerable on route 44 in `draft` or `onboarding`. `kind` still has to be set before the mission leaves onboarding, and it still freezes at plan approval (CR-W22).
 
-**Decision asked:** accept CR-W32 as written. The alternative is that answering Q-0.1a starts onboarding. That would make the operator choose a kind before Canon has said anything, and it doesn't match the export.
+**Decided:** accepted as written. The alternative, that answering Q-0.1a starts onboarding, was declined: it would make the operator choose a kind before Canon has said anything, and it doesn't match the export.
