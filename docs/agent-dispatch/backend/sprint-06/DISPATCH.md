@@ -62,7 +62,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | --- | --- | --- |
 | T-B27 | `packages/server/src/platform/jobs/**`, `docs/steps/step-1-done.md` | `packages/server/test/jobs-follow-ups/**`, `packages/server/test/platform-hardening/pool-timeouts.test.ts`, `packages/server/test/follow-ups/05-close-releases-pools.test.ts`, `packages/server/test/jobs/retries.test.ts`, `packages/server/test/step-1/done-when.test.ts` |
 | T-B21 | `packages/server/src/compute/credentials/**`, `packages/server/src/server.ts` | `packages/server/test/credentials/**` |
-| T-B22 | `packages/server/src/metering/**` | `packages/server/test/metering/**` |
+| T-B22 | `packages/server/src/metering/**`, `docs/design/DATABASE.md`, `packages/db/src/owners.ts` | `packages/server/test/metering/**` |
 | T-B24 | `packages/server/src/factory/decisions/**`, `packages/server/src/platform/status/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` | `packages/server/test/decisions/**`, `packages/server/test/status/**` |
 | T-B25 | `packages/server/src/factory/missions/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` | `packages/server/test/missions/**` |
 | T-B26 | `packages/server/src/events/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` | `packages/server/test/streams/**` |

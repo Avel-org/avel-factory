@@ -148,7 +148,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 | --- | --- | --- |
 | T-B21 | builds | `packages/server/src/compute/credentials/**`, `packages/server/src/server.ts` |
 | T-B21 | tests | `packages/server/test/credentials/**` |
-| T-B22 | builds | `packages/server/src/metering/**` |
+| T-B22 | builds | `packages/server/src/metering/**`, `docs/design/DATABASE.md`, `packages/db/src/owners.ts` |
 | T-B22 | tests | `packages/server/test/metering/**` |
 | T-B24 | builds | `packages/server/src/factory/decisions/**`, `packages/server/src/platform/status/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
 | T-B24 | tests | `packages/server/test/decisions/**`, `packages/server/test/status/**` |
