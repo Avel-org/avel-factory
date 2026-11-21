@@ -55,6 +55,10 @@ WezTerm runs on Windows, and the repo and every session run in WSL (Ubuntu).
   - OSA and the leads start with their system prompts from `.agents/system/`. Until a lead's checkout has its file, a short brief stands in.
   - The builders and checkers start with their identities from `.claude/agents/`, and get their work only through dispatch.
 - **No key is ever in the Lua file or the repo.** Each pane loads its own key file when it starts.
+- **Sessions live in tmux** (Nov 20). The lead and lane seats, and every tab `scripts/agent.sh` opens, run inside a tmux session (`avel-<seat>`, or `avel-<agent>-<ticket>-<kind>` for a hand-opened dispatch). Closing a tab, or WezTerm itself, only detaches it:
+  - `tmux ls` lists the sessions; `tmux attach -t avel-soap` reattaches one.
+  - Opening the control room again reattaches each seat instead of starting it over.
+  - tmux survives a closed terminal, not Windows sleep or `wsl --shutdown`. Only an always-on machine (MIOSA) fixes that. Without tmux installed, seats run as before.
 
 ## What I'd add
 

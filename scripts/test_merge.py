@@ -122,6 +122,18 @@ class MergeTool(unittest.TestCase):
         self.assertEqual(merge[merge.index("--match-head-commit") + 1], f"{7:040d}")
         self.assertEqual(self.calls("comment"), [])
 
+    def test_an_agents_memory_line_doesnt_make_a_ticket_pr_a_guardrail_pr(self):
+        # CR-46 B4: the builder's one memory line merges with its ticket; the rest of .agents/ is still guarded.
+        self.review("T-X1", 1)
+        self.add(pr(7, "t/X1-a-thing", ["packages/server/src/a.ts", ".agents/memory/soap.md"]))
+        code, out = self.run_tool("merge", "7")
+        self.assertEqual(code, 0, out)
+        self.review("T-X2", 1)
+        self.add(pr(9, "t/X2-b-thing", ["packages/server/src/b.ts", ".agents/system/osa.md"]))
+        code, out = self.run_tool("merge", "9")
+        self.assertEqual(code, 1, out)
+        self.assertIn("condition 7 fails", out)
+
     def test_a_design_pr_needs_approval_and_records_his_words(self):
         self.add(pr(8, "rules/x", ["docs/design/Build rules.md", "AGENTS.md"], title="Build rules: x", body="Refs: G5"))
         code, out = self.run_tool("merge", "8")

@@ -2,7 +2,8 @@
 # The loop a builder or checker seat runs (tools/wezterm/avel.lua, tabs 4 and 5).
 # It waits for the agent's next ready task doc in its lane's current sprint, then opens it here
 # through scripts/agent.sh: a fresh worktree and session, one dispatch each (Build rules D1).
-# A dispatch that stopped without finishing is never retried here: the lead decides (K2, L3).
+# A session that ended with no report, having changed its worktree, is resumed here once as the same
+# attempt (CR-46 B2). Anything else that stopped is never retried here: the lead decides (K2, L3).
 #
 #   scripts/agents/lane.sh backend soap
 #   Ctrl+C leaves the loop and drops you to a shell in this pane.
@@ -34,6 +35,8 @@ while true; do
   echo "$(date +%H:%M) $name: starting $doc a$n in 5 seconds (Ctrl+C to stop the loop)"
   sleep 5
   scripts/agent.sh --here "$lane" "$sprint" "$doc" "$n"
+  # A crash or a cut-off with no report: one resume of the same attempt, if it got somewhere.
+  scripts/agent.sh --here --auto-resume "$lane" "$sprint" "$doc"
   last=
   echo "$(date +%H:%M) $name: session over. Looking for the next one."
   sleep 5

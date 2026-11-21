@@ -1,13 +1,21 @@
 /**
  * Harness for T-B3's tests, reused by T-B4's: each test file gets its own migrated database on
  * the real Postgres from scripts/pg-local.sh (E10), made on first use and dropped when the file
- * ends. The migration runs through `@avel/db`'s own `migrate:up`. Nothing here mocks Postgres.
+ * ends. It's a clone of the template the global setup migrated with `@avel/db`'s own `migrate:up`
+ * (A6, packages/db/test/helpers/template.ts); with no template, the file runs `migrate:up` itself.
+ * Nothing here mocks Postgres.
  */
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
-import { afterAll } from "vitest";
+import { afterAll, inject } from "vitest";
+
+declare module "vitest" {
+  export interface ProvidedContext {
+    avelDbTemplate: string | undefined;
+  }
+}
 
 const repoRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 
@@ -61,8 +69,13 @@ export function testDatabase(label: string): () => Promise<TestDatabase> {
 
   return () => {
     made ??= (async () => {
-      await admin((c) => c.query(`create database "${name}"`));
+      const template = inject("avelDbTemplate");
       const url = withDatabase(baseUrl(), name);
+      if (template) {
+        await cloneTemplate(template, name);
+        return opened(name, url, clients);
+      }
+      await admin((c) => c.query(`create database "${name}"`));
       const run = spawnSync("pnpm", ["--filter", "@avel/db", "migrate:up"], {
         cwd: repoRoot,
         encoding: "utf8",
@@ -72,17 +85,34 @@ export function testDatabase(label: string): () => Promise<TestDatabase> {
       if (run.status !== 0) {
         throw new Error(`migrate:up exited ${run.status}:\n${run.stdout}\n${run.stderr}`);
       }
-      return {
-        name,
-        url,
-        async client() {
-          const c = new pg.Client({ connectionString: url });
-          await c.connect();
-          clients.push(c);
-          return c;
-        },
-      };
+      return opened(name, url, clients);
     })();
     return made;
   };
+}
+
+function opened(name: string, url: string, clients: pg.Client[]): TestDatabase {
+  return {
+    name,
+    url,
+    async client() {
+      const c = new pg.Client({ connectionString: url });
+      await c.connect();
+      clients.push(c);
+      return c;
+    },
+  };
+}
+
+/** CREATE DATABASE ... TEMPLATE, retried while another file's clone holds the template. */
+async function cloneTemplate(template: string, name: string): Promise<void> {
+  for (let i = 0; ; i++) {
+    try {
+      await admin((c) => c.query(`create database "${name}" template "${template}"`));
+      return;
+    } catch (error) {
+      if (i >= 20 || !/being accessed by other users/.test(String(error))) throw error;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
 }
