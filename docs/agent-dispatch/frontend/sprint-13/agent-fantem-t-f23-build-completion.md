@@ -106,4 +106,5 @@ I also ran a scratch check outside the repo (not committed). It walked a mission
    - Build route 63 to replay the routes' events from seq 1 and then wait, and don't serve `world.sampleEvents()` on it: followed.
    - Make the stream stop when the request is aborted: followed (`follow()` listens to the request's signal).
    - Don't touch world.test.ts; its route 63 test is expected to fail: followed.
-   - When everything else passes, commit, push the branch (`git push -u origin t/F23-mock-streams`), and stop with status test-dispute naming only that test, without opening a PR: followed. The task doc says "Don't push". The instruction narrows the stop (no PR) and adds no file, test, dependency or rigor change. My agent prompt allows pushing my own ticket branch (CR-46 B3), so I pushed it.
+   - When everything else passes, commit and stop with status test-dispute, naming only that test, without opening a PR: followed.
+   - Push the branch (`git push -u origin t/F23-mock-streams`): **not done.** I ran exactly that command on its own. This session's permission check denied it, in line with the task doc's and `/dispatch`'s "Don't push". I didn't try another way. The branch is local only: it's committed in this worktree at the report commit, and someone with push rights has to push it.
