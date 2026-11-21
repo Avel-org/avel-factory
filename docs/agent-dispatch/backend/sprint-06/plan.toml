@@ -1,0 +1,649 @@
+# backend/sprint-06: the sprint's plan. Axis writes it; Javaris approves it (Build rules B1).
+# Each [[ticket]] renders into three task docs: Rigg's tests, Soap's build, Rigg's review.
+# Check it:   scripts/render.py --check backend/sprint-06
+# Render it:  scripts/render.py backend/sprint-06   (after approval, in its own sprint-folder PR once sprint-05 has merged, CR-42 item 2)
+#
+# Sprint-06 is the first sprint after Step 1. Javaris, Nov 20: "we need to hurry up and start to build out the endpoints,
+# schema, logic, and bring these pages and concepts to life". It runs two chains at once, one Soap session each (CR-45
+# decision 5, B7): Step 2 on the critical path (Backend modules and build plan, section 1: 0 > 1 > 2 > 4 > 8 > 9a > 9b),
+# and the routes the frontend's first-mission screens read (CR-W31's route table, now on contract-mock), built for real.
+#
+# Six tickets, each a full session of product code (Javaris, Nov 18: bigger tickets, fewer PRs):
+#   Chain A, the jobs engine's follow-ups, then Step 2 (no room host needed):
+#     T-B27 the jobs engine's follow-ups: T-B18's review findings and the tests red under load        ~120 min  full  (after T-B20)
+#     T-B21 per-attempt credentials, revoked when the attempt ends and by the reaper after a restart  ~120 min  full  (after T-B27)
+#     T-B22 the model proxy, the meter of record: per-request reservations and the $4 attempt cap      ~150 min  full  (after T-B21)
+#   Chain B, the first-mission routes:
+#     T-B24 the top bar and Decisions: routes 104, 52 and 53                                            ~120 min  standard
+#     T-B25 missions: create a draft, list them, open one (routes 19, 20, 21)                           ~120 min  standard (after T-B24)
+#     T-B26 the live streams: events (63), traces (64) and an attempt's steps (109)                     ~120 min  full  (after T-B25)
+#
+# What waits on what, and why (only where the code needs it):
+#   - T-B27 changes the jobs engine (packages/server/src/platform/jobs) and row 5 of docs/steps/step-1-done.md. T-B21
+#     follows T-B27, though they share no file: T-B21 is the first
+#     consumer the running server starts, and its close() test needs T-B27's bounded stop.
+#   - T-B22 verifies T-B21's tokens, so it waits for it.
+#   - T-B22 runs as its own process (Design v0.6 Main: the model proxy is a separate service on the host, and the only
+#     holder of the model key), so it changes neither server.ts nor app.ts.
+#   - T-B25's needsYouCount and displayState reuse T-B24's pending-decisions query. T-B26 follows T-B25 only because
+#     every route ticket wires itself into router.ts (and maps its errors in errors.ts); with one builder on chain B,
+#     that costs no time.
+#
+# Which tickets can build at the same time (no shared file, neither waits on the other; render.py --check holds it):
+#   - T-B27 beside T-B24: the sprint's first pair.
+#   - T-B21 or T-B22 beside T-B25 or T-B26: each chain A ticket beside each chain B ticket.
+#   At most two Soap sessions at once (B7). Rigg writes T-B24's tests while T-B27's are locked and building, and so on
+#   down both chains, one checker session at a time.
+#
+# Not in this sprint, and why:
+#   - The mission repo over HTTP (T-B23, Step 2). B1 allows six tickets a cycle, and T-B27 took the slot. T-B23 heads
+#     sprint-07 as planned; its block is kept, commented, at the end of this file.
+#   - The egress proxy (Step 2). The sixth ticket slot went to the routes; it needs T-B21's proxy credential, and it
+#     heads sprint-07. See decision 4.
+#   - The upload parser (Step 2). It runs in the sandbox (CR-34: type sniffing, archive unpacking and malware scans in
+#     the sandboxed parser) and needs PDF and DOCX parsing packages (Port inventory: avel-server's document parsing),
+#     so it waits for the room host and a dependency request (E5). See decisions 3 and 4.
+#   - Route 54 (decide a proposal). No step has built a proposal kind's effect yet (E8); it comes with the first one.
+#   - Route 52's factory_change rows. Open factory PRs live on GitHub, not in a table (packages/contract dto/factory.ts),
+#     and reading them needs the factory App's credentials; they come with routes 72 and 73.
+#   - The CLI (Javaris, Nov 18: no CLI work). T-B23 (sprint-07) serves attempts only; the operator's avel link pushes to
+#     operator/<mission> come with the CLI.
+#   - No new dependency in any ticket (E5): the proxy calls the vendor with fetch, the git endpoint runs the host's git,
+#     and tokens use node:crypto.
+#
+# Decisions for Javaris (approved Nov 21, each as Axis recommended, with T-B23 to sprint-07 as an eighth):
+# 1. Steps beside Step 2 (E9). E9 says no ticket from a later step starts until the current step closes. The build plan
+#    (section 1) lets Steps 3, 5, 6 and 7 run beside the critical path once their inputs exist. Chain B is Step 5 work
+#    (T-B24's status read is the avel watch header and the top bar; T-B26 is Step 5's live and trace streams) and the
+#    start of Step 7 (T-B25: a mission is a draft before Canon's first question). T-B22 also brings Step 8's
+#    per-request reservations and $4 cap into Step 2's proxy, as Javaris asked, so no request is ever metered without
+#    its ceiling. Approve this for sprint-06. Axis drafts CR-47 to reword E9 (the critical path in order; off-path steps
+#    beside it once their inputs exist), so it isn't asked again. Axis recommends both.
+# 2. Starting before Step 1 closes (B8). T-B18 merged (#88); sprint-05 still has T-B20, Step 1's last ticket. Rigg can
+#    write T-B27's and T-B24's tests while T-B20 runs: their test paths (test/jobs-follow-ups and three timing tests;
+#    test/decisions, test/status) don't meet T-B20's test/step-1. T-B24's build can start then too, since no part of it
+#    reads T-B20's code. T-B27's build waits for T-B20 to merge (T-B20 may change all of packages/server/src). Approve,
+#    or keep B8 as written (sprint-06 starts after sprint-05's last merge). Axis recommends approving.
+# 3. The room host (CR-22, the Sandbox doc). No ticket in sprint-06 needs it. Sprint-07 does: rooms (createRoom, exec,
+#    syncRepo, destroy), the isolation suite, the upload parser, the offline package cache and runner-image builds. The
+#    choice is Docker with gVisor on a host we run (this machine for development and CI first, the dedicated US host
+#    before a client mission, as the Sandbox doc says) or MIOSA rooms (CR-22: internal and template missions only until
+#    MIOSA publishes egress controls and a SOC 2). Axis recommends Docker with gVisor now, behind the compute interface,
+#    with MIOSA as a later adapter. Decide before sprint-07 is planned. (After Nov 17's out-of-memory crashes, rooms on
+#    this machine need memory limits from the start.)
+# 4. Deferring the egress proxy and the upload parser, as above: the egress proxy heads sprint-07, and the parser follows
+#    decision 3 with its dependency request. The other choice is to swap the egress proxy in for T-B24 and leave the top
+#    bar and Decisions on the mock a sprint longer. Axis recommends the plan as written.
+# 5. CR-48 (Axis drafts it; T-B22 needs it accepted before its build starts, E12). DATABASE.md's Ownership section says
+#    metering writes the reserved_micros and spent_micros columns. The proxy's per-request reservation must also move
+#    attempts.cost_micros (an attempt's settled cost; attempts names it cost, not spent) in the same transaction, so
+#    attempts_cap_ck can enforce the $4 cap. CR-48 names the exception exactly: reserved_micros and spent_micros on
+#    missions and module_runs, and reserved_micros and cost_micros on attempts. It touches DATABASE.md (Ownership) and
+#    the comment in packages/db/src/owners.ts; no table, column or CHECK changes. Axis recommends accepting it.
+# 6. .env.example. T-B22 adds the proxy process's settings (its port, the vendor's base URL, ANTHROPIC_API_KEY, read
+#    only by the proxy); T-B23 adds the mission repos' folder in sprint-07. .env.example is outside every agent's Territory, so
+#    Javaris adds them; each build report lists them by name, never a value.
+# 7. CR-49 (Axis drafts it; no sprint-06 ticket waits on it). T-B18's review left two choices the design doesn't make, so
+#    no ticket can make them (E3): t-b18-rigg-02, a bound on how many runs one worker holds at once (today drain claims
+#    every due job, and under load the runs and check-ins share the pool's 10 clients), and t-b18-zero-02, whether a
+#    database defect inside a consumer's act counts toward its 5 tries. CR-49 proposes a bound in Jobs and workers.md's
+#    Settings, below the pool's size, and that a defect in act doesn't count (as t-b17-rigg-01's "a loop survives a
+#    blip"). It also adds the consumer's job (kind consumer, key consumer:<name>, attempts per event, a dead consumer
+#    starting fresh on the next startConsumer) to Event consumers (t-b18-rigg-05's doc half). The engine change goes in
+#    a sprint-07 ticket once CR-49 is accepted.
+
+lane = "backend"
+sprint = "sprint-06"
+step = 2
+title = "The jobs engine's follow-ups, then Step 2's credentials and model proxy, beside the first-mission routes: status, Decisions, missions and the live streams"
+goals = [
+  "An attempt's tokens work only for that attempt, die when it ends, and are revoked after a restart if they were left behind",
+  "Every model call goes through the proxy, which holds the only key, reserves each request's maximum cost first and refuses a request past the $4 attempt cap or the module or mission budget",
+  "A consumer never hangs a deploy or sits on a claim it doesn't know it holds, and the suite stays green on a loaded machine",
+  "The top bar, Decisions, the missions list, a mission's page and the live feed read real routes, not the mock",
+]
+done_when = [
+  "T-B18's review findings rigg-01, -03 and -04 and zero-01: each has a locked test, and T-B8-02, T-B19-05 and T-B13-06 pass 5 runs in a row under CPU load",
+  "Design v0.6 Main, Build order step 2: a token left from a killed attempt is revoked after a host restart",
+  "Design v0.6 Main, Build order step 2: the model proxy holds the key and is the meter of record (the main service starts without it)",
+  "Design v0.6 Main, Build order step 8, brought forward to the proxy (decision 1): a reservation the budget can't cover is refused; parallel requests can't overspend; a request past the $4 cap is refused as the cap and one past a budget as the budget; a lost attempt's and an ended Canon session's reservations are released",
+  "Design v0.6 Main, Build order step 5: a reconnect to the live stream resumes with no missing sequence numbers",
+  "Build rules E13 on routes 19, 20, 21, 52, 53, 63, 64, 104 and 109: the happy path against the contract, the error body with its requestId, and the replay on route 20",
+]
+sources = [
+  { path = "docs/design/Backend modules and build plan.md", why = "section 1 (the build order and the critical path) and section 4 (compute, metering, events and factory: what each owns)" },
+  { path = "docs/design/Design v0.6 Main.md", why = "Build order steps 2, 5, 7 and 8; Cost control (budgets, reserve before spending); API routes (four callers, the proxies are services on the host)" },
+  { path = "docs/design/Sandbox - Docker now, boat or MIOSA next.md", why = "the trust boundaries: no model key in a room, one token per dispatch revoked on every exit, git over HTTP pushing only its own branch" },
+  { path = "docs/design/DATABASE.md", why = "credentials, budget_reservations, price_table, attempts, missions, proposals, events and agent_traces; Ownership" },
+  { path = "docs/design/API routes.md", why = "routes 19 to 21, 52, 53, 63, 64, 104 and 109, and the rules on every write" },
+  { path = "docs/design/Build rules.md", why = "B7, B8, C4, E3, E5, E7, E8, E9, E10, E12, E13, F4, G5, G7, H6, I3" },
+]
+
+[commands]
+build = "pnpm build"
+typecheck = "pnpm typecheck"
+lint = "pnpm lint"
+test = "pnpm test"
+
+[analysis]
+stack = "Node 22.12+, pnpm 10 workspace, TypeScript 7.0.2 (erasableSyntaxOnly), Biome, Vitest 5; Hono 4.13.16, oRPC 1.16.2, Zod 4, Effect 4.1.1 inside packages/server; Drizzle 0.45.4 and node-postgres 8.23.1; Postgres 17; Better Auth 1.7.16"
+layout = "packages/contract (1.0.0: 119 routes), packages/db (schema, migrations 0000 to 0004), packages/server (src/platform: app, router, effect-handler, errors, ids, logger, idempotency, rate-limit, auth, webhooks, factory-repo, db, jobs; src/onboarding/clients, src/audit, src/knowledge; src/server.ts and src/main.ts). New module folders this sprint: src/compute, src/metering, src/factory, src/events"
+conventions = [
+  "AGENTS.md is the rulebook: Architecture rules (durable work, model calls, rooms), API rules and Writing Effect rules 1 to 10",
+  "One folder per module under packages/server/src, with index.ts as its only public entry; another module's internals are never imported (E12). A table is written only by its owner (packages/db/src/owners.ts)",
+  "Db.withTransaction gives a program Tx and maps database violations to tagged errors; Db.commitWithEvents is the only way to commit queued events, and takes seq last",
+  "Jobs (T-B17) and consumers (T-B18) from packages/server/src/platform/jobs: enqueue in Tx with a key, a pure decide and an apply, consumers move their cursor by compare-and-swap",
+  "Route modules follow onboarding/clients: one mapper per DTO, outputs validated by the contract, writes through the idempotency store, and an activity row and event in the write's transaction",
+  "Time from Clock, IDs from Ids, timings as Schedules driven by TestClock in tests; no wall-clock sleeps (F4). Fakes only for what's outside the process (the model vendor), as layers (E10)",
+  "Source files use only erasable TypeScript syntax (no parameter properties or enums): Node runs src/main.ts with type stripping",
+]
+notes = [
+  "Review (G5): one review, no round 2. Only a P0 or P1 sends a PR back; every P2 goes to a later ticket or the backlog, named in the PR text",
+  "Backlog, not this cycle: T-B18's review findings rigg-02 and zero-02, and rigg-05's Jobs and workers.md half, wait for CR-49 (decision 7); rigg-03's CI job that runs the server suite 5 times under extra CPU load is kit work (.github), for OSA's list. t-b20-rigg-02 (P3): done-when.test.ts doesn't check the ticket cell, and its skip pattern misses it.effect.skip and it.effect.only. rigg-01, rigg-03's two tests, rigg-04, rigg-05's code half and zero-01 are T-B27",
+  "T-B27, T-B21, T-B22 and T-B26 are full rigor (C4: claims and the reaper, tokens, the proxy and money, events and seq): Rigg reviews on Opus, Zero gives the security-checklist review (G7), and Javaris merges. T-B24 and T-B25 are standard and merge on Javaris's standing approval (CR-45)",
+  "Lock from a detached worktree, then fast-forward the t/* branch; merge main into a ticket branch before its build starts",
+  "No ticket changes packages/contract, packages/db, package.json or the lockfile",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B27"
+slug = "jobs-engine-follow-ups"
+title = "Jobs engine follow-ups: a consumer's stop and failure edges, the claim number proved, and the timing tests that go red under load"
+goal = "A deploy never hangs on a consumer, a stopped or out-raced copy never sits on a claim it holds or logs a death that didn't happen, a locked test fails if the cursor's swap ignores the claim number, Step 1's report proves test 5 in its cells, and the suite stays green on a loaded machine."
+rigor = "full"
+refs = [
+  "t-b18-rigg-01 (P2): no locked test proves the claim-number half of the cursor's compare-and-swap (engine.ts:478-488); deleting it leaves test/consumers and test/jobs green",
+  "t-b18-rigg-03 (P2, F5): T-B8-02 (test/platform-hardening/pool-timeouts.test.ts:147) goes red under CPU load, on T-B18 and on its merge base 45000c9; T-B19-05 (test/follow-ups/05-close-releases-pools.test.ts:46) flaked once in T-B18's build proof",
+  "T-B13-06 (test/jobs/retries.test.ts) flaked once under full-suite load in a MIOSA sandbox: a gap of 603000 ms where at most 602000 is allowed; 3 of 3 alone (OSA, Nov 21)",
+  "t-b18-rigg-04 (P3): a consumer's stop waits on the event in flight with no bound; a stop during a claim can leave it held until expiry; the dead log can be wrong after another copy took the claim; a lost check-in stays in own",
+  "t-b18-zero-01 (P3): a stop while a pass is inside claimConsumer leaves a claim the copy doesn't know it holds (the same family as rigg-04 item 2)",
+  "t-b18-rigg-05 (P3), the code half: jobs.ts:16 (JobView.attempts) and jobs.ts:53 (Worker.stop) are wrong for a consumer",
+  "t-b20-rigg-01 (P2): done-when.test.ts lists test 5 as moved, so row 5 of docs/steps/step-1-done.md carries its proof in prose the check never verifies. CR-43 restates test 5 on sign-in (T-B9-04, T-B16-03); it doesn't move it (Axis's C5 sign-off on #89; Javaris, Nov 21: into T-B27)",
+  "Jobs and workers.md: a job's life 5 to 7, Event consumers, and Settings (a 30 s claim, check-ins every 10 s)",
+]
+depends_on = []
+may_change = [
+  "packages/server/src/platform/jobs/**",
+  "docs/steps/step-1-done.md",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/server.ts",
+  "packages/server/src/main.ts",
+  "packages/db/**",
+  "packages/contract/**",
+  "docs/design/**",
+]
+context = [
+  { path = "packages/server/src/platform/jobs/engine.ts", why = "startConsumer's pass, act, fail and stop (about lines 460 to 560): held, own, inFlight, and the swap's where clause" },
+  { path = "packages/server/src/platform/jobs/jobs.ts", why = "the Jobs interface's doc comments: JobView.attempts (:16), Worker.stop (:53) and startConsumer (:74-82)" },
+  { path = "docs/agent-dispatch/backend/sprint-05/agent-soap-t-b18-build-completion.md", why = "T-B18's deviations: runs side by side, CHECK_IN as Schedule.fixed, a consumer job's attempts counted per event" },
+  { path = "packages/server/test/consumers/resume-and-takeover.test.ts", why = "T-B18-02: how a takeover is set up, and why copy b's swap commits before a's late one (rigg-01)" },
+  { path = "docs/design/Jobs and workers.md", why = "a job's life 5 to 7, Event consumers and Settings; read only" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "T-B20 merged (#89) and Step 1 is closed, so nothing in sprint-05 holds this ticket. Merge main into the branch before the build starts",
+  "Row 5 (t-b20-rigg-01): the builder rewrites only row 5 of docs/steps/step-1-done.md. It stays in Step 1, restated by CR-43 on sign-in, with T-B9-04 (packages/server/test/auth/rate-limit.test.ts, T-B9) and T-B16-03 (packages/server/test/server/rate-limit.test.ts, T-B16) in its cells. The other rows don't change",
+  "Stop is bounded by the claim it holds: a consumer's stop waits for the event in flight at most until that copy's claim would expire (the 30 s claim, Settings), then interrupts the act. The act is one transaction, so its writes roll back and the next copy acts on the event once. No new setting: the bound is the claim's length (E3, E8)",
+  "No claim the copy doesn't know about: the claim and the copy's record of it (held) are set without a yield between them, or the pair is uninterruptible, so a stop or kill at any point either releases the claim or never took it (rigg-04 item 2, zero-01)",
+  "fail reports dead only when its update changed the row; a copy whose 5th failure lands after its claim was taken logs no dead line and leaves the job as the other copy has it (rigg-04 item 3)",
+  "A check-in that loses its claim removes its fiber from own, as letGo does (rigg-04 item 4)",
+  "Fix jobs.ts's comments for a consumer: attempts counts failed tries on the event at the cursor and goes back to 0 when it moves; a consumer's stop waits for the event in flight (bounded as above), then hands the claim back (rigg-05, code half). The Jobs and workers.md half goes to CR-49 (see the header), not this ticket",
+  "Not in this ticket: a bound on how many runs one worker holds (t-b18-rigg-02) and whether a database defect inside act counts as a failed try (t-b18-zero-02). The design names neither, so both wait for CR-49 (E3)",
+  "The timing fixes are Rigg's, in the tests dispatch, with assertions unchanged: each test waits on the fact it reads (until() on committed state, or on the connection count settling) instead of on how fast this process is scheduled. No wall-clock sleeps (F4). The builder can't change them (F2); they join this ticket's lock line",
+  "The load proof, in the tests dispatch: after the timing fixes, T-B8-02, T-B19-05 and T-B13-06 pass on 5 runs in a row of pnpm --filter @avel/server test with one CPU burner per core beside it (node busy loops, no new dependency, never in the test suite). Rigg reports the 5 runs and the load average; the build reruns it in its own verification. The T-B13, T-B17 and T-B18 tests keep passing unchanged",
+  "Never run more than one vitest at a time; for the load proof, load comes from CPU burners beside the run, not a second vitest (Nov 20's out-of-memory crashes)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = [
+  "packages/server/test/jobs-follow-ups/**",
+  "packages/server/test/platform-hardening/pool-timeouts.test.ts",
+  "packages/server/test/follow-ups/05-close-releases-pools.test.ts",
+  "packages/server/test/jobs/retries.test.ts",
+  "packages/server/test/step-1/done-when.test.ts",
+]
+guards = [
+  "T-B18-02's variant (rigg-01): copy b's handler, like a's, waits on its own Deferred; a's late hold is released first, and a's write isn't saved and the cursor doesn't move; then b is released, the cursor moves once and only b's write stays. It passes on main (the code has the check); Rigg shows it fails with engine.ts's claim_no condition deleted, in a scratch worktree, and reports the run",
+]
+behaviours = [
+  "a consumer whose handler never returns: under TestClock, stop returns once the copy's claim would have expired (within 30 s of the claim's last check-in), the handler's writes are rolled back, and a new copy acts on the event once (rigg-04 item 1)",
+  "a copy stopped right after its first claim commits, before its first event: a new copy acts on that first event within 10 s, not after the claim's expiry (rigg-04 item 2, zero-01)",
+  "a copy whose 5th failure on an event lands after another copy took its claim: no 'dead' log line, the job isn't dead, and the other copy goes on (rigg-04 item 3)",
+  "done-when.test.ts no longer lists test 5 as moved: row 5 must name its files and test IDs, and the check verifies them like any other row (fails on main: row 5 says moved, with none in its cells; t-b20-rigg-01)",
+  "a copy that loses its claim three times keeps no finished check-in fibers: the copy's held fibers don't grow with lost claims (rigg-04 item 4; through whatever the engine exposes to tests, or by stop returning promptly with none left)",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B21"
+slug = "attempt-credentials"
+title = "Per-attempt credentials: minted hashed, checked on every use, revoked when the attempt ends and by the reaper after a restart"
+goal = "An attempt's tokens (for the model proxy, the mission repo and the egress proxy) work only for that attempt and only until it ends or its cap plus 10 minutes passes, and a token left behind by a killed attempt is revoked when the server starts again."
+rigor = "full"
+refs = [
+  "Design v0.6 Main, Build order step 2: the credentials table with expiry and reaper revocation; done when a token left from a killed attempt is revoked after a host restart",
+  "Sandbox doc: tokens, one per dispatch, revoked on every exit (finish, kill, crash, or leftover)",
+  "Backend modules and build plan, section 3: tokens last the cap plus 10 minutes, and the reaper revokes them when the attempt ends",
+  "Jobs and workers.md: housekeeping (the reaper: tokens) and event consumers",
+  "Step 1's consumers (T-B18): the first consumer and the first job kind the running server starts (sprint-05's note)",
+]
+depends_on = ["T-B27"]
+may_change = [
+  "packages/server/src/compute/credentials/**",
+  "packages/server/src/server.ts",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/**",
+  "packages/server/src/main.ts",
+  "packages/server/test/entry/start.test.ts",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/design/DATABASE.md", why = "Plumbing: credentials (kind dispatch, git, proxy or service; token_sha256, scope, expires_at, revoked_at; git reads the mission's branches and pushes only its own attempt branch)" },
+  { path = "packages/db/src/schema/compute.ts", why = "the credentials table and its CHECKs (credentials_kind_ck, credentials_parent_ck): which parent each kind needs" },
+  { path = "packages/db/src/schema/runner.ts", why = "attempts: outcome and ended_at (an ended attempt), and the dispatch it belongs to" },
+  { path = "packages/server/src/platform/jobs/jobs.ts", why = "enqueue, startWorker and startConsumer: the reaper is a job kind and the revoke-on-end is a consumer" },
+  { path = "packages/server/src/server.ts", why = "startServer's one Scope: where the worker and the consumer start, and close() must still release everything (T-B19)" },
+  { path = "packages/contract/src/events.ts", why = "runner.attempt.ended, the event the consumer acts on, and its payload" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm --filter @avel/server exec vitest run test/entry/start.test.ts",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "The compute module's credentials service, in packages/server/src/compute/credentials/ with index.ts its only public entry: mint, verify and revoke. T-B22, and T-B23 and the egress proxy (sprint-07), use it through index.ts, so its shape is the ticket's main output: say it in the report",
+  "mint takes the kind and its parent (an attempt for dispatch, git and proxy; an onboarding session for service, Canon's token for the proxy) and the scope, writes the row in the caller's Tx, and returns the token once. Only its sha256 is stored. Token bytes come from node:crypto's secure source behind a small service (a fake layer in tests): Effect's Random isn't a secure source; say so in the report",
+  "An attempt's credentials expire at its cap plus 10 minutes: 70 minutes from minting, from Clock. A git credential's scope is the attempt's own branch, mission/<missionId>/<moduleRef>/<role>-a<n> (Port inventory, Worktree provider), worked out from the attempt's rows, never taken from the caller",
+  "verify takes a presented token and the kind the caller accepts, and returns the credential's id, kind, scope, attempt, dispatch and mission (or session), or one refusal for unknown, revoked, expired or another kind alike, so a caller learns nothing from which it was. A token is looked up only by its hash",
+  "Revoked on every exit: a consumer on runner.attempt.ended revokes every credential of that attempt (revoked_at from Clock) in the same transaction as its cursor move. The reaper is a job kind: it revokes credentials whose attempt has ended or whose expires_at has passed, runs once when the server starts (the host-restart case) and then on its schedule, and re-enqueues itself under one key so only one is live",
+  "startServer starts the worker and the consumer in its Scope; close() stops them and still leaves no open database client (T-B19's guarantee and packages/server/test/entry/start.test.ts hold). They are the first job kind and consumer in the running server",
+  "A token never appears in a row other than as its hash, in a log line, an event payload or an error (E6). Logs name the credential's id",
+  "No route mints or reads credentials in this ticket (E8): the runner mints an attempt's tokens in Step 4. Tests mint directly, on attempts and sessions they insert",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/credentials/**"]
+guards = [
+  "packages/server/test/entry/start.test.ts and T-B19's close() test still pass with the worker and the consumer running",
+]
+behaviours = [
+  "mint for an attempt returns a token once and stores only its sha256; the token isn't in the row, the log lines or any event; verify of that token returns its kind, scope, attempt, dispatch and mission",
+  "verify refuses an unknown token, a revoked one, one past its expiry (TestClock 70 minutes after minting) and one of another kind, with the same refusal each time; a token minted 69 minutes ago still verifies",
+  "a git credential's scope is the attempt's own branch mission/<missionId>/<moduleRef>/<role>-a<n>, from the attempt's rows",
+  "a runner.attempt.ended event revokes every credential of that attempt (dispatch, git and proxy) and no other attempt's; with two copies of the consumer running, each credential is revoked once and the cursor moves once",
+  "with credentials left live on an attempt that ended while the server was down, startServer revokes them within the reaper's first run under TestClock, and leaves a running attempt's credentials live",
+  "a service credential minted for an onboarding session verifies as kind service with that session and its mission, and is refused once expired",
+  "close() after the worker and the consumer have run returns within 2 s and leaves no open database client from the server's pools in pg_stat_activity",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B22"
+slug = "model-proxy"
+title = "The model proxy, the meter of record: the only model key, a reservation before each request, and the $4 attempt cap"
+goal = "Every model call goes through one proxy that holds the only key, reserves the request's maximum cost against the attempt's $4 cap and the module and mission budgets before sending, refuses what they can't cover, and records exactly what each call cost."
+rigor = "full"
+refs = [
+  "Design v0.6 Main, Build order step 2 (the model proxy: key and meter) and step 8 (the proxy's per-request reservations and the $4 attempt cap), brought forward together (decision 1)",
+  "Design v0.6 Main, Cost control: budgets in dollars enforced at the model proxy; reserve before spending; capped and budget_parked",
+  "Sandbox doc: the model key stays on the host; the proxy adds it, allows only the messages endpoint and requires the dispatch's token",
+  "CR-22 item 3: ANTHROPIC_BASE_URL points at the proxy and ANTHROPIC_AUTH_TOKEN is the attempt's dispatch token",
+  "Port inventory: token usage and prices with changes (split 5-minute and 1-hour cache writes; the proxy is the meter of record)",
+  "CR-48 (decision 5): metering writes attempts.cost_micros as well as the reserved and spent columns",
+]
+depends_on = ["T-B21"]
+may_change = [
+  "packages/server/src/metering/**",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/server.ts",
+  "packages/server/src/main.ts",
+  "packages/server/src/platform/**",
+  "packages/server/src/compute/**",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "docs/design/Design v0.6 Main.md", why = "Cost control: the price table, the cache-write split, reserve before spending, the per-request ceiling, capped against budget_parked, and the 80% warning (not in this ticket)" },
+  { path = "docs/design/DATABASE.md", why = "Cost and time: budget_reservations (kind expected or request, one per proxy call, a retried request can't reserve twice, the reaper releases held rows) and price_table; Ownership" },
+  { path = "packages/db/src/schema/metering.ts", why = "budget_reservations and price_table, and their CHECKs (settled never above reserved)" },
+  { path = "packages/db/src/schema/runner.ts", why = "attempts: cap_micros, reserved_micros, cost_micros and attempts_cap_ck, which refuses a reservation past the cap" },
+  { path = "packages/db/src/schema/factory.ts", why = "missions and module_runs: budget_micros, reserved_micros, spent_micros and the CHECKs that refuse an overspend" },
+  { path = "packages/server/src/compute/credentials/index.ts", why = "T-B21's verify: a dispatch token (an attempt) or a service token (Canon's session); read only" },
+  { path = "docs/design/CR-22 Rooms on MIOSA and room hooks.md", why = "items 3 and the --max-budget-usd note: what the harness in a room sends, and that the proxy stays the meter of record" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "git diff --exit-code main -- packages/server/package.json pnpm-lock.yaml",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Build only after CR-48 is accepted (decision 5). If it isn't, stop with blocked",
+  "The proxy is its own Hono app and its own process (Design v0.6 Main: the model proxy and the egress proxy are separate services on the host): startModelProxy(env) in packages/server/src/metering/proxy/, with its own entry file beside it, its own port and its own pools in one Scope (Writing Effect rule 6). The main service never reads the model key: the key is Config.Redacted, read only by startModelProxy, which refuses to start without it, naming the variable and never the value",
+  "Callers: a room's harness with its attempt's dispatch token, and Canon with a session's service token (T-B21's verify). It allows only POST /v1/messages; anything else, and any request without a valid token, is refused before any vendor call. It strips the caller's credentials and adds the factory's key. The vendor is a layer over fetch with a timeout (rule 5); tests provide a fake vendor layer (E10)",
+  "Reserve before sending, in one transaction: a budget_reservations row of kind request for the attempt (or the session) with its request_id, and the same amount added to the attempt's reserved_micros, its module run's and its mission's (a session's: the mission's only). The amount is the request's maximum cost: its input tokens priced at the highest of the input and cache-write prices, plus max_tokens at the output price, from the price_table row valid now (Clock) for the vendor and model. Input is counted before sending through the vendor layer's token count, with no tokenizer package (E5). A request with no valid price is refused",
+  "The database enforces the ceilings (attempts_cap_ck and the module and mission CHECKs). A refusal from the attempt's CHECK is the cap (the attempt will end capped); one from the module's or the mission's is the budget (budget_parked). Map each by constraint name, never by re-checking in code alone (AGENTS.md: the database enforces its rules). Answer the harness in the vendor's error shape with the reason, and send nothing. Ending the attempt is the runner's (Step 4): this ticket writes no attempts.outcome (E8, E12)",
+  "Settle once the vendor's stream ends: price the usage it reported (input, output, cache reads, cache writes at 5 minutes and at 1 hour, each from price_table), set settled_micros, move the attempt's reserved into cost_micros and the module's and mission's reserved into spent_micros, and append metering.spend.updated (usage.recorded), in one transaction. The response streams through to the caller as it arrives; output is never clamped",
+  "Never undercount: if the stream fails, times out or the caller aborts before the vendor's final usage, settle what the vendor reported so far if that's all it will report, and otherwise keep the full reservation as spent. The reservation is a resource with acquireRelease, so an interrupted request never leaves a held row. A retry of the reservation write with the same request_id reserves once (the unique index)",
+  "Housekeeping in the proxy's process: a reaper job kind releases held reservations of ended attempts and ended onboarding sessions (DATABASE.md: the reaper releases held rows), at startup and on its schedule",
+  "Money stays in micro-dollars, as integers. No money goes on a web-facing route or event beyond AI cost against its cap (AGENTS.md). The key, a token or a prompt's text never appears in a log line, a row or an event",
+  "List the proxy's settings by name in the report (its port, the vendor's base URL, ANTHROPIC_API_KEY, DATABASE_URL): Javaris adds them to .env.example",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/metering/**"]
+behaviours = [
+  "a request with a running attempt's dispatch token reaches the fake vendor with the factory's key and without the caller's token, and its streamed reply reaches the caller unchanged",
+  "after the reply, the reservation is settled at the usage's price from price_table (input, output, cache read, 5-minute and 1-hour cache writes each at their own price), and the attempt's cost_micros and the module's and mission's spent_micros rise by exactly that amount, with one metering.spend.updated event in the same transaction and nothing left reserved",
+  "a request to any path but POST /v1/messages, or with a missing, revoked, expired or non-dispatch, non-service token, is refused and the fake vendor sees no call",
+  "a request whose maximum cost the attempt's $4 cap can't cover is refused with the cap's reason and never sent; one the module's or the mission's budget can't cover is refused with the budget's reason and never sent; the two reasons differ",
+  "20 concurrent requests on one attempt never take reserved plus cost past its cap, and concurrent requests across a module's attempts never take it past its budget; every request that reached the vendor had its reservation first",
+  "a request for a model with no price_table row valid at the TestClock's now is refused and never sent",
+  "a reply that fails or is aborted before the vendor's final usage leaves no held reservation and settles no less than the usage the vendor reported",
+  "a Canon request with a session's service token reserves and settles against the mission's budget only, with the session's id and no attempt",
+  "the reaper releases the held reservations of an ended attempt and of an ended onboarding session, and leaves a running attempt's",
+  "startModelProxy refuses to start without ANTHROPIC_API_KEY, naming the variable and never a value; startServer starts without it; no log line or row holds the key or a token",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B24"
+slug = "status-and-decisions"
+title = "The top bar and Decisions, from real rows: routes 104, 52 and 53"
+goal = "The control room's top bar shows real slots, alerts and how many things need the operator, and Decisions lists every item waiting on the operator from the factory's own tables, in the server's order, each with its plain words."
+rigor = "standard"
+refs = [
+  "API routes.md: route 104 (GET /api/status, CR-W5), route 52 (GET /api/pending-decisions, the 10-kind union, CR-W2) and route 53 (GET /api/proposals/{proposalId})",
+  "CR-W5 Mission summary and status: the status read, its slots, needs-you count and alerts",
+  "CR-W2 Pending decisions: the union, its ref, its ordering",
+  "Design v0.6 Main, Build order step 5: the avel watch header reads this status (the CLI itself waits, Nov 18)",
+  "Build rules E13: four tests per route",
+]
+depends_on = []
+may_change = [
+  "packages/server/src/factory/decisions/**",
+  "packages/server/src/platform/status/**",
+  "packages/server/src/platform/router.ts",
+  "packages/server/src/platform/errors.ts",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/server.ts",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/jobs/**",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "packages/contract/src/dto/decisions.ts", why = "PendingDecisionDto's ten kinds, the shared base (ref, owner, asOfSeq, plain, evidence, reasonRequired, rejectable, unlocks, previous), the order, and ProposalViewDto" },
+  { path = "packages/contract/src/dto/health.ts", why = "StatusDto and AlertDto: slots, needsYouCount, alerts, stallAfterMs, lastSeq" },
+  { path = "packages/contract/src/plain-templates.ts", why = "the plain words each kind carries, written by the server" },
+  { path = "docs/design/CR-W2 Pending decisions.md", why = "what each kind is, where its row comes from, and the ordering" },
+  { path = "docs/design/CR-W5 Mission summary and status.md", why = "the status read: slots, what needs you, alerts" },
+  { path = "packages/server/src/onboarding/clients", why = "the route pattern to follow: the mapper, the router entry, the 401 through errors.ts" },
+  { path = "packages/server/src/platform/router.ts", why = "where a module's routes join the contract's tree" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "The pending-decisions query lives in packages/server/src/factory/decisions/ and is exported from its index.ts with a per-mission count, because T-B25's mission rows (needsYouCount, displayState) use it. It only reads: proposals, checkpoints, plans, questions, receipts and pass approvals, the dispatch package's commit, follow-ups. It writes nothing",
+  "Route 52 serves nine kinds from the factory's tables. factory_change isn't served: open factory PRs live on GitHub, not in a table (the contract's dto/factory.ts), and come with routes 72 and 73. Say so in the report. A kind whose row the docs don't place, or whose fields no column holds, is a needs-cr, not a guess (E3)",
+  "Ordering and paging as the contract says: items that came back first, then expiring soonest, then deadline risk, then oldest; the contract's cursor and limit. asOfSeq is the latest event seq the item reflects",
+  "Route 104: slots.total is 6 (Design v0.6 Main: up to 6 dispatches at once) as one named constant citing it, until the scheduler reads it from factory.yaml (9b); slots.busy counts the dispatches running now. needsYouCount is route 52's count. alerts are the system.alert.raised events with no later system.alert.cleared for the same key. lastSeq is the latest committed seq. No money",
+  "Agent, client and Canon text goes out as plain text, never HTML (AGENTS.md)",
+  "The 401 without a session and the 404 for an unknown proposal go through errors.ts's table, with the contract's body and requestId (Writing Effect rule 3)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = [
+  "packages/server/test/decisions/**",
+  "packages/server/test/status/**",
+]
+behaviours = [
+  "route 52 returns one row for each open item it serves (an open proposal, a checkpoint waiting for approval, a plan waiting to be finalized, an unanswered question, a pass approval and a release due, a dispatch package commit due, a follow-up and an upkeep offer, inserted as rows), each valid against PendingDecisionDto, with a resolved or expired item absent",
+  "route 52 orders items that came back first, then expiring soonest, then oldest, and pages with the contract's cursor and limit without repeating or skipping a row",
+  "route 53 returns a proposal's ProposalViewDto, valid against the contract; an unknown proposal id is 404 with the contract's body and the request's requestId",
+  "route 104 returns slots { busy, total: 6 }, needsYouCount equal to route 52's count, the raised alerts that weren't cleared (a cleared one is absent), and lastSeq equal to the latest committed event's seq, valid against StatusDto",
+  "routes 52, 53 and 104 without a session are 401 with the contract's body and requestId",
+  "a proposal's text holding <script> comes back as the same plain characters",
+  "the per-mission count exported from factory/decisions counts only that mission's open items",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B25"
+slug = "missions"
+title = "Missions: create a draft, list them and open one (routes 19, 20 and 21)"
+goal = "A new mission made in the control room is saved as a draft, shows up in the missions list with its strip and counts, and opens on its own page with its onboarding journey, checkpoints and deliveries, all from real rows."
+rigor = "standard"
+refs = [
+  "API routes.md: route 19 (MissionListRowDto, ?kind=), route 20 (a draft with a name and an optional client, CR-W22) and route 21 (MissionDetailDto)",
+  "Contract response to CR-W1 to W22: route 19's row, route 20's input and route 21's shape",
+  "CR-W5 Mission summary and status: the list's strip, counts and needs-you",
+  "Design v0.6 Main, Build order step 7: a mission is a draft before Canon's first question (Canon himself is Step 7's)",
+  "Build rules E13: four tests per route",
+]
+depends_on = ["T-B24"]
+may_change = [
+  "packages/server/src/factory/missions/**",
+  "packages/server/src/platform/router.ts",
+  "packages/server/src/platform/errors.ts",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/factory/decisions/**",
+  "packages/server/src/onboarding/**",
+  "packages/server/src/server.ts",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/platform/db/**",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "packages/contract/src/dto/missions.ts", why = "MissionDto (displayState, plain, deadline, clientMain), GateStripItem, MissionListRowDto, ListMissionsInput, CreateMissionInput, OnboardingJourneyDto and MissionDetailDto" },
+  { path = "packages/contract/src/routes/missions.ts", why = "routes 19, 20 and 21: inputs, outputs and declared errors" },
+  { path = "packages/db/src/schema/factory.ts", why = "missions: its state CHECK, kind, budget columns and row_version; mission_pauses for displayState" },
+  { path = "packages/server/src/factory/decisions/index.ts", why = "T-B24's per-mission count: needsYouCount and blocked_on_you; read only" },
+  { path = "packages/server/src/onboarding/clients", why = "the route pattern: idempotent write, the activity row and its event in one transaction, the mapper" },
+  { path = "packages/server/src/audit/activity.ts", why = "the activity row an operator write leaves" },
+  { path = "docs/design/Canon onboarding v0.5.md", why = "the journey's stages and progress, which route 21 computes from onboarding's rows; the opener is Canon's (Step 7), not route 20's" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "The factory module owns missions (packages/db/src/owners.ts); its routes live in packages/server/src/factory/missions/. One mapper per DTO (toMissionDto, toMissionListRowDto); no Drizzle row leaves the server",
+  "Route 20 writes the mission as a draft with its name and optional client (kind unset: Canon's first question sets it, CR-W22), its activity row and missions.mission.created, in one transaction through the idempotency store. Its budget comes from the design's $150 mission budget as one named constant citing Design v0.6 Main, until finalize pins factory.yaml's (Step 7). It writes nothing of onboarding's: the session and the opener are Canon's (Step 7). An unknown clientId is the database's refusal mapped to 422, not a check in code alone",
+  "Route 19 pages missions by the contract's cursor with ?kind= (unset lists missions whose kind isn't set) and ?clientId=. Each row's gates, modules, runningDispatches and lastEventAt come from their tables (gate evaluations, module runs, dispatches, events), and needsYouCount from T-B24's count. A draft has its strip at its first state and zero counts. No money on the row (CR-W5)",
+  "Route 21 returns MissionDetailDto: the mission, its strip, the onboarding journey computed from onboarding's rows (empty session and zeros for a draft), checkpoints and deliveries. displayState follows the contract's rule (an open operator pause is paused; an open proposal or budget pause is blocked_on_you). Reading other modules' tables is allowed; writing them isn't (E12)",
+  "Plain words come from the contract's plain templates. Client and agent text goes out as plain text",
+  "Anything route 21's shape needs that no column holds is a needs-cr, not a placeholder of our own (E3)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/missions/**"]
+behaviours = [
+  "route 20 with a name (and with a client) returns the draft mission valid against MissionDto, writes one missions row, one activity row and one missions.mission.created event in the same transaction",
+  "route 20 replayed with the same Idempotency-Key and body returns the first response and writes nothing more; the same key with another body is 409",
+  "route 20 with an unknown clientId is 422 with the contract's body and requestId, and writes nothing; without an Idempotency-Key it's 400",
+  "route 19 lists the drafts as rows valid against MissionListRowDto, filters by ?kind=unset and ?clientId=, and pages by cursor without repeating or skipping a mission",
+  "a mission with an open proposal shows needsYouCount 1 and displayState blocked_on_you on route 19 and route 21; one with an open operator pause shows paused",
+  "route 21 returns MissionDetailDto for a draft (an empty journey, no checkpoints, no deliveries), valid against the contract; an unknown missionId is 404 with the contract's body and requestId",
+  "routes 19, 20 and 21 without a session are 401 with the contract's body and requestId",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B26"
+slug = "live-streams"
+title = "The live streams: the event stream (63) and the trace stream (64) that resume from Last-Event-ID, and an attempt's steps (109)"
+goal = "The control room's live feed shows each committed event as it happens, for all missions or one, and a reconnect picks up exactly where it left off with no event missing or repeated; an attempt's and a Canon session's traces stream and page the same way."
+rigor = "full"
+refs = [
+  "Design v0.6 Main, Build order step 5: a run streams live, and a reconnect resumes with no missing sequence numbers",
+  "API routes.md: route 63 (GET /api/events/stream, ?missionId=, Last-Event-ID is the seq, replaying up to 30 days), route 64 (GET /api/traces/stream, ?attemptId= or ?sessionId=, view=steps, Last-Event-ID is the trace ID) and route 109 (GET /api/attempts/{attemptId}/steps?after=)",
+  "Design v0.6 Main, API routes: streams use oRPC's event iterator over server-sent events; no Redis, the event stream runs inside the service",
+  "Step 1 test 11: seq order equals commit order, with no gap a reader can miss",
+]
+depends_on = ["T-B25"]
+may_change = [
+  "packages/server/src/events/**",
+  "packages/server/src/platform/router.ts",
+  "packages/server/src/platform/errors.ts",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/platform/jobs/**",
+  "packages/server/src/server.ts",
+  "packages/server/src/platform/app.ts",
+  "packages/server/src/factory/**",
+  "packages/db/**",
+  "packages/contract/**",
+]
+context = [
+  { path = "packages/contract/src/routes/events.ts", why = "routes 63 and 64: their inputs and eventIterator outputs" },
+  { path = "packages/contract/src/dto/events-and-traces.ts", why = "EventDto (a union over every kind with its payload schema), EventStreamInput, AgentTraceDto and TraceStreamInput" },
+  { path = "packages/contract/src/dto/dispatches.ts", why = "AgentStepDto: view=steps and route 109" },
+  { path = "packages/server/src/platform/db/events.ts", why = "how events are written and their seq taken at commit; read only" },
+  { path = "packages/db/src/schema/events.ts", why = "events (seq, mission_id, kind, payload, at) and agent_traces (trace_seq, attempt_id, session_id, kind, body), partitioned by week" },
+  { path = "docs/design/Jobs and workers.md", why = "consumers read events in seq order; the stream is a reader in the same order" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "The events module owns events and agent_traces; the streams live in packages/server/src/events/. They only read",
+  "Route 63: oRPC's event iterator. It replays committed events after Last-Event-ID (the seq; none means the stream starts at now, as the contract says), then follows new ones, each with its seq as the SSE id, in seq order, filtered by ?missionId= when given. Replay reaches back at most 30 days (Clock). Each event goes out as EventDto, validated against the contract; one whose stored payload doesn't parse is logged once with no values and skipped, never sent malformed",
+  "Following new events: read after the last sent seq on a Schedule (TestClock in tests), through the router's Db, so no new service joins startServer and no connection is held between reads. Seq is taken last before commit under the advisory lock, so reading after the last seq misses nothing (test 11). Keep-alive comments on the SSE stream follow oRPC's own option",
+  "Closing the stream (the client goes away) ends its reads at once; a stream holds no pool client while it waits (Writing Effect rule 6)",
+  "Route 64 streams an attempt's or a session's traces after Last-Event-ID (the trace ID), as AgentTraceDto, or as AgentStepDto with view=steps. Route 109 pages an attempt's steps oldest first after ?after=. Both share the step mapper",
+  "The stream carries no money beyond AI cost against its cap, and agent, client and Canon text as plain text (AGENTS.md)",
+  "Without a session, each route is 401 with the contract's body and requestId; route 64 with neither or both of attemptId and sessionId, and route 109 for an unknown attempt, answer the contract's error",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = ["packages/server/test/streams/**"]
+behaviours = [
+  "route 63 opened with no Last-Event-ID sends each event committed after it opened, once, in seq order, each valid against EventDto and carrying its seq as its id",
+  "route 63 reconnected with Last-Event-ID n sends every committed event after n and none at or before it, while 20 writer transactions commit, some rolled back: no committed seq is missing or repeated across the two connections (Step 5's done-when, test 11)",
+  "route 63 with ?missionId= sends only that mission's events; a replay doesn't reach past 30 days (TestClock)",
+  "an event whose stored payload doesn't parse is skipped and logged once with no values, and the events after it still arrive",
+  "closing route 63's connection ends its reads: no pool client stays checked out for it in pg_stat_activity",
+  "route 64 streams an attempt's traces after Last-Event-ID as AgentTraceDto, and as AgentStepDto with view=steps; a session's traces stream the same way; neither or both ids is the contract's error",
+  "route 109 pages an attempt's steps oldest first after ?after=, valid against the contract; an unknown attempt answers the contract's error with requestId",
+  "routes 63, 64 and 109 without a session are 401 with the contract's body and requestId",
+]
+
+# =============================================================================================
+# Deferred to sprint-07 (Axis, Nov 21: B1 allows 6 tickets a cycle, and T-B27 took the slot). T-B23 as planned, kept
+# here so sprint-07's plan takes it as written. Not rendered: it's a comment.
+#
+# [[ticket]]
+# id = "T-B23"
+# slug = "mission-repo-git"
+# title = "The mission repo over HTTP: a room clones with its attempt's git credential and pushes only its own attempt branch"
+# goal = "A room can clone and fetch its mission's repo over HTTP with its attempt's git credential, and a push to anything but that attempt's own branch is refused with nothing changed."
+# rigor = "full"
+# refs = [
+#   "Design v0.6 Main, Build order step 2: the mission repo over HTTP with per-attempt git credentials (read the mission's branches, push only the attempt's own branch); done when a push to any branch but the attempt's own is refused",
+#   "Sandbox doc: Git (clones over HTTP with no shared files, pushes only its own branch with a per-room credential; the mission repo is never mounted)",
+#   "Port inventory: Worktree provider, sources, snapshot (the attempt's own branch mission/<id>/<module>/<role>-a<n>)",
+#   "AGENTS.md, Architecture rules: Hono routes outside the contract include /git/missions/{missionId}.git",
+# ]
+# depends_on = ["T-B21"]
+# may_change = [
+#   "packages/server/src/compute/git/**",
+#   "packages/server/src/platform/app.ts",
+#   "packages/server/src/server.ts",
+# ]
+# must_not_change = [
+#   "packages/server/package.json",
+#   "pnpm-lock.yaml",
+#   "packages/server/src/compute/credentials/**",
+#   "packages/server/src/platform/router.ts",
+#   "packages/server/src/platform/errors.ts",
+#   "packages/server/src/main.ts",
+#   "packages/server/test/entry/start.test.ts",
+#   "packages/db/**",
+#   "packages/contract/**",
+# ]
+# context = [
+#   { path = "docs/design/Sandbox - Docker now, boat or MIOSA next.md", why = "the Git row and Moving off Docker: why the repo is reached over HTTP with a credential that works only for its own branch" },
+#   { path = "packages/server/src/compute/credentials/index.ts", why = "T-B21's verify for kind git, whose scope is the attempt's own branch; read only" },
+#   { path = "packages/server/src/platform/app.ts", why = "createApp: where the Hono routes outside the contract are mounted, as the webhook is" },
+#   { path = "packages/server/src/platform/webhooks/github.ts", why = "the precedent for a Hono route outside oRPC: reading a raw body with a limit, and answering the contract's error body with the requestId" },
+#   { path = "packages/server/src/server.ts", why = "startServer's settings and Scope: the mission repos' folder comes from Config here" },
+# ]
+# verify = [
+#   "pnpm --filter @avel/server test",
+#   "pnpm --filter @avel/server typecheck",
+#   "pnpm --filter @avel/server check:effect",
+#   "pnpm --filter @avel/server exec vitest run test/entry/start.test.ts",
+#   "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+# ]
+# notes = [
+#   "Git's smart HTTP protocol at /git/missions/{missionId}.git, served by the host's git (git http-backend, or upload-pack and receive-pack run directly): git is a host tool, not a package (E5). Every git process has a timeout and is ended with its scope (Writing Effect rules 5 and 6)",
+#   "Each mission's repo is a bare repo at <folder>/<missionId>.git, the folder from Config (startServer reads it; say its name in the report for .env.example). The path comes only from a missionId that parses as a UUID; anything else is 404. Without the setting the server has no git endpoint, as the webhook works today. Creating a mission's repo isn't in this ticket (E8): tests make their own bare repos",
+#   "Auth is HTTP Basic with the attempt's git credential as the password, checked with T-B21's verify for kind git, on every request. Missing or refused is 401 with a WWW-Authenticate header so git asks; a credential for another mission's repo is 404, so it learns nothing. Other kinds (dispatch, proxy, service) never pass",
+#   "Read: clone and fetch see the mission's branches. Push: every ref update in a receive-pack request must be an update or create of exactly the credential's own branch (refs/heads/mission/<missionId>/<moduleRef>/<role>-a<n>). A request naming any other ref, a tag, or a delete is refused whole before any ref moves (read the commands before handing the pack to git, or a pre-receive check given the allowed ref), and the repo's refs are unchanged",
+#   "A refusal git can show (a rejected ref) names the rule, never a token. Errors outside git's protocol answer the contract's error body with the requestId, as the webhook does; errors.ts doesn't change",
+#   "Request bodies have a size limit, checked before buffering (the webhook's precedent). Logs name the credential's id and the mission, never the token",
+#   "The operator's CLI-session access (avel link, pushes to operator/<mission>) is Step 5's and waits for the CLI (Javaris, Nov 18); don't build it (E8)",
+# ]
+#
+# [ticket.tests]
+# role = "test-unit"
+# paths = ["packages/server/test/git/**"]
+# guards = [
+#   "packages/server/test/entry/start.test.ts passes, and startServer without the mission repos' setting serves no /git route",
+# ]
+# behaviours = [
+#   "git clone of /git/missions/{missionId}.git with the attempt's git credential, from startServer on a free port, gets the mission's branches",
+#   "a push of new commits to the attempt's own branch lands, and the bare repo's ref moves to them",
+#   "a push to main, to another attempt's branch, to operator/<missionId>, of a tag, or deleting the own branch is refused, and every ref in the bare repo is unchanged; a push that updates the own branch and another ref together is refused whole",
+#   "a clone without a credential is 401 with WWW-Authenticate; with a revoked or expired git credential it's 401; with a dispatch or proxy credential it's 401; with another mission's git credential it's 404",
+#   "a mission id that isn't a UUID, or one with no repo, is 404, and no path outside the repos' folder is touched",
+#   "no log line written during these tests holds a credential's token",
+# ]
+#

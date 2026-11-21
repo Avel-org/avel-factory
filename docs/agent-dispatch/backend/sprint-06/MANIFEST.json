@@ -1,0 +1,30 @@
+{
+  "files": {
+    "DISPATCH-PROMPTS.md": "918d095cf112d5292a2bdafe7e1b5236ef490574e6be9085bffdfa42e64a7cb5",
+    "DISPATCH.md": "1e955a8aed01e0ce087e01cc9a9237aae1b6abb38aff88c6f51f77ee1cb6cd6f",
+    "agent-rigg-t-b21-review.md": "53ed9363953815eb1e404171f895bf76712b5e3673dfab54d6046a93957e8ff1",
+    "agent-rigg-t-b21-test-unit.md": "4cc89c03bda6c74cb93dfd9d23aca4e606d0947b98c979216bdff6a76f638073",
+    "agent-rigg-t-b22-review.md": "74e6564c3d14182736a7dc4b4a4c0252711f8798fb577f803fff1d9947d59d86",
+    "agent-rigg-t-b22-test-unit.md": "c8baa9b06e138c6b1a40119c8c2020213c8835e88bdf8ac51257d882b80ffc47",
+    "agent-rigg-t-b24-review.md": "d50c95c60d580109943fb19770400dd3827a21a3bf78def250832a8506a187bb",
+    "agent-rigg-t-b24-test-unit.md": "f0cd44b97eb934cff2e6db16a7814bfa999442054daa1379a9fd31d23721cca5",
+    "agent-rigg-t-b25-review.md": "048d0eb12d0c436c6f4ea517fe2f938e0e6a4662902b4c368cebb506f963a837",
+    "agent-rigg-t-b25-test-unit.md": "f5cc1eb1e421f1e59c8b86add8d36acf142fc3c915be36579243e364a3440ecb",
+    "agent-rigg-t-b26-review.md": "43e107bf6fa90c70b76937437dda5abf32c1e8f0bf3b0a4cea8e3f76750630c3",
+    "agent-rigg-t-b26-test-unit.md": "3ab2840c939bc572ec917fc47c7fa676883a02dd458763cba6eab1395e640009",
+    "agent-rigg-t-b27-review.md": "2e66fafd408fa77d7e1305d5d8f3e106047fae5b5b3714982fbfc2470c262f6c",
+    "agent-rigg-t-b27-test-unit.md": "41b5271b8fb0486f16ce71be7bd0f639ff1bd1169a70aafd84d33e7934d51099",
+    "agent-soap-t-b21-build.md": "9982ea50dd8952ff9cefde06282170bb1f53d231d25ad9c9fb871b88962c3b2f",
+    "agent-soap-t-b22-build.md": "51ed56e34078b2e667c4e524b25001dae78fcd09616d38b02e463a7a1bbab0da",
+    "agent-soap-t-b24-build.md": "4134f5aff4b3c7c40df4a15c978f83ae0178846c7923c7ac2613f423e5b2f532",
+    "agent-soap-t-b25-build.md": "8118f8727153eab4a3049d547983d695c2511cc604bb293c1f4643532de39d1a",
+    "agent-soap-t-b26-build.md": "9a934bdf08f40adf6c5bcf897ccb9d4f1ef266feb2492d2ce0853eda771c2b46",
+    "agent-soap-t-b27-build.md": "f21d6abd94be1cb04ff107004e1527218a925e9cc09773598b9565336a1b47a8",
+    "codebase-analysis.md": "b6597b2b6663aa3d2724718457114d75fcc7e97501965f8214fc5bea0b3408fc"
+  },
+  "lane": "backend",
+  "packageSha256": "c29d7972132505ce777f751218497b56d8bba0016e303b3da3090c4ad4c93891",
+  "plan_sha256": "0a9dd1ea697c3ac5b4434c3fd278475018de17231d0731342ad6185a2eb6be8c",
+  "renderer": "avel-render 4",
+  "sprint": "sprint-06"
+}
