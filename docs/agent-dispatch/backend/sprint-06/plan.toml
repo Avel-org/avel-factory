@@ -19,8 +19,8 @@
 #     T-B26 the live streams: events (63), traces (64) and an attempt's steps (109)                     ~120 min  full  (after T-B25)
 #
 # What waits on what, and why (only where the code needs it):
-#   - T-B27 changes the jobs engine (packages/server/src/platform/jobs), and T-B20 may change all of packages/server/src,
-#     so T-B27's build starts once T-B20 merges. T-B21 follows T-B27, though they share no file: T-B21 is the first
+#   - T-B27 changes the jobs engine (packages/server/src/platform/jobs) and row 5 of docs/steps/step-1-done.md. T-B21
+#     follows T-B27, though they share no file: T-B21 is the first
 #     consumer the running server starts, and its close() test needs T-B27's bounded stop.
 #   - T-B22 verifies T-B21's tokens, so it waits for it.
 #   - T-B22 runs as its own process (Design v0.6 Main: the model proxy is a separate service on the host, and the only
@@ -30,8 +30,7 @@
 #     that costs no time.
 #
 # Which tickets can build at the same time (no shared file, neither waits on the other; render.py --check holds it):
-#   - T-B27 beside T-B24: the sprint's first pair. T-B24 can build while T-B20 runs (decision 2); T-B27 joins it
-#     once T-B20 merges.
+#   - T-B27 beside T-B24: the sprint's first pair.
 #   - T-B21 or T-B22 beside T-B25 or T-B26: each chain A ticket beside each chain B ticket.
 #   At most two Soap sessions at once (B7). Rigg writes T-B24's tests while T-B27's are locked and building, and so on
 #   down both chains, one checker session at a time.
@@ -52,7 +51,7 @@
 #   - No new dependency in any ticket (E5): the proxy calls the vendor with fetch, the git endpoint runs the host's git,
 #     and tokens use node:crypto.
 #
-# Decisions for Javaris (seven):
+# Decisions for Javaris (approved Nov 21, each as Axis recommended, with T-B23 to sprint-07 as an eighth):
 # 1. Steps beside Step 2 (E9). E9 says no ticket from a later step starts until the current step closes. The build plan
 #    (section 1) lets Steps 3, 5, 6 and 7 run beside the critical path once their inputs exist. Chain B is Step 5 work
 #    (T-B24's status read is the avel watch header and the top bar; T-B26 is Step 5's live and trace streams) and the
@@ -140,7 +139,7 @@ conventions = [
 ]
 notes = [
   "Review (G5): one review, no round 2. Only a P0 or P1 sends a PR back; every P2 goes to a later ticket or the backlog, named in the PR text",
-  "Backlog, not this cycle: T-B18's review findings rigg-02 and zero-02, and rigg-05's Jobs and workers.md half, wait for CR-49 (decision 7); rigg-03's CI job that runs the server suite 5 times under extra CPU load is kit work (.github), for OSA's list. rigg-01, rigg-03's two tests, rigg-04, rigg-05's code half and zero-01 are T-B27",
+  "Backlog, not this cycle: T-B18's review findings rigg-02 and zero-02, and rigg-05's Jobs and workers.md half, wait for CR-49 (decision 7); rigg-03's CI job that runs the server suite 5 times under extra CPU load is kit work (.github), for OSA's list. t-b20-rigg-02 (P3): done-when.test.ts doesn't check the ticket cell, and its skip pattern misses it.effect.skip and it.effect.only. rigg-01, rigg-03's two tests, rigg-04, rigg-05's code half and zero-01 are T-B27",
   "T-B27, T-B21, T-B22 and T-B26 are full rigor (C4: claims and the reaper, tokens, the proxy and money, events and seq): Rigg reviews on Opus, Zero gives the security-checklist review (G7), and Javaris merges. T-B24 and T-B25 are standard and merge on Javaris's standing approval (CR-45)",
   "Lock from a detached worktree, then fast-forward the t/* branch; merge main into a ticket branch before its build starts",
   "No ticket changes packages/contract, packages/db, package.json or the lockfile",
@@ -151,7 +150,7 @@ notes = [
 id = "T-B27"
 slug = "jobs-engine-follow-ups"
 title = "Jobs engine follow-ups: a consumer's stop and failure edges, the claim number proved, and the timing tests that go red under load"
-goal = "A deploy never hangs on a consumer, a stopped or out-raced copy never sits on a claim it holds or logs a death that didn't happen, a locked test fails if the cursor's swap ignores the claim number, and the suite stays green on a loaded machine."
+goal = "A deploy never hangs on a consumer, a stopped or out-raced copy never sits on a claim it holds or logs a death that didn't happen, a locked test fails if the cursor's swap ignores the claim number, Step 1's report proves test 5 in its cells, and the suite stays green on a loaded machine."
 rigor = "full"
 refs = [
   "t-b18-rigg-01 (P2): no locked test proves the claim-number half of the cursor's compare-and-swap (engine.ts:478-488); deleting it leaves test/consumers and test/jobs green",
@@ -160,11 +159,13 @@ refs = [
   "t-b18-rigg-04 (P3): a consumer's stop waits on the event in flight with no bound; a stop during a claim can leave it held until expiry; the dead log can be wrong after another copy took the claim; a lost check-in stays in own",
   "t-b18-zero-01 (P3): a stop while a pass is inside claimConsumer leaves a claim the copy doesn't know it holds (the same family as rigg-04 item 2)",
   "t-b18-rigg-05 (P3), the code half: jobs.ts:16 (JobView.attempts) and jobs.ts:53 (Worker.stop) are wrong for a consumer",
+  "t-b20-rigg-01 (P2): done-when.test.ts lists test 5 as moved, so row 5 of docs/steps/step-1-done.md carries its proof in prose the check never verifies. CR-43 restates test 5 on sign-in (T-B9-04, T-B16-03); it doesn't move it (Axis's C5 sign-off on #89; Javaris, Nov 21: into T-B27)",
   "Jobs and workers.md: a job's life 5 to 7, Event consumers, and Settings (a 30 s claim, check-ins every 10 s)",
 ]
-depends_on = ["T-B20"]
+depends_on = []
 may_change = [
   "packages/server/src/platform/jobs/**",
+  "docs/steps/step-1-done.md",
 ]
 must_not_change = [
   "packages/server/package.json",
@@ -190,7 +191,8 @@ verify = [
   "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
 ]
 notes = [
-  "Starts once T-B20 has merged: T-B20 may change packages/server/src/**, so their builds can't overlap. Rigg's tests can be written while T-B20 builds; their paths don't meet test/step-1. Merge main into the branch before the build starts",
+  "T-B20 merged (#89) and Step 1 is closed, so nothing in sprint-05 holds this ticket. Merge main into the branch before the build starts",
+  "Row 5 (t-b20-rigg-01): the builder rewrites only row 5 of docs/steps/step-1-done.md. It stays in Step 1, restated by CR-43 on sign-in, with T-B9-04 (packages/server/test/auth/rate-limit.test.ts, T-B9) and T-B16-03 (packages/server/test/server/rate-limit.test.ts, T-B16) in its cells. The other rows don't change",
   "Stop is bounded by the claim it holds: a consumer's stop waits for the event in flight at most until that copy's claim would expire (the 30 s claim, Settings), then interrupts the act. The act is one transaction, so its writes roll back and the next copy acts on the event once. No new setting: the bound is the claim's length (E3, E8)",
   "No claim the copy doesn't know about: the claim and the copy's record of it (held) are set without a yield between them, or the pair is uninterruptible, so a stop or kill at any point either releases the claim or never took it (rigg-04 item 2, zero-01)",
   "fail reports dead only when its update changed the row; a copy whose 5th failure lands after its claim was taken logs no dead line and leaves the job as the other copy has it (rigg-04 item 3)",
@@ -198,6 +200,7 @@ notes = [
   "Fix jobs.ts's comments for a consumer: attempts counts failed tries on the event at the cursor and goes back to 0 when it moves; a consumer's stop waits for the event in flight (bounded as above), then hands the claim back (rigg-05, code half). The Jobs and workers.md half goes to CR-49 (see the header), not this ticket",
   "Not in this ticket: a bound on how many runs one worker holds (t-b18-rigg-02) and whether a database defect inside act counts as a failed try (t-b18-zero-02). The design names neither, so both wait for CR-49 (E3)",
   "The timing fixes are Rigg's, in the tests dispatch, with assertions unchanged: each test waits on the fact it reads (until() on committed state, or on the connection count settling) instead of on how fast this process is scheduled. No wall-clock sleeps (F4). The builder can't change them (F2); they join this ticket's lock line",
+  "The load proof, in the tests dispatch: after the timing fixes, T-B8-02, T-B19-05 and T-B13-06 pass on 5 runs in a row of pnpm --filter @avel/server test with one CPU burner per core beside it (node busy loops, no new dependency, never in the test suite). Rigg reports the 5 runs and the load average; the build reruns it in its own verification. The T-B13, T-B17 and T-B18 tests keep passing unchanged",
   "Never run more than one vitest at a time; for the load proof, load comes from CPU burners beside the run, not a second vitest (Nov 20's out-of-memory crashes)",
 ]
 
@@ -208,16 +211,16 @@ paths = [
   "packages/server/test/platform-hardening/pool-timeouts.test.ts",
   "packages/server/test/follow-ups/05-close-releases-pools.test.ts",
   "packages/server/test/jobs/retries.test.ts",
+  "packages/server/test/step-1/done-when.test.ts",
 ]
 guards = [
   "T-B18-02's variant (rigg-01): copy b's handler, like a's, waits on its own Deferred; a's late hold is released first, and a's write isn't saved and the cursor doesn't move; then b is released, the cursor moves once and only b's write stays. It passes on main (the code has the check); Rigg shows it fails with engine.ts's claim_no condition deleted, in a scratch worktree, and reports the run",
-  "T-B8-02, T-B19-05 and T-B13-06, with their assertions unchanged, pass on 5 runs in a row of pnpm --filter @avel/server test with one CPU burner per core beside it (node busy loops, no new dependency), one vitest at a time; Rigg reports the 5 runs and the load average",
-  "every T-B13, T-B17 and T-B18 test still passes unchanged",
 ]
 behaviours = [
   "a consumer whose handler never returns: under TestClock, stop returns once the copy's claim would have expired (within 30 s of the claim's last check-in), the handler's writes are rolled back, and a new copy acts on the event once (rigg-04 item 1)",
   "a copy stopped right after its first claim commits, before its first event: a new copy acts on that first event within 10 s, not after the claim's expiry (rigg-04 item 2, zero-01)",
   "a copy whose 5th failure on an event lands after another copy took its claim: no 'dead' log line, the job isn't dead, and the other copy goes on (rigg-04 item 3)",
+  "done-when.test.ts no longer lists test 5 as moved: row 5 must name its files and test IDs, and the check verifies them like any other row (fails on main: row 5 says moved, with none in its cells; t-b20-rigg-01)",
   "a copy that loses its claim three times keeps no finished check-in fibers: the copy's held fibers don't grow with lost claims (rigg-04 item 4; through whatever the engine exposes to tests, or by stop returning promptly with none left)",
 ]
 
