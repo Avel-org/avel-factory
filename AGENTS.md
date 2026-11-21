@@ -88,6 +88,12 @@ pnpm --filter @avel/docs generate
 scripts/pg-local.sh stop    # prune removes the ones whose worktree is gone
 ```
 
+## Testing while you work
+
+- In a fresh checkout, run `pnpm build` once before `pnpm typecheck` or `pnpm test`: workspace packages resolve to their `dist/`.
+- While working, run only the tests you touched: `pnpm --filter <pkg> exec vitest run <test files>`, or `pnpm --filter <pkg> exec vitest related --run <changed src files>` (it follows imports, so it misses a file a test runs as a process, such as `src/main.ts`).
+- Run the full `pnpm test` once, before writing the completion report.
+
 ## The team that builds the factory
 
 `docs/design/Build rules.md` (version 3, Nov 15) is how work moves here. Read it before your first ticket. In short:
@@ -98,4 +104,4 @@ scripts/pg-local.sh stop    # prune removes the ones whose worktree is gone
 - **Review:** one batch per cycle, at most two rounds, and only P0 and P1 block. The backend from T-B9 on has one review and no round 2: only a P0 or P1 sends a PR back, and P2s go to a later ticket (Build rules G5).
 - **Identities, system prompts and dispatch:** `docs/design/Agents, identities and system prompts.md`. Builders and checkers get their work only from a rendered task doc through `/dispatch`, never from a pasted prompt.
 - **Tabs, accounts and keys:** `docs/design/Build roster and environment.md`. Keys never go in the repo; `.env.example` lists the server's.
-- **Stop instead of guessing:** end with `blocked`, `needs-cr`, `test-dispute`, `needs-dependency` or `out-of-scope`.
+- **Stop instead of guessing:** end with `blocked`, `needs-cr`, `test-dispute`, `needs-dependency`, `out-of-scope` or `stuck`.

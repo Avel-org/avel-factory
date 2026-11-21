@@ -62,39 +62,270 @@ class Turns(unittest.TestCase):
         self.assertIsNone(self.run_hook("pre", 500, limit=None))
 
     def test_under_the_limit_is_allowed_and_quiet(self):
-        self.assertIsNone(self.run_hook("pre", 10))
-        self.assertIsNone(self.run_hook("post", 10))
+        self.assertIsNone(self.run_hook("pre", 10, limit="100"))
+        self.assertIsNone(self.run_hook("post", 79, limit="100"))
 
-    def test_the_last_five_turns_warn(self):
-        out = self.run_hook("post", 15)
-        self.assertIn("5 turns left of 20", out["hookSpecificOutput"]["additionalContext"])
-        self.assertIn("1 turn left", self.run_hook("post", 19)["hookSpecificOutput"]["additionalContext"])
-        self.assertIsNone(self.run_hook("pre", 19))
+    def test_the_last_twenty_turns_warn(self):
+        # CR-46 B1: warnings from limit - 20
+        out = self.run_hook("post", 80, limit="100")
+        self.assertIn("20 turns left of 100", out["hookSpecificOutput"]["additionalContext"])
+        self.assertIn("1 turn left", self.run_hook("post", 99, limit="100")["hookSpecificOutput"]["additionalContext"])
+        self.assertIsNone(self.run_hook("pre", 99, limit="100"))
 
     def test_split_messages_count_once(self):
-        self.assertIsNone(self.run_hook("pre", 19, split=True))
-        self.assertTrue(self.denied(self.run_hook("pre", 20, split=True)))
+        self.assertIsNone(self.run_hook("pre", 99, split=True, limit="100"))
+        self.assertTrue(self.denied(self.run_hook("pre", 100, split=True, limit="100")))
 
     def test_at_the_limit_only_the_report_git_and_osa(self):
-        self.assertTrue(self.denied(self.run_hook("pre", 20)))  # pnpm test
-        self.assertTrue(self.denied(self.run_hook("pre", 20, "Read", {"file_path": self.report})))
-        self.assertTrue(self.denied(self.run_hook("pre", 20, "Write", {"file_path": os.path.join(self.tmp, "x.ts")})))
-        self.assertIsNone(self.run_hook("pre", 20, "Write", {"file_path": self.report}))
-        self.assertIsNone(self.run_hook("pre", 21, "Edit", {"file_path": self.report}))
-        self.assertIsNone(self.run_hook("pre", 22, "Bash", {"command": "git add report.md && git commit -m 'report'"}))
-        self.assertTrue(self.denied(self.run_hook("pre", 22, "Bash", {"command": "git commit -m x; rm -rf src"})))
-        self.assertIsNone(self.run_hook("pre", 23, "SendMessage", {"to": "OSA", "message": "stopped on turns"}))
+        L = {"limit": "100"}
+        self.assertTrue(self.denied(self.run_hook("pre", 100, **L)))  # pnpm test
+        self.assertTrue(self.denied(self.run_hook("pre", 100, "Read", {"file_path": self.report}, **L)))
+        self.assertTrue(self.denied(self.run_hook("pre", 100, "Write", {"file_path": os.path.join(self.tmp, "x.ts")}, **L)))
+        self.assertIsNone(self.run_hook("pre", 100, "Write", {"file_path": self.report}, **L))
+        self.assertIsNone(self.run_hook("pre", 110, "Edit", {"file_path": self.report}, **L))
+        self.assertIsNone(self.run_hook("pre", 115, "Bash", {"command": "git add report.md && git commit -m 'report'"}, **L))
+        self.assertTrue(self.denied(self.run_hook("pre", 115, "Bash", {"command": "git commit -m x; rm -rf src"}, **L)))
+        self.assertIsNone(self.run_hook("pre", 119, "SendMessage", {"to": "OSA", "message": "stopped on turns"}, **L))
 
     def test_after_the_grace_turns_everything_is_refused(self):
-        out = self.run_hook("pre", 25, "Write", {"file_path": self.report})
+        out = self.run_hook("pre", 120, "Write", {"file_path": self.report}, limit="100")
         self.assertTrue(self.denied(out))
         self.assertIn("grace", out["hookSpecificOutput"]["permissionDecisionReason"])
+
+    def test_the_session_limits_are_cr_46s(self):
+        with open(os.path.join(KIT, "scripts/agents/limits.json")) as f:
+            l = json.load(f)["agent_session"]
+        self.assertEqual((l["turns"], l["minutes"]), (400, 360))
 
     def test_an_unreadable_transcript_allows_and_logs(self):
         out = self.run_hook("pre", 0, path=os.path.join(self.tmp, "missing.jsonl"))
         self.assertIsNone(out)
         with open(os.path.join(self.tmp, ".git/avel/logs/turns.log")) as f:
             self.assertIn("couldn't count turns", f.read())
+
+
+def load_turns():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("turns", TURNS)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class TurnsCache(unittest.TestCase):
+    """A9: the hook reads only what was appended since its last call, and counts the same as a full read."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="avel-turns-cache-")
+        self.turns = load_turns()
+        self.t = os.path.join(self.tmp, "t.jsonl")
+        self.cache = os.path.join(self.tmp, "turns-s1.json")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_a_transcript_fed_in_two_parts_counts_the_same_as_a_full_read(self):
+        transcript(self.t, 30, split=True)
+        with open(self.t, "rb") as f:
+            data = f.read()
+        lines = data.splitlines(keepends=True)
+        # Cut after the first of m11's two lines (the same id on both sides of the cut), and partway
+        # into the next line, as if it were still being written.
+        first = next(i for i, l in enumerate(lines) if b'"m11"' in l) + 1
+        cut = sum(len(l) for l in lines[:first]) + 7
+        with open(self.t, "wb") as f:
+            f.write(data[:cut])
+        part1 = self.turns.count_turns_cached(self.t, self.cache)
+        self.assertEqual(part1, self.turns.count_turns(self.t))
+        self.assertEqual(json.load(open(self.cache))["offset"], cut - 7)  # the partial line isn't cached
+        with open(self.t, "ab") as f:
+            f.write(data[cut:])
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), self.turns.count_turns(self.t))
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), 30)  # a call with nothing new
+
+    def test_a_rewritten_or_shorter_transcript_is_read_in_full(self):
+        transcript(self.t, 12)
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), 12)
+        transcript(self.t, 4)  # shorter
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), 4)
+        transcript(self.t, 4, split=True)  # longer, but not an append of what was cached
+        with open(self.t, "a") as f:
+            f.write(json.dumps({"type": "assistant", "message": {"id": "x9", "content": [{"type": "tool_use"}]}}) + "\n")
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), self.turns.count_turns(self.t))
+
+    def test_the_hook_keeps_its_cache_per_session(self):
+        subprocess.run(["git", "init", "-q", self.tmp], check=True)
+        transcript(self.t, 16)
+        env = dict(os.environ, AVEL_TURN_LIMIT="20", AVEL_REPORT="", CLAUDE_PROJECT_DIR=self.tmp)
+        hook = {"session_id": "abc-123", "transcript_path": self.t, "tool_name": "Bash",
+                "tool_input": {"command": "pnpm test"}}
+        run = lambda: subprocess.run([sys.executable, TURNS, "post"], input=json.dumps(hook), capture_output=True,
+                                     text=True, env=env)
+        self.assertIn("4 turns left of 20", run().stdout)
+        cache = os.path.join(self.tmp, ".git/avel/logs/turns-abc-123.json")
+        self.assertTrue(os.path.exists(cache))
+        with open(self.t, "a") as f:
+            f.write(json.dumps({"type": "assistant", "message": {"id": "n1", "content": [{"type": "tool_use"}]}}) + "\n")
+        self.assertIn("3 turns left of 20", run().stdout)
+        self.assertEqual(len(json.load(open(cache))["ids"]), 17)
+
+
+PUSH_GUARD = os.path.join(KIT, "scripts/hooks/push_guard.py")
+
+
+class PushGuard(unittest.TestCase):
+    """CR-46 B3: a dispatched build pushes only its own ticket branch; nothing else pushes."""
+
+    def run_guard(self, command, kind="build", branch="t/B1-effect-spike", limit="400", tool="Bash"):
+        env = dict(os.environ, AVEL_KIND=kind, AVEL_BRANCH=branch)
+        env.pop("AVEL_TURN_LIMIT", None)
+        if limit:
+            env["AVEL_TURN_LIMIT"] = limit
+        out = subprocess.run([sys.executable, PUSH_GUARD], input=json.dumps(
+            {"tool_name": tool, "tool_input": {"command": command}}), capture_output=True, text=True, env=env)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        return json.loads(out.stdout) if out.stdout.strip() else None
+
+    def denied(self, out):
+        return bool(out) and out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+    def test_a_build_pushes_its_own_branch_and_opens_its_pr(self):
+        for c in ("git push -u origin t/B1-effect-spike", "git push origin t/B1-effect-spike",
+                  "git push origin HEAD:t/B1-effect-spike", "gh pr create --fill",
+                  "gh pr create --title 'T-B1: spike' --body-file report.md --head t/B1-effect-spike", "pnpm test"):
+            self.assertIsNone(self.run_guard(c), c)
+
+    def test_anything_else_is_refused(self):
+        for c in ("git push -u origin t/B2-other", "git push --force origin t/B1-effect-spike",
+                  "git push origin t/B1-effect-spike --force", "git push origin :t/B1-effect-spike",
+                  "git push origin +t/B1-effect-spike", "git push origin main", "git push",
+                  "git commit -qm x && git push -u origin t/B1-effect-spike", "gh pr create --head t/B2-other"):
+            self.assertTrue(self.denied(self.run_guard(c)), c)
+
+    def test_tests_and_reviews_never_push(self):
+        for kind in ("tests", "review"):
+            self.assertTrue(self.denied(self.run_guard("git push -u origin t/B1-effect-spike", kind=kind)))
+            self.assertTrue(self.denied(self.run_guard("gh pr create --fill", kind=kind)))
+
+    def test_a_session_outside_dispatch_is_never_limited(self):
+        self.assertIsNone(self.run_guard("git push origin main", limit=None))
+        self.assertIsNone(self.run_guard("git push origin main", tool="Read"))
+
+
+DONE_CHECK = os.path.join(KIT, "scripts/hooks/done_check.py")
+
+
+class DoneCheck(unittest.TestCase):
+    """CR-46 B5: a build whose report says done can't stop with failing checks, but is never trapped."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="avel-done-")
+        subprocess.run(["git", "init", "-q", "-b", "main", self.tmp], check=True)
+        self.report = os.path.join(self.tmp, "report.md")
+        self.write_report("status: done\nticket: T-B1\n")
+        self.flag = os.path.join(self.tmp, "done.flag")
+        g = lambda *a: subprocess.run(["git", "-C", self.tmp, "-c", "user.name=t", "-c", "user.email=t@e", *a],
+                                      check=True, capture_output=True)
+        g("add", "-A")
+        g("commit", "-qm", "report")
+        self.env = dict(os.environ, AVEL_TURN_LIMIT="400", AVEL_KIND="build", AVEL_REPORT=self.report,
+                        AVEL_DONE_FLAG=self.flag, AVEL_SEAT="SOAP T-B1-build a1", GIT_AUTHOR_NAME="t",
+                        GIT_AUTHOR_EMAIL="t@e", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@e",
+                        AVEL_DONE_CHECK_CMD="echo 'src/a.ts(1,1): error TS2322: nope'; exit 1")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def write_report(self, text):
+        with open(self.report, "w") as f:
+            f.write(text)
+
+    def stop(self, active=False, **env):
+        out = subprocess.run([sys.executable, DONE_CHECK], input=json.dumps(
+            {"session_id": "s1", "cwd": self.tmp, "stop_hook_active": active}), capture_output=True, text=True,
+            env=dict(self.env, **env))
+        self.assertEqual(out.returncode, 0, out.stderr)
+        return json.loads(out.stdout) if out.stdout.strip() else None
+
+    def status(self):
+        with open(self.report) as f:
+            return f.read().splitlines()[0]
+
+    def test_failing_checks_block_twice_then_the_stop_goes_ahead_and_the_report_says_so(self):
+        open(self.flag, "w").close()
+        out = self.stop()
+        self.assertEqual(out["decision"], "block")
+        self.assertIn("error TS2322", out["reason"])
+        self.assertFalse(os.path.exists(self.flag))  # the block lowers the done flag
+        self.assertFalse(os.path.exists(self.flag + ".checking"))
+        self.assertEqual(self.stop()["decision"], "block")
+        self.assertIsNone(self.stop())  # a third failing stop isn't trapped
+        self.assertEqual(self.status(), "status: stopped (checks failing)")
+        log = subprocess.run(["git", "-C", self.tmp, "log", "-1", "--format=%s"], capture_output=True, text=True).stdout
+        self.assertIn("checks failing", log)  # committed, so the session counts as finished
+
+    def test_a_stop_a_hook_already_continued_is_allowed(self):
+        self.assertIsNone(self.stop(active=True))
+        self.assertEqual(self.status(), "status: stopped (checks failing)")
+
+    def test_passing_checks_and_other_cases_say_nothing(self):
+        self.assertIsNone(self.stop(AVEL_DONE_CHECK_CMD="true"))
+        self.assertIsNone(self.stop(AVEL_KIND="tests"))  # a tests dispatch's tests fail on purpose
+        self.assertIsNone(self.stop(AVEL_TURN_LIMIT=""))
+        self.write_report("status: blocked\n")
+        self.assertIsNone(self.stop())
+        self.assertEqual(self.status(), "status: blocked")
+
+
+STUCK = os.path.join(KIT, "scripts/hooks/stuck.py")
+
+
+class Stuck(unittest.TestCase):
+    """CR-46 B6: the same failing command 3 times in the last 5 failures tells the agent to stop."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="avel-stuck-")
+        subprocess.run(["git", "init", "-q", self.tmp], check=True)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def fail(self, command, error, session="s1", limit="400"):
+        env = dict(os.environ)
+        env.pop("AVEL_TURN_LIMIT", None)
+        if limit:
+            env["AVEL_TURN_LIMIT"] = limit
+        hook = {"session_id": session, "cwd": self.tmp, "hook_event_name": "PostToolUseFailure", "tool_name": "Bash",
+                "tool_input": {"command": command}, "error": error}
+        out = subprocess.run([sys.executable, STUCK], input=json.dumps(hook), capture_output=True, text=True, env=env)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        return json.loads(out.stdout) if out.stdout.strip() else None
+
+    def test_the_third_same_failure_says_stop(self):
+        e = "Exit code 1\nsrc/a.ts(3,1): error TS2322: Type 'string' is not assignable"
+        self.assertIsNone(self.fail("pnpm typecheck", e))
+        self.assertIsNone(self.fail("pnpm  typecheck", e))  # spacing doesn't make it a new command
+        out = self.fail("pnpm typecheck", e)
+        self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "PostToolUseFailure")
+        self.assertIn("status stuck", out["hookSpecificOutput"]["additionalContext"])
+
+    def test_different_failures_and_old_ones_dont_count(self):
+        e = "Exit code 1\nboom"
+        self.fail("pnpm test", e)
+        self.fail("pnpm test", e)
+        for i in range(4):  # four other failures push the two out of the last five
+            self.assertIsNone(self.fail(f"pnpm test other-{i}", e))
+        self.assertIsNone(self.fail("pnpm test", e))
+        self.assertIsNone(self.fail("pnpm test", "Exit code 1\na different error"))
+
+    def test_sessions_are_counted_apart_and_only_in_a_dispatch(self):
+        e = "Exit code 2\nnope"
+        self.fail("x", e, session="a")
+        self.fail("x", e, session="a")
+        self.assertIsNone(self.fail("x", e, session="b"))
+        self.assertIsNone(self.fail("x", e, session="c", limit=None))
+        self.assertIsNone(self.fail("x", e, session="c", limit=None))
+        self.assertIsNone(self.fail("x", e, session="c", limit=None))
 
 
 class MsgLog(unittest.TestCase):

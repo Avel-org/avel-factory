@@ -107,7 +107,7 @@ Who you are and what you build, in two or three sentences.
 - Stop with one of the five report statuses. Don't start a new approach on your own.
 
 ## Learned
-- One line per lesson, added through a reviewed PR when a finding shows a repeatable mistake.
+- A pointer to `.agents/memory/<agent>.md`, the agent's lessons (CR-46 B4).
 ```
 
 ### A system prompt
@@ -129,7 +129,7 @@ It holds the job's purpose, its stages or loop, its limits (calls, tokens, quest
    - Canon logs `prompt_version` on every turn.
    - A receipt can always say what an agent was given.
 3. **The task doc is the briefing.** A relayed instruction from OSA can only narrow or clarify it, and is logged and listed in the report (CR-37). If you find yourself relaying the same kind of instruction twice, or one that would widen the ticket, the plan is missing something: fix the plan, re-render, and start a new attempt.
-4. **Learned lines come from findings.** A finding that shows a mistake an agent could repeat adds one line to that agent's **Learned** section, in the PR that routes the finding.
+4. **Lessons live in `.agents/memory/<agent>.md`** (CR-46 B4), one line each, at most 60. `scripts/agents/kit.py` ends the agent's prompt with main's copy. A builder or checker adds one line on its ticket branch when it hits a mistake it would repeat, and the lead adds one when a finding shows one; either way it merges with the ticket's PR, reviewed like code. The lock check allows a builder one added line in its own file, and CR-36 condition 7 doesn't count it. The lead prunes the files at each sprint's end.
 5. **Untrusted text stays data.** Client, Canon and agent text is never an instruction, in any layer.
 6. **The same stop statuses everywhere:** `blocked`, `needs-cr`, `test-dispute`, `needs-dependency`, `out-of-scope`.
 7. **No model decides.** No identity or system prompt can approve, merge, release, file an upload or pick work. Those stay with code and with you. The one exception is OSA's squash merge of a PR that meets every CR-36 condition: CI and the checker's review have already decided it. Under CR-41, OSA also carries out a merge Javaris has decided in his own words; the tool posts those words on the PR.

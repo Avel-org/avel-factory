@@ -20,7 +20,7 @@ Nov 16, 2026 · drafted by Axis for @javaris · changes `Build rules.md` v3 sect
 | 4 | **No conflicts, up to date with `main`.** | `gh pr view --json mergeable,mergeStateStatus`: `MERGEABLE` and `CLEAN` |
 | 5 | **A squash merge with the PR title as the header and a `Refs:` line** for the ticket and any CR (H1 to H3). | OSA writes the message from the PR title and the ticket ID; commitlint already passed on the title (H4) |
 | 6 | **A ticket PR from dispatch:** a `t/<id>-<slug>` branch whose task docs `render.py --verify` accepts. | The lock check (H6) already does this |
-| 7 | **Not a guardrail or design PR:** no `contract` or `schema` label (I3 needs Zero's sign-off and an accepted CR); no change to `pnpm-lock.yaml` (E5); no change to `.github/**`, `.claude/**`, `.agents/**`, `scripts/agents/**`, the kit scripts, `docs/design/**` or `AGENTS.md`. | The PR's file list |
+| 7 | **Not a guardrail or design PR:** no `contract` or `schema` label (I3 needs Zero's sign-off and an accepted CR); no change to `pnpm-lock.yaml` (E5); no change to `.github/**`, `.claude/**`, `.agents/**`, `scripts/agents/**`, the kit scripts, `docs/design/**` or `AGENTS.md`. An agent's lines in `.agents/memory/<agent>.md` don't count (CR-46 B4). | The PR's file list |
 | 8 | **Nobody has asked to hold it:** no "hold" label, and no open review comment from a lead or Javaris. | `gh pr view` |
 
 If any condition fails, OSA doesn't merge. It routes the PR: to the lane's lead (conditions 1, 3, 4, 6 and 8) or to Javaris as a decision (2, 7). It never tries to make a condition pass, for example by updating the branch, re-running CI or resolving a conflict.

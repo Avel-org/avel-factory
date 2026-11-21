@@ -12,6 +12,8 @@
 # "yes i approve"), so sprint-14's screens (Canon, plan and dispatch, the build, release) run on it.
 # Renders when T-F12, T-F14 and T-F22 (CR-W31 part (a)) are merged, and render.py puts builders
 # on Opus (Javaris, Nov 18). CR-42: plan and render in one PR; one review round.
+# Amended Nov 21 (T-F23 build a1's question on route 63; Zero's ruling): T-F23's tests take
+# packages/contract-mock/test/world.test.ts, so Fenn can retire the seed's stub check on route 63 (F2).
 
 lane = "frontend"
 sprint = "sprint-13"
@@ -253,17 +255,19 @@ notes = [
   "Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in",
   "Review: one round (CR-42); the full-diff rule applies as in T-F14",
   "Size: a full session (#45)",
+  "F2, Nov 21 (build a1's question; Zero's ruling): route 63 is a live stream. It replays the events the routes have made, oldest first, from seq 1, and then waits for more, as the locked tests' header says (ruling 5 at the lock). It doesn't end, and it doesn't serve world.sampleEvents(). Its stream stops when the request is aborted, so a client that stops reading leaves nothing running. world.test.ts's \"GET /api/events/stream yields one event of every kind\" (from the seed) reads route 63 to its end and expects the sample catalog. That's the seed's stub, which this ticket replaces, so the test fails on the branch until Fenn's tests a2 changes it. The catalog stays covered by world.test.ts's \"has one sample of every kind\" (world.sampleEvents() against EventDto), and T-F23-03 covers route 63's events. Fenn's tests a2 changes that one test, on the branch, to what route 63 now does, or removes it, saying which and why. Every other test in world.test.ts stays as it is. Then Zero relocks (F2), and Fantem's build a2 reruns Part 7 on a1's commits without redoing them",
 ]
 
 [ticket.tests]
 role = "test-unit"
-paths = ["packages/contract-mock/test/mission-streams.test.ts"]
+paths = ["packages/contract-mock/test/mission-streams.test.ts", "packages/contract-mock/test/world.test.ts"]
 behaviours = [
   "unit (behaviour): route 34 streams Canon's scripted reply as CanonStreamChunk values the contract accepts, and an aborted request stops the script",
   "unit (behaviour): route 105 re-attaches to a reply still streaming from where the client was, and answers STREAM_GONE once it has finished",
   "unit (behaviour): route 63 sends an event, with a contract event kind, for each state move a part (a) route makes, and a reconnect with Last-Event-ID sends only what came after",
   "unit (behaviour): route 64 with view=steps streams an attempt's steps, and route 109 returns the same steps oldest first, from ?after=",
   "unit (behaviour): MockFailure works on every part (b) route, and recorded requests name the route by number",
+  "unit (F2, Nov 21): world.test.ts's route 63 check matches the live stream (replay, then wait) or is removed; the event catalog check (\"has one sample of every kind\") is unchanged",
 ]
 
 [[ticket]]

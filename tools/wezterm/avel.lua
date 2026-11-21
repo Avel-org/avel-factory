@@ -104,6 +104,18 @@ local function shell(name, dir, body, fallback)
   return { 'bash', '-lc', NVM .. cd(dir, fallback) .. 'export AVEL_SEAT=' .. q(name) .. '; ' .. body .. '; exec bash' }
 end
 
+-- A seat whose session must outlive its tab: the same command, inside tmux session avel-<seat>.
+-- Closing the tab (or WezTerm) only detaches; -A reattaches when the control room opens again, instead of
+-- starting the seat over. The seat still ends as a shell (exec bash) inside tmux. tmux keeps the
+-- environment of whoever started its server, so the pane id the hooks badge (WEZTERM_PANE) is passed
+-- explicitly. tmux doesn't survive Windows sleep or wsl --shutdown. No tmux: the plain seat, as before.
+local function tmuxed(name, dir, body, fallback)
+  local inner = shell(name, dir, body, fallback)[3]
+  local session = 'avel-' .. name:lower()
+  return { 'bash', '-lc', 'if command -v tmux >/dev/null 2>&1; then exec tmux new-session -A -s ' .. q(session)
+    .. ' -e "WEZTERM_PANE=$WEZTERM_PANE" ' .. q('bash -lc ' .. q(inner)) .. '; fi; ' .. inner }
+end
+
 local function seat_tabs()
   local r, b, f = o.repo, o.agents.backend, o.agents.frontend
 
@@ -111,7 +123,7 @@ local function seat_tabs()
   local function lead(name)
     local file = '.agents/system/' .. name .. '.md'
     local claude = 'claude --model ' .. o.lead_model .. ' -n ' .. name:upper()
-    return shell(name:upper(), r .. '-wt/' .. name,
+    return tmuxed(name:upper(), r .. '-wt/' .. name,
       'if [ -f ' .. file .. ' ]; then ' .. claude .. ' --append-system-prompt "$(cat ' .. file .. ')"; '
         .. 'else echo "avel: ' .. file .. ' is not in this checkout yet, so ' .. name:upper() .. ' starts without it."; '
         .. claude .. '; fi', r)
@@ -120,7 +132,7 @@ local function seat_tabs()
   -- A builder or checker seat runs the lane loop. Until T-B0 lands, it stays a shell.
   local function lane(lane_name, role, agent)
     -- Permissions come from the repo's .claude/settings.json allowlist (Build rules D7).
-    return shell(agent:upper(), r,
+    return tmuxed(agent:upper(), r,
       'if [ -x scripts/agents/lane.sh ]; then scripts/agents/lane.sh ' .. lane_name .. ' ' .. agent .. '; '
         .. 'else echo "' .. agent:upper() .. ' (' .. lane_name .. ' ' .. role
         .. '): waiting for scripts/agents/lane.sh, which arrives with ticket T-B0."; fi')

@@ -1,0 +1,2 @@
+# CR-46 B4: two tickets adding a lesson each to the same memory file both keep theirs.
+.agents/memory/*.md merge=union
