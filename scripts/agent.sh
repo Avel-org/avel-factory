@@ -76,27 +76,42 @@ lane=$1 sprint=$2 doc=${3%.md} want=${4:-}
 eval "$(render --info "$lane/$sprint" "$doc")"
 title="$(echo "$AGENT" | tr a-z A-Z) $TICKET-$KIND"
 
-# Not --here: open a new tab that runs --here, and return.
+# Not --here: open a new tab that runs --here inside a tmux session, and return. Closing the tab only
+# detaches the session: tmux ls lists them, tmux attach -t <name> reattaches. No tmux: the tab runs --here
+# itself, as before. No WezTerm: the tmux session starts detached.
 if (( ! here )); then
-  # wezterm cli spawn starts a fresh login shell, so the AVEL_* settings are passed on explicitly.
+  # tmux and wezterm cli spawn both start a fresh environment, so the AVEL_* settings are passed on explicitly.
   envs=""
   while IFS='=' read -r k v; do envs+=" $k=$(printf %q "$v")"; done < <(env | grep -E '^AVEL_[A-Z0-9_]*=' | grep -v '^AVEL_SEAT=' || true)
   # The tab closes when the session ends. If agent.sh refuses to start, the reason stays up for a minute.
   cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here $lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
+  session="" tabcmd=$cmd
+  if command -v tmux >/dev/null 2>&1; then
+    session=$(echo "avel-$AGENT-$TICKET-$KIND" | tr A-Z a-z)
+    tmux has-session -t "=$session" 2>/dev/null && die "tmux session $session is already running: tmux attach -t $session"
+    # Started from inside the tab, so the hooks see that tab's pane id (tmux keeps its first client's).
+    tabcmd="exec tmux new-session -A -s $session -e \"WEZTERM_PANE=\$WEZTERM_PANE\" $(printf %q "bash -lc $(printf %q "$cmd")")"
+  fi
   domain=${AVEL_WSL_DOMAIN:-WSL:Ubuntu}
   for wt in wezterm.exe wezterm; do
     if command -v "$wt" >/dev/null 2>&1; then
       args=(cli spawn)
       [[ $wt == wezterm.exe ]] && args+=(--domain-name "$domain")
-      if pane=$("$wt" "${args[@]}" -- bash -lc "$cmd" 2>/dev/null); then
+      if pane=$("$wt" "${args[@]}" -- bash -lc "$tabcmd" 2>/dev/null); then
         "$wt" cli set-tab-title --pane-id "$pane" "$title" >/dev/null 2>&1 || true
-        echo "opened $title in a new tab"
+        echo "opened $title in a new tab${session:+ (tmux session $session)}"
         exit 0
       fi
     fi
   done
-  echo "No WezTerm to open a tab in. Run it yourself:"
-  echo "  scripts/agent.sh --here $lane $sprint $doc $want"
+  if [[ -n $session ]]; then
+    tmux new-session -d -s "$session" "bash -lc $(printf %q "$cmd")" || die "tmux couldn't start $session"
+    echo "No WezTerm to open a tab in, so $title started in tmux session $session. Attach with:"
+    echo "  tmux attach -t $session"
+  else
+    echo "No WezTerm to open a tab in. Run it yourself:"
+    echo "  scripts/agent.sh --here $lane $sprint $doc $want"
+  fi
   exit 0
 fi
 
