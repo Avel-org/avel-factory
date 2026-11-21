@@ -2,6 +2,7 @@ import { type ChildProcess, execFile, spawn } from "node:child_process";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { attachShot } from "../support/page";
+import { PREVIEW_ENV, signInOnPreview } from "../support/preview-auth";
 import { PREVIEW_PORT } from "../support/ports";
 import { booted, DESKTOP, expectNoViolationsSettled, watchErrors } from "./support";
 
@@ -29,7 +30,7 @@ function preview(onSpawn: (c: ChildProcess) => void): Promise<void> {
     const child = spawn(
       "pnpm",
       ["exec", "vite", "preview", "--host", "127.0.0.1", "--port", String(PORT), "--strictPort"],
-      { cwd: root, env: { ...process.env, AVEL_API: "", NO_COLOR: "1", FORCE_COLOR: "0" } },
+      { cwd: root, env: { ...process.env, ...PREVIEW_ENV } },
     );
     onSpawn(child);
     let seen = "";
@@ -80,6 +81,7 @@ test.describe("T-F7-07: the production build hides the prototype dock and OSA", 
 
   test("no dock and no viewport preview, and nothing of OSA", async ({ page }, info) => {
     await ensure();
+    await signInOnPreview(page.request, origin);
     const errors = watchErrors(page);
     await page.goto(`${origin}/`);
     await booted(page);
@@ -101,6 +103,7 @@ test.describe("T-F7-07: the production build hides the prototype dock and OSA", 
     page,
   }, info) => {
     await ensure();
+    await signInOnPreview(page.request, origin);
     await page.goto(`${origin}/?osa=1#/`);
     await booted(page);
     await expect(page.locator('[data-ui="OsaBar"]')).toBeVisible();

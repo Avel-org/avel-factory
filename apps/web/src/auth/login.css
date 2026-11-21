@@ -1,0 +1,159 @@
+/* /login (login.md section 3). The export's 28 stylesheets come first, in control-room/src/main.jsx's
+   order, so its tokens, fields, Button and focus rules are the ones / uses. The card follows. */
+@import "../../control-room/src/styles/enclosure-grid.css";
+@import "../../control-room/src/styles/control-room.css";
+@import "../../control-room/src/styles/host.css";
+@import "../../control-room/src/styles/knowledge.css";
+@import "../../control-room/src/styles/phone.css";
+@import "../../control-room/src/styles/operations.css";
+@import "../../control-room/src/styles/header.css";
+@import "../../control-room/src/styles/sheets.css";
+@import "../../control-room/src/styles/canon.css";
+@import "../../control-room/src/styles/canon-dock.css";
+@import "../../control-room/src/styles/polish.css";
+@import "../../control-room/src/styles/gates.css";
+@import "../../control-room/src/styles/code.css";
+@import "../../control-room/src/styles/receipt.css";
+@import "../../control-room/src/styles/module.css";
+@import "../../control-room/src/styles/template-new.css";
+@import "../../control-room/src/styles/audience.css";
+@import "../../control-room/src/styles/motion.css";
+@import "../../control-room/src/styles/focus.css";
+@import "../../control-room/src/styles/taste.css";
+@import "../../control-room/src/styles/notch.css";
+@import "../../control-room/src/styles/finish.css";
+@import "../../control-room/src/styles/trail.css";
+@import "../../control-room/src/styles/nav.css";
+@import "../../control-room/src/styles/crew.css";
+@import "../../control-room/src/styles/desk.css";
+@import "../../control-room/src/styles/agents.css";
+@import "../../control-room/src/styles/uploads.css";
+
+/* The page: outside the shell, the card centred on the page background. */
+.lg-page {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--av-page-bg);
+}
+
+/* The card: mh's inline look (DL v1.9), in the export's tokens. */
+.lg-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px 0;
+  overflow: hidden;
+  background: var(--av-float);
+  -webkit-backdrop-filter: var(--av-glass-blur-float);
+  backdrop-filter: var(--av-glass-blur-float);
+  border-radius: var(--av-radius-dialog);
+  box-shadow: var(--av-shadow-faceplate);
+}
+
+.lg-brand {
+  padding: 0;
+}
+
+.lg-title {
+  margin: 0;
+  font-size: var(--av-fs-title-lg);
+  line-height: var(--av-lh-title-lg);
+  font-weight: var(--av-weight-title);
+}
+
+.lg-notice,
+.lg-error {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--av-fs-label);
+  line-height: var(--av-lh-label);
+}
+
+.lg-notice b {
+  font-weight: 500;
+}
+
+.lg-error {
+  color: var(--av-stopped);
+}
+
+.lg-glyph {
+  flex: none;
+  display: block;
+  align-self: center;
+}
+
+.lg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lg-field > span {
+  font-size: var(--av-fs-label);
+  line-height: var(--av-lh-label);
+  font-weight: 500;
+}
+
+.lg-field input {
+  box-sizing: border-box;
+  width: 100%;
+  height: max(40px, var(--av-control-h));
+  padding: 0 12px;
+  border-radius: var(--av-radius-control);
+  font-size: var(--av-fs-body);
+}
+
+.lg-field input[aria-invalid="true"],
+.lg-field input[aria-invalid="true"]:focus {
+  border-color: var(--av-stopped);
+}
+
+/* The footer band runs to the card's edges. */
+.lg-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 -24px;
+  padding: 12px 16px 12px 24px;
+  background: var(--av-band);
+  border-top: 1px solid var(--av-hairline);
+}
+
+.lg-submit {
+  height: max(40px, var(--av-control-h));
+}
+
+/* Phone: 44px targets, and the button runs the form's full width. */
+@media (max-width: 760px) {
+  /* The export's phone fields are 48px (taste.css, --f-h); login.md's are 44px. */
+  .lg-field {
+    --f-h: 44px;
+  }
+
+  .lg-field input,
+  .lg-submit {
+    height: 44px;
+  }
+
+  .lg-foot {
+    padding: 12px 24px;
+  }
+
+  .lg-submit {
+    width: 100%;
+  }
+}
