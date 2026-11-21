@@ -52,12 +52,16 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 12. `apps/web/control-room/src/pages/settings/SettingsPage.jsx`: the Account section and Sign out go here
 13. `apps/web/e2e/budget.spec.ts`: what / may load: 235 KB, warning over 225 KB, as this ticket's tests set it (CR-W29 decision 6, second amendment)
 14. `docs/ui-reference/control-room-design-fidelity.md`: the export's tokens, type and focus rules the Sign in card uses
-15. `apps/web/test/sign-in/**`: the locked acceptance tests: they define done
-16. `apps/web/e2e/sign-in/**`: the locked acceptance tests: they define done
-17. `apps/web/e2e/support/auth.setup.ts`: the locked acceptance tests: they define done
-18. `apps/web/playwright.config.ts`: the locked acceptance tests: they define done
-19. `apps/web/e2e/budget.spec.ts`: the locked acceptance tests: they define done
-20. `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build.md`: this document: follow it exactly
+15. `apps/web/vite.config.ts`: mockApi() serves contract-mock on /api in the dev server only (configureServer); the Nov 21 amendment adds vite preview
+16. `apps/web/test/sign-in/**`: the locked acceptance tests: they define done
+17. `apps/web/e2e/sign-in/**`: the locked acceptance tests: they define done
+18. `apps/web/e2e/support/auth.setup.ts`: the locked acceptance tests: they define done
+19. `apps/web/playwright.config.ts`: the locked acceptance tests: they define done
+20. `apps/web/e2e/budget.spec.ts`: the locked acceptance tests: they define done
+21. `apps/web/e2e/control-room/prod.spec.ts`: the locked acceptance tests: they define done
+22. `apps/web/e2e/control-room-budget/**`: the locked acceptance tests: they define done
+23. `apps/web/e2e/support/preview-auth.ts`: the locked acceptance tests: they define done
+24. `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build.md`: this document: follow it exactly
 
 ## 3. Domain
 
@@ -81,6 +85,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - Budget: / may load at most 235 KB gzipped, with a warning over 225 KB (CR-W29 decision 6, second amendment). The guard should still add next to nothing to /'s first load (the server function's stub only). Copy budget.spec's figure into the report and the PR text as a number. If / goes over 235 KB, stop with needs-cr
 - Review, full rigor (G7): Fenn's review, then the second review against docs/review/security-checklist.md, then Javaris merges. The reviewer also applies the full-diff rule: run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1
 - Size: about 60 minutes. If the build can't finish, report blocked with what's done. Don't cut a state or a rule
+- Amended Nov 21 (F2; build a1's test-dispute; Javaris, to OSA: "go with your recommendations for both": Fantem's option 1). A production preview has no /api, so the guard rightly sends / to /login there, and five preview specs fail: budget.spec (T-F12-08), prod.spec's two T-F7-07 tests and control-room-budget's T-F8-02 and T-F8-03. Holding them red until T-F15 (option 2) is declined: CI stays green (H5). The fix: in apps/web/vite.config.ts, mockApi() gains a configurePreviewServer hook with the same /api middleware as configureServer (share one handler, don't copy it), still only when AVEL_API=mock and still through a dynamic import, so nothing of the mock reaches dist/ (budget.spec's second test keeps checking that). A preview without AVEL_API=mock still serves no /api. The guard is unchanged: a failed session read is still signed out
+- Order (F2): Fenn's tests a2 changes the preview starters on the branch, with every assertion unchanged: budget.spec.ts, control-room-budget/preview.ts (and its budget.spec.ts if the sign-in step goes there) and control-room/prod.spec.ts start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto (its sessions are its own, so the setup project's cookie doesn't count there). Any helper they share is apps/web/e2e/support/preview-auth.ts. The tests run red on the branch until the build adds the preview hook. Then Zero relocks (F2 relock), and Fantem's build a2 adds the hook on top of a1's commits, which stay. a2 doesn't redo a1's work: it reads a1's report (<git common dir>/avel/reports/frontend-sprint-12-agent-fantem-t-f12-build.a1.md, and the branch's own commits), adds the hook, and reruns Part 7. The PR text carries budget.spec's own / figure as a number
 
 ## 4. Tasks
 
@@ -120,6 +126,10 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 - **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
 
+### T-F12-10: make it true: e2e (F2, Nov 21): the production-preview specs (budget.spec, control-room/prod.spec, control-room-budget) start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto; what each asserts is unchanged, and no built file holds the mock's operator id
+
+- **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
+
 ## 5. Territory
 
 **You may change** (and create):
@@ -129,6 +139,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - `apps/web/src/routeTree.gen.ts`
 - `apps/web/control-room/src/pages/settings/SettingsPage.jsx`
 - `apps/web/control-room/SOURCE.md`
+- `apps/web/vite.config.ts`
 - `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build-completion.md` (your report)
 
 **Locked: never change** (A3, F2):
@@ -137,6 +148,9 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - `apps/web/e2e/support/auth.setup.ts`
 - `apps/web/playwright.config.ts`
 - `apps/web/e2e/budget.spec.ts`
+- `apps/web/e2e/control-room/prod.spec.ts`
+- `apps/web/e2e/control-room-budget/**`
+- `apps/web/e2e/support/preview-auth.ts`
 
 **Never change, whatever the task says:**
 - `packages/**`
@@ -152,7 +166,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 | Ticket | Kind | Paths |
 | --- | --- | --- |
-| T-F14 | builds | `apps/web/src/data/**`, `apps/web/control-room/src/lib/api.js`, `apps/web/control-room/src/lib/stream.js`, `apps/web/control-room/src/sources/**`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/operations.js`, `apps/web/control-room/src/app/decisions.js`, `apps/web/control-room/changes/T-F14.md` |
+| T-F14 | builds | `apps/web/src/data/**`, `apps/web/control-room/src/lib/api.js`, `apps/web/control-room/src/lib/stream.js`, `apps/web/control-room/src/sources/**`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/operations.js`, `apps/web/control-room/src/app/decisions.js`, `apps/web/control-room/src/app/crew.js`, `apps/web/control-room/changes/T-F14.md` |
 | T-F14 | tests | `apps/web/test/data/**`, `apps/web/test/sources/**`, `apps/web/e2e/sources/**` |
 | T-F22 | builds | `packages/contract-mock/src/**` |
 | T-F22 | tests | `packages/contract-mock/test/mission-world.test.ts`, `packages/contract-mock/test/mission-routes.test.ts` |
@@ -187,7 +201,7 @@ pnpm lint
 **Your report:** `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build-completion.md`. Its first lines are:
 
 ```
-status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope | stuck
 ticket: T-F12
 ```
 
@@ -201,4 +215,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F12, "Sign-in, the session guard and sign-out": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F12-sign-in`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build-completion.md`, committed to the branch. Don't push.
+> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F12, "Sign-in, the session guard and sign-out": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F12-sign-in`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency, out-of-scope or stuck. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f12-build-completion.md`, committed to the branch. Once it says done, push the branch (`git push -u origin t/F12-sign-in`) and open its PR with `gh pr create`, the report as its description. Push nothing else, and never merge.
