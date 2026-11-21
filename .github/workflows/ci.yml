@@ -38,6 +38,7 @@ jobs:
 
     env:
       DATABASE_URL: postgres://avel:avel@127.0.0.1:5432/avel
+      TURBO_TELEMETRY_DISABLED: "1"
 
     steps:
       - uses: actions/checkout@v4
@@ -51,6 +52,17 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # Turborepo's local cache (A11): build and typecheck results for packages whose inputs didn't
+      # change are restored, not redone. Keyed on the lockfile and the commit, falling back to the
+      # lockfile's newest cache. A remote cache needs a token, which Javaris may set up later.
+      - uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm --filter @avel/server run check:effect

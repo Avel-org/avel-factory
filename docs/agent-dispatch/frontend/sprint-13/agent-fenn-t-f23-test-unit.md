@@ -74,6 +74,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in
 - Review: one round (CR-42); the full-diff rule applies as in T-F14
 - Size: a full session (#45)
+- F2, Nov 21 (build a1's question; Zero's ruling): route 63 is a live stream. It replays the events the routes have made, oldest first, from seq 1, and then waits for more, as the locked tests' header says (ruling 5 at the lock). It doesn't end, and it doesn't serve world.sampleEvents(). Its stream stops when the request is aborted, so a client that stops reading leaves nothing running. world.test.ts's "GET /api/events/stream yields one event of every kind" (from the seed) reads route 63 to its end and expects the sample catalog. That's the seed's stub, which this ticket replaces, so the test fails on the branch until Fenn's tests a2 changes it. The catalog stays covered by world.test.ts's "has one sample of every kind" (world.sampleEvents() against EventDto), and T-F23-03 covers route 63's events. Fenn's tests a2 changes that one test, on the branch, to what route 63 now does, or removes it, saying which and why. Every other test in world.test.ts stays as it is. Then Zero relocks (F2), and Fantem's build a2 reruns Part 7 on a1's commits without redoing them
 
 ## 4. Tasks
 
@@ -102,10 +103,16 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
 
+### T-F23-06: a failing test for: unit (F2, Nov 21): world.test.ts's route 63 check matches the live stream (replay, then wait) or is removed; the event catalog check ("has one sample of every kind") is unchanged
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
+
 ## 5. Territory
 
 **You may change** (and create):
 - `packages/contract-mock/test/mission-streams.test.ts`
+- `packages/contract-mock/test/world.test.ts`
 - `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f23-test-unit-completion.md` (your report)
 
 **Never change, whatever the task says:**
@@ -159,7 +166,7 @@ pnpm lint
 **Your report:** `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f23-test-unit-completion.md`. Its first lines are:
 
 ```
-status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope | stuck
 ticket: T-F23
 ```
 
@@ -175,4 +182,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F23, "contract-mock streams Canon, events and traces (CR-W31 part b)": the tests dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f23-test-unit.md`. Read it in full, then its Context in order, before you change anything. Write the acceptance tests on branch `t/F23-mock-streams`, only in the test paths in Part 5. Prove each one fails on the ticket's start commit, and paste that output into your report. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f23-test-unit-completion.md`, committed to the branch. Don't push.
+> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F23, "contract-mock streams Canon, events and traces (CR-W31 part b)": the tests dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f23-test-unit.md`. Read it in full, then its Context in order, before you change anything. Write the acceptance tests on branch `t/F23-mock-streams`, only in the test paths in Part 5. Prove each one fails on the ticket's start commit, and paste that output into your report. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency, out-of-scope or stuck. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f23-test-unit-completion.md`, committed to the branch. Don't push.

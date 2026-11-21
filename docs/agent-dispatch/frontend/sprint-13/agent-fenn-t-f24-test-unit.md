@@ -129,7 +129,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 | T-F17 | builds | `apps/web/control-room/src/sources/missions.js`, `apps/web/control-room/src/pages/project/NewProjectPage.jsx`, `apps/web/control-room/src/pages/project/ProjectOverviewPage.jsx`, `apps/web/control-room/changes/T-F17.md` |
 | T-F17 | tests | `apps/web/test/mission-start/**`, `apps/web/e2e/mission-start/**` |
 | T-F23 | builds | `packages/contract-mock/src/**` |
-| T-F23 | tests | `packages/contract-mock/test/mission-streams.test.ts` |
+| T-F23 | tests | `packages/contract-mock/test/mission-streams.test.ts`, `packages/contract-mock/test/world.test.ts` |
 
 ## 6. Execution protocol: tests
 
@@ -160,7 +160,7 @@ pnpm lint
 **Your report:** `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f24-test-unit-completion.md`. Its first lines are:
 
 ```
-status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope | stuck
 ticket: T-F24
 ```
 
@@ -176,4 +176,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F24, "contract-mock serves the rest of the mission: checkpoints, plan, package, gates, findings and receipt (CR-W31 part c)": the tests dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f24-test-unit.md`. Read it in full, then its Context in order, before you change anything. Write the acceptance tests on branch `t/F24-mock-mission-reads`, only in the test paths in Part 5. Prove each one fails on the ticket's start commit, and paste that output into your report. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f24-test-unit-completion.md`, committed to the branch. Don't push.
+> You are Fenn, the frontend checker on the AVEL build team (`.claude/agents/fenn.md`). Your lead is Zero. Your task is ticket T-F24, "contract-mock serves the rest of the mission: checkpoints, plan, package, gates, findings and receipt (CR-W31 part c)": the tests dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f24-test-unit.md`. Read it in full, then its Context in order, before you change anything. Write the acceptance tests on branch `t/F24-mock-mission-reads`, only in the test paths in Part 5. Prove each one fails on the ticket's start commit, and paste that output into your report. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency, out-of-scope or stuck. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f24-test-unit-completion.md`, committed to the branch. Don't push.

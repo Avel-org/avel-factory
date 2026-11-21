@@ -16,6 +16,12 @@
 # @avel/contract's ./minified subpath export, render.py puts builders on Opus (Javaris, Nov 18), and
 # render.py lets the frontend lane change packages/contract-mock/** for T-F22 (Javaris approved T-F22,
 # CR-W31 part (a), Nov 18; today render.py refuses it as I3).
+# Amended Nov 21 (T-F12 build a1's test-dispute; Javaris, to OSA: "go with your recommendations for
+# both", taking Fantem's option 1 and declining option 2): T-F12 serves contract-mock in vite preview
+# too, so the five production-preview specs sign in instead of staying red until T-F15. T-F12 takes
+# apps/web/vite.config.ts (T-F15, sprint-13, has it after T-F12 merges) and the two older preview
+# specs move into T-F12's tests, for Fenn's F2 change. T-F14 also takes app/crew.js, which imports
+# operations.json (a source's file), as its tests require. T-F22 is unchanged.
 lane = "frontend"
 sprint = "sprint-12"
 step = 1
@@ -68,6 +74,7 @@ may_change = [
   "apps/web/src/routeTree.gen.ts",
   "apps/web/control-room/src/pages/settings/SettingsPage.jsx",
   "apps/web/control-room/SOURCE.md",
+  "apps/web/vite.config.ts",
 ]
 must_not_change = [
   "packages/**",
@@ -84,6 +91,7 @@ context = [
   { path = "apps/web/control-room/src/pages/settings/SettingsPage.jsx", why = "the Account section and Sign out go here" },
   { path = "apps/web/e2e/budget.spec.ts", why = "what / may load: 235 KB, warning over 225 KB, as this ticket's tests set it (CR-W29 decision 6, second amendment)" },
   { path = "docs/ui-reference/control-room-design-fidelity.md", why = "the export's tokens, type and focus rules the Sign in card uses" },
+  { path = "apps/web/vite.config.ts", why = "mockApi() serves contract-mock on /api in the dev server only (configureServer); the Nov 21 amendment adds vite preview" },
 ]
 verify = [
   "pnpm --filter @avel/web exec vitest run",
@@ -101,6 +109,8 @@ notes = [
   "Budget: / may load at most 235 KB gzipped, with a warning over 225 KB (CR-W29 decision 6, second amendment). The guard should still add next to nothing to /'s first load (the server function's stub only). Copy budget.spec's figure into the report and the PR text as a number. If / goes over 235 KB, stop with needs-cr",
   "Review, full rigor (G7): Fenn's review, then the second review against docs/review/security-checklist.md, then Javaris merges. The reviewer also applies the full-diff rule: run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
   "Size: about 60 minutes. If the build can't finish, report blocked with what's done. Don't cut a state or a rule",
+  "Amended Nov 21 (F2; build a1's test-dispute; Javaris, to OSA: \"go with your recommendations for both\": Fantem's option 1). A production preview has no /api, so the guard rightly sends / to /login there, and five preview specs fail: budget.spec (T-F12-08), prod.spec's two T-F7-07 tests and control-room-budget's T-F8-02 and T-F8-03. Holding them red until T-F15 (option 2) is declined: CI stays green (H5). The fix: in apps/web/vite.config.ts, mockApi() gains a configurePreviewServer hook with the same /api middleware as configureServer (share one handler, don't copy it), still only when AVEL_API=mock and still through a dynamic import, so nothing of the mock reaches dist/ (budget.spec's second test keeps checking that). A preview without AVEL_API=mock still serves no /api. The guard is unchanged: a failed session read is still signed out",
+  "Order (F2): Fenn's tests a2 changes the preview starters on the branch, with every assertion unchanged: budget.spec.ts, control-room-budget/preview.ts (and its budget.spec.ts if the sign-in step goes there) and control-room/prod.spec.ts start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto (its sessions are its own, so the setup project's cookie doesn't count there). Any helper they share is apps/web/e2e/support/preview-auth.ts. The tests run red on the branch until the build adds the preview hook. Then Zero relocks (F2 relock), and Fantem's build a2 adds the hook on top of a1's commits, which stay. a2 doesn't redo a1's work: it reads a1's report (<git common dir>/avel/reports/frontend-sprint-12-agent-fantem-t-f12-build.a1.md, and the branch's own commits), adds the hook, and reruns Part 7. The PR text carries budget.spec's own / figure as a number",
 ]
 
 [ticket.tests]
@@ -111,6 +121,9 @@ paths = [
   "apps/web/e2e/support/auth.setup.ts",
   "apps/web/playwright.config.ts",
   "apps/web/e2e/budget.spec.ts",
+  "apps/web/e2e/control-room/prod.spec.ts",
+  "apps/web/e2e/control-room-budget/**",
+  "apps/web/e2e/support/preview-auth.ts",
 ]
 behaviours = [
   "unit: LG-03, safeNext keeps /missions?x=1#a and #/settings-style hashes, and turns every hostile or oversized next into /",
@@ -122,6 +135,7 @@ behaviours = [
   "e2e: LG-22, Sign out from Settings lands on /login, and Back lands there too",
   "e2e: budget.spec holds / to 235 KB gzipped and warns over 225 KB (CR-W29 decision 6, second amendment). Only LIMIT, WARN and their comment change; what it measures stays T-F8's",
   "e2e: LG-23, a setup project signs in once and saves storageState, and every existing spec (T-F7 to T-F11) runs signed in and unchanged. The LG specs start signed out",
+  "e2e (F2, Nov 21): the production-preview specs (budget.spec, control-room/prod.spec, control-room-budget) start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto; what each asserts is unchanged, and no built file holds the mock's operator id",
 ]
 
 [[ticket]]
@@ -141,6 +155,7 @@ may_change = [
   "apps/web/control-room/src/app/canon.js",
   "apps/web/control-room/src/app/operations.js",
   "apps/web/control-room/src/app/decisions.js",
+  "apps/web/control-room/src/app/crew.js",
   "apps/web/control-room/changes/T-F14.md",
 ]
 must_not_change = [
@@ -177,6 +192,8 @@ notes = [
   "Which screens read which source: decisions (Decisions); missions (Clients, All projects, New project, the project overview and Progress); canon (Onboarding); plan (Plan, Dispatch); build (Live, Watch the work, the module page); release (Gates, Findings, Release, Receipt). Every other page keeps its sample imports where they are",
   "LG-06 lives in the data layer: on a 401 from any contract route it navigates once to /login?next={path, search and hash}&reason=expired with replace, and a burst of 401s makes one navigation. It reads nothing from __root and changes no route file: T-F12's /login draws the expired notice and its guard handles the rest. The end-to-end LG-06 check comes with the first screen that calls the API (T-F16)",
   "Log every export file this ticket changes, with its reason, in control-room/changes/T-F14.md (T-F12 adds the pointer in SOURCE.md)",
+  "Amended Nov 21 (Zero, before the lock; Fenn's tests report, Limitations): app/crew.js (Watch the work) imports operations.json, which a source owns, so it reads it through the build source like the other Watch the work data. That's the one change to crew.js; history.json stays where it is",
+  "Merge order (Zero, Nov 21): T-F14 merges after T-F12. guard.spec's production-build test previews with no /api, so once T-F12's guard is on main it lands on /login there, as T-F12's five preview specs did. When T-F12 merges, main is merged into this branch, Fenn's F2 points that test's preview at AVEL_API=mock and signs in through apps/web/e2e/support/preview-auth.ts (assertions unchanged), and Zero relocks. The build doesn't work around it",
   "Budget: / doesn't grow. Copy budget.spec's / figure into the report and the PR text as a number. Over 235 KB, stop with needs-cr",
   "Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. One review round (CR-42). The full-diff rule applies: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
   "Size: a full session (#45: 120 minutes, 150 turns). If the build can't finish, report blocked with what's done, the client and the error map first. Run only this ticket's specs while building; CI runs the whole suite",

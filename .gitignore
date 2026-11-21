@@ -17,3 +17,6 @@ dist/
 
 # Per-machine Claude settings
 .claude/settings.local.json
+
+# Turborepo cache (A11)
+.turbo/
