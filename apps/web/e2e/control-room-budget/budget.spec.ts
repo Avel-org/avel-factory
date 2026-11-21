@@ -1,11 +1,13 @@
 import { gzipSync } from "node:zlib";
 import { expect, type Page, test } from "@playwright/test";
 import { attachShot, expectNoViolations } from "../support/page";
+import { signInOnPreview } from "../support/preview-auth";
 import { ORIGIN, productionPreview } from "./preview";
 
-// T-F8: (the 220 KB limit itself is held by e2e/budget.spec.ts) every other page loads its own code when it
+// T-F8: LIMIT is /'s limit under CR-W29 decision 6's second amendment (235 KB; it replaces 220 KB), the same figure
+// e2e/budget.spec.ts holds. Every other page loads its own code when it
 // opens (E16, CR-W29 decision 6). Measured on the production build, gzipped. KB is 1024 bytes.
-const LIMIT = 220 * 1024;
+const LIMIT = 235 * 1024;
 const SPRING_LAUNCH = "01a1912f-ee80-709f-891e-7d29547e91a0"; // a running mission in the mock world
 
 const preview = productionPreview();
@@ -47,6 +49,7 @@ test.describe("T-F8: first load budget and a script per page", () => {
     page,
   }, info) => {
     await preview.ensure();
+    await signInOnPreview(page.request, ORIGIN);
     const scripts = watchScripts(page);
     await page.goto(`${ORIGIN}/`, { waitUntil: "networkidle" });
     await expect(page.locator('[data-ui="DecisionsDashboard"]')).toBeVisible();
@@ -101,6 +104,7 @@ test.describe("T-F8: first load budget and a script per page", () => {
       context,
     }, info) => {
       await preview.ensure();
+      await signInOnPreview(page.request, ORIGIN);
       const cdp = await context.newCDPSession(page);
       await cdp.send("Network.enable");
       await cdp.send("Network.emulateNetworkConditions", {

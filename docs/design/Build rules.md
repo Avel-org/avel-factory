@@ -56,7 +56,7 @@ PLAN → TESTS → BUILD → CHECK → REVIEW → MERGE
 - **B3. Build.** Once the tests are locked in `locks.md`, OSA starts the builder's **build dispatch** on the same branch. The session ends with its completion report, which becomes the pull request's description.
 - **B4. Check.** CI runs on every PR (H4).
 - **B5. Review.** The checker's **review dispatch** reviews each PR on a detached checkout, once per cycle (section G).
-- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41). Auto-merge (CR-46 B3) is turned on by OSA, with `gh pr merge --auto --squash`, only after the review's verdict is pass with no P0 or P1; never when the PR opens, since CI goes green before the review exists. Contract and schema PRs (I3) are merged by hand.
+- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41). Under the standing approval (CR-45 decision 3, as CR-50 decision 3 holds it), OSA merges a reviewed ticket PR with `scripts/agents/merge.py merge <pr> --standing`. It waives only rigor (condition 2), needs a G7 pass on the PR for full rigor, and refuses a PR whose head moved since its review except by main merges and `locks.md` commits; a finished review is posted to its PR by the kit. Auto-merge (CR-46 B3) is turned on by OSA, with `gh pr merge --auto --squash`, only after the review's verdict is pass with no P0 or P1; never when the PR opens, since CI goes green before the review exists. Contract and schema PRs (I3) are merged by hand.
 - **B7. Work in progress:**
   - At most 4 sessions run at once: one checker per lane, and up to two builders per lane when their tickets share no file and neither depends on the other (CR-45). A session that runs the web's Playwright suite counts as two.
   - A checker can write tests for the next ticket while the builder works on the current one, because they touch different files.
@@ -141,7 +141,7 @@ CI is green and the acceptance tests pass. Nothing else.
 - **D6. Memory lives in files.**
   - The sprint folder is the task list: `scripts/dispatch.sh <lane>/sprint-NN --status` shows what's done, running, ready and waiting.
   - The completion report is the record, and the PR description copies it.
-  - Agents never edit a task doc, and never commit `locks.md`, messages or status files. The lead writes the lock line.
+  - Agents never edit a task doc, and never commit `locks.md`, messages or status files. The lead writes the lock line. The kit enforces it (CR-50 decision 5): `scripts/hooks/push_guard.py` refuses a dispatched session's write of a `locks.md`, and `render.py` counts a lock line only when its commit is on the ticket's branch and each of its paths is one of the ticket's test paths.
 - **D7. Permissions:**
   - On your laptop, sessions run with the repo's `.claude/settings.json` allowlist: pnpm, git inside the worktree, and the package registry.
   - Permissions are skipped only inside a sandbox (a container, or a MIOSA room under CR-22), never on the laptop.
@@ -172,7 +172,11 @@ CI is green and the acceptance tests pass. Nothing else.
 
 ### Backend (Axis's lane)
 
-- **E9. Step order is the build order.** Step 1 runs in the order `AGENTS.md` gives: spike 1 first, the DBOS test (spike 2) before the jobs engine. No ticket from a later step starts until the current step closes.
+- **E9. The critical path runs in order; other steps run beside it once their inputs exist.** (CR-47)
+  1. The critical path (`Backend modules and build plan.md`, section 1: 0 → 1 → 2 → 4 → 8 → 9a → 9b) runs one step at a time. No critical-path ticket starts until the step before it closes.
+  2. Steps 3, 5, 6 and 7 are off the path. Each may start once the steps section 1 names as its inputs have closed: Step 3 needs 1, Step 5 needs 1, Step 6 needs 1, and Step 7 needs 2 and 6. A ticket from one of them names its step, and the sprint's plan says which inputs it uses. A ticket whose code uses none of its step's unclosed inputs may start sooner if the plan says so. For example, sprint-06's T-B25 saves and reads mission drafts, Step 7's first rows, without the model proxy or plans. Section 1 names no inputs for Steps 10 to 14, so they follow 9b in order.
+  3. A part of a later critical-path step may be brought into the current one only when the current step's work can't be right without it (for example Step 8's per-request reservation inside Step 2's model proxy, so no request is ever metered without its ceiling). The plan names it, and Javaris approves it with the plan.
+  4. Step 1 runs in the order `AGENTS.md` gives.
 - **E10. Real Postgres, always.** No database mocks or in-memory substitutes. Fakes are only for things outside the process (the model vendor, GitHub, the room host), provided as Effect layers.
 - **E11. The database enforces its rules,** and code maps the violations (AGENTS.md). A ticket that wants a new CHECK or table is a `schema` ticket with a CR (I3).
 - **E12. Each table is written only by its owning module** (`Backend modules and build plan.md`). Importing another module's internals is a lint error.
@@ -250,7 +254,7 @@ CI is green and the acceptance tests pass. Nothing else.
   - for the web: the bundle budget, accessibility and end-to-end tests. On a pull request the end-to-end tests run only when the web, the contract, the mock, the lockfile or the workflows change (CR-45); a push to `main` always runs them.
 - **H5. A red check blocks.** Nobody merges red, retries CI to get a green, or marks a check optional.
 - **H6. Lock checks:** CI fails a PR if the builder's commits touch a file outside the build task doc's Territory, or any file listed in `locks.md`. The lists are read from the rendered task doc and `locks.md`, never from the issue. CI also fails a PR whose task docs differ from what `render.py` renders from the plan.
-- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
+- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). And (Javaris, Nov 21: "yes leads can push main merges and plan branches"): a lead pushes a clean merge of `main` onto a ticket branch, made in a detached worktree with the lock check passing, and the lead's own `plan/`, `cr/` and `docs/` branches. Any other push of a ticket branch goes through OSA. Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
 
 ## I. Docs and change requests
 

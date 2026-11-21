@@ -56,7 +56,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 16. `packages/server/src/audit/activity.ts`: the activity row an operator write leaves
 17. `docs/design/Canon onboarding v0.5.md`: the journey's stages and progress, which route 21 computes from onboarding's rows; the opener is Canon's (Step 7), not route 20's
 18. `packages/server/test/missions/**`: the locked acceptance tests: they define done
-19. `docs/agent-dispatch/backend/sprint-06/agent-soap-t-b25-build.md`: this document: follow it exactly
+19. `packages/contract/test/cr-w32.test.ts`: the locked acceptance tests: they define done
+20. `docs/agent-dispatch/backend/sprint-06/agent-soap-t-b25-build.md`: this document: follow it exactly
 
 ## 3. Domain
 
@@ -68,10 +69,14 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - CR-W5 Mission summary and status: the list's strip, counts and needs-you
 - Design v0.6 Main, Build order step 7: a mission is a draft before Canon's first question (Canon himself is Step 7's)
 - Build rules E13: four tests per route
+- CR-W32 (accepted Nov 21): route 34's first turn on a draft mission starts onboarding; its contract half is this ticket's (I3)
 
 **Merged before this starts:** T-B24
 
+**Labels:** contract · implements CR-W32
+
 **Notes from the lead:**
+- CR-W32's contract half (labelled contract, I3): route 34's summary gains "on a draft mission, your first turn starts onboarding" and nothing else in the route changes. It's fix(contract): CONTRACT_VERSION and packages/contract/package.json go from 1.0.1 to 1.0.2, and pnpm --filter @avel/docs generate rewrites docs/generated/openapi.json. Zero signed CR-W32 as its author; route 34's server half is Step 7's (Canon), not this ticket's
 - The factory module owns missions (packages/db/src/owners.ts); its routes live in packages/server/src/factory/missions/. One mapper per DTO (toMissionDto, toMissionListRowDto); no Drizzle row leaves the server
 - Route 20 writes the mission as a draft with its name and optional client (kind unset: Canon's first question sets it, CR-W22), its activity row and missions.mission.created, in one transaction through the idempotency store. Its budget comes from the design's $150 mission budget as one named constant citing Design v0.6 Main, until finalize pins factory.yaml's (Step 7). It writes nothing of onboarding's: the session and the opener are Canon's (Step 7). An unknown clientId is the database's refusal mapped to 422, not a check in code alone
 - Route 19 pages missions by the contract's cursor with ?kind= (unset lists missions whose kind isn't set) and ?clientId=. Each row's gates, modules, runningDispatches and lastEventAt come from their tables (gate evaluations, module runs, dispatches, events), and needsYouCount from T-B24's count. A draft has its strip at its first state and zero counts. No money on the row (CR-W5)
@@ -83,42 +88,51 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 ### T-B25-01: make it true: route 20 with a name (and with a client) returns the draft mission valid against MissionDto, writes one missions row, one activity row and one missions.mission.created event in the same transaction
 
-- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 ### T-B25-02: make it true: route 20 replayed with the same Idempotency-Key and body returns the first response and writes nothing more; the same key with another body is 409
 
-- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 ### T-B25-03: make it true: route 20 with an unknown clientId is 422 with the contract's body and requestId, and writes nothing; without an Idempotency-Key it's 400
 
-- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 ### T-B25-04: make it true: route 19 lists the drafts as rows valid against MissionListRowDto, filters by ?kind=unset and ?clientId=, and pages by cursor without repeating or skipping a mission
 
-- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 ### T-B25-05: make it true: a mission with an open proposal shows needsYouCount 1 and displayState blocked_on_you on route 19 and route 21; one with an open operator pause shows paused
 
-- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 ### T-B25-06: make it true: route 21 returns MissionDetailDto for a draft (an empty journey, no checkpoints, no deliveries), valid against the contract; an unknown missionId is 404 with the contract's body and requestId
 
-- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 ### T-B25-07: make it true: routes 19, 20 and 21 without a session are 401 with the contract's body and requestId
 
-- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+
+### T-B25-08: make it true: the contract (CR-W32): route 34's summary says that on a draft mission your first turn starts onboarding, and CONTRACT_VERSION and packages/contract/package.json are both 1.0.2 (fails on main: the summary lacks it and the version is 1.0.1)
+
+- **Verify:** its locked test passes: `pnpm --filter @avel/server test`, `pnpm --filter @avel/contract test`, `pnpm --filter @avel/docs generate && git diff --exit-code docs/generated`, `pnpm --filter @avel/docs drift`, `pnpm --filter @avel/server typecheck`, `pnpm --filter @avel/server check:effect`, `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 ## 5. Territory
 
 **You may change** (and create):
 - `packages/server/src/factory/missions/**`
+- `packages/contract/src/routes/missions.ts`
+- `packages/contract/src/version.ts`
+- `packages/contract/package.json`
+- `docs/generated/openapi.json`
 - `packages/server/src/platform/router.ts`
 - `packages/server/src/platform/errors.ts`
 - `docs/agent-dispatch/backend/sprint-06/agent-soap-t-b25-build-completion.md` (your report)
 
 **Locked: never change** (A3, F2):
 - `packages/server/test/missions/**`
+- `packages/contract/test/cr-w32.test.ts`
 
 **Never change, whatever the task says:**
 - `packages/server/package.json`
@@ -129,7 +143,10 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - `packages/server/src/platform/app.ts`
 - `packages/server/src/platform/db/**`
 - `packages/db/**`
-- `packages/contract/**`
+- `packages/contract/src/dto/**`
+- `packages/contract/src/errors.ts`
+- `packages/contract/src/events.ts`
+- `packages/contract/src/value-lists.ts`
 - `apps/web/*/**`
 - `apps/web/.*`
 - `apps/web/*.{ts,tsx,js,mjs,cjs,css,html,md,yaml,yml,toml}`
@@ -172,6 +189,9 @@ pnpm typecheck
 pnpm lint
 pnpm test
 pnpm --filter @avel/server test
+pnpm --filter @avel/contract test
+pnpm --filter @avel/docs generate && git diff --exit-code docs/generated
+pnpm --filter @avel/docs drift
 pnpm --filter @avel/server typecheck
 pnpm --filter @avel/server check:effect
 pnpm build && pnpm typecheck && pnpm lint && pnpm test

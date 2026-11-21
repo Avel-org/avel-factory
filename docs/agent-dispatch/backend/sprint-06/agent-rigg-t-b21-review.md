@@ -8,7 +8,7 @@ seat: checker
 kind: review
 role: review
 rigor: full
-model: opus
+model: sonnet
 branch: t/B21-attempt-credentials
 checkout: detached
 after: [agent-soap-t-b21-build]
@@ -26,7 +26,7 @@ report: docs/agent-dispatch/backend/sprint-06/agent-rigg-t-b21-review-completion
 | Lane | backend · lead Axis |
 | Sprint | sprint-06 · Step 2 |
 | Ticket | T-B21 · rigor full |
-| Dispatch | review · Rigg (checker) · model opus |
+| Dispatch | review · Rigg (checker) · model sonnet |
 | Works on | a detached checkout of `t/B21-attempt-credentials`'s head |
 | Done when | CI is green and the acceptance tests pass. Nothing else (C1, C3). |
 
@@ -155,8 +155,8 @@ You review the builder's work on this ticket, from the diff and this document on
 | T-B22 | tests | `packages/server/test/metering/**` |
 | T-B24 | builds | `packages/server/src/factory/decisions/**`, `packages/server/src/platform/status/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
 | T-B24 | tests | `packages/server/test/decisions/**`, `packages/server/test/status/**` |
-| T-B25 | builds | `packages/server/src/factory/missions/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
-| T-B25 | tests | `packages/server/test/missions/**` |
+| T-B25 | builds | `packages/server/src/factory/missions/**`, `packages/contract/src/routes/missions.ts`, `packages/contract/src/version.ts`, `packages/contract/package.json`, `docs/generated/openapi.json`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
+| T-B25 | tests | `packages/server/test/missions/**`, `packages/contract/test/cr-w32.test.ts` |
 | T-B26 | builds | `packages/server/src/events/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
 | T-B26 | tests | `packages/server/test/streams/**` |
 | T-B27 | builds | `packages/server/src/platform/jobs/**`, `docs/steps/step-1-done.md` |

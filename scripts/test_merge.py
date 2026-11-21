@@ -61,7 +61,7 @@ def pr(number, branch, files, title="T-X1: a thing", labels=(), body="Text.\n\nR
     return {"view": {"number": number, "title": title, "state": "OPEN", "isDraft": False, "baseRefName": "main",
                      "headRefName": branch, "headRefOid": head, "mergeable": "MERGEABLE", "mergeStateStatus": "CLEAN",
                      "labels": [{"name": l} for l in labels], "files": [{"path": f} for f in files], "body": body,
-                     "reviews": []},
+                     "reviews": [], "comments": []},
             "checks": GREEN, "mergeCommit": f"m{number:039d}"}
 
 
@@ -87,11 +87,15 @@ class MergeTool(unittest.TestCase):
         with open(path, "w") as f:
             f.write(f"---\ndoc: agent-soap-{ticket.lower()}-build\nticket: {ticket}\nrigor: {rigor}\n---\n")
 
-    def review(self, ticket, attempt, status="done", verdict="pass"):
+    def review(self, ticket, attempt, status="done", verdict="pass", head=None):
         d = os.path.join(self.root, ".git", "avel", "reports")
         os.makedirs(d, exist_ok=True)
-        with open(os.path.join(d, f"backend-sprint-09-agent-rigg-{ticket.lower()}-review.a{attempt}.md"), "w") as f:
+        base = os.path.join(d, f"backend-sprint-09-agent-rigg-{ticket.lower()}-review.a{attempt}")
+        with open(base + ".md", "w") as f:
             f.write(f"status: {status}\nverdict: {verdict}\nticket: {ticket}\n")
+        if head:  # CR-50 decision 3: the commit the review read
+            with open(base + ".head", "w") as f:
+                f.write(head + "\n")
 
     def add(self, p, main_ci=("success",)):
         self.state["prs"][str(p["view"]["number"])] = p
@@ -133,6 +137,50 @@ class MergeTool(unittest.TestCase):
         code, out = self.run_tool("merge", "9")
         self.assertEqual(code, 1, out)
         self.assertIn("condition 7 fails", out)
+
+    # CR-50 decision 3: the merge holds to the commit the review read; --standing waives rigor only.
+    def test_a_pr_whose_head_moved_since_the_review_does_not_merge(self):
+        self.review("T-X1", 1, head=f"{7:040d}")
+        self.add(pr(7, "t/X1-a-thing", ["packages/server/src/a.ts"]))
+        code, out = self.run_tool("merge", "7")
+        self.assertEqual(code, 0, out)  # the reviewed head is the PR's head
+        self.review("T-X2", 1, head="a" * 40)
+        self.add(pr(8, "t/X2-b-thing", ["packages/server/src/b.ts"], title="T-X2: b", body="Refs: T-X2"))
+        self.doc("T-X2", "standard")
+        code, out = self.run_tool("merge", "8")
+        self.assertEqual(code, 1, out)
+        self.assertIn("condition 3 fails", out)
+        self.assertIn("reviewed commit", out)
+
+    def test_standing_merges_a_full_rigor_ticket_only_with_a_g7_pass(self):
+        self.doc("T-X1", "full")
+        self.review("T-X1", 1, head=f"{7:040d}")
+        p = pr(7, "t/X1-a-thing", ["packages/server/src/a.ts"])
+        self.add(p)
+        code, out = self.run_tool("merge", "7", "--standing")
+        self.assertEqual(code, 1, out)
+        self.assertIn("no G7 second-review pass", out)
+        p["view"]["comments"] = [{"body": "**G7 second review (Axis): pass.** No P0 or P1."}]
+        self.add(p)
+        code, out = self.run_tool("merge", "7", "--standing")
+        self.assertEqual(code, 0, out)
+        comment = self.calls("comment")[0]
+        self.assertIn("standing approval", comment[comment.index("--body") + 1])
+        self.assertIn("condition 2 (rigor) only", comment[comment.index("--body") + 1])
+
+    def test_standing_never_covers_a_failed_review_or_a_guardrail_path(self):
+        self.review("T-X1", 1, verdict="changes", head=f"{7:040d}")
+        self.add(pr(7, "t/X1-a-thing", ["packages/server/src/a.ts"]))
+        code, out = self.run_tool("merge", "7", "--standing")
+        self.assertEqual(code, 1, out)
+        self.assertIn("condition 3 fails", out)
+        self.review("T-X1", 2, head=f"{9:040d}")
+        self.add(pr(9, "t/X1-a-thing", ["packages/server/src/a.ts", ".github/workflows/ci.yml"]))
+        code, out = self.run_tool("merge", "9", "--standing")
+        self.assertEqual(code, 1, out)
+        self.assertIn("condition 7 fails", out)
+        code, out = self.run_tool("merge", "9", "--standing", "--approved", "x")
+        self.assertNotEqual(code, 0)
 
     def test_a_design_pr_needs_approval_and_records_his_words(self):
         self.add(pr(8, "rules/x", ["docs/design/Build rules.md", "AGENTS.md"], title="Build rules: x", body="Refs: G5"))

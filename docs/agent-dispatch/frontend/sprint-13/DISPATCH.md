@@ -22,7 +22,7 @@ Lead: Zero · builder: Fantem · checker: Fenn · Step 1
 
 | Ticket | Title | Rigor | Branch | Depends on |
 | --- | --- | --- | --- | --- |
-| T-F15 | The end-to-end suite runs against the build you ship | standard | `t/F15-e2e-production-build` | T-F12 |
+| T-F15 | The end-to-end suite runs against the build you ship | full | `t/F15-e2e-production-build` | T-F12 |
 | T-F16 | Decisions live: what's waiting on you, approved in one tap | full | `t/F16-decisions-live` | T-F12, T-F14, T-F22 |
 | T-F17 | A mission starts: clients, projects and the overview, live | standard | `t/F17-mission-start-live` | T-F12, T-F14, T-F22 |
 | T-F23 | contract-mock streams Canon, events and traces (CR-W31 part b) | standard | `t/F23-mock-streams` | T-F22 |
@@ -40,7 +40,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | `agent-fenn-t-f15-review.md` | Fenn | review | sonnet |
 | `agent-fenn-t-f16-test-e2e.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f16-build.md` | Fantem | build | opus |
-| `agent-fenn-t-f16-review.md` | Fenn | review | opus |
+| `agent-fenn-t-f16-review.md` | Fenn | review | sonnet |
 | `agent-fenn-t-f17-test-e2e.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f17-build.md` | Fantem | build | opus |
 | `agent-fenn-t-f17-review.md` | Fenn | review | sonnet |
@@ -58,7 +58,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 
 | Ticket | Builds | Tests |
 | --- | --- | --- |
-| T-F15 | `apps/web/playwright.config.ts`, `apps/web/vite.config.ts`, `.github/workflows/ci.yml`, `docs/quarantine.md` | `apps/web/e2e/control-room/routes.spec.ts`, `apps/web/e2e/control-room-screens/routes.ts`, `apps/web/e2e/e2e-build/**` |
+| T-F15 | `apps/web/playwright.config.ts`, `apps/web/vite.config.ts`, `.github/workflows/ci.yml`, `docs/quarantine.md`, `apps/web/src/routes/__root.tsx`, `apps/web/src/auth/api.ts` | `apps/web/e2e/control-room/routes.spec.ts`, `apps/web/e2e/control-room-screens/routes.ts`, `apps/web/e2e/e2e-build/**`, `apps/web/test/sign-in/origin.test.ts`, `apps/web/e2e/sign-in/sign-out-failure.spec.ts`, `apps/web/e2e/support/preview-auth.ts` |
 | T-F16 | `apps/web/control-room/src/sources/decisions.js`, `apps/web/control-room/src/app/decisions.js`, `apps/web/control-room/src/pages/decisions/**`, `apps/web/control-room/changes/T-F16.md` | `apps/web/test/decisions-live/**`, `apps/web/e2e/decisions-live/**` |
 | T-F17 | `apps/web/control-room/src/sources/missions.js`, `apps/web/control-room/src/pages/project/NewProjectPage.jsx`, `apps/web/control-room/src/pages/project/ProjectOverviewPage.jsx`, `apps/web/control-room/changes/T-F17.md` | `apps/web/test/mission-start/**`, `apps/web/e2e/mission-start/**` |
 | T-F23 | `packages/contract-mock/src/**` | `packages/contract-mock/test/mission-streams.test.ts`, `packages/contract-mock/test/world.test.ts` |

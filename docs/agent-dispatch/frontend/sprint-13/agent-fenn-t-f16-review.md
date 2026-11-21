@@ -8,7 +8,7 @@ seat: checker
 kind: review
 role: review
 rigor: full
-model: opus
+model: sonnet
 branch: t/F16-decisions-live
 checkout: detached
 after: [agent-fantem-t-f16-build]
@@ -26,7 +26,7 @@ report: docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f16-review-completio
 | Lane | frontend · lead Zero |
 | Sprint | sprint-13 · Step 1 |
 | Ticket | T-F16 · rigor full |
-| Dispatch | review · Fenn (checker) · model opus |
+| Dispatch | review · Fenn (checker) · model sonnet |
 | Works on | a detached checkout of `t/F16-decisions-live`'s head |
 | Done when | CI is green and the acceptance tests pass. Nothing else (C1, C3). |
 
@@ -140,8 +140,8 @@ You review the builder's work on this ticket, from the diff and this document on
 
 | Ticket | Kind | Paths |
 | --- | --- | --- |
-| T-F15 | builds | `apps/web/playwright.config.ts`, `apps/web/vite.config.ts`, `.github/workflows/ci.yml`, `docs/quarantine.md` |
-| T-F15 | tests | `apps/web/e2e/control-room/routes.spec.ts`, `apps/web/e2e/control-room-screens/routes.ts`, `apps/web/e2e/e2e-build/**` |
+| T-F15 | builds | `apps/web/playwright.config.ts`, `apps/web/vite.config.ts`, `.github/workflows/ci.yml`, `docs/quarantine.md`, `apps/web/src/routes/__root.tsx`, `apps/web/src/auth/api.ts` |
+| T-F15 | tests | `apps/web/e2e/control-room/routes.spec.ts`, `apps/web/e2e/control-room-screens/routes.ts`, `apps/web/e2e/e2e-build/**`, `apps/web/test/sign-in/origin.test.ts`, `apps/web/e2e/sign-in/sign-out-failure.spec.ts`, `apps/web/e2e/support/preview-auth.ts` |
 | T-F17 | builds | `apps/web/control-room/src/sources/missions.js`, `apps/web/control-room/src/pages/project/NewProjectPage.jsx`, `apps/web/control-room/src/pages/project/ProjectOverviewPage.jsx`, `apps/web/control-room/changes/T-F17.md` |
 | T-F17 | tests | `apps/web/test/mission-start/**`, `apps/web/e2e/mission-start/**` |
 | T-F23 | builds | `packages/contract-mock/src/**` |

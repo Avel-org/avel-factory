@@ -31,10 +31,10 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | --- | --- | --- | --- |
 | `agent-fenn-t-f12-test-e2e.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f12-build.md` | Fantem | build | opus |
-| `agent-fenn-t-f12-review.md` | Fenn | review | opus |
+| `agent-fenn-t-f12-review.md` | Fenn | review | sonnet |
 | `agent-fenn-t-f14-test-e2e.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f14-build.md` | Fantem | build | opus |
-| `agent-fenn-t-f14-review.md` | Fenn | review | opus |
+| `agent-fenn-t-f14-review.md` | Fenn | review | sonnet |
 | `agent-fenn-t-f22-test-unit.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f22-build.md` | Fantem | build | opus |
 | `agent-fenn-t-f22-review.md` | Fenn | review | sonnet |
@@ -44,7 +44,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | Ticket | Builds | Tests |
 | --- | --- | --- |
 | T-F12 | `apps/web/src/auth/**`, `apps/web/src/routes/__root.tsx`, `apps/web/src/routes/login.tsx`, `apps/web/src/routeTree.gen.ts`, `apps/web/control-room/src/pages/settings/SettingsPage.jsx`, `apps/web/control-room/SOURCE.md`, `apps/web/vite.config.ts` | `apps/web/test/sign-in/**`, `apps/web/e2e/sign-in/**`, `apps/web/e2e/support/auth.setup.ts`, `apps/web/playwright.config.ts`, `apps/web/e2e/budget.spec.ts`, `apps/web/e2e/control-room/prod.spec.ts`, `apps/web/e2e/control-room-budget/**`, `apps/web/e2e/support/preview-auth.ts` |
-| T-F14 | `apps/web/src/data/**`, `apps/web/control-room/src/lib/api.js`, `apps/web/control-room/src/lib/stream.js`, `apps/web/control-room/src/sources/**`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/operations.js`, `apps/web/control-room/src/app/decisions.js`, `apps/web/control-room/src/app/crew.js`, `apps/web/control-room/changes/T-F14.md` | `apps/web/test/data/**`, `apps/web/test/sources/**`, `apps/web/e2e/sources/**` |
+| T-F14 | `apps/web/src/data/**`, `apps/web/control-room/src/lib/api.js`, `apps/web/control-room/src/lib/stream.js`, `apps/web/control-room/src/sources/**`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/operations.js`, `apps/web/control-room/src/app/decisions.js`, `apps/web/control-room/src/app/crew.js`, `apps/web/control-room/changes/T-F14.md` | `apps/web/test/data/**`, `apps/web/test/sources/**`, `apps/web/e2e/sources/**`, `apps/web/test/control-room/source.test.ts` |
 | T-F22 | `packages/contract-mock/src/**` | `packages/contract-mock/test/mission-world.test.ts`, `packages/contract-mock/test/mission-routes.test.ts` |
 
 ## Merge order

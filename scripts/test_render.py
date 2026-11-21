@@ -289,7 +289,7 @@ class Flow(unittest.TestCase):
 
         # 2. the lead locks the tests
         with open(os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
-            f.write("- T-B1: packages/server/test/spike.test.ts @ abc1234\n")
+            f.write(f"- T-B1: packages/server/test/spike.test.ts @ {r.run('git rev-parse --short t/B1-effect-spike').stdout.strip()}\n")
         r.run("git commit -qam 'lock T-B1'")
         self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
 
@@ -331,7 +331,7 @@ class Flow(unittest.TestCase):
         r.run("git add -A && git commit -qm 'render sprint-01'")
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         with open(os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
-            f.write("- T-B1: packages/server/test/spike.test.ts @ abc1234\n")
+            f.write(f"- T-B1: packages/server/test/spike.test.ts @ {r.run('git rev-parse --short t/B1-effect-spike').stdout.strip()}\n")
         r.run("git commit -qam 'lock T-B1'")
         r.run("scripts/agent.sh --here backend sprint-01 agent-soap-t-b1-build")
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-review")
@@ -517,7 +517,7 @@ class Flow(unittest.TestCase):
         on_branch("<!-- - T-B1: packages/server/test/spike.test.ts @ abc1234 -->\n", "comment only")
         self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting")  # a commented line isn't a lock
 
-        on_branch("- T-B1: packages/server/test/spike.test.ts @ abc1234\n", "lock T-B1")
+        on_branch(f"- T-B1: packages/server/test/spike.test.ts @ {r.run('git rev-parse --short t/B1-effect-spike').stdout.strip()}\n", "lock T-B1")
         with open(os.path.join(r.root, locks)) as f:
             self.assertNotRegex(f.read(), r"(?m)^- T-B1:")  # main's copy has no line
         self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
@@ -540,11 +540,11 @@ class Flow(unittest.TestCase):
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         locks = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md")
         with open(locks, "a") as f:
-            f.write("- T-B1: packages/server/test/a.test.ts packages/server/test/b.test.ts @ abc1234\n")
+            f.write(f"- T-B1: packages/server/test/spike.test.ts packages/server/test/spike.test.ts @ {r.run('git rev-parse --short t/B1-effect-spike').stdout.strip()}\n")
         self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting")
         self.assertIn("separate the paths with commas", self.status())
         with open(locks, "a") as f:
-            f.write("- T-B1: packages/server/test/a.test.ts, packages/server/test/b.test.ts @ abc1234\n")
+            f.write(f"- T-B1: packages/server/test/spike.test.ts, packages/server/test/spike.test.ts @ {r.run('git rev-parse --short t/B1-effect-spike').stdout.strip()}\n")
         self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
 
     def test_an_f2_relock_line_is_a_lock_line(self):
@@ -552,7 +552,7 @@ class Flow(unittest.TestCase):
         r.run("git add -A && git commit -qm 'render sprint-01'")
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         with open(os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
-            f.write("- T-B1: packages/server/test/a.test.ts @ def5678 (F2 relock)\n")
+            f.write(f"- T-B1: packages/server/test/spike.test.ts @ {r.run('git rev-parse --short t/B1-effect-spike').stdout.strip()} (F2 relock)\n")
         self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
 
     def test_task_docs_ask_for_the_messages_received_section(self):
@@ -678,6 +678,30 @@ class Flow(unittest.TestCase):
         self.assertIn("| out-of-scope | stuck", text)
         self.assertIn("out-of-scope or stuck", text)
 
+    def test_a_lock_line_must_name_a_commit_on_the_branch_and_the_tickets_test_paths(self):
+        # CR-50 decision 5: a stale or hand-made lock line no longer starts a build that CI would fail.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        locks = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md")
+        main = r.run("git rev-parse --short main").stdout.strip()
+        r.run("git commit -q --allow-empty -m 'a commit only on main'")
+        off_branch = r.run("git rev-parse --short main").stdout.strip()
+        tip = r.run("git rev-parse --short t/B1-effect-spike").stdout.strip()
+        with open(locks) as f:
+            base = f.read()
+        for line, why in ((f"- T-B1: packages/server/test/spike.test.ts @ {off_branch}\n", "isn't on t/B1-effect-spike"),
+                          (f"- T-B1: packages/server/src/main.ts @ {tip}\n", "isn't one of T-B1's test paths"),
+                          ("- T-B1: packages/server/test/spike.test.ts @ 1234567\n", "isn't in this repo")):
+            with open(locks, "w") as f:
+                f.write(base + line)
+            self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting", line)
+            self.assertIn(why, self.status())
+        with open(locks, "w") as f:
+            f.write(base + f"- T-B1: packages/server/test/spike.test.ts @ {tip}\n")
+        self.assertEqual(self.state("agent-soap-t-b1-build"), "ready")
+        del main
+
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
@@ -714,7 +738,7 @@ class Flow(unittest.TestCase):
         lead = os.path.join(r.tmp, "lead-checkout")
         r.run(f"git worktree add -q '{lead}' t/B1-effect-spike")
         with open(os.path.join(lead, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
-            f.write("- T-B1: packages/server/test/spike.test.ts @ abc1234\n")
+            f.write(f"- T-B1: packages/server/test/spike.test.ts @ {r.run('git rev-parse --short t/B1-effect-spike').stdout.strip()}\n")
         r.run(f"git -C '{lead}' commit -qam 'lock T-B1'")
         out = r.run("scripts/agent.sh --here backend sprint-01 agent-soap-t-b1-build", check=False)
         self.assertNotEqual(out.returncode, 0)

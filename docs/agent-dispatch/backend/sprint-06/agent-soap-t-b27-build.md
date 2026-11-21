@@ -152,8 +152,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 | T-B22 | tests | `packages/server/test/metering/**` |
 | T-B24 | builds | `packages/server/src/factory/decisions/**`, `packages/server/src/platform/status/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
 | T-B24 | tests | `packages/server/test/decisions/**`, `packages/server/test/status/**` |
-| T-B25 | builds | `packages/server/src/factory/missions/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
-| T-B25 | tests | `packages/server/test/missions/**` |
+| T-B25 | builds | `packages/server/src/factory/missions/**`, `packages/contract/src/routes/missions.ts`, `packages/contract/src/version.ts`, `packages/contract/package.json`, `docs/generated/openapi.json`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
+| T-B25 | tests | `packages/server/test/missions/**`, `packages/contract/test/cr-w32.test.ts` |
 | T-B26 | builds | `packages/server/src/events/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
 | T-B26 | tests | `packages/server/test/streams/**` |
 

@@ -4,6 +4,9 @@
   scripts/agents/merge.py check <pr> [<pr> ...]                    report each PR, merge nothing
   scripts/agents/merge.py merge <pr> [<pr> ...]                    merge each one that meets every CR-36 condition
   scripts/agents/merge.py merge <pr> [<pr> ...] --approved "TEXT"  CR-41: Javaris approved these PRs, in his words
+  scripts/agents/merge.py merge <pr> [<pr> ...] --standing          CR-45 decision 3, as CR-50 decision 3 holds it:
+                                                                   waives only condition 2 (rigor) for a reviewed
+                                                                   ticket PR, with a G7 pass for full rigor
 
 The conditions (CR-36, section 1):
   1  CI green on the head, every required check, none re-run (H4, H5, H6)        always required
@@ -50,6 +53,9 @@ GUARDED_LABELS = {"contract", "schema"}
 # CR-46 B4: an agent's memory lines merge with its ticket's PR; the lock check holds them to one line.
 MEMORY = re.compile(r"^\.agents/memory/[a-z0-9]+\.md$")
 WAIVABLE = {2, 3, 6, 7}
+# CR-50 decision 3: the standing approval waives rigor only; the review, the ticket branch and the guardrails hold.
+STANDING_WAIVABLE = {2}
+G7_PASS = re.compile(r"\bG7\b.{0,200}\bpass\b|\bpass\b.{0,200}\bG7\b", re.I | re.S)
 ROUTE = {1: "the lane's lead", 3: "the lane's lead", 4: "the lane's lead", 6: "the lane's lead",
          8: "the lane's lead", 2: "Javaris, as a decision", 7: "Javaris, as a decision", 5: "OSA (fix the PR text)"}
 MAIN_CI_TIMEOUT = int(os.environ.get("AVEL_MERGE_CI_TIMEOUT", "1800"))
@@ -124,7 +130,36 @@ def review_verdict(root, doc_path, ticket):
         text = f.read(4000)
     status = re.search(r"(?m)^status: (\S+)", text)
     verdict = re.search(r"(?m)^verdict: (\S+)", text)
-    return best[0], status.group(1) if status else None, verdict.group(1) if verdict else None
+    head = None
+    try:  # CR-50 decision 3: the commit the review read, kept beside its report copy by agent.sh
+        with open(best[1][:-3] + ".head", encoding="utf-8") as f:
+            head = f.read().strip() or None
+    except OSError:
+        pass
+    return best[0], status.group(1) if status else None, verdict.group(1) if verdict else None, head
+
+
+def run_git(root, *args):
+    return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, timeout=30)
+
+
+def moved_since_review(root, reviewed, head):
+    """Why the PR's head isn't the commit its review read, or None. A clean merge of main, or a commit
+    touching only a sprint's locks.md, may follow the review; anything else needs a new review."""
+    if reviewed == head:
+        return None
+    if run_git(root, "merge-base", "--is-ancestor", reviewed, head).returncode != 0:
+        return f"the head {head[:7]} isn't built on the reviewed commit {reviewed[:7]}"
+    for sha in run_git(root, "rev-list", f"{reviewed}..{head}").stdout.split():
+        parents = run_git(root, "rev-list", "--parents", "-n", "1", sha).stdout.split()[1:]
+        if len(parents) > 1 and any(run_git(root, "merge-base", "--is-ancestor", p, "origin/main").returncode == 0
+                                    for p in parents[1:]):
+            continue
+        files = run_git(root, "diff-tree", "--no-commit-id", "--name-only", "-r", sha).stdout.split()
+        if files and all(f.endswith("/locks.md") for f in files):
+            continue
+        return f"commit {sha[:7]} came after the review (only main merges and locks.md commits may)"
+    return None
 
 
 def reruns(sha):
@@ -137,7 +172,7 @@ def assess(root, number):
     """Every CR-36 condition for one PR: {'pr': ..., 'fails': {n: reason}, 'notes': [...]}."""
     pr = gh("pr", "view", str(number), "--json",
             "number,title,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,mergeStateStatus,"
-            "labels,files,body,reviews")
+            "labels,files,body,reviews,comments")
     fails, notes = {}, []
     labels = [l["name"] for l in pr.get("labels", [])]
     files = [f["path"] for f in pr.get("files", [])]
@@ -171,14 +206,24 @@ def assess(root, number):
         else:
             if rigor != "standard":
                 fails[2] = f"{ticket} is rigor {rigor}"
+                g7 = [c for c in pr.get("comments", []) if G7_PASS.search(c.get("body") or "")]
+                notes.append(f"{ticket} G7 second review: {'a pass is on the PR' if g7 else 'no pass on the PR yet'}")
+                a_g7 = bool(g7)
+            else:
+                a_g7 = True
             found = review_verdict(root, doc, ticket)
             if not found:
                 fails[3] = f"no review report for {ticket}"
             else:
-                attempt, status, verdict = found
-                notes.append(f"{ticket} review a{attempt}: status {status}, verdict {verdict}")
+                attempt, status, verdict, reviewed = found
+                notes.append(f"{ticket} review a{attempt}: status {status}, verdict {verdict}"
+                             + (f", read {reviewed[:7]}" if reviewed else ""))
                 if status != "done" or verdict != "pass":
                     fails[3] = f"review a{attempt} is status {status}, verdict {verdict}"
+                elif reviewed:
+                    why = moved_since_review(root, reviewed, pr["headRefOid"])
+                    if why:
+                        fails[3] = f"review a{attempt}: {why}"
 
     # 4: mergeable
     if pr.get("mergeable") != "MERGEABLE" or pr.get("mergeStateStatus") != "CLEAN":
@@ -205,11 +250,23 @@ def assess(root, number):
     elif asking:
         fails[8] = "changes requested by " + ", ".join(asking)
 
-    return {"pr": pr, "refs": refs, "fails": fails, "notes": notes}
+    return {"pr": pr, "refs": refs, "fails": fails, "notes": notes, "g7": locals().get("a_g7", False)}
 
 
-def describe(a, approved):
+def describe(a, approved, standing=False):
     pr, fails = a["pr"], a["fails"]
+    if standing:
+        hard = {n: r for n, r in fails.items() if n not in STANDING_WAIVABLE}
+        if 2 in fails and not a.get("g7"):
+            hard[2] = fails[2] + ", and no G7 second-review pass is on the PR"
+        approved = None
+        lines = [f"#{pr['number']} {pr['title']}", f"  head {pr['headRefOid'][:7]} on {pr['headRefName']}"]
+        lines += [f"  {n}" for n in a["notes"]]
+        for n in sorted(fails):
+            covered = " (covered by the standing approval)" if n not in hard else f" -> {ROUTE[n]}"
+            lines.append(f"  condition {n} fails: {hard.get(n, fails[n])}{covered}")
+        lines.append("  can merge" if not hard else "  can't merge")
+        return "\n".join(lines), not hard
     hard = {n: r for n, r in fails.items() if n not in WAIVABLE or not approved}
     lines = [f"#{pr['number']} {pr['title']}", f"  head {pr['headRefOid'][:7]} on {pr['headRefName']}"]
     lines += [f"  {n}" for n in a["notes"]]
@@ -229,6 +286,17 @@ def approval_comment(a, text):
             "- CR-36 conditions his approval covers: " + ("; ".join(covered) if covered else "none, every condition held"),
             "- Held, as always required: 1 (CI green, no re-runs), 4 (mergeable, clean), 5 (squash with the Refs: line), 8 (no hold)"]
     return "\n".join(body)
+
+
+def standing_comment(a):
+    now = datetime.now(CENTRAL).strftime("%b %-d, %Y %H:%M %Z")
+    return "\n".join([
+        "**Merged by OSA under Javaris's standing approval** (CR-45 decision 3, as CR-50 decision 3 holds it, "
+        f"accepted Nov 21), {now}.", "",
+        f"- Merged head: {a['pr']['headRefOid']}",
+        "- Waived: condition 2 (rigor) only. Held: the review passed with no P0 or P1, on this head or before only "
+        "main merges and locks.md commits (3); the G7 second review passed (full rigor); CI green, mergeable, the "
+        "Refs: line, a ticket branch, no guardrail path, no hold (1, 4 to 8)."])
 
 
 def wait_for_main(sha):
@@ -255,9 +323,11 @@ def main_red():
     return [f"{n}={r['conclusion']} on {r['headSha'][:7]}" for n, r in latest.items() if r["conclusion"] != "success"]
 
 
-def merge_one(a, approved):
+def merge_one(a, approved, standing=False):
     pr = a["pr"]
-    if approved:
+    if standing:
+        gh("pr", "comment", str(pr["number"]), "--body", standing_comment(a), parse=False)
+    elif approved:
         gh("pr", "comment", str(pr["number"]), "--body", approval_comment(a, approved), parse=False)
     gh("pr", "merge", str(pr["number"]), "--squash", "--subject", f"{pr['title']} (#{pr['number']})",
        "--body", a["refs"], "--match-head-commit", pr["headRefOid"], parse=False)
@@ -270,7 +340,11 @@ def main(argv=None):
     p.add_argument("action", choices=["check", "merge"])
     p.add_argument("prs", nargs="+", type=int)
     p.add_argument("--approved", help="Javaris's words approving these PRs, quoted as he wrote them (CR-41)")
+    p.add_argument("--standing", action="store_true",
+                   help="CR-45 decision 3 as CR-50 decision 3 holds it: waive only rigor, for reviewed ticket PRs")
     args = p.parse_args(argv)
+    if args.standing and args.approved is not None:
+        p.error("--standing and --approved don't go together")
     if args.approved is not None and not args.approved.strip():
         p.error("--approved needs Javaris's words")
     root = repo_root()
@@ -281,7 +355,7 @@ def main(argv=None):
         except GhError as e:
             print(f"#{number}: {e}")
             return 1
-        text, ok = describe(a, args.approved)
+        text, ok = describe(a, args.approved, args.standing)
         print(text)
         if args.action == "check":
             continue
@@ -295,7 +369,7 @@ def main(argv=None):
             print(f"stopped; not merged: {', '.join(f'#{n}' for n in args.prs[i:])}")
             return 1
         try:
-            sha = merge_one(a, args.approved)
+            sha = merge_one(a, args.approved, args.standing)
         except GhError as e:
             print(f"  merge failed: {e}")
             return 1
