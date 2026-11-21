@@ -120,7 +120,7 @@ CI is green and the acceptance tests pass. Nothing else.
   - `scripts/agent.sh` opens it in a new worktree with the agent's identity, `claude --agent <name>`, and `/dispatch <lane>/sprint-NN/<task doc>` as the first message.
   - In the building tabs, the lane loop does this in the agent's own pane. OSA may run it headless (`claude -p`) when nobody is watching.
   - Nothing is pasted in by hand. OSA may message a running session under CR-37, logged, and only within the ticket. If the plan is missing something a message can't fix inside the ticket, the lead fixes the plan and re-renders.
-  - No resuming: a session that stops leaves its completion report, and the next attempt starts fresh from that report.
+  - A session that crashed or was cut off with no report is resumed as the same attempt (CR-46 B2): `scripts/agent.sh --resume` runs `claude --continue` in that attempt's worktree. The lane loop resumes once on its own, and only an attempt that left commits or changes; after that, the lead decides (K2, L3). A session that stops with a report doesn't resume: a new attempt follows the lead's review, starting fresh from that report.
 - **D2. Limits:**
 
   | Session | Turns | Time | Cost |
@@ -136,7 +136,7 @@ CI is green and the acceptance tests pass. Nothing else.
   3. Read `git log -20`.
   4. Start the session's own Postgres (D5).
   5. Run the tests, and only then start work.
-- **D4. One worktree per attempt, one branch per ticket.** The branch is `t/<ticket-id>-<slug>`, for example `t/B12-db-errors`. The tests and the build dispatches commit to it in turn, each from a fresh worktree. A review dispatch runs on a detached checkout of the PR's head.
+- **D4. One worktree per attempt, one branch per ticket.** The branch is `t/<ticket-id>-<slug>`, for example `t/B12-db-errors`. The tests and the build dispatches commit to it in turn, each from a fresh worktree, or from its own worktree again when it's resumed (D1). Worktrees stay until the ticket merges; `scripts/agent.sh --prune` removes them then. A review dispatch runs on a detached checkout of the PR's head.
 - **D5. One database per worktree.** `scripts/pg-local.sh start` already runs one Postgres container per checkout, on a free port, so two sessions' tests never collide. The dev server's port comes from the worktree too.
 - **D6. Memory lives in files.**
   - The sprint folder is the task list: `scripts/dispatch.sh <lane>/sprint-NN --status` shows what's done, running, ready and waiting.

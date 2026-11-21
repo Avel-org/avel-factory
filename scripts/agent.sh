@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 # Open one dispatch: a fresh worktree, the agent's identity, its task doc as the first message.
-# One session is one attempt (Build rules D1, D4). Nothing is pasted, and nothing is resumed.
+# One session is one attempt (Build rules D1, D4). Nothing is pasted. A session that crashed or was cut
+# off with no report is resumed as the same attempt (CR-46 B2); a new attempt follows a lead's review.
 #
 #   scripts/agent.sh <lane> <sprint> <task doc> [attempt]          open it in a new WezTerm tab
 #   scripts/agent.sh --here <lane> <sprint> <task doc> [attempt]   run it in this terminal (the lane loop)
 #   scripts/agent.sh --here --headless <lane> <sprint> <doc> [n]   run it with no one watching (claude -p)
 #   scripts/agent.sh --docs <agent>                                what can be opened by hand (the picker)
+#   scripts/agent.sh --here --resume <lane> <sprint> <doc>        resume a crashed attempt in its worktree
+#   scripts/agent.sh --here --auto-resume <lane> <sprint> <doc>   the lane loop's one resume, only if the
+#                                                                  attempt changed its worktree and wasn't resumed
 #   scripts/agent.sh --prune                                       remove the worktrees of merged tickets
 #
 #   The attempt is always the next one; naming it confirms a retry. It refuses: a task doc that isn't
@@ -58,19 +62,21 @@ prune_worktrees() {
   echo "pruned $removed worktree(s), kept $kept"
 }
 
-here=0 headless=0
+here=0 headless=0 resume=0 auto=0
 while [[ ${1:-} == --* ]]; do
   case $1 in
     --here) here=1 ;;
     --headless) headless=1 ;;
+    --resume) resume=1 ;;
+    --auto-resume) resume=1 auto=1 ;;
     --docs) render --docs "${2:?--docs <agent>}"; exit 0 ;;
     --prune) prune_worktrees; exit 0 ;;
-    -h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown option $1" ;;
   esac
   shift
 done
-[[ $# -ge 3 ]] || die "usage: scripts/agent.sh [--here] [--headless] <lane> <sprint> <task doc> [attempt]"
+[[ $# -ge 3 ]] || die "usage: scripts/agent.sh [--here] [--headless] [--resume] <lane> <sprint> <task doc> [attempt]"
 lane=$1 sprint=$2 doc=${3%.md} want=${4:-}
 
 eval "$(render --info "$lane/$sprint" "$doc")"
@@ -84,7 +90,7 @@ if (( ! here )); then
   envs=""
   while IFS='=' read -r k v; do envs+=" $k=$(printf %q "$v")"; done < <(env | grep -E '^AVEL_[A-Z0-9_]*=' | grep -v '^AVEL_SEAT=' || true)
   # The tab closes when the session ends. If agent.sh refuses to start, the reason stays up for a minute.
-  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here $lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
+  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here $( (( auto )) && echo --auto-resume || { (( resume )) && echo --resume; } ) $lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
   session="" tabcmd=$cmd
   if command -v tmux >/dev/null 2>&1; then
     session=$(echo "avel-$AGENT-$TICKET-$KIND" | tr A-Z a-z)
@@ -121,64 +127,93 @@ problems=$(render --verify "$lane/$sprint" 2>&1) || die "$problems"
 # One start at a time: the readiness, slot and attempt checks and the marker happen under one lock.
 exec 9>"$state/start.lock"
 flock 9
-read -r st n < <(render --state "$lane/$sprint" "$doc")
-case $st in
-  ready) ;;
-  stopped) [[ -n $want ]] || die "$doc stopped on an earlier attempt. A retry is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
-  done) [[ -n $want ]] || die "$doc is done (a$((n - 1))). Another attempt after a review is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
-  *) die "$doc is $st, not ready. scripts/render.py --status $lane/$sprint says why." ;;
-esac
-[[ -z $want || $want == "$n" ]] || die "the next attempt of $doc is a$n, not a$want"
-slot=$(render --slots "$lane" "$SEAT" 2>&1) || die "$slot"
-
-base_dir="$(dirname "$root")/$(basename "$root")-wt"
-tl=$(echo "$TICKET" | tr A-Z a-z)
-wt="$base_dir/$lane-$sprint-$tl-$ROLE-a$n"
-[[ -e $wt ]] && die "$wt already exists"
-mkdir -p "$base_dir"
-git rev-parse --verify -q main >/dev/null || die "there's no main branch yet"
-
-# A branch can be checked out in one worktree at a time: free it from a finished attempt's worktree.
-# Only a worktree the kit made for this ticket is removed. Any other (a lead's, Javaris's) is left
-# alone: on Nov 17 the lane loop removed the worktree Zero was locking T-F9 from.
-free_branch() {
-  local other
-  other=$(git worktree list --porcelain | awk -v b="refs/heads/$BRANCH" '/^worktree /{w=$2} $0=="branch "b{print w}')
-  [[ -z $other ]] && return 0
-  [[ $other == "$root" ]] && die "$BRANCH is checked out in the main checkout: switch it back to main"
-  if [[ ! $other =~ ^"$base_dir/$lane-$sprint-$tl-"[a-z0-9-]+-a[0-9]+$ ]]; then
-    die "$BRANCH is checked out in $other, which the kit didn't make. Whoever is using it checks out another branch or detaches it, then retry."
+start_file() { echo "$state/logs/$lane-$sprint-$doc.a$1.start"; }
+if (( resume )); then
+  # CR-46 B2: the same attempt, in the same worktree. Only a stopped dispatch whose attempt left no report.
+  read -r st _ < <(render --state "$lane/$sprint" "$doc")
+  [[ $st == stopped ]] || { (( auto )) && exit 0; die "$doc is $st: only a stopped attempt with no report is resumed"; }
+  eval "$(render --last "$lane/$sprint" "$doc")" || die "$doc has no attempt to resume"
+  n=$LAST_ATTEMPT wt=$LAST_WORKTREE base=$LAST_BASE
+  [[ $HAS_REPORT == 0 ]] || { (( auto )) && exit 0; die "a$n of $doc left a report: a new attempt is the lead's call (scripts/agent.sh $lane $sprint $doc $((n + 1)))"; }
+  [[ -d $wt ]] || { (( auto )) && exit 0; die "a$n's worktree $wt is gone, so it can't be resumed: a new attempt is the lead's call"; }
+  if (( auto )); then
+    # The lane loop resumes once, and only an attempt that got somewhere: commits or changes since it started.
+    (( RESUMES == 0 )) || { echo "$doc a$n was resumed once already: the lead decides (K2, L3)"; exit 0; }
+    start_head=$(sed -n 2p "$(start_file "$n")" 2>/dev/null || true)
+    if [[ -z $(git -C "$wt" status --porcelain 2>/dev/null) && ( -z $start_head || $(git -C "$wt" rev-parse HEAD) == "$start_head" ) ]]; then
+      echo "$doc a$n left nothing in its worktree to resume from: the lead decides"; exit 0
+    fi
   fi
-  if [[ -n $(git -C "$other" status --porcelain) ]]; then
-    die "$BRANCH is checked out in $other, which has uncommitted work. Commit or remove it first."
+  slot=$(render --slots "$lane" "$SEAT" 2>&1) || die "$slot"
+  if [[ $CHECKOUT != detached ]] && ! git -C "$wt" symbolic-ref -q HEAD >/dev/null; then
+    # A finished session left the worktree detached (A3); take the branch back, at the attempt's own commit.
+    [[ $(git -C "$wt" rev-parse HEAD) == $(git rev-parse "$BRANCH") ]] ||
+      die "$BRANCH has moved on since a$n stopped (to $(git rev-parse --short "$BRANCH")): a new attempt is the lead's call"
+    git -C "$wt" checkout -q "$BRANCH" 2>/dev/null ||
+      die "$BRANCH is checked out somewhere else: free it, then resume"
   fi
-  git worktree remove "$other"
-}
+  mode=resumed
+else
+  read -r st n < <(render --state "$lane/$sprint" "$doc")
+  case $st in
+    ready) ;;
+    stopped) [[ -n $want ]] || die "$doc stopped on an earlier attempt. A retry is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
+    done) [[ -n $want ]] || die "$doc is done (a$((n - 1))). Another attempt after a review is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
+    *) die "$doc is $st, not ready. scripts/render.py --status $lane/$sprint says why." ;;
+  esac
+  [[ -z $want || $want == "$n" ]] || die "the next attempt of $doc is a$n, not a$want"
+  slot=$(render --slots "$lane" "$SEAT" 2>&1) || die "$slot"
 
-# The session reads its task doc from the branch, so the branch must hold main's copy of it: a branch
-# cut before a re-plan would hand the agent the old ticket (T-F5 tests a2, Nov 17). The lead merges main in.
-if git rev-parse --verify -q "$BRANCH" >/dev/null &&
-   [[ $(git rev-parse -q --verify "$BRANCH:$DOC_PATH" 2>/dev/null) != $(git rev-parse "main:$DOC_PATH") ]]; then
-  die "$BRANCH has a different $DOC_PATH from main's (the ticket was re-rendered after the branch was cut). The lead merges main into $BRANCH first."
+  base_dir="$(dirname "$root")/$(basename "$root")-wt"
+  tl=$(echo "$TICKET" | tr A-Z a-z)
+  wt="$base_dir/$lane-$sprint-$tl-$ROLE-a$n"
+  [[ -e $wt ]] && die "$wt already exists"
+  mkdir -p "$base_dir"
+  git rev-parse --verify -q main >/dev/null || die "there's no main branch yet"
+
+  # A branch can be checked out in one worktree at a time: free it from a finished attempt's worktree.
+  # Only a worktree the kit made for this ticket is removed. Any other (a lead's, Javaris's) is left
+  # alone: on Nov 17 the lane loop removed the worktree Zero was locking T-F9 from.
+  free_branch() {
+    local other
+    other=$(git worktree list --porcelain | awk -v b="refs/heads/$BRANCH" '/^worktree /{w=$2} $0=="branch "b{print w}')
+    [[ -z $other ]] && return 0
+    [[ $other == "$root" ]] && die "$BRANCH is checked out in the main checkout: switch it back to main"
+    if [[ ! $other =~ ^"$base_dir/$lane-$sprint-$tl-"[a-z0-9-]+-a[0-9]+$ ]]; then
+      die "$BRANCH is checked out in $other, which the kit didn't make. Whoever is using it checks out another branch or detaches it, then retry."
+    fi
+    if [[ -n $(git -C "$other" status --porcelain) ]]; then
+      die "$BRANCH is checked out in $other, which has uncommitted work. Commit or remove it first."
+    fi
+    git worktree remove "$other"
+  }
+
+  # The session reads its task doc from the branch, so the branch must hold main's copy of it: a branch
+  # cut before a re-plan would hand the agent the old ticket (T-F5 tests a2, Nov 17). The lead merges main in.
+  if git rev-parse --verify -q "$BRANCH" >/dev/null &&
+     [[ $(git rev-parse -q --verify "$BRANCH:$DOC_PATH" 2>/dev/null) != $(git rev-parse "main:$DOC_PATH") ]]; then
+    die "$BRANCH has a different $DOC_PATH from main's (the ticket was re-rendered after the branch was cut). The lead merges main into $BRANCH first."
+  fi
+
+  case $KIND in
+    tests)
+      git rev-parse --verify -q "$BRANCH" >/dev/null || git branch "$BRANCH" main
+      free_branch
+      git worktree add -q "$wt" "$BRANCH" ;;
+    build)
+      git rev-parse --verify -q "$BRANCH" >/dev/null || die "$BRANCH doesn't exist: the tests come first"
+      free_branch
+      git worktree add -q "$wt" "$BRANCH" ;;
+    review)
+      git rev-parse --verify -q "$BRANCH" >/dev/null || die "$BRANCH doesn't exist"
+      git worktree add -q --detach "$wt" "$BRANCH" ;;
+  esac
+  # Clear Postgres containers left by attempts whose worktree is gone (a crash skips their stop).
+  "$root/scripts/pg-local.sh" prune >/dev/null 2>&1 || true
+  base=$(git merge-base main "$BRANCH")
+  mode=$( (( headless )) && echo headless || echo interactive)
 fi
-
-case $KIND in
-  tests)
-    git rev-parse --verify -q "$BRANCH" >/dev/null || git branch "$BRANCH" main
-    free_branch
-    git worktree add -q "$wt" "$BRANCH" ;;
-  build)
-    git rev-parse --verify -q "$BRANCH" >/dev/null || die "$BRANCH doesn't exist: the tests come first"
-    free_branch
-    git worktree add -q "$wt" "$BRANCH" ;;
-  review)
-    git rev-parse --verify -q "$BRANCH" >/dev/null || die "$BRANCH doesn't exist"
-    git worktree add -q --detach "$wt" "$BRANCH" ;;
-esac
-# Clear Postgres containers left by attempts whose worktree is gone (a crash skips their stop).
-"$root/scripts/pg-local.sh" prune >/dev/null 2>&1 || true
-base=$(git merge-base main "$BRANCH")
-render --record "$lane/$sprint" "$doc" "$n" "$wt" "$base" "$( (( headless )) && echo headless || echo interactive)"
+render --record "$lane/$sprint" "$doc" "$n" "$wt" "$base" "$mode"
 marker="$state/running/$lane-$sprint-$doc.a$n"
 printf '{"pid": %d, "lane": "%s", "sprint": "%s", "doc": "%s", "attempt": %d, "seat": "%s"}\n' \
   $$ "$lane" "$sprint" "$doc" "$n" "$SEAT" >"$marker"
@@ -187,7 +222,13 @@ flock -u 9
 # A report already in the worktree (an earlier attempt's, on the branch or carried over by a rebuild)
 # isn't this attempt's. Its hash is taken now, so the done flag (scripts/hooks/session.py) and the
 # copy kept when the session ends both ignore it while it's unchanged.
-REPORT_START=$( [[ -f $wt/$REPORT ]] && sha256sum "$wt/$REPORT" | cut -d' ' -f1 || true )
+# Kept with the worktree's head in <state>/logs, so a resume (B2) compares against the first start's report.
+if (( resume )) && [[ -f $(start_file "$n") ]]; then
+  REPORT_START=$(sed -n 1p "$(start_file "$n")")
+else
+  REPORT_START=$( [[ -f $wt/$REPORT ]] && sha256sum "$wt/$REPORT" | cut -d' ' -f1 || true )
+  printf '%s\n%s\n' "$REPORT_START" "$(git -C "$wt" rev-parse HEAD)" >"$(start_file "$n")"
+fi
 
 # When the session ends: drop the marker and keep a copy of this attempt's report (a reviewer's stays
 # uncommitted). The worktree stays, so a crashed or cut-off session can be found again; --prune removes it
@@ -235,10 +276,18 @@ if [[ -f package.json ]]; then
   # Workspace packages resolve to their dist/, so typecheck and test fail in a fresh worktree until a build.
   pnpm build >/dev/null 2>&1 || echo "warning: pnpm build failed in $wt"
 fi
+# A resume continues the attempt's own conversation in its worktree (claude --continue).
+resume_args=() first="/dispatch $lane/$sprint/$doc" prompt=$ACTIVATION
+if (( resume )); then
+  resume_args=(--continue)
+  first="You were interrupted. Check git log and git status in this worktree, then continue your task doc ($DOC_PATH) from where you stopped."
+  prompt=$first
+  echo "$name: resuming a$n in $wt"
+fi
 echo "$name: $DOC_PATH on $( [[ $CHECKOUT == detached ]] && echo "a detached checkout of $BRANCH" || echo "$BRANCH" ), model $MODEL, at most $minutes minutes"
 if (( headless )); then
   log="$state/logs/$lane-$sprint-$doc.a$n.log"
-  timeout "${minutes}m" claude -p "${kitargs[@]}" --agent "$AGENT" --model "$MODEL" --max-turns "$turns" "$ACTIVATION" >"$log" 2>&1 \
+  timeout "${minutes}m" claude -p "${kitargs[@]}" "${resume_args[@]}" --agent "$AGENT" --model "$MODEL" --max-turns "$turns" "$prompt" >"$log" 2>&1 \
     || echo "the session ended with an error or hit its limit: $log"
 else
   # A finished session ends itself: the Stop hook (scripts/hooks/session.py) raises the flag once the
@@ -260,7 +309,7 @@ else
   ) &
   watcher=$!
   printf '\033]0;%s\007' "$name"
-  timeout --foreground "${minutes}m" claude "${kitargs[@]}" --agent "$AGENT" --model "$MODEL" -n "$name" "/dispatch $lane/$sprint/$doc" \
+  timeout --foreground "${minutes}m" claude "${kitargs[@]}" "${resume_args[@]}" --agent "$AGENT" --model "$MODEL" -n "$name" "$first" \
     || echo "the session ended (or hit its $minutes-minute limit)"
   kill "$watcher" 2>/dev/null || true
   rm -f "$AVEL_DONE_FLAG"

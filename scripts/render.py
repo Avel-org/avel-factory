@@ -19,6 +19,7 @@ Used by scripts/agent.sh, scripts/dispatch.sh and scripts/agents/lane.sh:
   --state <lane>/<sprint> <doc>                      its state and next attempt number
   --slots <lane> <seat>                              exit 0 if a session may start (B7), else say why
   --merged <ticket>                                  exit 0 if the ticket is merged on main (agent.sh --prune)
+  --last <lane>/<sprint> <doc>                       its latest attempt, as shell assignments (agent.sh --resume)
   --record <lane>/<sprint> <doc> <attempt> <worktree> <base> <mode>   log an attempt
 
 State lives in <git common dir>/avel/: attempts.jsonl, running/, reports/, paused.
@@ -1223,6 +1224,24 @@ def cmd_record(target, doc, attempt, worktree, base, mode):
         f.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+def cmd_last(target, doc):
+    """The doc's latest attempt, for agent.sh --resume (CR-46 B2): its number, worktree, base and
+    first mode, how many times it was resumed, and whether it left a report. Exit 1 if it never ran."""
+    lane, sprint = parse_target(target)
+    rows = [a for a in read_attempts() if (a["lane"], a["sprint"], a["doc"]) == (lane, sprint, doc)]
+    if not rows:
+        sys.exit(f"{doc} has never run")
+    n = max(a["attempt"] for a in rows)
+    mine = [a for a in rows if a["attempt"] == n]
+    first = next((a for a in mine if a.get("mode") != "resumed"), mine[0])
+    copy = os.path.join(state_dir(), "reports", f"{lane}-{sprint}-{doc}.a{n}.md")
+    vals = {"LAST_ATTEMPT": str(n), "LAST_WORKTREE": first.get("worktree", ""), "LAST_BASE": first.get("base", ""),
+            "LAST_MODE": first.get("mode", ""), "RESUMES": str(sum(a.get("mode") == "resumed" for a in mine)),
+            "HAS_REPORT": "1" if os.path.exists(copy) else "0"}
+    for k, v in vals.items():
+        print(f"{k}={shlex.quote(v)}")
+
+
 def cmd_verify(target):
     lane, sprint = parse_target(target)
     problems = package_problems(lane, sprint)
@@ -1242,6 +1261,7 @@ def main():
     g.add_argument("--state", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--slots", nargs=2, metavar=("LANE", "SEAT"))
     g.add_argument("--merged", metavar="TICKET")
+    g.add_argument("--last", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--record", nargs=6, metavar=("TARGET", "DOC", "N", "WORKTREE", "BASE", "MODE"))
     ap.add_argument("targets", nargs="*")
     a = ap.parse_args()
@@ -1267,6 +1287,8 @@ def main():
         cmd_slots(*a.slots)
     elif a.record:
         cmd_record(*a.record)
+    elif a.last:
+        cmd_last(*a.last)
     elif a.merged:
         # agent.sh --prune: exit 0 when the ticket's squash merge is on main, 1 when it isn't
         merged = ticket_merged(a.merged.upper())

@@ -8,6 +8,7 @@ Each test builds a throwaway git repo with the kit and the example plan
 completion report, so a whole ticket can run tests -> lock -> build -> review -> merge.
 """
 
+import json
 import os
 import shutil
 import stat
@@ -349,6 +350,62 @@ class Flow(unittest.TestCase):
         os.remove(os.path.join(build_wt, "scratch.txt"))
         self.assertIn("pruned 1 worktree(s), kept 0", r.run("scripts/agent.sh --prune").stdout)
         self.assertEqual(kit_wts(), [])
+
+    # CR-46 B2: a crashed or cut-off attempt is resumed as the same attempt, in its own worktree.
+    def attempts(self):
+        with open(os.path.join(self.r.root, ".git/avel/attempts.jsonl")) as f:
+            return [json.loads(l) for l in f]
+
+    def test_a_crashed_attempt_resumes_as_the_same_attempt(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", env={"FAKE_NOOP": "1"})  # killed, no report
+        self.assertEqual(r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split(), ["stopped", "2"])
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}").stdout
+        self.assertIn("resuming a1", out)
+        args = read(os.path.join(r.tmp, "last-claude-args")).decode()
+        self.assertIn("--continue", args)
+        self.assertIn("You were interrupted", args)
+        self.assertEqual(r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split(), ["done", "2"])
+        rows = self.attempts()
+        self.assertEqual([(a["attempt"], a["mode"]) for a in rows], [(1, "interactive"), (1, "resumed")])
+        self.assertEqual(rows[0]["worktree"], rows[1]["worktree"])
+
+    def test_a_resume_is_refused_unless_a_stopped_attempt_left_no_report_and_its_worktree(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}")
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("is done", out.stderr)
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 2", env={"FAKE_STATUS": "blocked"})
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", check=False)
+        self.assertIn("left a report", out.stderr)
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 3", env={"FAKE_NOOP": "1"})
+        r.run(f"git worktree remove --force '{self.attempts()[-1]['worktree']}'")
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("is gone", out.stderr)
+
+    def test_the_lane_loop_resumes_once_and_only_an_attempt_that_got_somewhere(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        auto = f"scripts/agent.sh --here --auto-resume backend sprint-01 {doc}"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", env={"FAKE_NOOP": "1"})
+        self.assertIn("left nothing in its worktree", r.run(auto).stdout)
+        wt = self.attempts()[-1]["worktree"]
+        with open(os.path.join(wt, "work-in-progress.ts"), "w") as f:
+            f.write("export {};\n")
+        r.run(auto, env={"FAKE_NOOP": "1"})  # resumed, and cut off again
+        self.assertEqual([a["mode"] for a in self.attempts()], ["interactive", "resumed"])
+        self.assertIn("resumed once already", r.run(auto).stdout)
+        self.assertEqual(len(self.attempts()), 2)
+        # after a finished session the loop's call is a no-op
+        r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}")
+        self.assertEqual(r.run(auto).stdout, "")
 
     def test_a_session_gets_the_kit_from_main_not_from_its_branch(self):
         # Nov 17: Fenn's T-F5 tests a2 ran on a branch cut before #23 and had no SendMessage.
