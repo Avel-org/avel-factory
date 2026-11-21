@@ -842,6 +842,23 @@ def lock_line_problem(line):
     return None
 
 
+def lock_line_mismatch(t, line):
+    """Why a well-formed lock line doesn't lock t, or None (CR-50 decision 5): its commit must be on the
+    ticket's branch, and each path one of the ticket's test paths. Otherwise a stale or hand-made line
+    would start a build that only fails later, in CI's lock check."""
+    m = LOCK_LINE.match(line)
+    sha, paths = m.group("sha"), [p.strip() for p in m.group("paths").split(",")]
+    if git("cat-file", "-e", f"{sha}^{{commit}}").returncode != 0:
+        return f"its commit {sha} isn't in this repo"
+    if git("merge-base", "--is-ancestor", sha, branch_of(t)).returncode != 0:
+        return f"its commit {sha} isn't on {branch_of(t)}"
+    globs = [glob_regex(g) for g in t["tests"]["paths"]]
+    stray = [p for p in paths if not any(re.fullmatch(g, p) for g in globs)]
+    if stray:
+        return f"`{stray[0]}` isn't one of {t['id']}'s test paths"
+    return None
+
+
 def lock_state(plan, t):
     """(locked, why): whether t's lock line is in locks.md, on the ticket's branch (where the lead
     commits it) or in the working copy. A malformed line doesn't lock, and says why."""
@@ -859,7 +876,7 @@ def lock_state(plan, t):
         for line in text.splitlines():
             if not mine.match(line):
                 continue
-            why = lock_line_problem(line)
+            why = lock_line_problem(line) or lock_line_mismatch(t, line)
             if why is None:
                 return True, ""
             problem = problem or why

@@ -141,7 +141,7 @@ CI is green and the acceptance tests pass. Nothing else.
 - **D6. Memory lives in files.**
   - The sprint folder is the task list: `scripts/dispatch.sh <lane>/sprint-NN --status` shows what's done, running, ready and waiting.
   - The completion report is the record, and the PR description copies it.
-  - Agents never edit a task doc, and never commit `locks.md`, messages or status files. The lead writes the lock line.
+  - Agents never edit a task doc, and never commit `locks.md`, messages or status files. The lead writes the lock line. The kit enforces it (CR-50 decision 5): `scripts/hooks/push_guard.py` refuses a dispatched session's write of a `locks.md`, and `render.py` counts a lock line only when its commit is on the ticket's branch and each of its paths is one of the ticket's test paths.
 - **D7. Permissions:**
   - On your laptop, sessions run with the repo's `.claude/settings.json` allowlist: pnpm, git inside the worktree, and the package registry.
   - Permissions are skipped only inside a sandbox (a container, or a MIOSA room under CR-22), never on the laptop.
