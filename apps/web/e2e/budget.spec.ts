@@ -6,6 +6,7 @@ import { MOCK_OPERATOR_ID } from "@avel/contract-mock";
 import { expect, test } from "@playwright/test";
 import { attachShot, expectNoViolations } from "./support/page";
 import { PREVIEW_PORT } from "./support/ports";
+import { PREVIEW_ENV, signInOnPreview } from "./support/preview-auth";
 
 // E16 as changed by CR-W29 decision 6: at most 235 KB of JavaScript for /, a warning over
 // 225 KB (T-F12 holds it to 235 KB, CR-W29 decision 6, second amendment). Measured on the production build, gzipped,
@@ -61,7 +62,7 @@ function startPreview(onSpawn: (child: ChildProcess) => void): Promise<ChildProc
         String(PREVIEW_PORT),
         "--strictPort",
       ],
-      { cwd: root, env: { ...process.env, AVEL_API: "", NO_COLOR: "1", FORCE_COLOR: "0" } },
+      { cwd: root, env: { ...process.env, ...PREVIEW_ENV } },
     );
     onSpawn(child);
     let seen = "";
@@ -117,6 +118,9 @@ test.describe("T-F8-01: the production build (budget held to 220 KB under CR-W29
   }) => {
     await ensureBuilt();
     const origin = `http://127.0.0.1:${PREVIEW_PORT}`;
+    // T-F12-10: signed in on the preview's own mock, for the page and for the HTML read below.
+    await signInOnPreview(page.request, origin);
+    await signInOnPreview(request, origin);
     const html = await (await request.get(`${origin}/`)).text();
 
     const urls = new Set<string>();

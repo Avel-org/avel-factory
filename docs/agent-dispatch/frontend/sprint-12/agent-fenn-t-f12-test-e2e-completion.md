@@ -88,3 +88,47 @@ Test Files  2 failed | 8 passed (10)
 
 ## Messages received
 None.
+
+---
+
+# Tests a2 (F2, Nov 21): the production-preview starters (T-F12-10)
+
+status: done
+ticket: T-F12
+
+## Pre-flight (a2)
+| Command | Result |
+| --- | --- |
+| `pnpm build`, `pnpm typecheck` | pass |
+| `pnpm lint` | pass, 6 warnings, all in existing files |
+| `vitest run` | 10 files, 81 tests pass |
+| `playwright test` (full) | **5 failed, 323 passed, 1 skipped** (the quarantined T-F7-05), 26.4 min; the 5 are exactly the preview specs below |
+| `vite build` | pass |
+
+## Failing first (a2)
+On the branch (build a1's commits, no preview hook), all five fail in `signInOnPreview`, before their first goto, because `vite preview` has no /api: sign-in answers 200 with the /login HTML page, not the mock's JSON:
+
+    Error: sign-in's body is the mock's JSON, not a page (got: <!DOCTYPE html><html lang="en" data-th…)
+    - e2e/budget.spec.ts:115 T-F8-01 (the / budget)
+    - e2e/control-room/prod.spec.ts:82 and :102 (T-F7-07)
+    - e2e/control-room-budget/budget.spec.ts:47 (T-F8-02) and :101 (T-F8-03)
+
+(First run, with the weaker status-only check, they failed at `/` showing /login: `[data-ui="DecisionHero"]`/nav not found. I tightened the helper so the reason is named.)
+
+## What changed (a2)
+- `apps/web/e2e/support/preview-auth.ts` (new): `PREVIEW_ENV` (`AVEL_API=mock`) and `signInOnPreview(ctx, origin)`, which posts the mock operator's sign-in and asserts a 200 JSON answer and the session cookie.
+- `apps/web/e2e/budget.spec.ts`, `control-room/prod.spec.ts`, `control-room-budget/preview.ts`: start vite preview with `PREVIEW_ENV`.
+- `budget.spec.ts`, `prod.spec.ts` (both tests), `control-room-budget/budget.spec.ts` (T-F8-02, T-F8-03): sign in on the preview before the first goto (`page.request`; budget.spec also signs the `request` fixture in, since it reads `/`'s HTML with it). Every assertion is unchanged. budget.spec's second test (no built file holds the operator id) is untouched.
+
+## Contract to files (a2)
+T-F12-10: all of the above. The `/`-figure in budget.spec stays LIMIT 235 KB / WARN 225 KB; the figure itself is measured once the build adds the hook.
+
+## Deviations / Limitations (a2)
+- No new spec for "a preview without AVEL_API=mock serves no /api": it would need a third build and preview (minutes each); the helper's assertions and the existing no-leak test cover the mock side.
+- T-F12-10 is satisfied by the five modified specs failing first, not by a new spec.
+
+## Lock line (a2, F2 relock; Zero fills in the tip after the report commit)
+- T-F12: apps/web/e2e/budget.spec.ts, apps/web/e2e/control-room/prod.spec.ts, apps/web/e2e/control-room-budget/budget.spec.ts, apps/web/e2e/control-room-budget/preview.ts, apps/web/e2e/support/preview-auth.ts @ <branch tip> (F2 relock)
+
+## Messages received (a2)
+None.

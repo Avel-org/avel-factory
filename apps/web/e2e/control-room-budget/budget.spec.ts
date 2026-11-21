@@ -1,6 +1,7 @@
 import { gzipSync } from "node:zlib";
 import { expect, type Page, test } from "@playwright/test";
 import { attachShot, expectNoViolations } from "../support/page";
+import { signInOnPreview } from "../support/preview-auth";
 import { ORIGIN, productionPreview } from "./preview";
 
 // T-F8: (the 220 KB limit itself is held by e2e/budget.spec.ts) every other page loads its own code when it
@@ -47,6 +48,7 @@ test.describe("T-F8: first load budget and a script per page", () => {
     page,
   }, info) => {
     await preview.ensure();
+    await signInOnPreview(page.request, ORIGIN);
     const scripts = watchScripts(page);
     await page.goto(`${ORIGIN}/`, { waitUntil: "networkidle" });
     await expect(page.locator('[data-ui="DecisionsDashboard"]')).toBeVisible();
@@ -101,6 +103,7 @@ test.describe("T-F8: first load budget and a script per page", () => {
       context,
     }, info) => {
       await preview.ensure();
+      await signInOnPreview(page.request, ORIGIN);
       const cdp = await context.newCDPSession(page);
       await cdp.send("Network.enable");
       await cdp.send("Network.emulateNetworkConditions", {
