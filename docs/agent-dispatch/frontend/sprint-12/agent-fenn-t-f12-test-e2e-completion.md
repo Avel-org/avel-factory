@@ -5,6 +5,22 @@ ticket: T-F12
 
 Start commit: `45000c9` (`t/F12-sign-in`). Two things need Zero's eye before the lock: **T-F12-08 can't fail first**, and **the module surface the unit tests import is my reading** (see Deviations).
 
+## Tests a3 (F2, Nov 21): T-F8-03's limit
+
+Answers build a2's test-dispute at `692f243`, on Zero's ruling (Messages received).
+
+- **Change:** `apps/web/e2e/control-room-budget/budget.spec.ts`: `LIMIT` is `235 * 1024` (was `220 * 1024`), and the comment on line 7 names CR-W29 decision 6's second amendment (235 KB, replaces 220 KB), the same figure `e2e/budget.spec.ts` holds. Nothing else; no import from budget.spec.ts. `LIMIT` is used only by T-F8-03's two assertions (lines 126 and 133), so no other page's limit moved.
+- **Failing first:** not required. It's a relaxing fix (the old figure was superseded); the test failed at `692f243` on 225,434 B against 225,280 B, per build a2's report.
+- **Result on the branch at `692f243` plus this change:** `playwright test --project=setup --project=signed-in e2e/control-room-budget`: 3 passed (setup, T-F8-02, T-F8-03). I did not remeasure the T-F8-03 byte total: the test prints it only on failure, so the figure is build a2's, 225,434 B (the code is unchanged), now 15,206 B under 240,640 B. `/` by e2e/budget.spec's method: 226,587 B (a2's figure).
+- I did not rerun the full Part 7 suite: only this one spec file changed, in a2's own run it was the sole failure.
+
+**Relock line (F2 relock, naming every path of the line at 5ecc3b9):**
+`- T-F12: apps/web/e2e/budget.spec.ts, apps/web/e2e/sign-in/guard.spec.ts, apps/web/e2e/sign-in/helpers.ts, apps/web/e2e/sign-in/layout.spec.ts, apps/web/e2e/sign-in/lockout.spec.ts, apps/web/e2e/sign-in/sign-out.spec.ts, apps/web/e2e/sign-in/storage-state.spec.ts, apps/web/e2e/sign-in/submit.spec.ts, apps/web/e2e/support/auth.setup.ts, apps/web/playwright.config.ts, apps/web/test/sign-in/api.test.ts, apps/web/test/sign-in/safe-next.test.ts, apps/web/e2e/control-room/prod.spec.ts, apps/web/e2e/control-room-budget/budget.spec.ts, apps/web/e2e/control-room-budget/preview.ts, apps/web/e2e/support/preview-auth.ts @ <branch tip after this commit>`
+
+**Messages received (a3):** OSA, relaying Zero's ruling: set `LIMIT` to 235 KB, change the line-7 comment, change nothing else, run the file, report the figure, add the relock line. Followed in full.
+
+---
+
 ## Pre-flight
 | Command | Result |
 | --- | --- |
