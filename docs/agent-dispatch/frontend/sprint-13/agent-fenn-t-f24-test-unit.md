@@ -74,6 +74,7 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in
 - Review: one round (CR-42); the full-diff rule applies as in T-F14
 - Waits for T-F23: both change packages/contract-mock/src/** (CR-42 item 4: tickets in one sprint depend on each other only when they share a file)
+- CR-W32 (proposed Nov 21, in the same brief as this re-plan): route 34's first turn on a draft mission starts onboarding in that call. The mission moves to onboarding, onboardingStartedAt is set, checkpoint 0.1 is drafted (the world's startOnboarding, seed-only today), and route 63 gets missions.mission.changed and onboarding.checkpoint.changed. Answering Q-0.1a on route 44 sets the kind and doesn't move the state. Route 34 keeps MISSION_NOT_IN_SCOPING for states after onboarding. If Javaris doesn't accept CR-W32, this note and its behaviour come out before the tests start
 - Size: a full session (#45)
 
 ## 4. Tasks
@@ -99,6 +100,11 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
 
 ### T-F24-05: a failing test for: unit (behaviour): MockFailure works on every part (c) route, and recorded requests name the route by number
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
+
+### T-F24-06: a failing test for: unit (behaviour, CR-W32): a mission made on route 20 is draft; answering Q-0.1a on route 44 sets its kind and leaves it draft; its first turn on route 34 moves it to onboarding with checkpoint 0.1 drafted, and route 63 sends missions.mission.changed then onboarding.checkpoint.changed
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
@@ -130,6 +136,8 @@ You write this ticket's acceptance tests before anything is built. They must fai
 | T-F17 | tests | `apps/web/test/mission-start/**`, `apps/web/e2e/mission-start/**` |
 | T-F23 | builds | `packages/contract-mock/src/**` |
 | T-F23 | tests | `packages/contract-mock/test/mission-streams.test.ts`, `packages/contract-mock/test/world.test.ts` |
+| T-F25 | builds | `apps/web/control-room/src/sources/canon.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/uploads.js`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/changes/T-F25.md` |
+| T-F25 | tests | `apps/web/e2e/home-headroom/**`, `apps/web/test/sources/samples.test.ts` |
 
 ## 6. Execution protocol: tests
 

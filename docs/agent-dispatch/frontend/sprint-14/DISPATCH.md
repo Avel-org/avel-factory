@@ -17,7 +17,7 @@ Lead: Zero · builder: Fantem · checker: Fenn · Step 1
 
 | Ticket | Title | Rigor | Branch | Depends on |
 | --- | --- | --- | --- | --- |
-| T-F18 | Canon onboarding live | standard | `t/F18-canon-live` | T-F14, T-F23, T-F24 |
+| T-F18 | Canon onboarding live | standard | `t/F18-canon-live` | T-F14, T-F23, T-F24, T-F25 |
 | T-F19 | Plan and dispatch live | standard | `t/F19-plan-dispatch-live` | T-F14, T-F24 |
 | T-F20 | Watch the build, live from the streams | standard | `t/F20-build-live` | T-F14, T-F23, T-F24 |
 | T-F21 | Gates, findings and the release, live | full | `t/F21-release-live` | T-F14, T-F24 |
