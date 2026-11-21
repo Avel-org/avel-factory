@@ -90,7 +90,10 @@ if (( ! here )); then
   envs=""
   while IFS='=' read -r k v; do envs+=" $k=$(printf %q "$v")"; done < <(env | grep -E '^AVEL_[A-Z0-9_]*=' | grep -v '^AVEL_SEAT=' || true)
   # The tab closes when the session ends. If agent.sh refuses to start, the reason stays up for a minute.
-  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here $( (( auto )) && echo --auto-resume || { (( resume )) && echo --resume; } ) $lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
+  # A plain if, not a $( && || ) that ends non-zero under set -e: that exited silently (Nov 21).
+  flag=""
+  if (( auto )); then flag=--auto-resume; elif (( resume )); then flag=--resume; fi
+  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here ${flag:+$flag }$lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
   session="" tabcmd=$cmd
   if command -v tmux >/dev/null 2>&1; then
     session=$(echo "avel-$AGENT-$TICKET-$KIND" | tr A-Z a-z)

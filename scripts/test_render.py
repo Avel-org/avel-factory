@@ -421,6 +421,34 @@ class Flow(unittest.TestCase):
         self.assertIn("- Prove the test fails on the start commit", prompt)
         self.assertIn(".agents/memory/rigg.md", prompt)
 
+    def test_a_hand_started_session_starts_in_tmux_without_wezterm(self):
+        # Nov 21: the tab command's $( && || ) ended non-zero under set -e and agent.sh exited 1, silently.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        bin_ = os.path.join(r.tmp, "bin")
+        with open(os.path.join(bin_, "tmux"), "w") as f:
+            f.write('#!/usr/bin/env bash\necho "$@" >> "$HOME/tmux-calls"\n[ "$1" = has-session ] && exit 1\nexit 0\n')
+        os.chmod(os.path.join(bin_, "tmux"), 0o755)
+        path = ":".join(p for p in r.env["PATH"].split(":") if not p.startswith("/mnt/"))  # no wezterm.exe
+        out = r.run("scripts/agent.sh backend sprint-01 agent-rigg-t-b1-test-unit", env={"PATH": path})
+        self.assertIn("RIGG T-B1-tests started in tmux session avel-rigg-t-b1-tests", out.stdout)
+        with open(os.path.join(r.tmp, "tmux-calls")) as f:
+            calls = f.read().replace("\\", "")  # the command reaches tmux shell-escaped (printf %q)
+        self.assertIn("new-session -d -s avel-rigg-t-b1-tests", calls)
+        self.assertIn("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", calls)
+        self.assertNotIn("--resume", calls)
+
+    def test_the_lane_loop_finds_ready_work_in_an_older_sprint_first(self):
+        # Nov 21: --next looked only at the newest rendered sprint, so sprint-12 and 13 work sat ready.
+        r = self.r
+        r.plan(example().replace('sprint = "sprint-01"', 'sprint = "sprint-02"'), sprint="sprint-02")
+        r.run("python3 scripts/render.py backend/sprint-02 && git add -A && git commit -qm 'render sprint-01 and 02'")
+        self.assertEqual(r.run("python3 scripts/render.py --next backend rigg").stdout.split()[:2],
+                         ["sprint-01", "agent-rigg-t-b1-test-unit"])
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        self.assertEqual(r.run("python3 scripts/render.py --next backend rigg").stdout.split()[:2],
+                         ["sprint-02", "agent-rigg-t-b1-test-unit"])
+
     def test_a_session_gets_the_kit_from_main_not_from_its_branch(self):
         # Nov 17: Fenn's T-F5 tests a2 ran on a branch cut before #23 and had no SendMessage.
         r = self.r
