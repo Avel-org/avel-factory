@@ -52,7 +52,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 12. `docs/design/API routes.md`: the routes this ticket adds
 13. `docs/design/DATABASE.md`: the mission, checkpoint and proposal state machines the world follows
 14. `packages/contract-mock/test/mission-streams.test.ts`: the locked acceptance tests: they define done
-15. `docs/agent-dispatch/frontend/sprint-13/agent-fantem-t-f23-build.md`: this document: follow it exactly
+15. `packages/contract-mock/test/world.test.ts`: the locked acceptance tests: they define done
+16. `docs/agent-dispatch/frontend/sprint-13/agent-fantem-t-f23-build.md`: this document: follow it exactly
 
 ## 3. Domain
 
@@ -75,6 +76,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - Axis reads the state module for fidelity before merge, as a check (not a G7 review); OSA asks him once the review is in
 - Review: one round (CR-42); the full-diff rule applies as in T-F14
 - Size: a full session (#45)
+- F2, Nov 21 (build a1's question; Zero's ruling): route 63 is a live stream. It replays the events the routes have made, oldest first, from seq 1, and then waits for more, as the locked tests' header says (ruling 5 at the lock). It doesn't end, and it doesn't serve world.sampleEvents(). Its stream stops when the request is aborted, so a client that stops reading leaves nothing running. world.test.ts's "GET /api/events/stream yields one event of every kind" (from the seed) reads route 63 to its end and expects the sample catalog. That's the seed's stub, which this ticket replaces, so the test fails on the branch until Fenn's tests a2 changes it. The catalog stays covered by world.test.ts's "has one sample of every kind" (world.sampleEvents() against EventDto), and T-F23-03 covers route 63's events. Fenn's tests a2 changes that one test, on the branch, to what route 63 now does, or removes it, saying which and why. Every other test in world.test.ts stays as it is. Then Zero relocks (F2), and Fantem's build a2 reruns Part 7 on a1's commits without redoing them
 
 ## 4. Tasks
 
@@ -98,6 +100,10 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 - **Verify:** its locked test passes: `pnpm --filter @avel/contract-mock test`, `pnpm build`, `pnpm typecheck`, `pnpm lint`
 
+### T-F23-06: make it true: unit (F2, Nov 21): world.test.ts's route 63 check matches the live stream (replay, then wait) or is removed; the event catalog check ("has one sample of every kind") is unchanged
+
+- **Verify:** its locked test passes: `pnpm --filter @avel/contract-mock test`, `pnpm build`, `pnpm typecheck`, `pnpm lint`
+
 ## 5. Territory
 
 **You may change** (and create):
@@ -106,6 +112,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 **Locked: never change** (A3, F2):
 - `packages/contract-mock/test/mission-streams.test.ts`
+- `packages/contract-mock/test/world.test.ts`
 
 **Never change, whatever the task says:**
 - `packages/contract/**`
@@ -158,7 +165,7 @@ pnpm lint
 **Your report:** `docs/agent-dispatch/frontend/sprint-13/agent-fantem-t-f23-build-completion.md`. Its first lines are:
 
 ```
-status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope
+status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope | stuck
 ticket: T-F23
 ```
 
@@ -172,4 +179,4 @@ Then these sections:
 
 ## Activation prompt
 
-> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F23, "contract-mock streams Canon, events and traces (CR-W31 part b)": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-13/agent-fantem-t-f23-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F23-mock-streams`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency or out-of-scope. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-13/agent-fantem-t-f23-build-completion.md`, committed to the branch. Don't push.
+> You are Fantem, the frontend builder on the AVEL build team (`.claude/agents/fantem.md`). Your lead is Zero. Your task is ticket T-F23, "contract-mock streams Canon, events and traces (CR-W31 part b)": the build dispatch. Your whole briefing is `docs/agent-dispatch/frontend/sprint-13/agent-fantem-t-f23-build.md`. Read it in full, then its Context in order, before you change anything. Work on branch `t/F23-mock-streams`. Make the locked tests pass, changing only the files in Part 5. Never edit a locked test. Run the verification after each task. If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, needs-dependency, out-of-scope or stuck. Don't start a new approach on your own. End with your completion report at `docs/agent-dispatch/frontend/sprint-13/agent-fantem-t-f23-build-completion.md`, committed to the branch. Once it says done, push the branch (`git push -u origin t/F23-mock-streams`) and open its PR with `gh pr create`, the report as its description. Push nothing else, and never merge.
