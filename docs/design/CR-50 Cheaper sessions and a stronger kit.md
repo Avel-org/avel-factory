@@ -2,7 +2,10 @@
 
 Nov 21, 2026 · drafted by OSA at Javaris's request · changes `Build rules.md` sections B, D, G and H, CR-36's merge conditions, `scripts/render.py`, `scripts/agents/merge.py`, `scripts/agents/kit.py`, `scripts/hooks/push_guard.py`, `tools/repo-checks/src/check-locks.ts` and `.github/`
 
-**Proposed, not accepted.** Javaris accepts, changes or declines each decision. Code lands only after acceptance, with its doc edits (I2).
+**Decisions 1, 3 and 5 accepted, with OSA's recommendations** (Javaris, Nov 21, to OSA: "approve CR-50 1, 3 and 5 with your recommendations").
+- Decision 2 waits for one sprint on the new kit.
+- Decisions 4 and 6 wait for his setup step.
+- Each accepted decision's code lands with its doc edits (I2).
 
 ## Where this comes from
 
