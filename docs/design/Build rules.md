@@ -172,7 +172,11 @@ CI is green and the acceptance tests pass. Nothing else.
 
 ### Backend (Axis's lane)
 
-- **E9. Step order is the build order.** Step 1 runs in the order `AGENTS.md` gives: spike 1 first, the DBOS test (spike 2) before the jobs engine. No ticket from a later step starts until the current step closes.
+- **E9. The critical path runs in order; other steps run beside it once their inputs exist.** (CR-47)
+  1. The critical path (`Backend modules and build plan.md`, section 1: 0 → 1 → 2 → 4 → 8 → 9a → 9b) runs one step at a time. No critical-path ticket starts until the step before it closes.
+  2. Steps 3, 5, 6 and 7 are off the path. Each may start once the steps section 1 names as its inputs have closed: Step 3 needs 1, Step 5 needs 1, Step 6 needs 1, and Step 7 needs 2 and 6. A ticket from one of them names its step, and the sprint's plan says which inputs it uses. A ticket whose code uses none of its step's unclosed inputs may start sooner if the plan says so. For example, sprint-06's T-B25 saves and reads mission drafts, Step 7's first rows, without the model proxy or plans. Section 1 names no inputs for Steps 10 to 14, so they follow 9b in order.
+  3. A part of a later critical-path step may be brought into the current one only when the current step's work can't be right without it (for example Step 8's per-request reservation inside Step 2's model proxy, so no request is ever metered without its ceiling). The plan names it, and Javaris approves it with the plan.
+  4. Step 1 runs in the order `AGENTS.md` gives.
 - **E10. Real Postgres, always.** No database mocks or in-memory substitutes. Fakes are only for things outside the process (the model vendor, GitHub, the room host), provided as Effect layers.
 - **E11. The database enforces its rules,** and code maps the violations (AGENTS.md). A ticket that wants a new CHECK or table is a `schema` ticket with a CR (I3).
 - **E12. Each table is written only by its owning module** (`Backend modules and build plan.md`). Importing another module's internals is a lint error.
