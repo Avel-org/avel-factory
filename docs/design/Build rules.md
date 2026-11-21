@@ -125,11 +125,11 @@ CI is green and the acceptance tests pass. Nothing else.
 
   | Session | Turns | Time | Cost |
   | --- | --- | --- | --- |
-  | Builder or checker | 150 | 120 minutes | $4 ($8 on Opus) |
+  | Builder or checker | 400 | 360 minutes | $4 ($8 on Opus) |
   | Lead (planning or full-rigor review) | 60 | 45 minutes | $6 |
   | The whole build, per day | — | — | $75 |
 
-  These are starting values, set in `scripts/agents/limits.json`. A builder's or checker's interactive session is capped by turns as well as time (CR-37): `scripts/agent.sh` sets the limit, and `scripts/hooks/turns.py` warns in the last 5 turns, then allows only the report, its commit and a message to OSA for 5 grace turns, then refuses everything. The lead row isn't enforced by the hook yet: how to cap a lead's long-running seat is Javaris's decision (lead kit PR, Nov 17). When the day's limit is reached, OSA starts nothing new and tells Javaris.
+  These are starting values, set in `scripts/agents/limits.json`. A builder's or checker's interactive session is capped by turns as well as time (CR-37): `scripts/agent.sh` sets the limit, and `scripts/hooks/turns.py` warns in the last 20 turns, then allows only the report, its commit and a message to OSA for 20 grace turns, then refuses everything (CR-46 B1: a median ticket takes about 3.3 hours, so the old 120 minutes and 150 turns cut working sessions short). Headless runs keep `--max-turns`. The cost column is recorded, not enforced, on the Claude plan (CR-46). The lead row isn't enforced by the hook yet: how to cap a lead's long-running seat is Javaris's decision (lead kit PR, Nov 17). When the day's limit is reached, OSA starts nothing new and tells Javaris.
 - **D3. The startup routine,** every session, in order:
   1. Confirm the folder and branch.
   2. Read the task doc in full, then its Context in order: the identity file, `AGENTS.md`, this doc, the codebase analysis and the reading list.

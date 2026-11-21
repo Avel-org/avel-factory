@@ -3,16 +3,16 @@
 
 Called from .claude/settings.json as:
   turns.py pre    PreToolUse   refuse the call once the session is out of turns
-  turns.py post   PostToolUse  warn the session in its last 5 turns
+  turns.py post   PostToolUse  warn the session in its last 20 turns
 
 Only active when $AVEL_TURN_LIMIT is set, which scripts/agent.sh does for every dispatch; a lead,
 OSA or a hand-started session is never capped by it. A turn is one assistant message that calls a
 tool, counted from the hook input's transcript (the unit --max-turns counts in print mode).
 
-  turns <  limit - 5   allowed
-  limit - 5 .. limit   allowed, with a warning after each call: finish the chain and write the report
-  limit .. limit + 5   grace: only writing $AVEL_REPORT, `git add`/`git commit`, and messaging OSA
-  limit + 5 and on     every call is refused
+  turns <  limit - 20   allowed
+  limit - 20 .. limit   allowed, with a warning after each call: finish the chain and write the report
+  limit .. limit + 20   grace: only writing $AVEL_REPORT, `git add`/`git commit`, and messaging OSA
+  limit + 20 and on     every call is refused (CR-46 B1: 20 and 20, so a working session isn't cut short)
 
 `timeout --foreground` in agent.sh stays the backstop. A hook must never stop a session by accident:
 if the transcript can't be read, the call is allowed and the problem is logged to
@@ -32,8 +32,8 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-WARN = 5
-GRACE = 5
+WARN = 20
+GRACE = 20
 REPORT_TOOLS = {"Write", "Edit", "MultiEdit"}
 GIT_ONLY = re.compile(r"^\s*git\s+(add|commit)\b[^;|&`$<>]*(\s*&&\s*git\s+(add|commit)\b[^;|&`$<>]*)*\s*$")
 

@@ -62,33 +62,40 @@ class Turns(unittest.TestCase):
         self.assertIsNone(self.run_hook("pre", 500, limit=None))
 
     def test_under_the_limit_is_allowed_and_quiet(self):
-        self.assertIsNone(self.run_hook("pre", 10))
-        self.assertIsNone(self.run_hook("post", 10))
+        self.assertIsNone(self.run_hook("pre", 10, limit="100"))
+        self.assertIsNone(self.run_hook("post", 79, limit="100"))
 
-    def test_the_last_five_turns_warn(self):
-        out = self.run_hook("post", 15)
-        self.assertIn("5 turns left of 20", out["hookSpecificOutput"]["additionalContext"])
-        self.assertIn("1 turn left", self.run_hook("post", 19)["hookSpecificOutput"]["additionalContext"])
-        self.assertIsNone(self.run_hook("pre", 19))
+    def test_the_last_twenty_turns_warn(self):
+        # CR-46 B1: warnings from limit - 20
+        out = self.run_hook("post", 80, limit="100")
+        self.assertIn("20 turns left of 100", out["hookSpecificOutput"]["additionalContext"])
+        self.assertIn("1 turn left", self.run_hook("post", 99, limit="100")["hookSpecificOutput"]["additionalContext"])
+        self.assertIsNone(self.run_hook("pre", 99, limit="100"))
 
     def test_split_messages_count_once(self):
-        self.assertIsNone(self.run_hook("pre", 19, split=True))
-        self.assertTrue(self.denied(self.run_hook("pre", 20, split=True)))
+        self.assertIsNone(self.run_hook("pre", 99, split=True, limit="100"))
+        self.assertTrue(self.denied(self.run_hook("pre", 100, split=True, limit="100")))
 
     def test_at_the_limit_only_the_report_git_and_osa(self):
-        self.assertTrue(self.denied(self.run_hook("pre", 20)))  # pnpm test
-        self.assertTrue(self.denied(self.run_hook("pre", 20, "Read", {"file_path": self.report})))
-        self.assertTrue(self.denied(self.run_hook("pre", 20, "Write", {"file_path": os.path.join(self.tmp, "x.ts")})))
-        self.assertIsNone(self.run_hook("pre", 20, "Write", {"file_path": self.report}))
-        self.assertIsNone(self.run_hook("pre", 21, "Edit", {"file_path": self.report}))
-        self.assertIsNone(self.run_hook("pre", 22, "Bash", {"command": "git add report.md && git commit -m 'report'"}))
-        self.assertTrue(self.denied(self.run_hook("pre", 22, "Bash", {"command": "git commit -m x; rm -rf src"})))
-        self.assertIsNone(self.run_hook("pre", 23, "SendMessage", {"to": "OSA", "message": "stopped on turns"}))
+        L = {"limit": "100"}
+        self.assertTrue(self.denied(self.run_hook("pre", 100, **L)))  # pnpm test
+        self.assertTrue(self.denied(self.run_hook("pre", 100, "Read", {"file_path": self.report}, **L)))
+        self.assertTrue(self.denied(self.run_hook("pre", 100, "Write", {"file_path": os.path.join(self.tmp, "x.ts")}, **L)))
+        self.assertIsNone(self.run_hook("pre", 100, "Write", {"file_path": self.report}, **L))
+        self.assertIsNone(self.run_hook("pre", 110, "Edit", {"file_path": self.report}, **L))
+        self.assertIsNone(self.run_hook("pre", 115, "Bash", {"command": "git add report.md && git commit -m 'report'"}, **L))
+        self.assertTrue(self.denied(self.run_hook("pre", 115, "Bash", {"command": "git commit -m x; rm -rf src"}, **L)))
+        self.assertIsNone(self.run_hook("pre", 119, "SendMessage", {"to": "OSA", "message": "stopped on turns"}, **L))
 
     def test_after_the_grace_turns_everything_is_refused(self):
-        out = self.run_hook("pre", 25, "Write", {"file_path": self.report})
+        out = self.run_hook("pre", 120, "Write", {"file_path": self.report}, limit="100")
         self.assertTrue(self.denied(out))
         self.assertIn("grace", out["hookSpecificOutput"]["permissionDecisionReason"])
+
+    def test_the_session_limits_are_cr_46s(self):
+        with open(os.path.join(KIT, "scripts/agents/limits.json")) as f:
+            l = json.load(f)["agent_session"]
+        self.assertEqual((l["turns"], l["minutes"]), (400, 360))
 
     def test_an_unreadable_transcript_allows_and_logs(self):
         out = self.run_hook("pre", 0, path=os.path.join(self.tmp, "missing.jsonl"))
