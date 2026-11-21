@@ -31,10 +31,10 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | --- | --- | --- | --- |
 | `agent-fenn-t-f12-test-e2e.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f12-build.md` | Fantem | build | opus |
-| `agent-fenn-t-f12-review.md` | Fenn | review | opus |
+| `agent-fenn-t-f12-review.md` | Fenn | review | sonnet |
 | `agent-fenn-t-f14-test-e2e.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f14-build.md` | Fantem | build | opus |
-| `agent-fenn-t-f14-review.md` | Fenn | review | opus |
+| `agent-fenn-t-f14-review.md` | Fenn | review | sonnet |
 | `agent-fenn-t-f22-test-unit.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f22-build.md` | Fantem | build | opus |
 | `agent-fenn-t-f22-review.md` | Fenn | review | sonnet |

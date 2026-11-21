@@ -22,6 +22,9 @@
 # apps/web/vite.config.ts (T-F15, sprint-13, has it after T-F12 merges) and the two older preview
 # specs move into T-F12's tests, for Fenn's F2 change. T-F14 also takes app/crew.js, which imports
 # operations.json (a source's file), as its tests require. T-F22 is unchanged.
+# Amended again Nov 21 (CR-W33, from Axis's G7 second review of #102, which raised t-f12-fenn-01 to
+# P1): the guard reads the session at AVEL_API_ORIGIN, never at an origin taken from the request.
+# T-F12's tests take a Host test (tests a4), then Zero relocks, then build a4 adds the fix to #102.
 lane = "frontend"
 sprint = "sprint-12"
 step = 1
@@ -110,6 +113,7 @@ notes = [
   "Review, full rigor (G7): Fenn's review, then the second review against docs/review/security-checklist.md, then Javaris merges. The reviewer also applies the full-diff rule: run `git diff main...HEAD --name-only`. Every file must be in this build's may-change list, this ticket's locked test files, this ticket's own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
   "Size: about 60 minutes. If the build can't finish, report blocked with what's done. Don't cut a state or a rule",
   "Amended Nov 21 (F2; build a1's test-dispute; Javaris, to OSA: \"go with your recommendations for both\": Fantem's option 1). A production preview has no /api, so the guard rightly sends / to /login there, and five preview specs fail: budget.spec (T-F12-08), prod.spec's two T-F7-07 tests and control-room-budget's T-F8-02 and T-F8-03. Holding them red until T-F15 (option 2) is declined: CI stays green (H5). The fix: in apps/web/vite.config.ts, mockApi() gains a configurePreviewServer hook with the same /api middleware as configureServer (share one handler, don't copy it), still only when AVEL_API=mock and still through a dynamic import, so nothing of the mock reaches dist/ (budget.spec's second test keeps checking that). A preview without AVEL_API=mock still serves no /api. The guard is unchanged: a failed session read is still signed out",
+  "Amended Nov 21 (CR-W33; Axis's G7 review of #102 raised t-f12-fenn-01 to P1). The guard's session read, and any later call the web server makes to /api while rendering, goes to AVEL_API_ORIGIN, a server-side setting, never to an origin built from the request's Host. Missing or not an absolute http(s) origin: the read fails, so the visitor is signed out, and the server logs it once with no values (fail closed). vite dev and vite preview run with it set to their own origin: the Playwright web servers and the preview starters pass it, and for a person's vite dev, mockApi() may default it to the origin Vite resolved, only when it's unset and AVEL_API=mock (the report says how). safeNext keeps the request's origin, which it only compares. Name the setting in the report, so Javaris adds it to .env.example (E6). Fenn's tests a4 adds the Host test and the env wiring in playwright.config.ts and e2e/support/preview-auth.ts, with assertions elsewhere unchanged; Zero relocks; Fantem's build a4 changes only what the fix needs, on top of a3's commits, and reruns Part 7",
   "Order (F2): Fenn's tests a2 changes the preview starters on the branch, with every assertion unchanged: budget.spec.ts, control-room-budget/preview.ts (and its budget.spec.ts if the sign-in step goes there) and control-room/prod.spec.ts start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto (its sessions are its own, so the setup project's cookie doesn't count there). Any helper they share is apps/web/e2e/support/preview-auth.ts. The tests run red on the branch until the build adds the preview hook. Then Zero relocks (F2 relock), and Fantem's build a2 adds the hook on top of a1's commits, which stay. a2 doesn't redo a1's work: it reads a1's report (<git common dir>/avel/reports/frontend-sprint-12-agent-fantem-t-f12-build.a1.md, and the branch's own commits), adds the hook, and reruns Part 7. The PR text carries budget.spec's own / figure as a number",
 ]
 
@@ -136,6 +140,7 @@ behaviours = [
   "e2e: budget.spec holds / to 235 KB gzipped and warns over 225 KB (CR-W29 decision 6, second amendment). Only LIMIT, WARN and their comment change; what it measures stays T-F8's",
   "e2e: LG-23, a setup project signs in once and saves storageState, and every existing spec (T-F7 to T-F11) runs signed in and unchanged. The LG specs start signed out",
   "e2e (F2, Nov 21): the production-preview specs (budget.spec, control-room/prod.spec, control-room-budget) start vite preview with AVEL_API=mock and sign in on the preview's own mock before their first goto; what each asserts is unchanged, and no built file holds the mock's operator id",
+  "unit (CR-W33, Nov 21): the guard's session read goes to AVEL_API_ORIGIN; a request with Host: other.example makes no request to other.example and is still signed in only by the configured origin's answer; with AVEL_API_ORIGIN unset or not an absolute http(s) origin, the read fails and the visitor is signed out",
 ]
 
 [[ticket]]

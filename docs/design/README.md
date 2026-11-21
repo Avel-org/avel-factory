@@ -109,6 +109,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-W30 | The web's auth wire and a minified contract: A the auth mock, B the step-up wire, C the mock's routes 1 to 7, D the minified router | Accepted Nov 17 (`CR-W30 The web's auth wire and a minified contract.md`); A and D in T-B11; B and C's routes 1 to 5 wait with the CLI (CR-43) |
 | CR-W31 | contract-mock serves the first mission's routes, over a world with one mission from draft to release | Accepted Nov 18 (`CR-W31 contract-mock serves the first mission's routes.md`); built by the frontend lane, on Axis's conditions: part (a) as T-F22, (b) and (c) as T-F23 and T-F24 |
 | CR-W32 | Your first turn with Canon starts onboarding: route 34's first turn on a draft mission moves it to onboarding | Accepted Nov 21 (`CR-W32 Your first turn with Canon starts onboarding.md`), with Zero's sprint 13/14 re-plan (#95); Axis signed the contract half; the mock half in T-F24, the web half in T-F18, the contract summary in backend T-B25 (I3) |
+| CR-W33 | The web server reads the session at a configured origin (`AVEL_API_ORIGIN`), never at one taken from the request's Host | Proposed Nov 21 (`CR-W33 The web server reads the session at a configured origin.md`), from Axis's G7 review of T-F12 (#102); the fix in T-F12 by a sprint-12 amendment |
 
 ## Known drift in the frozen docs
 
