@@ -56,7 +56,8 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 16. `apps/web/test/data/**`: the locked acceptance tests: they define done
 17. `apps/web/test/sources/**`: the locked acceptance tests: they define done
 18. `apps/web/e2e/sources/**`: the locked acceptance tests: they define done
-19. `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f14-build.md`: this document: follow it exactly
+19. `apps/web/test/control-room/source.test.ts`: the locked acceptance tests: they define done
+20. `docs/agent-dispatch/frontend/sprint-12/agent-fantem-t-f14-build.md`: this document: follow it exactly
 
 ## 3. Domain
 
@@ -79,6 +80,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - LG-06 lives in the data layer: on a 401 from any contract route it navigates once to /login?next={path, search and hash}&reason=expired with replace, and a burst of 401s makes one navigation. It reads nothing from __root and changes no route file: T-F12's /login draws the expired notice and its guard handles the rest. The end-to-end LG-06 check comes with the first screen that calls the API (T-F16)
 - Log every export file this ticket changes, with its reason, in control-room/changes/T-F14.md (T-F12 adds the pointer in SOURCE.md)
 - Amended Nov 21 (Zero, before the lock; Fenn's tests report, Limitations): app/crew.js (Watch the work) imports operations.json, which a source owns, so it reads it through the build source like the other Watch the work data. That's the one change to crew.js; history.json stays where it is
+- F2, Nov 21 (T-F14 build a1's two test-disputes, upheld by Zero), both in Fenn's tests a2 under one relock. (1) samples.test.ts: each source exports owns (the mock files it alone owns) and reads (mock files another source owns that its screens read), both unchanged JSON; the per-source test needs owns or reads non-empty, ownership stays one source per file for owns only, and every file in a reads is in some source's owns. (2) source.test.ts (T-F7-02) meets the changes/ convention, keeping its intent that every departure from the export is logged with a reason: a file whose SHA-256 differs from SOURCE.md's row passes when SOURCE.md's Changed section or some control-room/changes/<ticket>.md names it with a reason; a file that isn't in the export passes when some changes/<ticket>.md names it; and control-room/changes/*.md is allowed beside src/, contract/ and tools/check-contract.mjs. Nothing else in either file changes. The build then logs its changes in changes/T-F14.md only and leaves SOURCE.md alone
 - Merge order (Zero, Nov 21): T-F14 merges after T-F12. guard.spec's production-build test previews with no /api, so once T-F12's guard is on main it lands on /login there, as T-F12's five preview specs did. When T-F12 merges, main is merged into this branch, Fenn's F2 points that test's preview at AVEL_API=mock and signs in through apps/web/e2e/support/preview-auth.ts (assertions unchanged), and Zero relocks. The build doesn't work around it
 - Budget: / doesn't grow. Copy budget.spec's / figure into the report and the PR text as a number. Over 235 KB, stop with needs-cr
 - Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. One review round (CR-42). The full-diff rule applies: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1
@@ -118,6 +120,10 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 
 - **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
 
+### T-F14-09: make it true: unit (F2, Nov 21): T-F7-02's SOURCE.md check passes a changed or new export file that a control-room/changes/<ticket>.md names with a reason, and still fails one that neither SOURCE.md nor any changes file names
+
+- **Verify:** its locked test passes: `pnpm --filter @avel/web exec vitest run`, `pnpm --filter @avel/web exec playwright test`, `pnpm --filter @avel/web exec vite build`, `pnpm typecheck`, `pnpm lint`
+
 ## 5. Territory
 
 **You may change** (and create):
@@ -137,6 +143,7 @@ You build this ticket until its locked acceptance tests pass, changing only the 
 - `apps/web/test/data/**`
 - `apps/web/test/sources/**`
 - `apps/web/e2e/sources/**`
+- `apps/web/test/control-room/source.test.ts`
 
 **Never change, whatever the task says:**
 - `packages/**`
