@@ -1,9 +1,11 @@
-status: done
+status: blocked
 ticket: T-F23
 
 # T-F23 build: report (Fantem)
 
-This is build a2. It reran Part 7 on build a1's commits (`bd89dd0`) after Fenn's tests a2 (`1b98b89`) and Zero's F2 relock (`39f71ed`), as the lead's F2 note asks. It redid nothing. All of `packages/contract-mock/test/mission-streams.test.ts` (11 tests) and `world.test.ts` pass, including the rewritten route 63 test (T-F23-06). a2 changed no code. Its only commit is this report.
+This is build a2. It reran Part 7 on build a1's commits (`bd89dd0`) after Fenn's tests a2 (`1b98b89`) and Zero's F2 relock (`39f71ed`), as the lead's F2 note asks. It redid nothing. All of `packages/contract-mock/test/mission-streams.test.ts` (11 tests) and `world.test.ts` pass, including the rewritten route 63 test (T-F23-06). a2 changed no code. Its only commits are to this report.
+
+**Why blocked:** the code and every check pass (below), but the done-check Stop hook (`scripts/hooks/done_check.py`, CR-46 B5) can't run them. It inherits this session's PATH, and that PATH has no `node`. Its `pnpm typecheck` fails with `/mnt/c/Users/javar/AppData/Roaming/npm/pnpm: 15: exec: node: not found`. I ran every check with `~/.nvm/versions/node/v24.22.2/bin` put first on PATH, and they all pass. Fixing it needs `node` on the dispatch session's PATH, which means the machine's environment or the kit, outside my territory. Once that's done, rerun the hook, or just rely on CI, and this report can say done. PR #90 is already open, from before the hook ran.
 
 Checks on the branch before the run:
 - `git diff 1b98b89 HEAD -- packages/` is empty: the locked tests are exactly as relocked.
