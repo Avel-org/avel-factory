@@ -260,9 +260,13 @@ function main(): void {
     // The checker's fix before a relock is allowed; the Territory still applies.
     const frozen = !relocks.some((r) => isAncestor(c, r));
     const inForce = [...locks].reverse().find((l) => l.sha !== c && isAncestor(l.sha, c));
+    // A checker's F2 fix (a commit before a relock) may add test files: the relock that follows it locks them.
+    const covering = locks.slice(1).find((l) => isAncestor(c, l.sha));
     for (const f of files) {
       if (inForce && matchesAny(inForce.paths, f)) {
         if (frozen) problems.push(`${f}: locked by ${ticket} (commit ${c.slice(0, 7)})`);
+      } else if (!frozen && covering && matchesAny(covering.paths, f)) {
+        // the checker's F2 fix, locked by the relock that follows it
       } else if (!matchesAny(allowed, f))
         problems.push(`${f}: outside the Territory of ${doc} (commit ${c.slice(0, 7)})`);
     }
