@@ -328,6 +328,40 @@ class Stuck(unittest.TestCase):
         self.assertIsNone(self.fail("x", e, session="c", limit=None))
 
 
+class LockGuard(unittest.TestCase):
+    """CR-50 decision 5: a dispatch reads locks.md and never writes it."""
+
+    def run_guard(self, tool, tool_input, limit="400"):
+        env = dict(os.environ, AVEL_KIND="build", AVEL_BRANCH="t/B1-effect-spike")
+        env.pop("AVEL_TURN_LIMIT", None)
+        if limit:
+            env["AVEL_TURN_LIMIT"] = limit
+        out = subprocess.run([sys.executable, PUSH_GUARD], input=json.dumps({"tool_name": tool, "tool_input": tool_input}),
+                             capture_output=True, text=True, env=env)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        return json.loads(out.stdout) if out.stdout.strip() else None
+
+    def denied(self, out):
+        return bool(out) and out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+    LOCKS = "docs/agent-dispatch/backend/sprint-01/locks.md"
+
+    def test_reading_locks_md_is_allowed(self):
+        for c in (f"cat {self.LOCKS}", f"grep T-B1 {self.LOCKS}", f"git log -1 -- {self.LOCKS}", f"git diff main -- {self.LOCKS} | head"):
+            self.assertIsNone(self.run_guard("Bash", {"command": c}), c)
+
+    def test_writing_locks_md_is_refused(self):
+        self.assertTrue(self.denied(self.run_guard("Edit", {"file_path": f"/w/{self.LOCKS}"})))
+        self.assertTrue(self.denied(self.run_guard("Write", {"file_path": f"/w/{self.LOCKS}"})))
+        for c in (f"echo '- T-B1: x @ abc1234 (F2 relock)' >> {self.LOCKS}", f"git add {self.LOCKS}",
+                  f"git commit -m relock -- {self.LOCKS}", f"sed -i s/a/b/ {self.LOCKS}", f"cat x > {self.LOCKS}"):
+            self.assertTrue(self.denied(self.run_guard("Bash", {"command": c})), c)
+
+    def test_other_files_and_sessions_outside_a_dispatch_are_untouched(self):
+        self.assertIsNone(self.run_guard("Edit", {"file_path": "/w/packages/server/src/a.ts"}))
+        self.assertIsNone(self.run_guard("Write", {"file_path": f"/w/{self.LOCKS}"}, limit=None))
+
+
 class MsgLog(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="avel-msg-")
