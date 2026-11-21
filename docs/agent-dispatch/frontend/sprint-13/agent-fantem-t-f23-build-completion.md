@@ -1,38 +1,40 @@
-status: blocked
+status: done
 ticket: T-F23
 
 # T-F23 build: report (Fantem)
 
-This is build a2. It reran Part 7 on build a1's commits (`bd89dd0`) after Fenn's tests a2 (`1b98b89`) and Zero's F2 relock (`39f71ed`), as the lead's F2 note asks. It redid nothing. All of `packages/contract-mock/test/mission-streams.test.ts` (11 tests) and `world.test.ts` pass, including the rewritten route 63 test (T-F23-06). a2 changed no code. Its only commits are to this report.
+This is build a3. It reran Part 7 on build a1's commits (`bd89dd0`), after Fenn's tests a2 (`1b98b89`), Zero's F2 relock (`39f71ed`) and the merge of main's kit fixes (#91, `40e13c8`). It redid nothing and changed no code. Its only commit is this report. All of `packages/contract-mock/test/mission-streams.test.ts` (11 tests) and `world.test.ts` pass, including the rewritten route 63 test (T-F23-06).
 
-**Why blocked:** the code and every check pass (below), but the done-check Stop hook (`scripts/hooks/done_check.py`, CR-46 B5) can't run them. It inherits this session's PATH, and that PATH has no `node`. Its `pnpm typecheck` fails with `/mnt/c/Users/javar/AppData/Roaming/npm/pnpm: 15: exec: node: not found`. I ran every check with `~/.nvm/versions/node/v24.22.2/bin` put first on PATH, and they all pass. Fixing it needs `node` on the dispatch session's PATH, which means the machine's environment or the kit, outside my territory. Once that's done, rerun the hook, or just rely on CI, and this report can say done. PR #90 is already open, from before the hook ran.
+Build a2 stopped as blocked only because the done-check hook's PATH had no `node`. #91 put node on the PATH for hand starts, and this session has it (`node -v`: v24.22.2), so the checks below ran in the plain session shell.
 
 Checks on the branch before the run:
-- `git diff 1b98b89 HEAD -- packages/` is empty: the locked tests are exactly as relocked.
+- `git diff 1b98b89 HEAD -- packages/contract-mock` is empty: the locked tests are exactly as relocked.
 - `git diff bd89dd0 HEAD -- packages/contract-mock/src` is empty: the code is a1's build.
-- `HEAD..origin/main` is empty: main (`b7fac15`) is already merged in.
+- `git diff origin/main...HEAD` touches only the ticket's files: `packages/contract-mock/src/{mock,world}.ts`, the two locked tests, `locks.md` and the two T-F23 reports.
 
 ## Pre-flight
 
-- Postgres: `scripts/pg-local.sh start` (database `avel_frontend_sprint_13_t_f23_build_a2_…`).
-- Node: v24.22.2 from `~/.nvm`, because the shell had no `node`. Dependencies came from `pnpm install --offline --frozen-lockfile`, with no change to the lockfile.
+- Postgres: `scripts/pg-local.sh start` (database `avel_frontend_sprint_13_t_f23_build_a3_9e3b80`).
+- Node v24.22.2, already on the session's PATH.
 
-Part 7, in order, on `39f71ed`:
+Part 7, in order, on `40e13c8`:
 
 | Command | Result |
 | --- | --- |
 | `pnpm build` | exit 0 |
 | `pnpm typecheck` | exit 0 |
 | `pnpm lint` | exit 0; 6 warnings, all already in `apps/web/e2e/**`, none in my files |
-| `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` | exit 0; vitest 8 files, 47 passed; Playwright 303 passed, 1 skipped (16.9 min) |
-| `pnpm --filter @avel/contract-mock test` | exit 0; 5 files, 64 passed (also 64/64 on an earlier run in this session) |
+| `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` | exit 0; vitest 8 files, 47 passed; Playwright 303 passed, 1 skipped (19.6 min) |
+| `pnpm --filter @avel/contract-mock test` | exit 0; 5 files, 64 passed |
 | `pnpm build` | exit 0 |
 | `pnpm typecheck` | exit 0 |
 | `pnpm lint` | exit 0; the same 6 warnings |
 
+I ran the two halves of the web command one after the other, and both exited 0, so the `&&` form gives the same result.
+
 ## What changed
 
-Build a2 changed only this report. Everything below is build a1's commit `bd89dd0`, unchanged:
+Builds a2 and a3 changed only this report. Everything below is build a1's commit `bd89dd0`, unchanged:
 
 - `packages/contract-mock/src/world.ts` (the mission state module):
   - `Ctx` gains `emit(event)`; `NewEvent` is an event before its `seq`.
@@ -61,7 +63,7 @@ Build a2 changed only this report. Everything below is build a1's commit `bd89dd
   - Every request first settles the replies whose time has passed.
   - `reset()` clears the log.
   - The old `streamReply` stub is removed, and route 63 no longer serves `world.sampleEvents()`. That function and its own test (world.test.ts:106) stay.
-- This report: build a1 wrote it as test-dispute, and build a2 rewrote it as done.
+- This report: build a1 wrote it as test-dispute, build a2 as blocked (the hook's PATH had no node), and build a3 as done.
 
 ## Contract to files
 
@@ -86,7 +88,7 @@ Build a2 changed only this report. Everything below is build a1's commit `bd89dd
 
 ## Deviations
 
-- **Build a2 changed no code:** it only reran Part 7 and rewrote this report, as the F2 note says ("reruns Part 7 on a1's commits without redoing them").
+- **Builds a2 and a3 changed no code:** they only reran Part 7 and rewrote this report, as the F2 note says ("reruns Part 7 on a1's commits without redoing them") and as Zero's a3 note repeats.
 - **Changed moves in the state module**, as the lead's note asks me to name them: `newMission`, `answerQuestion`, `approveCheckpoint`, `finalize`, `commitPackage`, `approvePass` and `release` now emit events. No state they set changed. `newMission` builds its record into a local before returning it. `Ctx` has a new required `emit`.
 - **Route 34 no longer answers for missions the routes didn't make.** It answers NOT_FOUND where the old stub streamed a canned reply for any ID. Route 105 for those is NOT_FOUND too (it was STREAM_GONE). Route 33 still serves the sample world's `CANON_MESSAGES` for them, as before.
 - **Route 34 is keyed but not replayed** (`STREAMED_WRITES`): replaying a stream through the key store would have to read it whole, and that would run the script to its end past an abort.
@@ -101,9 +103,14 @@ Build a2 changed only this report. Everything below is build a1's commit `bd89dd
 - **Route 63:** there's no 30-day replay window, no heartbeat of the mock's own (oRPC sends its 5 s keep-alive comment while a stream waits), and `asOfSeq` on route 52's rows stays 0.
 - **Route 114 emits only its decision event:** the contract has no kind for `committing`, and `integrator.dispatch_package.committed` (with its `sha`) belongs to the seed-only move to `committed`.
 - **Proposal decisions:** the verdict on route 54's event is `approved` or `rejected` by the choice's effect, and `chose` for any other choice.
+- **Main moved after `40e13c8`:** #92 to #94 are backend plans and docs, none in `packages/contract-mock` or `apps/web`. I didn't merge them, because OSA's note named #91 as the merge this attempt runs on. The PR's CI runs against the merge with main.
+- **Bundle:** Playwright printed `budget warning: 225251 B gzipped (over 204800)`, which is the locked budget spec's soft line. Its test, at most 220 KB, passed. The bundle is `apps/web`'s, which this ticket doesn't change.
 - No screen in this ticket, so no end-to-end screenshot, accessibility or bundle check of my own (the web suite above ran unchanged).
 
 ## Messages received
+
+Build a3:
+1. **OSA, relaying Zero (my lead):** "a3 reruns Part 7 on a1's commits; no code change is expected." OSA added that main (#91) is merged in at `40e13c8` and that node is on this session's PATH, and asked me to list this message here. Followed: I changed no code, reran Part 7 on `40e13c8`, and confirmed node is on the PATH.
 
 Build a2: none.
 
@@ -116,4 +123,4 @@ Build a1, kept for the record:
    - When everything else passes, commit and stop with status test-dispute, naming only that test, without opening a PR: followed.
    - Push the branch (`git push -u origin t/F23-mock-streams`): **not done.** I ran exactly that command on its own. This session's permission check denied it, in line with the task doc's and `/dispatch`'s "Don't push". I didn't try another way. The branch is local only: it's committed in this worktree at the report commit, and someone with push rights has to push it.
 
-The branch was never pushed during a1. Build a2 pushes it as the activation prompt says (CR-46 B3, H7).
+The branch was pushed later, and PR #90 is open. Build a3 pushes its report commit to that branch as the activation prompt says (CR-46 B3, H7).
