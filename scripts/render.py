@@ -17,7 +17,7 @@ Used by scripts/agent.sh, scripts/dispatch.sh and scripts/agents/lane.sh:
   --docs <agent>           the agent's dispatches that can be opened by hand (ready or stopped)
   --info <lane>/<sprint> <doc>                       a task doc's front matter, as shell assignments
   --state <lane>/<sprint> <doc>                      its state and next attempt number
-  --slots <lane> <seat>                              exit 0 if a session may start (B7), else say why
+  --slots <lane> <seat> [weight]                     exit 0 if a session of that weight may start (B7), else say why
   --merged <ticket>                                  exit 0 if the ticket is merged on main (agent.sh --prune)
   --last <lane>/<sprint> <doc>                       its latest attempt, as shell assignments (agent.sh --resume)
   --record <lane>/<sprint> <doc> <attempt> <worktree> <base> <mode>   log an attempt
@@ -1255,18 +1255,28 @@ def cmd_info(target, doc):
                     "TICKET": d["ticket"]["id"], "BRANCH": d["branch"], "CHECKOUT": d["checkout"],
                     "MODEL": d["model"], "RIGOR": d["ticket"]["rigor"], "REPORT": report_path(plan, d),
                     "FINDINGS": f"{sprint_path(plan)}/findings", "ACTIVATION": activation(plan, d, package_renderer(plan)),
-                    "DOC_PATH": f"{sprint_path(plan)}/{d['doc']}.md"}
+                    "DOC_PATH": f"{sprint_path(plan)}/{d['doc']}.md", "WEIGHT": str(weight(plan, d))}
             for k, v in vals.items():
                 print(f"{k}={shlex.quote(v)}")
             return
     sys.exit(f"no task doc {doc} in {target}")
 
 
-def cmd_slots(lane, seat):
+def weight(plan, d):
+    """B7: a session that runs the web's Playwright suite counts as two. That's an e2e tests dispatch, and a
+    build or review in a sprint whose test command runs Playwright; a unit tests dispatch counts as one."""
+    if d["kind"] == "tests":
+        return 2 if d["role"] == "test-e2e" else 1
+    return 2 if "playwright" in (plan.get("commands", {}).get("test") or "") else 1
+
+
+def cmd_slots(lane, seat, incoming="1"):
     limits = load_json("limits.json")["sessions"]
     live = running_markers()
-    if len(live) >= limits["total"]:
-        sys.exit(f"{len(live)} sessions are running, the limit is {limits['total']} (B7)")
+    used = sum(int(m.get("weight", 1)) for m in live)
+    if used + int(incoming) > limits["total"]:
+        sys.exit(f"{used} of {limits['total']} session slots are in use and this one needs {incoming} "
+                 f"(B7: a session running the web's Playwright suite counts as two)")
     same = [m for m in live if m["lane"] == lane and m["seat"] == seat]
     cap_ = limits["per_lane"].get(seat, 1)
     if len(same) >= cap_:
@@ -1316,7 +1326,7 @@ def main():
     g.add_argument("--next", nargs=2, metavar=("LANE", "AGENT"))
     g.add_argument("--info", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--state", nargs=2, metavar=("TARGET", "DOC"))
-    g.add_argument("--slots", nargs=2, metavar=("LANE", "SEAT"))
+    g.add_argument("--slots", nargs="+", metavar="LANE SEAT [WEIGHT]")
     g.add_argument("--merged", metavar="TICKET")
     g.add_argument("--last", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--record", nargs=6, metavar=("TARGET", "DOC", "N", "WORKTREE", "BASE", "MODE"))

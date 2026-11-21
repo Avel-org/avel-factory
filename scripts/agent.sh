@@ -93,7 +93,10 @@ if (( ! here )); then
   # A plain if, not a $( && || ) that ends non-zero under set -e: that exited silently (Nov 21).
   flag=""
   if (( auto )); then flag=--auto-resume; elif (( resume )); then flag=--resume; fi
-  cmd="cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here ${flag:+$flag }$lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
+  # tmux and wezterm cli spawn start a login shell that doesn't load nvm, so node (which pnpm and the hooks
+  # need) was missing in hand-started sessions: T-F23 build a2's done check failed on it (Nov 21). Load it first,
+  # as tools/wezterm/avel.lua does for the seats.
+  cmd="[ -s \"\$HOME/.nvm/nvm.sh\" ] && . \"\$HOME/.nvm/nvm.sh\"; cd $(printf %q "$root") && ${envs:+env$envs }scripts/agent.sh --here ${flag:+$flag }$lane $sprint $doc $want || { echo; echo 'This tab closes in 60 seconds.'; sleep 60; }"
   session="" tabcmd=$cmd
   if command -v tmux >/dev/null 2>&1; then
     session=$(echo "avel-$AGENT-$TICKET-$KIND" | tr A-Z a-z)
@@ -148,7 +151,7 @@ if (( resume )); then
       echo "$doc a$n left nothing in its worktree to resume from: the lead decides"; exit 0
     fi
   fi
-  slot=$(render --slots "$lane" "$SEAT" 2>&1) || die "$slot"
+  slot=$(render --slots "$lane" "$SEAT" "$WEIGHT" 2>&1) || die "$slot"
   if [[ $CHECKOUT != detached ]] && ! git -C "$wt" symbolic-ref -q HEAD >/dev/null; then
     # A finished session left the worktree detached (A3); take the branch back, at the attempt's own commit.
     [[ $(git -C "$wt" rev-parse HEAD) == $(git rev-parse "$BRANCH") ]] ||
@@ -167,7 +170,7 @@ else
     *) die "$doc is $st, not ready. scripts/render.py --status $lane/$sprint says why." ;;
   esac
   [[ -z $want || $want == "$n" ]] || die "the next attempt of $doc is a$n, not a$want"
-  slot=$(render --slots "$lane" "$SEAT" 2>&1) || die "$slot"
+  slot=$(render --slots "$lane" "$SEAT" "$WEIGHT" 2>&1) || die "$slot"
 
   base_dir="$(dirname "$root")/$(basename "$root")-wt"
   tl=$(echo "$TICKET" | tr A-Z a-z)
@@ -220,8 +223,8 @@ else
 fi
 render --record "$lane/$sprint" "$doc" "$n" "$wt" "$base" "$mode"
 marker="$state/running/$lane-$sprint-$doc.a$n"
-printf '{"pid": %d, "lane": "%s", "sprint": "%s", "doc": "%s", "attempt": %d, "seat": "%s"}\n' \
-  $$ "$lane" "$sprint" "$doc" "$n" "$SEAT" >"$marker"
+printf '{"pid": %d, "lane": "%s", "sprint": "%s", "doc": "%s", "attempt": %d, "seat": "%s", "weight": %d}\n' \
+  $$ "$lane" "$sprint" "$doc" "$n" "$SEAT" "$WEIGHT" >"$marker"
 flock -u 9
 
 # A report already in the worktree (an earlier attempt's, on the branch or carried over by a rebuild)
@@ -309,7 +312,8 @@ else
       kill -0 $$ 2>/dev/null || exit 0
       [[ -e $AVEL_DONE_FLAG ]] || continue
       # The done check (scripts/hooks/done_check.py, CR-46 B5) may still be running its checks.
-      while [[ -e $AVEL_DONE_FLAG.checking ]]; do sleep 5; done
+      # At most 15 minutes: a done check killed by its hook timeout would leave .checking behind (Nov 21 review).
+      for _ in $(seq 180); do [[ -e $AVEL_DONE_FLAG.checking ]] || break; sleep 5; done
       sleep 15
       [[ -e $AVEL_DONE_FLAG && ! -e $AVEL_DONE_FLAG.checking ]] || continue
       echo; echo "$name: the report is in; closing the session."

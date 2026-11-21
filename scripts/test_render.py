@@ -437,6 +437,7 @@ class Flow(unittest.TestCase):
         self.assertIn("new-session -d -s avel-rigg-t-b1-tests", calls)
         self.assertIn("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", calls)
         self.assertNotIn("--resume", calls)
+        self.assertIn("nvm.sh", calls)  # node on PATH for the hooks (T-F23 build a2, Nov 21)
 
     def test_the_lane_loop_finds_ready_work_in_an_older_sprint_first(self):
         # Nov 21: --next looked only at the newest rendered sprint, so sprint-12 and 13 work sat ready.
@@ -448,6 +449,27 @@ class Flow(unittest.TestCase):
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         self.assertEqual(r.run("python3 scripts/render.py --next backend rigg").stdout.split()[:2],
                          ["sprint-02", "agent-rigg-t-b1-test-unit"])
+
+    def test_slots_count_a_playwright_session_as_two(self):
+        # B7: at most 4, and a session running the web's Playwright suite counts as two (Nov 21: 6 of 4 ran).
+        r = self.r
+        running = os.path.join(r.root, ".git/avel/running")
+        os.makedirs(running, exist_ok=True)
+        me = os.getpid()
+        for i, w in enumerate((2, 1)):
+            with open(os.path.join(running, f"m{i}"), "w") as f:
+                json.dump({"pid": me, "lane": "frontend", "sprint": "sprint-12", "doc": f"d{i}", "attempt": 1,
+                           "seat": "builder" if i == 0 else "checker", "weight": w}, f)
+        self.assertEqual(r.run("python3 scripts/render.py --slots backend builder 1", check=False).returncode, 0)
+        out = r.run("python3 scripts/render.py --slots backend builder 2", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("counts as two", out.stderr)
+        self.assertEqual(r.run("python3 scripts/render.py --slots backend builder", check=False).returncode, 0)
+
+    def test_info_gives_a_dispatch_its_weight(self):
+        r = self.r
+        info = lambda d: r.run(f"python3 scripts/render.py --info backend/sprint-01 {d}").stdout
+        self.assertIn("WEIGHT=1", info("agent-rigg-t-b1-test-unit"))
 
     def test_a_session_gets_the_kit_from_main_not_from_its_branch(self):
         # Nov 17: Fenn's T-F5 tests a2 ran on a branch cut before #23 and had no SendMessage.
