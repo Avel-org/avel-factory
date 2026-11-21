@@ -97,6 +97,72 @@ class Turns(unittest.TestCase):
             self.assertIn("couldn't count turns", f.read())
 
 
+def load_turns():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("turns", TURNS)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class TurnsCache(unittest.TestCase):
+    """A9: the hook reads only what was appended since its last call, and counts the same as a full read."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="avel-turns-cache-")
+        self.turns = load_turns()
+        self.t = os.path.join(self.tmp, "t.jsonl")
+        self.cache = os.path.join(self.tmp, "turns-s1.json")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_a_transcript_fed_in_two_parts_counts_the_same_as_a_full_read(self):
+        transcript(self.t, 30, split=True)
+        with open(self.t, "rb") as f:
+            data = f.read()
+        lines = data.splitlines(keepends=True)
+        # Cut after the first of m11's two lines (the same id on both sides of the cut), and partway
+        # into the next line, as if it were still being written.
+        first = next(i for i, l in enumerate(lines) if b'"m11"' in l) + 1
+        cut = sum(len(l) for l in lines[:first]) + 7
+        with open(self.t, "wb") as f:
+            f.write(data[:cut])
+        part1 = self.turns.count_turns_cached(self.t, self.cache)
+        self.assertEqual(part1, self.turns.count_turns(self.t))
+        self.assertEqual(json.load(open(self.cache))["offset"], cut - 7)  # the partial line isn't cached
+        with open(self.t, "ab") as f:
+            f.write(data[cut:])
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), self.turns.count_turns(self.t))
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), 30)  # a call with nothing new
+
+    def test_a_rewritten_or_shorter_transcript_is_read_in_full(self):
+        transcript(self.t, 12)
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), 12)
+        transcript(self.t, 4)  # shorter
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), 4)
+        transcript(self.t, 4, split=True)  # longer, but not an append of what was cached
+        with open(self.t, "a") as f:
+            f.write(json.dumps({"type": "assistant", "message": {"id": "x9", "content": [{"type": "tool_use"}]}}) + "\n")
+        self.assertEqual(self.turns.count_turns_cached(self.t, self.cache), self.turns.count_turns(self.t))
+
+    def test_the_hook_keeps_its_cache_per_session(self):
+        subprocess.run(["git", "init", "-q", self.tmp], check=True)
+        transcript(self.t, 16)
+        env = dict(os.environ, AVEL_TURN_LIMIT="20", AVEL_REPORT="", CLAUDE_PROJECT_DIR=self.tmp)
+        hook = {"session_id": "abc-123", "transcript_path": self.t, "tool_name": "Bash",
+                "tool_input": {"command": "pnpm test"}}
+        run = lambda: subprocess.run([sys.executable, TURNS, "post"], input=json.dumps(hook), capture_output=True,
+                                     text=True, env=env)
+        self.assertIn("4 turns left of 20", run().stdout)
+        cache = os.path.join(self.tmp, ".git/avel/logs/turns-abc-123.json")
+        self.assertTrue(os.path.exists(cache))
+        with open(self.t, "a") as f:
+            f.write(json.dumps({"type": "assistant", "message": {"id": "n1", "content": [{"type": "tool_use"}]}}) + "\n")
+        self.assertIn("3 turns left of 20", run().stdout)
+        self.assertEqual(len(json.load(open(cache))["ids"]), 17)
+
+
 class MsgLog(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="avel-msg-")
