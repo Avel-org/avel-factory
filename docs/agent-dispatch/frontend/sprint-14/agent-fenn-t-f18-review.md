@@ -69,7 +69,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - Reads: 21 (the onboarding journey and checkpoints), 33 (the chat history), 105 (re-attach to a reply still streaming; STREAM_GONE once it's finished). Writes: 34 (your turn; Canon's CanonStreamChunk reply renders as it arrives, and leaving the page aborts the request), 44 (answer: an option, or other in your own words), 38 to 42 (edit a section, generate, approve, ask for changes, reopen), 43 (confirm or reject a fact), each with an Idempotency-Key and the rowVersion
 - Canon's text, and anything a client wrote, renders as plain text: markdown with HTML off, links shown as text unless they're http(s), and nothing executes
 - Voice (106) and uploads (35 to 37, CR-34) keep the sample world
-- CR-W32 (proposed Nov 21): a draft mission's first turn on route 34 starts onboarding (T-F24 builds it in the mock). Onboarding on a fresh draft is the empty state with the composer open, and the first send starts the interview. If Javaris doesn't accept CR-W32, this note and its behaviour come out before the tests start
+- CR-W32 (proposed Nov 21; Axis signed its contract half): a draft mission's first turn on route 34 starts onboarding (T-F24 builds it in the mock). Onboarding on a fresh draft is the empty state with the composer open, and the first send starts the interview. The journey's current step comes from the session's stage (Discovery), not from a checkpoint row: 0.1 appears only once Canon writes it. If Javaris doesn't accept CR-W32, this note and its behaviour come out before the tests start
 - Review: one round (CR-42). The full-diff rule: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1
 - Size: a full session (#45). Run only this ticket's specs while you work
 
@@ -95,7 +95,7 @@ You review the builder's work on this ticket, from the diff and this document on
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
-### T-F18-06: check: e2e (behaviour, CR-W32): on a fresh draft, sending your first message starts the interview: route 34 is called, the mission shows as onboarding, and checkpoint 0.1 appears, read again from route 21
+### T-F18-06: check: e2e (behaviour, CR-W32): on a fresh draft, sending your first message starts the interview: route 34 is called, and the mission shows as onboarding in Discovery, read again from route 21, with no checkpoint drafted yet
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 

@@ -92,7 +92,7 @@ notes = [
   "Reads: 21 (the onboarding journey and checkpoints), 33 (the chat history), 105 (re-attach to a reply still streaming; STREAM_GONE once it's finished). Writes: 34 (your turn; Canon's CanonStreamChunk reply renders as it arrives, and leaving the page aborts the request), 44 (answer: an option, or other in your own words), 38 to 42 (edit a section, generate, approve, ask for changes, reopen), 43 (confirm or reject a fact), each with an Idempotency-Key and the rowVersion",
   "Canon's text, and anything a client wrote, renders as plain text: markdown with HTML off, links shown as text unless they're http(s), and nothing executes",
   "Voice (106) and uploads (35 to 37, CR-34) keep the sample world",
-  "CR-W32 (proposed Nov 21): a draft mission's first turn on route 34 starts onboarding (T-F24 builds it in the mock). Onboarding on a fresh draft is the empty state with the composer open, and the first send starts the interview. If Javaris doesn't accept CR-W32, this note and its behaviour come out before the tests start",
+  "CR-W32 (proposed Nov 21; Axis signed its contract half): a draft mission's first turn on route 34 starts onboarding (T-F24 builds it in the mock). Onboarding on a fresh draft is the empty state with the composer open, and the first send starts the interview. The journey's current step comes from the session's stage (Discovery), not from a checkpoint row: 0.1 appears only once Canon writes it. If Javaris doesn't accept CR-W32, this note and its behaviour come out before the tests start",
   "Review: one round (CR-42). The full-diff rule: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1",
   "Size: a full session (#45). Run only this ticket's specs while you work",
 ]
@@ -109,7 +109,7 @@ behaviours = [
   "e2e (behaviour): answering a question with an option and with other calls route 44, and the deck moves to the next question",
   "e2e (behaviour): approving checkpoint 0.1 calls route 40 and the journey shows 0.2; asking for changes and reopening call 41 and 42; a stale rowVersion shows the 409 sentence",
   "e2e (behaviour): loading, empty (a fresh draft), error (500, offline, STREAM_GONE) render with their words",
-  "e2e (behaviour, CR-W32): on a fresh draft, sending your first message starts the interview: route 34 is called, the mission shows as onboarding, and checkpoint 0.1 appears, read again from route 21",
+  "e2e (behaviour, CR-W32): on a fresh draft, sending your first message starts the interview: route 34 is called, and the mission shows as onboarding in Discovery, read again from route 21, with no checkpoint drafted yet",
   "e2e (guard): every state passes WCAG 2.2 AA at 390 and 1280, light and night; each route at most 150 KB; no '$' (E15)",
 ]
 
