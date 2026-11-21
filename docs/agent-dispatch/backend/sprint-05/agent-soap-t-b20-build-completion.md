@@ -45,7 +45,7 @@ The locked tests on their own (`pnpm --filter @avel/server exec vitest run test/
   - it also names the tests that prove the sign-in restatement, T-B9-04 (`auth/rate-limit.test.ts`) and T-B16-03 (`server/rate-limit.test.ts`), so the proof isn't lost.
 
   The lead should confirm that reading when signing the report.
-- **Push.** The task doc's activation prompt says "Don't push". `soap.md` and CR-46 B3 say a builder pushes its branch and opens its PR once its report says done. I followed the task doc and did not push. I asked OSA to confirm whether I should push and open the PR.
+- **Push.** The task doc's activation prompt says "Don't push". `soap.md` and CR-46 B3 say a builder pushes its branch and opens its PR once its report says done. I followed the task doc and did not push. OSA confirmed it: sprint-05 was rendered before avel-render 4, so its "Don't push" holds. Rigg's review runs next on this branch, and OSA opens the PR after it.
 
 ## Limitations
 
@@ -67,3 +67,6 @@ The locked tests on their own (`pnpm --filter @avel/server exec vitest run test/
   - Stop with `blocked` if a Step 1 test has no locked test.
 
   **Followed.** It narrows the task and widens nothing. Every row still in Step 1 names a locked test, so no `blocked` was needed. Row 1's Step 0 halves are noted under Limitations.
+- **From OSA, on pushing:** sprint-05 was rendered before avel-render 4, so the task doc's "Don't push" holds. Builders push their own branch only on sprints rendered with avel-render 4. Rigg reviews next, and OSA opens the PR after that.
+
+  **Followed.** I didn't push.
