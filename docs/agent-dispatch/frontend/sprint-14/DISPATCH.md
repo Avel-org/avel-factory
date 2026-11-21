@@ -39,7 +39,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | `agent-fenn-t-f20-review.md` | Fenn | review | sonnet |
 | `agent-fenn-t-f21-test-e2e.md` | Fenn | tests | sonnet |
 | `agent-fantem-t-f21-build.md` | Fantem | build | opus |
-| `agent-fenn-t-f21-review.md` | Fenn | review | opus |
+| `agent-fenn-t-f21-review.md` | Fenn | review | sonnet |
 
 ## Territory map
 

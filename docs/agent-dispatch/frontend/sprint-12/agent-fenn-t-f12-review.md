@@ -8,7 +8,7 @@ seat: checker
 kind: review
 role: review
 rigor: full
-model: opus
+model: sonnet
 branch: t/F12-sign-in
 checkout: detached
 after: [agent-fantem-t-f12-build]
@@ -26,7 +26,7 @@ report: docs/agent-dispatch/frontend/sprint-12/agent-fenn-t-f12-review-completio
 | Lane | frontend · lead Zero |
 | Sprint | sprint-12 · Step 1 |
 | Ticket | T-F12 · rigor full |
-| Dispatch | review · Fenn (checker) · model opus |
+| Dispatch | review · Fenn (checker) · model sonnet |
 | Works on | a detached checkout of `t/F12-sign-in`'s head |
 | Done when | CI is green and the acceptance tests pass. Nothing else (C1, C3). |
 
@@ -169,7 +169,7 @@ You review the builder's work on this ticket, from the diff and this document on
 | Ticket | Kind | Paths |
 | --- | --- | --- |
 | T-F14 | builds | `apps/web/src/data/**`, `apps/web/control-room/src/lib/api.js`, `apps/web/control-room/src/lib/stream.js`, `apps/web/control-room/src/sources/**`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/operations.js`, `apps/web/control-room/src/app/decisions.js`, `apps/web/control-room/src/app/crew.js`, `apps/web/control-room/changes/T-F14.md` |
-| T-F14 | tests | `apps/web/test/data/**`, `apps/web/test/sources/**`, `apps/web/e2e/sources/**` |
+| T-F14 | tests | `apps/web/test/data/**`, `apps/web/test/sources/**`, `apps/web/e2e/sources/**`, `apps/web/test/control-room/source.test.ts` |
 | T-F22 | builds | `packages/contract-mock/src/**` |
 | T-F22 | tests | `packages/contract-mock/test/mission-world.test.ts`, `packages/contract-mock/test/mission-routes.test.ts` |
 
