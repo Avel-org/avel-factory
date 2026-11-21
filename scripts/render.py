@@ -18,6 +18,7 @@ Used by scripts/agent.sh, scripts/dispatch.sh and scripts/agents/lane.sh:
   --info <lane>/<sprint> <doc>                       a task doc's front matter, as shell assignments
   --state <lane>/<sprint> <doc>                      its state and next attempt number
   --slots <lane> <seat>                              exit 0 if a session may start (B7), else say why
+  --merged <ticket>                                  exit 0 if the ticket is merged on main (agent.sh --prune)
   --record <lane>/<sprint> <doc> <attempt> <worktree> <base> <mode>   log an attempt
 
 State lives in <git common dir>/avel/: attempts.jsonl, running/, reports/, paused.
@@ -1240,6 +1241,7 @@ def main():
     g.add_argument("--info", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--state", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--slots", nargs=2, metavar=("LANE", "SEAT"))
+    g.add_argument("--merged", metavar="TICKET")
     g.add_argument("--record", nargs=6, metavar=("TARGET", "DOC", "N", "WORKTREE", "BASE", "MODE"))
     ap.add_argument("targets", nargs="*")
     a = ap.parse_args()
@@ -1265,6 +1267,11 @@ def main():
         cmd_slots(*a.slots)
     elif a.record:
         cmd_record(*a.record)
+    elif a.merged:
+        # agent.sh --prune: exit 0 when the ticket's squash merge is on main, 1 when it isn't
+        merged = ticket_merged(a.merged.upper())
+        print("merged" if merged else "not merged")
+        sys.exit(0 if merged else 1)
     elif a.targets:
         cmd_check(a.targets, write=True)
     else:

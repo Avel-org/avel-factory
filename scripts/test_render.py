@@ -312,14 +312,43 @@ class Flow(unittest.TestCase):
         self.assertEqual(self.state("agent-soap-t-b1-build"), "merged")
         self.assertEqual(self.state("agent-rigg-t-b2-test-unit"), "ready")
 
-    def test_a_finished_session_removes_its_clean_worktree(self):
-        # Nobody has to close what a finished dispatch leaves behind: a clean worktree goes, the branch stays.
+    def test_a_finished_session_keeps_its_worktree_until_the_ticket_merges(self):
+        # A3 (Nov 20): Claude Code finds a session by its folder, so a removed worktree can't be resumed.
+        # The worktree stays when the session ends; --prune removes it only once the ticket is merged.
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         wts = [l for l in r.run("git worktree list --porcelain").stdout.splitlines() if l.startswith("worktree ")]
-        self.assertEqual(len(wts), 1, wts)
+        self.assertEqual(len(wts), 2, wts)
         self.assertTrue(r.run("git rev-parse --verify -q t/B1-effect-spike").stdout.strip())
+        out = r.run("scripts/agent.sh --prune").stdout
+        self.assertIn("T-B1 isn't merged", out)
+        self.assertIn("pruned 0 worktree(s), kept 1", out)
+
+    def test_prune_removes_a_merged_tickets_clean_worktrees_and_keeps_uncommitted_work(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        with open(os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
+            f.write("- T-B1: packages/server/test/spike.test.ts @ abc1234\n")
+        r.run("git commit -qam 'lock T-B1'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-soap-t-b1-build")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-review")
+        kit_wts = lambda: [l.split(" ", 1)[1] for l in r.run("git worktree list --porcelain").stdout.splitlines()
+                           if l.startswith("worktree ") and "-wt/" in l]
+        self.assertEqual(len(kit_wts()), 3)  # the tests', the build's and the review's, each left detached
+        build_wt = next(w for w in kit_wts() if w.endswith("-build-a1"))
+        with open(os.path.join(build_wt, "scratch.txt"), "w") as f:
+            f.write("not committed\n")
+        r.run("git merge -q --squash t/B1-effect-spike && git commit -qm 'feat(server): spike 1' -m 'Refs: T-B1'")
+        out = r.run("scripts/agent.sh --prune").stdout
+        self.assertIn("pruned 2 worktree(s), kept 1", out)  # the review's uncommitted report doesn't count
+        self.assertIn("has uncommitted work", out)
+        self.assertIn("scratch.txt", out)
+        self.assertEqual(kit_wts(), [build_wt])
+        os.remove(os.path.join(build_wt, "scratch.txt"))
+        self.assertIn("pruned 1 worktree(s), kept 0", r.run("scripts/agent.sh --prune").stdout)
+        self.assertEqual(kit_wts(), [])
 
     def test_a_session_gets_the_kit_from_main_not_from_its_branch(self):
         # Nov 17: Fenn's T-F5 tests a2 ran on a branch cut before #23 and had no SendMessage.
@@ -349,12 +378,13 @@ class Flow(unittest.TestCase):
         # The lead commits the lock line on the ticket's branch, so a dispatcher on main must see it.
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
-        # The test uses the finished session's worktree as the lead's checkout of the branch, so keep it.
-        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", env={"AVEL_KEEP_WORKTREE": "1"})
+        # The test uses the finished session's worktree (kept, A3) as the lead's checkout of the branch.
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         self.assertEqual(r.run("git branch --show-current").stdout.strip(), "main")
         wt = [l.split(" ", 1)[1] for l in r.run("git worktree list --porcelain").stdout.splitlines()
               if l.startswith("worktree ")]
-        wt = next(w for w in wt if r.run(f"git -C '{w}' branch --show-current").stdout.strip() == "t/B1-effect-spike")
+        wt = next(w for w in wt if w.endswith("-test-unit-a1"))
+        r.run(f"git -C '{wt}' checkout -q t/B1-effect-spike")  # a finished session leaves it detached (A3)
         locks = "docs/agent-dispatch/backend/sprint-01/locks.md"
         self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting")
 

@@ -6,13 +6,15 @@
 #   scripts/agent.sh --here <lane> <sprint> <task doc> [attempt]   run it in this terminal (the lane loop)
 #   scripts/agent.sh --here --headless <lane> <sprint> <doc> [n]   run it with no one watching (claude -p)
 #   scripts/agent.sh --docs <agent>                                what can be opened by hand (the picker)
+#   scripts/agent.sh --prune                                       remove the worktrees of merged tickets
 #
 #   The attempt is always the next one; naming it confirms a retry. It refuses: a task doc that isn't
 #   committed or isn't what the plan renders, a dispatch that isn't ready (a stopped or done one only as a
 #   named retry, the lead's call), a seat already busy
 #   (one builder and one checker per lane, 4 at most, B7), and anything while .git/avel/paused exists (J4).
-#   Worktrees: ../<repo>-wt/<lane>-<sprint>-<ticket>-<role>-a<n>, removed when the session ends unless it
-#   left uncommitted work (AVEL_KEEP_WORKTREE=1 keeps it). Branch per ticket: t/<id>-<slug>.
+#   Worktrees: ../<repo>-wt/<lane>-<sprint>-<ticket>-<role>-a<n>, kept when the session ends, so a crashed
+#   session can still be found and resumed. --prune removes them once their ticket is merged and nothing in
+#   them is uncommitted. Branch per ticket: t/<id>-<slug>.
 set -euo pipefail
 
 die() { echo "agent.sh: $*" >&2; exit 1; }
@@ -23,13 +25,47 @@ render() { python3 scripts/render.py "$@"; }
 state=$(git rev-parse --git-common-dir); [[ $state = /* ]] || state="$root/$state"; state="$state/avel"
 mkdir -p "$state/running" "$state/reports" "$state/logs"
 
+# --prune: remove the kit's worktrees whose ticket is merged (render.py --merged) and that hold no
+# uncommitted work. The attempt's own completion report and findings don't count: a review's are
+# uncommitted by design, and both were copied to $state/reports when the session ended. A running
+# session's worktree is never removed.
+prune_worktrees() {
+  local base_dir wt name lane sprint tl role n tid left removed=0 kept=0
+  base_dir="$(dirname "$root")/$(basename "$root")-wt"
+  while read -r wt; do
+    name=$(basename "$wt")
+    [[ $wt == "$base_dir/$name" && $name =~ ^([a-z]+)-(sprint-[0-9]+)-(t-[a-z][0-9]+)-([a-z0-9-]+)-a([0-9]+)$ ]] || continue
+    lane=${BASH_REMATCH[1]} sprint=${BASH_REMATCH[2]} tl=${BASH_REMATCH[3]} role=${BASH_REMATCH[4]} n=${BASH_REMATCH[5]}
+    tid=$(echo "$tl" | tr a-z A-Z)
+    if compgen -G "$state/running/$lane-$sprint-agent-*-$tl-$role.a$n" >/dev/null; then
+      echo "kept $wt: its session is running"; kept=$((kept + 1)); continue
+    fi
+    if ! render --merged "$tid" >/dev/null; then
+      echo "kept $wt: $tid isn't merged"; kept=$((kept + 1)); continue
+    fi
+    left=$(git -C "$wt" status --porcelain 2>/dev/null) || { echo "kept $wt: git status fails there"; kept=$((kept + 1)); continue; }
+    left=$(grep -v -E "^.. docs/agent-dispatch/$lane/$sprint/(agent-[a-z0-9]+-$tl-$role-completion\.md|findings/)" <<<"$left" || true)
+    if [[ -n $left ]]; then
+      echo "kept $wt: $tid is merged, but it has uncommitted work:"; sed 's/^/    /' <<<"$left" | head -5
+      kept=$((kept + 1)); continue
+    fi
+    [[ -x $wt/scripts/pg-local.sh ]] && "$wt/scripts/pg-local.sh" stop >/dev/null 2>&1 || true
+    if git worktree remove --force "$wt"; then
+      echo "removed $wt: $tid is merged and nothing in it is uncommitted"; removed=$((removed + 1))
+    fi
+  done < <(git worktree list --porcelain | sed -n 's/^worktree //p')
+  "$root/scripts/pg-local.sh" prune >/dev/null 2>&1 || true
+  echo "pruned $removed worktree(s), kept $kept"
+}
+
 here=0 headless=0
 while [[ ${1:-} == --* ]]; do
   case $1 in
     --here) here=1 ;;
     --headless) headless=1 ;;
     --docs) render --docs "${2:?--docs <agent>}"; exit 0 ;;
-    -h|--help) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --prune) prune_worktrees; exit 0 ;;
+    -h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown option $1" ;;
   esac
   shift
@@ -138,22 +174,9 @@ flock -u 9
 # copy kept when the session ends both ignore it while it's unchanged.
 REPORT_START=$( [[ -f $wt/$REPORT ]] && sha256sum "$wt/$REPORT" | cut -d' ' -f1 || true )
 
-# When the session ends: drop the marker, keep a copy of this attempt's report (a reviewer's stays uncommitted),
-# then remove the worktree if nothing would be lost. The branch stays; the next attempt makes a fresh one.
-cleanup() {
-  cd "$root" || return 0
-  local left
-  left=$(git -C "$wt" status --porcelain 2>/dev/null) || return 0
-  if [[ $KIND == review ]]; then
-    # A reviewer's report and findings are uncommitted by design, and were copied to $state/reports above.
-    left=$(grep -v -F -e "$REPORT" -e "${FINDINGS%/}/" <<<"$left" || true)
-  fi
-  if [[ -n $left ]]; then
-    echo "kept $wt: it has uncommitted work"
-    return 0
-  fi
-  git worktree remove --force "$wt" && echo "removed $wt"
-}
+# When the session ends: drop the marker and keep a copy of this attempt's report (a reviewer's stays
+# uncommitted). The worktree stays, so a crashed or cut-off session can be found again; --prune removes it
+# once the ticket is merged. The branch stays too; the next attempt makes a fresh worktree.
 finish() {
   rm -f "$marker"
   if [[ -f $wt/$REPORT && $(sha256sum "$wt/$REPORT" | cut -d' ' -f1) != "$REPORT_START" ]]; then
@@ -172,7 +195,8 @@ finish() {
   # The worktree's Postgres is throwaway: stop it even when the worktree stays, or every
   # attempt leaves a container running (they took the machine out of memory on Nov 17).
   [[ -x $wt/scripts/pg-local.sh ]] && "$wt/scripts/pg-local.sh" stop >/dev/null 2>&1 || true
-  [[ ${AVEL_KEEP_WORKTREE:-} == 1 ]] || cleanup
+  # Free the branch for the lead (a lock line) and the next attempt; the worktree and its changes stay.
+  [[ $CHECKOUT == detached ]] || git -C "$wt" checkout -q --detach 2>/dev/null || true
 }
 trap finish EXIT
 
