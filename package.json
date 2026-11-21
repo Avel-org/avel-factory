@@ -10,7 +10,8 @@
     "build": "TURBO_TELEMETRY_DISABLED=1 turbo run build",
     "typecheck": "tsc -p tsconfig.json && TURBO_TELEMETRY_DISABLED=1 turbo run typecheck",
     "lint": "biome check .",
-    "test": "TURBO_TELEMETRY_DISABLED=1 turbo run build && vitest run --config vitest.workspace.ts --passWithNoTests"
+    "test": "TURBO_TELEMETRY_DISABLED=1 turbo run build && vitest run --config vitest.workspace.ts --passWithNoTests",
+    "typecheck:control-room": "tsc -p apps/web/tsconfig.control-room.json"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.5",
