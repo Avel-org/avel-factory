@@ -9,31 +9,36 @@
 # and the routes the frontend's first-mission screens read (CR-W31's route table, now on contract-mock), built for real.
 #
 # Six tickets, each a full session of product code (Javaris, Nov 18: bigger tickets, fewer PRs):
-#   Chain A, Step 2 (no room host needed):
-#     T-B21 per-attempt credentials, revoked when the attempt ends and by the reaper after a restart  ~120 min  full
+#   Chain A, the jobs engine's follow-ups, then Step 2 (no room host needed):
+#     T-B27 the jobs engine's follow-ups: T-B18's review findings and the tests red under load        ~120 min  full  (after T-B20)
+#     T-B21 per-attempt credentials, revoked when the attempt ends and by the reaper after a restart  ~120 min  full  (after T-B27)
 #     T-B22 the model proxy, the meter of record: per-request reservations and the $4 attempt cap      ~150 min  full  (after T-B21)
-#     T-B23 the mission repo over HTTP, with per-attempt git credentials                                ~120 min  full  (after T-B21)
 #   Chain B, the first-mission routes:
 #     T-B24 the top bar and Decisions: routes 104, 52 and 53                                            ~120 min  standard
 #     T-B25 missions: create a draft, list them, open one (routes 19, 20, 21)                           ~120 min  standard (after T-B24)
 #     T-B26 the live streams: events (63), traces (64) and an attempt's steps (109)                     ~120 min  full  (after T-B25)
 #
 # What waits on what, and why (only where the code needs it):
-#   - T-B22 and T-B23 verify T-B21's tokens, so they wait for it. T-B23 also changes server.ts, as T-B21 does.
+#   - T-B27 changes the jobs engine (packages/server/src/platform/jobs), and T-B20 may change all of packages/server/src,
+#     so T-B27's build starts once T-B20 merges. T-B21 follows T-B27, though they share no file: T-B21 is the first
+#     consumer the running server starts, and its close() test needs T-B27's bounded stop.
+#   - T-B22 verifies T-B21's tokens, so it waits for it.
 #   - T-B22 runs as its own process (Design v0.6 Main: the model proxy is a separate service on the host, and the only
-#     holder of the model key), so it changes neither server.ts nor app.ts, and T-B22 and T-B23 share no file.
+#     holder of the model key), so it changes neither server.ts nor app.ts.
 #   - T-B25's needsYouCount and displayState reuse T-B24's pending-decisions query. T-B26 follows T-B25 only because
 #     every route ticket wires itself into router.ts (and maps its errors in errors.ts); with one builder on chain B,
 #     that costs no time.
 #
 # Which tickets can build at the same time (no shared file, neither waits on the other; render.py --check holds it):
-#   - T-B21 beside T-B24: the sprint's first pair.
-#   - T-B22 or T-B23 beside T-B25 or T-B26: each Step 2 ticket beside each route ticket.
-#   - T-B22 beside T-B23, when chain B has no build running.
-#   At most two Soap sessions at once (B7). Rigg writes T-B24's tests while T-B21's are locked and building, and so on
+#   - T-B27 beside T-B24: the sprint's first pair. T-B24 can build while T-B20 runs (decision 2); T-B27 joins it
+#     once T-B20 merges.
+#   - T-B21 or T-B22 beside T-B25 or T-B26: each chain A ticket beside each chain B ticket.
+#   At most two Soap sessions at once (B7). Rigg writes T-B24's tests while T-B27's are locked and building, and so on
 #   down both chains, one checker session at a time.
 #
 # Not in this sprint, and why:
+#   - The mission repo over HTTP (T-B23, Step 2). B1 allows six tickets a cycle, and T-B27 took the slot. T-B23 heads
+#     sprint-07 as planned; its block is kept, commented, at the end of this file.
 #   - The egress proxy (Step 2). The sixth ticket slot went to the routes; it needs T-B21's proxy credential, and it
 #     heads sprint-07. See decision 4.
 #   - The upload parser (Step 2). It runs in the sandbox (CR-34: type sniffing, archive unpacking and malware scans in
@@ -42,12 +47,12 @@
 #   - Route 54 (decide a proposal). No step has built a proposal kind's effect yet (E8); it comes with the first one.
 #   - Route 52's factory_change rows. Open factory PRs live on GitHub, not in a table (packages/contract dto/factory.ts),
 #     and reading them needs the factory App's credentials; they come with routes 72 and 73.
-#   - The CLI (Javaris, Nov 18: no CLI work). T-B23 serves attempts only; the operator's avel link pushes to
+#   - The CLI (Javaris, Nov 18: no CLI work). T-B23 (sprint-07) serves attempts only; the operator's avel link pushes to
 #     operator/<mission> come with the CLI.
 #   - No new dependency in any ticket (E5): the proxy calls the vendor with fetch, the git endpoint runs the host's git,
 #     and tokens use node:crypto.
 #
-# Decisions for Javaris:
+# Decisions for Javaris (seven):
 # 1. Steps beside Step 2 (E9). E9 says no ticket from a later step starts until the current step closes. The build plan
 #    (section 1) lets Steps 3, 5, 6 and 7 run beside the critical path once their inputs exist. Chain B is Step 5 work
 #    (T-B24's status read is the avel watch header and the top bar; T-B26 is Step 5's live and trace streams) and the
@@ -55,11 +60,11 @@
 #    per-request reservations and $4 cap into Step 2's proxy, as Javaris asked, so no request is ever metered without
 #    its ceiling. Approve this for sprint-06. Axis drafts CR-47 to reword E9 (the critical path in order; off-path steps
 #    beside it once their inputs exist), so it isn't asked again. Axis recommends both.
-# 2. Starting before Step 1 closes (B8). Sprint-05 still has T-B18 (built and green; a fresh review, then the merge) and
-#    T-B20. Rigg can write T-B21's and T-B24's tests while T-B20 runs: their test paths (test/credentials, test/decisions,
-#    test/status) don't meet T-B20's. T-B24's build can start then too, since no part of it reads T-B18's or T-B20's code.
-#    T-B21's build waits for T-B18 to merge, because it builds on T-B18's consumers. Approve, or keep B8 as written
-#    (sprint-06 starts after sprint-05's last merge). Axis recommends approving.
+# 2. Starting before Step 1 closes (B8). T-B18 merged (#88); sprint-05 still has T-B20, Step 1's last ticket. Rigg can
+#    write T-B27's and T-B24's tests while T-B20 runs: their test paths (test/jobs-follow-ups and three timing tests;
+#    test/decisions, test/status) don't meet T-B20's test/step-1. T-B24's build can start then too, since no part of it
+#    reads T-B20's code. T-B27's build waits for T-B20 to merge (T-B20 may change all of packages/server/src). Approve,
+#    or keep B8 as written (sprint-06 starts after sprint-05's last merge). Axis recommends approving.
 # 3. The room host (CR-22, the Sandbox doc). No ticket in sprint-06 needs it. Sprint-07 does: rooms (createRoom, exec,
 #    syncRepo, destroy), the isolation suite, the upload parser, the offline package cache and runner-image builds. The
 #    choice is Docker with gVisor on a host we run (this machine for development and CI first, the dedicated US host
@@ -77,21 +82,29 @@
 #    missions and module_runs, and reserved_micros and cost_micros on attempts. It touches DATABASE.md (Ownership) and
 #    the comment in packages/db/src/owners.ts; no table, column or CHECK changes. Axis recommends accepting it.
 # 6. .env.example. T-B22 adds the proxy process's settings (its port, the vendor's base URL, ANTHROPIC_API_KEY, read
-#    only by the proxy) and T-B23 adds the mission repos' folder. .env.example is outside every agent's Territory, so
+#    only by the proxy); T-B23 adds the mission repos' folder in sprint-07. .env.example is outside every agent's Territory, so
 #    Javaris adds them; each build report lists them by name, never a value.
+# 7. CR-49 (Axis drafts it; no sprint-06 ticket waits on it). T-B18's review left two choices the design doesn't make, so
+#    no ticket can make them (E3): t-b18-rigg-02, a bound on how many runs one worker holds at once (today drain claims
+#    every due job, and under load the runs and check-ins share the pool's 10 clients), and t-b18-zero-02, whether a
+#    database defect inside a consumer's act counts toward its 5 tries. CR-49 proposes a bound in Jobs and workers.md's
+#    Settings, below the pool's size, and that a defect in act doesn't count (as t-b17-rigg-01's "a loop survives a
+#    blip"). It also adds the consumer's job (kind consumer, key consumer:<name>, attempts per event, a dead consumer
+#    starting fresh on the next startConsumer) to Event consumers (t-b18-rigg-05's doc half). The engine change goes in
+#    a sprint-07 ticket once CR-49 is accepted.
 
 lane = "backend"
 sprint = "sprint-06"
 step = 2
-title = "Step 2's credentials, model proxy and mission repo, beside the first-mission routes: status, Decisions, missions and the live streams"
+title = "The jobs engine's follow-ups, then Step 2's credentials and model proxy, beside the first-mission routes: status, Decisions, missions and the live streams"
 goals = [
   "An attempt's tokens work only for that attempt, die when it ends, and are revoked after a restart if they were left behind",
   "Every model call goes through the proxy, which holds the only key, reserves each request's maximum cost first and refuses a request past the $4 attempt cap or the module or mission budget",
-  "A room can clone the mission repo over HTTP and push only its own attempt branch",
+  "A consumer never hangs a deploy or sits on a claim it doesn't know it holds, and the suite stays green on a loaded machine",
   "The top bar, Decisions, the missions list, a mission's page and the live feed read real routes, not the mock",
 ]
 done_when = [
-  "Design v0.6 Main, Build order step 2: a push to any branch but the attempt's own is refused",
+  "T-B18's review findings rigg-01, -03 and -04 and zero-01: each has a locked test, and T-B8-02, T-B19-05 and T-B13-06 pass 5 runs in a row under CPU load",
   "Design v0.6 Main, Build order step 2: a token left from a killed attempt is revoked after a host restart",
   "Design v0.6 Main, Build order step 2: the model proxy holds the key and is the meter of record (the main service starts without it)",
   "Design v0.6 Main, Build order step 8, brought forward to the proxy (decision 1): a reservation the budget can't cover is refused; parallel requests can't overspend; a request past the $4 cap is refused as the cap and one past a budget as the budget; a lost attempt's and an ended Canon session's reservations are released",
@@ -127,9 +140,85 @@ conventions = [
 ]
 notes = [
   "Review (G5): one review, no round 2. Only a P0 or P1 sends a PR back; every P2 goes to a later ticket or the backlog, named in the PR text",
-  "T-B21, T-B22, T-B23 and T-B26 are full rigor (C4: tokens, the reaper, the proxy and money, rooms' git access, events and seq): Rigg reviews on Opus, Zero gives the security-checklist review (G7), and Javaris merges. T-B24 and T-B25 are standard and merge on Javaris's standing approval (CR-45)",
+  "Backlog, not this cycle: T-B18's review findings rigg-02 and zero-02, and rigg-05's Jobs and workers.md half, wait for CR-49 (decision 7); rigg-03's CI job that runs the server suite 5 times under extra CPU load is kit work (.github), for OSA's list. rigg-01, rigg-03's two tests, rigg-04, rigg-05's code half and zero-01 are T-B27",
+  "T-B27, T-B21, T-B22 and T-B26 are full rigor (C4: claims and the reaper, tokens, the proxy and money, events and seq): Rigg reviews on Opus, Zero gives the security-checklist review (G7), and Javaris merges. T-B24 and T-B25 are standard and merge on Javaris's standing approval (CR-45)",
   "Lock from a detached worktree, then fast-forward the t/* branch; merge main into a ticket branch before its build starts",
   "No ticket changes packages/contract, packages/db, package.json or the lockfile",
+]
+
+# ---------------------------------------------------------------------------------------------
+[[ticket]]
+id = "T-B27"
+slug = "jobs-engine-follow-ups"
+title = "Jobs engine follow-ups: a consumer's stop and failure edges, the claim number proved, and the timing tests that go red under load"
+goal = "A deploy never hangs on a consumer, a stopped or out-raced copy never sits on a claim it holds or logs a death that didn't happen, a locked test fails if the cursor's swap ignores the claim number, and the suite stays green on a loaded machine."
+rigor = "full"
+refs = [
+  "t-b18-rigg-01 (P2): no locked test proves the claim-number half of the cursor's compare-and-swap (engine.ts:478-488); deleting it leaves test/consumers and test/jobs green",
+  "t-b18-rigg-03 (P2, F5): T-B8-02 (test/platform-hardening/pool-timeouts.test.ts:147) goes red under CPU load, on T-B18 and on its merge base 45000c9; T-B19-05 (test/follow-ups/05-close-releases-pools.test.ts:46) flaked once in T-B18's build proof",
+  "T-B13-06 (test/jobs/retries.test.ts) flaked once under full-suite load in a MIOSA sandbox: a gap of 603000 ms where at most 602000 is allowed; 3 of 3 alone (OSA, Nov 21)",
+  "t-b18-rigg-04 (P3): a consumer's stop waits on the event in flight with no bound; a stop during a claim can leave it held until expiry; the dead log can be wrong after another copy took the claim; a lost check-in stays in own",
+  "t-b18-zero-01 (P3): a stop while a pass is inside claimConsumer leaves a claim the copy doesn't know it holds (the same family as rigg-04 item 2)",
+  "t-b18-rigg-05 (P3), the code half: jobs.ts:16 (JobView.attempts) and jobs.ts:53 (Worker.stop) are wrong for a consumer",
+  "Jobs and workers.md: a job's life 5 to 7, Event consumers, and Settings (a 30 s claim, check-ins every 10 s)",
+]
+depends_on = ["T-B20"]
+may_change = [
+  "packages/server/src/platform/jobs/**",
+]
+must_not_change = [
+  "packages/server/package.json",
+  "pnpm-lock.yaml",
+  "packages/server/src/platform/db/**",
+  "packages/server/src/server.ts",
+  "packages/server/src/main.ts",
+  "packages/db/**",
+  "packages/contract/**",
+  "docs/design/**",
+]
+context = [
+  { path = "packages/server/src/platform/jobs/engine.ts", why = "startConsumer's pass, act, fail and stop (about lines 460 to 560): held, own, inFlight, and the swap's where clause" },
+  { path = "packages/server/src/platform/jobs/jobs.ts", why = "the Jobs interface's doc comments: JobView.attempts (:16), Worker.stop (:53) and startConsumer (:74-82)" },
+  { path = "docs/agent-dispatch/backend/sprint-05/agent-soap-t-b18-build-completion.md", why = "T-B18's deviations: runs side by side, CHECK_IN as Schedule.fixed, a consumer job's attempts counted per event" },
+  { path = "packages/server/test/consumers/resume-and-takeover.test.ts", why = "T-B18-02: how a takeover is set up, and why copy b's swap commits before a's late one (rigg-01)" },
+  { path = "docs/design/Jobs and workers.md", why = "a job's life 5 to 7, Event consumers and Settings; read only" },
+]
+verify = [
+  "pnpm --filter @avel/server test",
+  "pnpm --filter @avel/server typecheck",
+  "pnpm --filter @avel/server check:effect",
+  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+]
+notes = [
+  "Starts once T-B20 has merged: T-B20 may change packages/server/src/**, so their builds can't overlap. Rigg's tests can be written while T-B20 builds; their paths don't meet test/step-1. Merge main into the branch before the build starts",
+  "Stop is bounded by the claim it holds: a consumer's stop waits for the event in flight at most until that copy's claim would expire (the 30 s claim, Settings), then interrupts the act. The act is one transaction, so its writes roll back and the next copy acts on the event once. No new setting: the bound is the claim's length (E3, E8)",
+  "No claim the copy doesn't know about: the claim and the copy's record of it (held) are set without a yield between them, or the pair is uninterruptible, so a stop or kill at any point either releases the claim or never took it (rigg-04 item 2, zero-01)",
+  "fail reports dead only when its update changed the row; a copy whose 5th failure lands after its claim was taken logs no dead line and leaves the job as the other copy has it (rigg-04 item 3)",
+  "A check-in that loses its claim removes its fiber from own, as letGo does (rigg-04 item 4)",
+  "Fix jobs.ts's comments for a consumer: attempts counts failed tries on the event at the cursor and goes back to 0 when it moves; a consumer's stop waits for the event in flight (bounded as above), then hands the claim back (rigg-05, code half). The Jobs and workers.md half goes to CR-49 (see the header), not this ticket",
+  "Not in this ticket: a bound on how many runs one worker holds (t-b18-rigg-02) and whether a database defect inside act counts as a failed try (t-b18-zero-02). The design names neither, so both wait for CR-49 (E3)",
+  "The timing fixes are Rigg's, in the tests dispatch, with assertions unchanged: each test waits on the fact it reads (until() on committed state, or on the connection count settling) instead of on how fast this process is scheduled. No wall-clock sleeps (F4). The builder can't change them (F2); they join this ticket's lock line",
+  "Never run more than one vitest at a time; for the load proof, load comes from CPU burners beside the run, not a second vitest (Nov 20's out-of-memory crashes)",
+]
+
+[ticket.tests]
+role = "test-unit"
+paths = [
+  "packages/server/test/jobs-follow-ups/**",
+  "packages/server/test/platform-hardening/pool-timeouts.test.ts",
+  "packages/server/test/follow-ups/05-close-releases-pools.test.ts",
+  "packages/server/test/jobs/retries.test.ts",
+]
+guards = [
+  "T-B18-02's variant (rigg-01): copy b's handler, like a's, waits on its own Deferred; a's late hold is released first, and a's write isn't saved and the cursor doesn't move; then b is released, the cursor moves once and only b's write stays. It passes on main (the code has the check); Rigg shows it fails with engine.ts's claim_no condition deleted, in a scratch worktree, and reports the run",
+  "T-B8-02, T-B19-05 and T-B13-06, with their assertions unchanged, pass on 5 runs in a row of pnpm --filter @avel/server test with one CPU burner per core beside it (node busy loops, no new dependency), one vitest at a time; Rigg reports the 5 runs and the load average",
+  "every T-B13, T-B17 and T-B18 test still passes unchanged",
+]
+behaviours = [
+  "a consumer whose handler never returns: under TestClock, stop returns once the copy's claim would have expired (within 30 s of the claim's last check-in), the handler's writes are rolled back, and a new copy acts on the event once (rigg-04 item 1)",
+  "a copy stopped right after its first claim commits, before its first event: a new copy acts on that first event within 10 s, not after the claim's expiry (rigg-04 item 2, zero-01)",
+  "a copy whose 5th failure on an event lands after another copy took its claim: no 'dead' log line, the job isn't dead, and the other copy goes on (rigg-04 item 3)",
+  "a copy that loses its claim three times keeps no finished check-in fibers: the copy's held fibers don't grow with lost claims (rigg-04 item 4; through whatever the engine exposes to tests, or by stop returning promptly with none left)",
 ]
 
 # ---------------------------------------------------------------------------------------------
@@ -146,7 +235,7 @@ refs = [
   "Jobs and workers.md: housekeeping (the reaper: tokens) and event consumers",
   "Step 1's consumers (T-B18): the first consumer and the first job kind the running server starts (sprint-05's note)",
 ]
-depends_on = ["T-B18"]
+depends_on = ["T-B27"]
 may_change = [
   "packages/server/src/compute/credentials/**",
   "packages/server/src/server.ts",
@@ -176,7 +265,7 @@ verify = [
   "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
 ]
 notes = [
-  "The compute module's credentials service, in packages/server/src/compute/credentials/ with index.ts its only public entry: mint, verify and revoke. T-B22, T-B23 and the egress proxy (sprint-07) use it through index.ts, so its shape is the ticket's main output: say it in the report",
+  "The compute module's credentials service, in packages/server/src/compute/credentials/ with index.ts its only public entry: mint, verify and revoke. T-B22, and T-B23 and the egress proxy (sprint-07), use it through index.ts, so its shape is the ticket's main output: say it in the report",
   "mint takes the kind and its parent (an attempt for dispatch, git and proxy; an onboarding session for service, Canon's token for the proxy) and the scope, writes the row in the caller's Tx, and returns the token once. Only its sha256 is stored. Token bytes come from node:crypto's secure source behind a small service (a fake layer in tests): Effect's Random isn't a secure source; say so in the report",
   "An attempt's credentials expire at its cap plus 10 minutes: 70 minutes from minting, from Clock. A git credential's scope is the attempt's own branch, mission/<missionId>/<moduleRef>/<role>-a<n> (Port inventory, Worktree provider), worked out from the attempt's rows, never taken from the caller",
   "verify takes a presented token and the kind the caller accepts, and returns the credential's id, kind, scope, attempt, dispatch and mission (or session), or one refusal for unknown, revoked, expired or another kind alike, so a caller learns nothing from which it was. A token is looked up only by its hash",
@@ -274,75 +363,6 @@ behaviours = [
   "a Canon request with a session's service token reserves and settles against the mission's budget only, with the session's id and no attempt",
   "the reaper releases the held reservations of an ended attempt and of an ended onboarding session, and leaves a running attempt's",
   "startModelProxy refuses to start without ANTHROPIC_API_KEY, naming the variable and never a value; startServer starts without it; no log line or row holds the key or a token",
-]
-
-# ---------------------------------------------------------------------------------------------
-[[ticket]]
-id = "T-B23"
-slug = "mission-repo-git"
-title = "The mission repo over HTTP: a room clones with its attempt's git credential and pushes only its own attempt branch"
-goal = "A room can clone and fetch its mission's repo over HTTP with its attempt's git credential, and a push to anything but that attempt's own branch is refused with nothing changed."
-rigor = "full"
-refs = [
-  "Design v0.6 Main, Build order step 2: the mission repo over HTTP with per-attempt git credentials (read the mission's branches, push only the attempt's own branch); done when a push to any branch but the attempt's own is refused",
-  "Sandbox doc: Git (clones over HTTP with no shared files, pushes only its own branch with a per-room credential; the mission repo is never mounted)",
-  "Port inventory: Worktree provider, sources, snapshot (the attempt's own branch mission/<id>/<module>/<role>-a<n>)",
-  "AGENTS.md, Architecture rules: Hono routes outside the contract include /git/missions/{missionId}.git",
-]
-depends_on = ["T-B21"]
-may_change = [
-  "packages/server/src/compute/git/**",
-  "packages/server/src/platform/app.ts",
-  "packages/server/src/server.ts",
-]
-must_not_change = [
-  "packages/server/package.json",
-  "pnpm-lock.yaml",
-  "packages/server/src/compute/credentials/**",
-  "packages/server/src/platform/router.ts",
-  "packages/server/src/platform/errors.ts",
-  "packages/server/src/main.ts",
-  "packages/server/test/entry/start.test.ts",
-  "packages/db/**",
-  "packages/contract/**",
-]
-context = [
-  { path = "docs/design/Sandbox - Docker now, boat or MIOSA next.md", why = "the Git row and Moving off Docker: why the repo is reached over HTTP with a credential that works only for its own branch" },
-  { path = "packages/server/src/compute/credentials/index.ts", why = "T-B21's verify for kind git, whose scope is the attempt's own branch; read only" },
-  { path = "packages/server/src/platform/app.ts", why = "createApp: where the Hono routes outside the contract are mounted, as the webhook is" },
-  { path = "packages/server/src/platform/webhooks/github.ts", why = "the precedent for a Hono route outside oRPC: reading a raw body with a limit, and answering the contract's error body with the requestId" },
-  { path = "packages/server/src/server.ts", why = "startServer's settings and Scope: the mission repos' folder comes from Config here" },
-]
-verify = [
-  "pnpm --filter @avel/server test",
-  "pnpm --filter @avel/server typecheck",
-  "pnpm --filter @avel/server check:effect",
-  "pnpm --filter @avel/server exec vitest run test/entry/start.test.ts",
-  "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
-]
-notes = [
-  "Git's smart HTTP protocol at /git/missions/{missionId}.git, served by the host's git (git http-backend, or upload-pack and receive-pack run directly): git is a host tool, not a package (E5). Every git process has a timeout and is ended with its scope (Writing Effect rules 5 and 6)",
-  "Each mission's repo is a bare repo at <folder>/<missionId>.git, the folder from Config (startServer reads it; say its name in the report for .env.example). The path comes only from a missionId that parses as a UUID; anything else is 404. Without the setting the server has no git endpoint, as the webhook works today. Creating a mission's repo isn't in this ticket (E8): tests make their own bare repos",
-  "Auth is HTTP Basic with the attempt's git credential as the password, checked with T-B21's verify for kind git, on every request. Missing or refused is 401 with a WWW-Authenticate header so git asks; a credential for another mission's repo is 404, so it learns nothing. Other kinds (dispatch, proxy, service) never pass",
-  "Read: clone and fetch see the mission's branches. Push: every ref update in a receive-pack request must be an update or create of exactly the credential's own branch (refs/heads/mission/<missionId>/<moduleRef>/<role>-a<n>). A request naming any other ref, a tag, or a delete is refused whole before any ref moves (read the commands before handing the pack to git, or a pre-receive check given the allowed ref), and the repo's refs are unchanged",
-  "A refusal git can show (a rejected ref) names the rule, never a token. Errors outside git's protocol answer the contract's error body with the requestId, as the webhook does; errors.ts doesn't change",
-  "Request bodies have a size limit, checked before buffering (the webhook's precedent). Logs name the credential's id and the mission, never the token",
-  "The operator's CLI-session access (avel link, pushes to operator/<mission>) is Step 5's and waits for the CLI (Javaris, Nov 18); don't build it (E8)",
-]
-
-[ticket.tests]
-role = "test-unit"
-paths = ["packages/server/test/git/**"]
-guards = [
-  "packages/server/test/entry/start.test.ts passes, and startServer without the mission repos' setting serves no /git route",
-]
-behaviours = [
-  "git clone of /git/missions/{missionId}.git with the attempt's git credential, from startServer on a free port, gets the mission's branches",
-  "a push of new commits to the attempt's own branch lands, and the bare repo's ref moves to them",
-  "a push to main, to another attempt's branch, to operator/<missionId>, of a tag, or deleting the own branch is refused, and every ref in the bare repo is unchanged; a push that updates the own branch and another ref together is refused whole",
-  "a clone without a credential is 401 with WWW-Authenticate; with a revoked or expired git credential it's 401; with a dispatch or proxy credential it's 401; with another mission's git credential it's 404",
-  "a mission id that isn't a UUID, or one with no repo, is 404, and no path outside the repos' folder is touched",
-  "no log line written during these tests holds a credential's token",
 ]
 
 # ---------------------------------------------------------------------------------------------
@@ -551,3 +571,76 @@ behaviours = [
   "route 109 pages an attempt's steps oldest first after ?after=, valid against the contract; an unknown attempt answers the contract's error with requestId",
   "routes 63, 64 and 109 without a session are 401 with the contract's body and requestId",
 ]
+
+# =============================================================================================
+# Deferred to sprint-07 (Axis, Nov 21: B1 allows 6 tickets a cycle, and T-B27 took the slot). T-B23 as planned, kept
+# here so sprint-07's plan takes it as written. Not rendered: it's a comment.
+#
+# [[ticket]]
+# id = "T-B23"
+# slug = "mission-repo-git"
+# title = "The mission repo over HTTP: a room clones with its attempt's git credential and pushes only its own attempt branch"
+# goal = "A room can clone and fetch its mission's repo over HTTP with its attempt's git credential, and a push to anything but that attempt's own branch is refused with nothing changed."
+# rigor = "full"
+# refs = [
+#   "Design v0.6 Main, Build order step 2: the mission repo over HTTP with per-attempt git credentials (read the mission's branches, push only the attempt's own branch); done when a push to any branch but the attempt's own is refused",
+#   "Sandbox doc: Git (clones over HTTP with no shared files, pushes only its own branch with a per-room credential; the mission repo is never mounted)",
+#   "Port inventory: Worktree provider, sources, snapshot (the attempt's own branch mission/<id>/<module>/<role>-a<n>)",
+#   "AGENTS.md, Architecture rules: Hono routes outside the contract include /git/missions/{missionId}.git",
+# ]
+# depends_on = ["T-B21"]
+# may_change = [
+#   "packages/server/src/compute/git/**",
+#   "packages/server/src/platform/app.ts",
+#   "packages/server/src/server.ts",
+# ]
+# must_not_change = [
+#   "packages/server/package.json",
+#   "pnpm-lock.yaml",
+#   "packages/server/src/compute/credentials/**",
+#   "packages/server/src/platform/router.ts",
+#   "packages/server/src/platform/errors.ts",
+#   "packages/server/src/main.ts",
+#   "packages/server/test/entry/start.test.ts",
+#   "packages/db/**",
+#   "packages/contract/**",
+# ]
+# context = [
+#   { path = "docs/design/Sandbox - Docker now, boat or MIOSA next.md", why = "the Git row and Moving off Docker: why the repo is reached over HTTP with a credential that works only for its own branch" },
+#   { path = "packages/server/src/compute/credentials/index.ts", why = "T-B21's verify for kind git, whose scope is the attempt's own branch; read only" },
+#   { path = "packages/server/src/platform/app.ts", why = "createApp: where the Hono routes outside the contract are mounted, as the webhook is" },
+#   { path = "packages/server/src/platform/webhooks/github.ts", why = "the precedent for a Hono route outside oRPC: reading a raw body with a limit, and answering the contract's error body with the requestId" },
+#   { path = "packages/server/src/server.ts", why = "startServer's settings and Scope: the mission repos' folder comes from Config here" },
+# ]
+# verify = [
+#   "pnpm --filter @avel/server test",
+#   "pnpm --filter @avel/server typecheck",
+#   "pnpm --filter @avel/server check:effect",
+#   "pnpm --filter @avel/server exec vitest run test/entry/start.test.ts",
+#   "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+# ]
+# notes = [
+#   "Git's smart HTTP protocol at /git/missions/{missionId}.git, served by the host's git (git http-backend, or upload-pack and receive-pack run directly): git is a host tool, not a package (E5). Every git process has a timeout and is ended with its scope (Writing Effect rules 5 and 6)",
+#   "Each mission's repo is a bare repo at <folder>/<missionId>.git, the folder from Config (startServer reads it; say its name in the report for .env.example). The path comes only from a missionId that parses as a UUID; anything else is 404. Without the setting the server has no git endpoint, as the webhook works today. Creating a mission's repo isn't in this ticket (E8): tests make their own bare repos",
+#   "Auth is HTTP Basic with the attempt's git credential as the password, checked with T-B21's verify for kind git, on every request. Missing or refused is 401 with a WWW-Authenticate header so git asks; a credential for another mission's repo is 404, so it learns nothing. Other kinds (dispatch, proxy, service) never pass",
+#   "Read: clone and fetch see the mission's branches. Push: every ref update in a receive-pack request must be an update or create of exactly the credential's own branch (refs/heads/mission/<missionId>/<moduleRef>/<role>-a<n>). A request naming any other ref, a tag, or a delete is refused whole before any ref moves (read the commands before handing the pack to git, or a pre-receive check given the allowed ref), and the repo's refs are unchanged",
+#   "A refusal git can show (a rejected ref) names the rule, never a token. Errors outside git's protocol answer the contract's error body with the requestId, as the webhook does; errors.ts doesn't change",
+#   "Request bodies have a size limit, checked before buffering (the webhook's precedent). Logs name the credential's id and the mission, never the token",
+#   "The operator's CLI-session access (avel link, pushes to operator/<mission>) is Step 5's and waits for the CLI (Javaris, Nov 18); don't build it (E8)",
+# ]
+#
+# [ticket.tests]
+# role = "test-unit"
+# paths = ["packages/server/test/git/**"]
+# guards = [
+#   "packages/server/test/entry/start.test.ts passes, and startServer without the mission repos' setting serves no /git route",
+# ]
+# behaviours = [
+#   "git clone of /git/missions/{missionId}.git with the attempt's git credential, from startServer on a free port, gets the mission's branches",
+#   "a push of new commits to the attempt's own branch lands, and the bare repo's ref moves to them",
+#   "a push to main, to another attempt's branch, to operator/<missionId>, of a tag, or deleting the own branch is refused, and every ref in the bare repo is unchanged; a push that updates the own branch and another ref together is refused whole",
+#   "a clone without a credential is 401 with WWW-Authenticate; with a revoked or expired git credential it's 401; with a dispatch or proxy credential it's 401; with another mission's git credential it's 404",
+#   "a mission id that isn't a UUID, or one with no repo, is 404, and no path outside the repos' folder is touched",
+#   "no log line written during these tests holds a credential's token",
+# ]
+#
