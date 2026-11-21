@@ -7,7 +7,7 @@
  * Schedule, so TestClock drives all of it.
  */
 import { consumerCursors, events, jobs } from "@avel/db";
-import { and, asc, eq, gt, inArray, lt, lte, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, lt, lte, or, sql } from "drizzle-orm";
 import { Cause, Clock, Duration, Effect, Exit, Fiber, Layer, Schedule } from "effect";
 import { Db, type DbError, Tx } from "../db/db.ts";
 import type { Transaction } from "../db/tx.ts";
@@ -24,7 +24,8 @@ import {
 
 /** Jobs and workers.md, Settings (decided Nov 2). */
 const CLAIM = Duration.seconds(30);
-const CHECK_IN = Schedule.spaced("10 seconds");
+/** On a fixed 10 s grid: a slow check-in doesn't push the next one later, and a late one runs at once. */
+const CHECK_IN = Schedule.fixed("10 seconds");
 const REAP = Schedule.spaced("10 seconds");
 /** How often an idle worker or consumer looks for due work. */
 const POLL = Schedule.spaced("1 second");
@@ -38,6 +39,10 @@ const BACKOFF = [
 const TRIES = 5;
 /** How many events a consumer reads at a time. */
 const EVENT_BATCH = 100;
+
+/** A consumer's own job (Step 1 item 10): its claim, its check-ins, its backoff and its death. */
+const CONSUMER = "consumer";
+const consumerKey = (name: string) => `consumer:${name}`;
 
 /** CR-44: the index that refuses a second claimed job in one partition. */
 const ONE_CLAIMED_PER_PARTITION = "jobs_one_claimed_per_partition_uq";
@@ -71,6 +76,19 @@ const partitionFree = sql`(${jobs.partitionKey} is null or not exists (
   select 1 from jobs held where held.partition_key = ${jobs.partitionKey} and held.state = 'claimed'))`;
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+/**
+ * One turn of an engine loop that outlives a defect (t-b17-rigg-01): a database blip is logged
+ * once, and the loop runs again on its schedule. The Db service has already taken the values out
+ * of a database defect, and the line names only the loop.
+ */
+const survive = <A, E, R>(loop: string, turn: Effect.Effect<A, E, R>) =>
+  Effect.catchDefect(turn, (defect) =>
+    Effect.logError(
+      `jobs engine: ${loop} hit a defect; it runs again on its schedule`,
+      Cause.die(defect),
+    ),
+  );
 
 /**
  * A run's save, or its job's own statements, breaking a database rule is a defect, which fails
@@ -230,21 +248,31 @@ export const JobsLive = Layer.effect(
         );
       });
 
-    /** A failed run: back in the queue after its backoff, or dead after the 5th try. */
-    const fail = (job: JobView, error: string) =>
+    /**
+     * A failed run, its `tries`th: back in the queue after its backoff, or dead after the 5th.
+     * Says whether it is dead.
+     */
+    const fail = (job: JobView, error: string, tries = job.attempts) =>
       Effect.gen(function* () {
         const now = yield* Clock.currentTimeMillis;
-        const delay = BACKOFF[job.attempts - 1];
-        const next =
-          job.attempts >= TRIES || delay === undefined
-            ? { state: "dead", finishedAt: new Date(now) }
-            : { state: "queued", runAfter: new Date(now + Duration.toMillis(delay)) };
+        const delay = BACKOFF[tries - 1];
+        const dead = tries >= TRIES || delay === undefined;
+        const next = dead
+          ? { state: "dead", finishedAt: new Date(now) }
+          : { state: "queued", runAfter: new Date(now + Duration.toMillis(delay)) };
         yield* query((tx) =>
           tx
             .update(jobs)
-            .set({ ...next, claimedBy: null, claimExpiresAt: null, lastError: error })
+            .set({
+              ...next,
+              attempts: tries,
+              claimedBy: null,
+              claimExpiresAt: null,
+              lastError: error,
+            })
             .where(stillClaimed(job)),
         );
+        return dead;
       });
 
     /** Hands a claim back to the queue at once (a graceful stop). */
@@ -277,8 +305,8 @@ export const JobsLive = Layer.effect(
         const kinds = [...handlers.keys()];
         /** What a kill ends: the claim loop, the reaper and the check-ins. */
         const own = new Set<Fiber.Fiber<unknown, unknown>>();
-        /** The run in flight, which a kill leaves running and a stop interrupts. */
-        const runs = new Map<Fiber.Fiber<void, never>, JobView>();
+        /** The runs in flight, which a kill leaves running and a stop interrupts. */
+        const runs = new Map<JobView, Fiber.Fiber<void, never>>();
 
         const runOne = (handler: Handler<unknown>, job: JobView) =>
           Effect.gen(function* () {
@@ -295,7 +323,7 @@ export const JobsLive = Layer.effect(
                 ),
             };
             const beat = yield* Effect.forkIn(
-              Effect.ignore(Effect.schedule(run.checkIn, CHECK_IN)),
+              Effect.ignore(Effect.schedule(survive("a check-in", run.checkIn), CHECK_IN)),
               scope,
             );
             own.add(beat);
@@ -316,103 +344,214 @@ export const JobsLive = Layer.effect(
             yield* fail(job, errorText(error));
           });
 
-        /** Claims and runs one job at a time until none is due. */
+        /**
+         * Claims every due job and starts its run, so a long run doesn't hold up the jobs behind
+         * it. A fork only starts once this fiber yields, so a run is in `runs` before it ends.
+         */
         const drain = Effect.gen(function* () {
           for (;;) {
             const job = yield* claim(options.name, kinds);
             const handler = job && handlers.get(job.kind);
             if (job === undefined || handler === undefined) return;
-            const fiber = yield* Effect.forkIn(runOne(handler, job), scope);
-            runs.set(fiber, job);
-            yield* Fiber.await(fiber);
-            runs.delete(fiber);
+            const run = Effect.ensuring(
+              survive("a run", runOne(handler, job)),
+              Effect.sync(() => runs.delete(job)),
+            );
+            runs.set(job, yield* Effect.forkIn(run, scope));
           }
         });
 
-        own.add(yield* Effect.forkIn(Effect.repeat(drain, POLL), scope));
-        own.add(yield* Effect.forkIn(Effect.repeat(reap, REAP), scope));
+        own.add(yield* Effect.forkIn(Effect.repeat(survive("the claim loop", drain), POLL), scope));
+        own.add(yield* Effect.forkIn(Effect.repeat(survive("the reaper", reap), REAP), scope));
 
         const kill = Effect.suspend(() => Fiber.interruptAll([...own]));
         const stop = Effect.gen(function* () {
           yield* kill;
           const inFlight = [...runs];
           runs.clear();
-          yield* Fiber.interruptAll(inFlight.map(([fiber]) => fiber));
-          yield* Effect.forEach(inFlight, ([, job]) => release(job), { discard: true });
+          yield* Fiber.interruptAll(inFlight.map(([, fiber]) => fiber));
+          yield* Effect.forEach(inFlight, ([job]) => release(job), { discard: true });
         });
         return { stop, kill } satisfies Worker;
       });
 
     /**
-     * Each event after the consumer's cursor, in seq order: the cursor moves by compare-and-swap
-     * from the seq this copy read, and the event is handled in that same transaction, so a copy
-     * that lost the swap acts on nothing, and a handler that fails leaves the cursor where it was.
+     * Takes the consumer's job when it is queued and due, or when its claim has expired, and raises
+     * the cursor's own claim number in the same transaction: from then on a copy holding an older
+     * number can't move the cursor. Returns the claim and the seq the cursor is at.
      */
-    const consume = (
-      name: string,
-      handle: (event: ConsumedEvent) => Effect.Effect<void, unknown>,
-    ) =>
+    const claimConsumer = (name: string) =>
       Effect.gen(function* () {
-        const [cursor] = yield* query((tx) =>
-          tx
-            .select({ lastSeq: consumerCursors.lastSeq })
-            .from(consumerCursors)
-            .where(eq(consumerCursors.consumer, name)),
-        );
-        let at = cursor?.lastSeq ?? 0;
-        const next = yield* query((tx) =>
-          tx
-            .select({ seq: events.seq, kind: events.kind, payload: events.payload })
-            .from(events)
-            .where(gt(events.seq, at))
-            .orderBy(asc(events.seq))
-            .limit(EVENT_BATCH),
-        );
-        for (const event of next) {
-          const from = at;
-          const moved = yield* Effect.exit(
-            db.withTransaction(
-              Effect.gen(function* () {
-                const tx = yield* Tx;
-                const swapped = yield* Effect.promise(() =>
-                  tx
-                    .update(consumerCursors)
-                    .set({ lastSeq: event.seq })
-                    .where(
-                      and(eq(consumerCursors.consumer, name), eq(consumerCursors.lastSeq, from)),
-                    )
-                    .returning({ consumer: consumerCursors.consumer }),
-                );
-                if (swapped.length === 0) return false;
-                yield* handle(event);
-                return true;
-              }),
-            ),
-          );
-          if (Exit.isFailure(moved)) {
-            yield* Effect.logWarning(
-              `consumer ${name} failed on event ${event.seq}; it is tried again`,
-            );
-            return;
-          }
-          if (!moved.value) return;
-          at = event.seq;
-        }
+        const now = yield* Clock.currentTimeMillis;
+        return yield* query(async (tx) => {
+          const [row] = await tx
+            .update(jobs)
+            .set({
+              state: "claimed",
+              claimNo: sql`${jobs.claimNo} + 1`,
+              claimedBy: name,
+              claimExpiresAt: new Date(now + Duration.toMillis(CLAIM)),
+            })
+            .where(
+              and(
+                eq(jobs.kind, CONSUMER),
+                eq(jobs.key, consumerKey(name)),
+                or(
+                  and(eq(jobs.state, "queued"), lte(jobs.runAfter, new Date(now))),
+                  and(eq(jobs.state, "claimed"), lt(jobs.claimExpiresAt, new Date(now))),
+                ),
+              ),
+            )
+            .returning();
+          if (row === undefined) return undefined;
+          const [cursor] = await tx
+            .insert(consumerCursors)
+            .values({ consumer: name, claimNo: 1 })
+            .onConflictDoUpdate({
+              target: consumerCursors.consumer,
+              set: { claimNo: sql`${consumerCursors.claimNo} + 1` },
+            })
+            .returning({ claimNo: consumerCursors.claimNo, lastSeq: consumerCursors.lastSeq });
+          if (cursor === undefined) throw new Error(`consumer ${name}'s cursor returned no row`);
+          return { job: viewOf(row), claimNo: cursor.claimNo, at: cursor.lastSeq };
+        });
       });
+
+    /** The committed events after `at`, in seq order. */
+    const eventsAfter = (at: number) =>
+      query((tx) =>
+        tx
+          .select({ seq: events.seq, kind: events.kind, payload: events.payload })
+          .from(events)
+          .where(gt(events.seq, at))
+          .orderBy(asc(events.seq))
+          .limit(EVENT_BATCH),
+      );
 
     const startConsumer = (options: {
       readonly name: string;
-      readonly handle: (event: ConsumedEvent) => Effect.Effect<void, unknown>;
+      readonly handle: (event: ConsumedEvent) => Effect.Effect<void, unknown, Tx>;
     }) =>
       Effect.gen(function* () {
-        yield* query((tx) =>
-          tx.insert(consumerCursors).values({ consumer: options.name }).onConflictDoNothing(),
-        );
-        const fiber = yield* Effect.forkScoped(
-          Effect.repeat(consume(options.name, options.handle), POLL),
-        );
-        const end = Fiber.interrupt(fiber);
-        return { stop: end, kill: end } satisfies Worker;
+        const { name, handle } = options;
+        const scope = yield* Effect.scope;
+        yield* Effect.orDie(db.withTransaction(enqueue(CONSUMER, consumerKey(name), {})));
+
+        /** The claim this copy holds: its job, the cursor's claim number, the seq it is at. */
+        interface Claim {
+          readonly job: JobView;
+          readonly claimNo: number;
+          at: number;
+          /** Failed tries on the event after `at`. */
+          failures: number;
+          beat?: Fiber.Fiber<unknown, unknown>;
+        }
+        let held: Claim | undefined;
+        /** What a kill ends: the consume loop and the check-ins. */
+        const own = new Set<Fiber.Fiber<unknown, unknown>>();
+        /** The event in flight, which a kill leaves running and a stop lets commit. */
+        let inFlight: Fiber.Fiber<void, unknown> | undefined;
+
+        const letGo = (claim: Claim) =>
+          Effect.suspend(() => {
+            if (held === claim) held = undefined;
+            if (claim.beat === undefined) return Effect.void;
+            own.delete(claim.beat);
+            return Fiber.interrupt(claim.beat);
+          });
+
+        /**
+         * One event in one transaction: the handler, then the cursor's move from the seq this
+         * copy is at, only while the cursor carries this copy's claim number, then the events.
+         */
+        const act = (claim: Claim, event: ConsumedEvent) =>
+          db.withTransaction(
+            Effect.gen(function* () {
+              yield* handle(event);
+              const tx = yield* Tx;
+              if (claim.failures > 0) {
+                yield* Effect.promise(() =>
+                  tx.update(jobs).set({ attempts: 0 }).where(eq(jobs.id, claim.job.id)),
+                );
+              }
+              const moved = yield* Effect.promise(() =>
+                tx
+                  .update(consumerCursors)
+                  .set({ lastSeq: event.seq })
+                  .where(
+                    and(
+                      eq(consumerCursors.consumer, name),
+                      eq(consumerCursors.lastSeq, claim.at),
+                      eq(consumerCursors.claimNo, claim.claimNo),
+                    ),
+                  )
+                  .returning({ consumer: consumerCursors.consumer }),
+              );
+              if (moved.length === 0) return yield* new ClaimLost({ jobId: claim.job.id });
+              yield* db.commitWithEvents;
+            }),
+          );
+
+        /** Claims the consumer if this copy doesn't hold it, then acts on what is after its cursor. */
+        const pass = Effect.gen(function* () {
+          if (held === undefined) {
+            const claimed = yield* claimConsumer(name);
+            if (claimed === undefined) return;
+            const claim: Claim = { ...claimed, failures: claimed.job.attempts };
+            const lost = Effect.sync(() => {
+              if (held === claim) held = undefined;
+            });
+            claim.beat = yield* Effect.forkIn(
+              Effect.catch(
+                Effect.schedule(survive("a consumer's check-in", checkIn(claim.job)), CHECK_IN),
+                () => lost,
+              ),
+              scope,
+            );
+            own.add(claim.beat);
+            held = claim;
+          }
+          const claim = held;
+          for (const event of yield* eventsAfter(claim.at)) {
+            const fiber = yield* Effect.forkIn(act(claim, event), scope);
+            inFlight = fiber;
+            const exit = yield* Fiber.await(fiber);
+            inFlight = undefined;
+            if (Exit.isSuccess(exit)) {
+              claim.at = event.seq;
+              claim.failures = 0;
+              continue;
+            }
+            if (Cause.hasInterruptsOnly(exit.cause)) return;
+            yield* letGo(claim);
+            const error = Cause.squash(exit.cause);
+            // Another copy holds the consumer now: this one acted on nothing.
+            if (error instanceof ClaimLost) return;
+            const dead = yield* fail(claim.job, errorText(error), claim.failures + 1);
+            yield* dead
+              ? Effect.logError(
+                  `consumer ${name} is dead after ${TRIES} failures on event ${event.seq}; it acts on nothing more`,
+                )
+              : Effect.logWarning(
+                  `consumer ${name} failed on event ${event.seq}; it is tried again after its backoff`,
+                );
+            return;
+          }
+        });
+
+        own.add(yield* Effect.forkIn(Effect.repeat(survive("a consume pass", pass), POLL), scope));
+
+        const kill = Effect.suspend(() => Fiber.interruptAll([...own]));
+        const stop = Effect.gen(function* () {
+          yield* kill;
+          // An event's handler has already acted once it runs: its transaction ends before the
+          // claim is handed back, so the next copy never acts on it again.
+          if (inFlight !== undefined) yield* Fiber.await(inFlight);
+          const claim = held;
+          held = undefined;
+          if (claim !== undefined) yield* release(claim.job);
+        });
+        return { stop, kill } satisfies Worker;
       });
 
     return { enqueue, get, startWorker, startConsumer };
