@@ -44,12 +44,15 @@ except ModuleNotFoundError:  # Python 3.10
     except ModuleNotFoundError:
         sys.exit("render.py needs Python 3.11+, or the tomli package (sudo apt install python3-tomli)")
 
-RENDERER = "avel-render 3"
+RENDERER = "avel-render 4"
 # A package keeps the renderer it was rendered with, so a kit change never invalidates one in flight:
 # --verify renders it again with the version its MANIFEST.json names. 2 adds the "Messages received"
 # report section (CR-37) and the comma-separated lock line. 3 puts every build on Opus (Javaris, Nov 18:
-# "builders should be on opus not sonnet"); before 3, only a full-rigor build was.
-RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3")
+# "builders should be on opus not sonnet"); before 3, only a full-rigor build was. 4: a build pushes its
+# branch and opens the PR once its report says done (CR-46 B3); before 4, every dispatch was told not to push.
+RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3", "avel-render 4")
+# The renderers whose activation tells every dispatch "Don't push."
+NO_PUSH_BEFORE = ("avel-render 1", "avel-render 2", "avel-render 3")
 # The renderers that gave a standard-rigor build Sonnet.
 OPUS_BUILDS_BEFORE = ("avel-render 1", "avel-render 2")
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -431,7 +434,7 @@ def report_path(plan, d):
     return f"{sprint_path(plan)}/{d['doc']}-completion.md"
 
 
-def activation(plan, d):
+def activation(plan, d, renderer=RENDERER):
     t, s = d["ticket"], plan["_seats"]
     me = cap(d["agent"])
     doc = f"{sprint_path(plan)}/{d['doc']}.md"
@@ -459,7 +462,12 @@ def activation(plan, d):
     lines.append("If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, "
                  "needs-dependency or out-of-scope. Don't start a new approach on your own.")
     end = "committed to the branch" if d["kind"] != "review" else "left uncommitted"
-    lines.append(f"End with your completion report at `{report_path(plan, d)}`, {end}. Don't push.")
+    if d["kind"] == "build" and renderer not in NO_PUSH_BEFORE:
+        lines.append(f"End with your completion report at `{report_path(plan, d)}`, {end}. Once it says done, push "
+                     f"the branch (`git push -u origin {d['branch']}`) and open its PR with `gh pr create`, the report "
+                     "as its description. Push nothing else, and never merge.")
+    else:
+        lines.append(f"End with your completion report at `{report_path(plan, d)}`, {end}. Don't push.")
     return " ".join(lines)
 
 
@@ -684,7 +692,7 @@ def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
     out.append("Then these sections:\n" + bullets(sections) + "\n")
 
     out.append("## Activation prompt\n")
-    out.append("> " + activation(plan, d) + "\n")
+    out.append("> " + activation(plan, d, renderer) + "\n")
     return "\n".join(out)
 
 
@@ -736,7 +744,7 @@ def render_package(plan, owned, renderer=RENDERER):
                "<!-- Every task doc's activation prompt, archived. Rendered; never edit. -->", ""]
     for d in ds:
         files[d["doc"] + ".md"] = task_doc(plan, d, owned, renderer)
-        prompts += [f"## {d['doc']}", "", "> " + activation(plan, d), ""]
+        prompts += [f"## {d['doc']}", "", "> " + activation(plan, d, renderer), ""]
     files["DISPATCH-PROMPTS.md"] = "\n".join(prompts)
 
     manifest = {"renderer": renderer, "plan_sha256": plan["_sha"], "lane": lane, "sprint": sprint,
@@ -1190,6 +1198,15 @@ def cmd_docs(agent):
                     print(f"{lane}\t{sprint}\t{x['doc']}\t{n}")
 
 
+def package_renderer(plan):
+    """The renderer a rendered package names in its MANIFEST.json (the current one if it has none)."""
+    try:
+        with open(os.path.join(folder(plan["_lane"], plan["_sprint"]), "MANIFEST.json")) as fh:
+            return json.load(fh).get("renderer", RENDERER)
+    except Exception:
+        return RENDERER
+
+
 def cmd_info(target, doc):
     plan = load_for_state(target)
     for d in dispatches(plan):
@@ -1197,7 +1214,7 @@ def cmd_info(target, doc):
             vals = {"AGENT": d["agent"], "SEAT": d["seat"], "KIND": d["kind"], "ROLE": d["role"],
                     "TICKET": d["ticket"]["id"], "BRANCH": d["branch"], "CHECKOUT": d["checkout"],
                     "MODEL": d["model"], "RIGOR": d["ticket"]["rigor"], "REPORT": report_path(plan, d),
-                    "FINDINGS": f"{sprint_path(plan)}/findings", "ACTIVATION": activation(plan, d),
+                    "FINDINGS": f"{sprint_path(plan)}/findings", "ACTIVATION": activation(plan, d, package_renderer(plan)),
                     "DOC_PATH": f"{sprint_path(plan)}/{d['doc']}.md"}
             for k, v in vals.items():
                 print(f"{k}={shlex.quote(v)}")

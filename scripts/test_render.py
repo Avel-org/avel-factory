@@ -540,6 +540,35 @@ class Flow(unittest.TestCase):
         info = r.run("python3 scripts/render.py --info backend/sprint-01 agent-soap-t-b1-build").stdout
         self.assertIn("MODEL=opus", info)
 
+    def test_a_v4_build_pushes_its_branch_and_opens_its_pr(self):
+        # CR-46 B3: the builder pushes its own branch and opens the PR; tests and reviews never push.
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        d = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01")
+        build = read(os.path.join(d, "agent-soap-t-b1-build.md")).decode()
+        self.assertIn("git push -u origin t/B1-effect-spike", build)
+        self.assertIn("gh pr create", build)
+        self.assertNotIn("Don't push.", build)
+        for doc in ("agent-rigg-t-b1-test-unit", "agent-rigg-t-b1-review"):
+            self.assertIn("Don't push.", read(os.path.join(d, doc + ".md")).decode(), doc)
+        self.assertIn('"renderer": "avel-render 4"', read(os.path.join(d, "MANIFEST.json")).decode())
+
+    def test_a_package_rendered_before_v4_still_says_dont_push_at_run_time(self):
+        r = self.r
+        r.run("python3 - <<'PY'\n"
+              "import os, sys\n"
+              "sys.path.insert(0, 'scripts')\n"
+              "import render\n"
+              "plan, _ = render.load_plan('backend', 'sprint-01', render.load_json('roster.json'))\n"
+              "files = render.render_package(plan, render.owned_paths([plan]), 'avel-render 3')\n"
+              "for name, body in files.items():\n"
+              "    open(os.path.join(render.folder('backend', 'sprint-01'), name), 'w').write(body)\n"
+              "PY")
+        r.run("git add -A && git commit -qm 'a v3 package'")
+        self.assertIn("matches a fresh render", r.run("python3 scripts/render.py --verify backend/sprint-01").stdout)
+        info = r.run("python3 scripts/render.py --info backend/sprint-01 agent-soap-t-b1-build").stdout
+        self.assertIn("Don", info)
+        self.assertNotIn("gh pr create", info)
+
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")

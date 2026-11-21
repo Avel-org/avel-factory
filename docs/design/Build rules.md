@@ -56,7 +56,7 @@ PLAN → TESTS → BUILD → CHECK → REVIEW → MERGE
 - **B3. Build.** Once the tests are locked in `locks.md`, OSA starts the builder's **build dispatch** on the same branch. The session ends with its completion report, which becomes the pull request's description.
 - **B4. Check.** CI runs on every PR (H4).
 - **B5. Review.** The checker's **review dispatch** reviews each PR on a detached checkout, once per cycle (section G).
-- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41).
+- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41). Auto-merge (CR-46 B3) is turned on by OSA, with `gh pr merge --auto --squash`, only after the review's verdict is pass with no P0 or P1; never when the PR opens, since CI goes green before the review exists. Contract and schema PRs (I3) are merged by hand.
 - **B7. Work in progress:**
   - At most 4 sessions run at once: one checker per lane, and up to two builders per lane when their tickets share no file and neither depends on the other (CR-45). A session that runs the web's Playwright suite counts as two.
   - A checker can write tests for the next ticket while the builder works on the current one, because they touch different files.
@@ -145,6 +145,7 @@ CI is green and the acceptance tests pass. Nothing else.
 - **D7. Permissions:**
   - On your laptop, sessions run with the repo's `.claude/settings.json` allowlist: pnpm, git inside the worktree, and the package registry.
   - Permissions are skipped only inside a sandbox (a container, or a MIOSA room under CR-22), never on the laptop.
+  - A build dispatch pushes its own ticket branch and opens its PR once its report says done (CR-46 B3): the allowlist has `git push origin t/` and `gh pr create`, and `scripts/hooks/push_guard.py` holds a session to `git push [-u] origin <its branch>`. A tests or review dispatch never pushes. Nobody force-pushes, deletes a branch or merges from a dispatch.
 - **D8. Helpers only read.** A session may start small helper agents to search code or docs. Helpers never change files, and they count against the session's cost limit.
 
 ## E. Build rules
@@ -249,7 +250,7 @@ CI is green and the acceptance tests pass. Nothing else.
   - for the web: the bundle budget, accessibility and end-to-end tests. On a pull request the end-to-end tests run only when the web, the contract, the mock, the lockfile or the workflows change (CR-45); a push to `main` always runs them.
 - **H5. A red check blocks.** Nobody merges red, retries CI to get a green, or marks a check optional.
 - **H6. Lock checks:** CI fails a PR if the builder's commits touch a file outside the build task doc's Territory, or any file listed in `locks.md`. The lists are read from the rendered task doc and `locks.md`, never from the issue. CI also fails a PR whose task docs differ from what `render.py` renders from the plan.
-- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
+- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
 
 ## I. Docs and change requests
 

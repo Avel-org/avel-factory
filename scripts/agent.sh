@@ -262,6 +262,8 @@ name="$title a$n"
 export AVEL_SEAT="$name"
 # The turn limit for an interactive session (CR-37): scripts/hooks/turns.py reads these.
 export AVEL_TURN_LIMIT="$turns" AVEL_REPORT="$wt/$REPORT"
+# The push guard (scripts/hooks/push_guard.py, CR-46 B3): only a build pushes, and only its own branch.
+export AVEL_BRANCH="$BRANCH" AVEL_KIND="$KIND"
 
 # The session's identity and settings come from main, not from the ticket branch, which may predate a
 # kit change (scripts/agents/kit.py). --agents outranks the branch's .claude/agents; --settings adds
@@ -292,7 +294,7 @@ if (( headless )); then
 else
   # A finished session ends itself: the Stop hook (scripts/hooks/session.py) raises the flag once the
   # report is final, and 15 seconds later, if no new turn has lowered it, the session is closed.
-  export AVEL_DONE_FLAG="$state/logs/$lane-$sprint-$doc.a$n.done" AVEL_KIND="$KIND"
+  export AVEL_DONE_FLAG="$state/logs/$lane-$sprint-$doc.a$n.done"
   # The hook compares the report against the one the worktree held at the start (REPORT_START above).
   export AVEL_REPORT_START="$REPORT_START"
   rm -f "$AVEL_DONE_FLAG"

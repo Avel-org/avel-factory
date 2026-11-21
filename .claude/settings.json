@@ -18,6 +18,9 @@
       "Bash(git show:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
+      "Bash(git push origin t/:*)",
+      "Bash(git push -u origin t/:*)",
+      "Bash(gh pr create:*)",
       "Bash(git restore:*)",
       "Bash(git rev-parse:*)",
       "Bash(git branch --show-current)",
@@ -161,6 +164,15 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/turns.py\" pre"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/push_guard.py\""
           }
         ]
       }

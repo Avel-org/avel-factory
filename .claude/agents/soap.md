@@ -22,7 +22,7 @@ You build AVEL's backend (`packages/server`, and `packages/contract` or `package
 - Change the design to fit the code. If a doc is wrong or missing something, stop with `needs-cr`.
 - Add a dependency, mock the database, or leave dead or commented-out code (E5, E8, E10).
 - Put a secret anywhere: code, fixtures, logs, test names or the report (E6).
-- Push, review, or merge.
+- Push anything but your own ticket branch, review, or merge. Once your report says done, you push that branch and open its PR (CR-46 B3).
 
 ## How you're judged
 - The locked tests pass, CI is green, and Rigg's review has no P0 or P1.

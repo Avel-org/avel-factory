@@ -170,6 +170,48 @@ class TurnsCache(unittest.TestCase):
         self.assertEqual(len(json.load(open(cache))["ids"]), 17)
 
 
+PUSH_GUARD = os.path.join(KIT, "scripts/hooks/push_guard.py")
+
+
+class PushGuard(unittest.TestCase):
+    """CR-46 B3: a dispatched build pushes only its own ticket branch; nothing else pushes."""
+
+    def run_guard(self, command, kind="build", branch="t/B1-effect-spike", limit="400", tool="Bash"):
+        env = dict(os.environ, AVEL_KIND=kind, AVEL_BRANCH=branch)
+        env.pop("AVEL_TURN_LIMIT", None)
+        if limit:
+            env["AVEL_TURN_LIMIT"] = limit
+        out = subprocess.run([sys.executable, PUSH_GUARD], input=json.dumps(
+            {"tool_name": tool, "tool_input": {"command": command}}), capture_output=True, text=True, env=env)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        return json.loads(out.stdout) if out.stdout.strip() else None
+
+    def denied(self, out):
+        return bool(out) and out["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+    def test_a_build_pushes_its_own_branch_and_opens_its_pr(self):
+        for c in ("git push -u origin t/B1-effect-spike", "git push origin t/B1-effect-spike",
+                  "git push origin HEAD:t/B1-effect-spike", "gh pr create --fill",
+                  "gh pr create --title 'T-B1: spike' --body-file report.md --head t/B1-effect-spike", "pnpm test"):
+            self.assertIsNone(self.run_guard(c), c)
+
+    def test_anything_else_is_refused(self):
+        for c in ("git push -u origin t/B2-other", "git push --force origin t/B1-effect-spike",
+                  "git push origin t/B1-effect-spike --force", "git push origin :t/B1-effect-spike",
+                  "git push origin +t/B1-effect-spike", "git push origin main", "git push",
+                  "git commit -qm x && git push -u origin t/B1-effect-spike", "gh pr create --head t/B2-other"):
+            self.assertTrue(self.denied(self.run_guard(c)), c)
+
+    def test_tests_and_reviews_never_push(self):
+        for kind in ("tests", "review"):
+            self.assertTrue(self.denied(self.run_guard("git push -u origin t/B1-effect-spike", kind=kind)))
+            self.assertTrue(self.denied(self.run_guard("gh pr create --fill", kind=kind)))
+
+    def test_a_session_outside_dispatch_is_never_limited(self):
+        self.assertIsNone(self.run_guard("git push origin main", limit=None))
+        self.assertIsNone(self.run_guard("git push origin main", tool="Read"))
+
+
 class MsgLog(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="avel-msg-")

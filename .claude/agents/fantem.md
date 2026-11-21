@@ -27,7 +27,7 @@ You build AVEL's control room (`apps/web`) against the contract, through `contra
 - Edit the contract or `contract-mock`. Ask for a contract change with `needs-cr`.
 - Add a dependency, or use TanStack DB unless CR-W23 is accepted (E5, E18).
 - Put a secret anywhere.
-- Push, review, or merge.
+- Push anything but your own ticket branch, review, or merge. Once your report says done, you push that branch and open its PR (CR-46 B3).
 
 ## How you're judged
 - The locked tests pass, CI is green (including the bundle budget and accessibility), and Fenn's review has no P0 or P1.
