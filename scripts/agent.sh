@@ -241,11 +241,45 @@ fi
 # When the session ends: drop the marker and keep a copy of this attempt's report (a reviewer's stays
 # uncommitted). The worktree stays, so a crashed or cut-off session can be found again; --prune removes it
 # once the ticket is merged. The branch stays too; the next attempt makes a fresh worktree.
+# CR-50 decision 3: a finished review is posted to its ticket's PR, so the verdict doesn't live only in
+# .git/avel on this machine. Only where origin is GitHub and the PR is open; never when the text looks like
+# it holds a secret (then it's logged and left for OSA).
+post_review() {
+  git -C "$root" remote get-url origin 2>/dev/null | grep -q 'github.com' || return 0
+  command -v gh >/dev/null 2>&1 || return 0
+  local pr body
+  pr=$(timeout 30 gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' 2>/dev/null) || return 0
+  [[ -n $pr ]] || return 0
+  body=$(mktemp)
+  {
+    echo "**${AGENT^}'s review of $TICKET (review a$n), posted by the kit (CR-50 decision 3).**"
+    echo
+    echo "Reviewed head: $(git -C "$wt" rev-parse HEAD)"
+    echo
+    echo "<details><summary>Review report</summary>"; echo; cat "$wt/$REPORT"; echo; echo "</details>"
+    for f in "$wt/$FINDINGS"/"$(echo "$TICKET" | tr A-Z a-z)"-*.md; do
+      [[ -f $f ]] || continue
+      echo; echo "<details><summary>$(basename "$f")</summary>"; echo; cat "$f"; echo; echo "</details>"
+    done
+  } >"$body"
+  if grep -q -i -E 'sk-ant|ghp_|github_pat_|AKIA[0-9A-Z]{12}|BEGIN (RSA|OPENSSH|EC) PRIVATE|api[_-]?key *[:=] *[A-Za-z0-9]{16,}' "$body"; then
+    echo "not posting the review to #$pr: its text looks like it holds a secret (OSA checks it)"
+  else
+    timeout 30 gh pr comment "$pr" --body-file "$body" >/dev/null 2>&1 && echo "review posted to #$pr"
+  fi
+  rm -f "$body"
+}
+
 finish() {
   rm -f "$marker"
   if [[ -f $wt/$REPORT && $(sha256sum "$wt/$REPORT" | cut -d' ' -f1) != "$REPORT_START" ]]; then
     cp "$wt/$REPORT" "$state/reports/$lane-$sprint-$doc.a$n.md"
     echo "report: $(grep -m1 -i '^status:' "$wt/$REPORT" || echo 'no status line')"
+    if [[ $KIND == review ]]; then
+      # CR-50 decision 3: the commit the review read, which merge.py holds the PR's head to.
+      git -C "$wt" rev-parse HEAD >"$state/reports/$lane-$sprint-$doc.a$n.head" 2>/dev/null || true
+      post_review || true
+    fi
   elif [[ -f $wt/$REPORT ]]; then
     # Nov 17: a2 of T-B3's build was killed by a crash, and a1's report on the branch was kept as a2's.
     echo "no report from a$n: $REPORT is an earlier attempt's, unchanged. The lead decides what's next"
