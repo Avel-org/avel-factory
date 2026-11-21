@@ -151,8 +151,8 @@ You write this ticket's acceptance tests before anything is built. They must fai
 | T-B22 | tests | `packages/server/test/metering/**` |
 | T-B24 | builds | `packages/server/src/factory/decisions/**`, `packages/server/src/platform/status/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
 | T-B24 | tests | `packages/server/test/decisions/**`, `packages/server/test/status/**` |
-| T-B25 | builds | `packages/server/src/factory/missions/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
-| T-B25 | tests | `packages/server/test/missions/**` |
+| T-B25 | builds | `packages/server/src/factory/missions/**`, `packages/contract/src/routes/missions.ts`, `packages/contract/src/version.ts`, `packages/contract/package.json`, `docs/generated/openapi.json`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
+| T-B25 | tests | `packages/server/test/missions/**`, `packages/contract/test/cr-w32.test.ts` |
 | T-B27 | builds | `packages/server/src/platform/jobs/**`, `docs/steps/step-1-done.md` |
 | T-B27 | tests | `packages/server/test/jobs-follow-ups/**`, `packages/server/test/platform-hardening/pool-timeouts.test.ts`, `packages/server/test/follow-ups/05-close-releases-pools.test.ts`, `packages/server/test/jobs/retries.test.ts`, `packages/server/test/step-1/done-when.test.ts` |
 

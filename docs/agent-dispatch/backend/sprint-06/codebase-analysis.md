@@ -24,7 +24,7 @@ packages/contract (1.0.0: 119 routes), packages/db (schema, migrations 0000 to 0
 
 - Review (G5): one review, no round 2. Only a P0 or P1 sends a PR back; every P2 goes to a later ticket or the backlog, named in the PR text
 - Backlog, not this cycle: T-B18's review findings rigg-02 and zero-02, and rigg-05's Jobs and workers.md half, wait for CR-49 (decision 7); rigg-03's CI job that runs the server suite 5 times under extra CPU load is kit work (.github), for OSA's list. t-b20-rigg-02 (P3): done-when.test.ts doesn't check the ticket cell, and its skip pattern misses it.effect.skip and it.effect.only. rigg-01, rigg-03's two tests, rigg-04, rigg-05's code half and zero-01 are T-B27
-- T-B27, T-B21, T-B22 and T-B26 are full rigor (C4: claims and the reaper, tokens, the proxy and money, events and seq): Rigg reviews on Opus, Zero gives the security-checklist review (G7), and Javaris merges. T-B24 and T-B25 are standard and merge on Javaris's standing approval (CR-45)
+- T-B27, T-B21, T-B22 and T-B26 are full rigor (C4: claims and the reaper, tokens, the proxy and money, events and seq): Rigg reviews (on the model the kit sets, #96), Zero gives the security-checklist review (G7), and Javaris merges. T-B24 and T-B25 are standard and merge on Javaris's standing approval (CR-45)
 - Lock from a detached worktree, then fast-forward the t/* branch; merge main into a ticket branch before its build starts
 - No ticket changes packages/contract, packages/db, package.json or the lockfile
 
