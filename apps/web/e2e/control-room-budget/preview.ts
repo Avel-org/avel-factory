@@ -1,6 +1,7 @@
 import { type ChildProcess, execFile, spawn } from "node:child_process";
 import { join } from "node:path";
 import { PREVIEW_PORT } from "../support/ports";
+import { PREVIEW_ENV } from "../support/preview-auth";
 
 const root = join(import.meta.dirname, "..", "..");
 const STARTUP_MS = 60_000;
@@ -39,7 +40,7 @@ export function productionPreview() {
           String(PREVIEW_PORT),
           "--strictPort",
         ],
-        { cwd: root, env: { ...process.env, AVEL_API: "", NO_COLOR: "1", FORCE_COLOR: "0" } },
+        { cwd: root, env: { ...process.env, ...PREVIEW_ENV } },
       );
       let seen = "";
       const timer = setTimeout(() => {
