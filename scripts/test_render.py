@@ -583,8 +583,26 @@ class Flow(unittest.TestCase):
         d = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01")
         for doc, model in (("agent-soap-t-b1-build", "opus"), ("agent-soap-t-b3-build", "opus"),
                            ("agent-rigg-t-b1-test-unit", "sonnet"), ("agent-rigg-t-b1-review", "sonnet"),
-                           ("agent-rigg-t-b3-review", "opus")):
+                           ("agent-rigg-t-b3-review", "sonnet")):  # avel-render 5: full-rigor reviews on Sonnet too
             self.assertIn(f"model: {model}", read(os.path.join(d, doc + ".md")).decode(), doc)
+
+    def test_a_full_rigor_review_rendered_before_v5_keeps_its_doc_but_starts_on_sonnet(self):
+        # Javaris, Nov 21: full-rigor reviews on Sonnet; a v4 package's doc says opus, its session starts on sonnet.
+        r = self.r
+        r.run("python3 - <<'PY'\n"
+              "import os, sys\n"
+              "sys.path.insert(0, 'scripts')\n"
+              "import render\n"
+              "plan, _ = render.load_plan('backend', 'sprint-01', render.load_json('roster.json'))\n"
+              "files = render.render_package(plan, render.owned_paths([plan]), 'avel-render 4')\n"
+              "for name, body in files.items():\n"
+              "    open(os.path.join(render.folder('backend', 'sprint-01'), name), 'w').write(body)\n"
+              "PY")
+        r.run("git add -A && git commit -qm 'a v4 package'")
+        self.assertIn("matches a fresh render", r.run("python3 scripts/render.py --verify backend/sprint-01").stdout)
+        p = os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/agent-rigg-t-b3-review.md")
+        self.assertIn("model: opus", read(p).decode())
+        self.assertIn("MODEL=sonnet", r.run("python3 scripts/render.py --info backend/sprint-01 agent-rigg-t-b3-review").stdout)
 
     def test_a_build_rendered_before_v3_keeps_its_doc_but_starts_on_opus(self):
         r = self.r
@@ -614,7 +632,7 @@ class Flow(unittest.TestCase):
         self.assertNotIn("Don't push.", build)
         for doc in ("agent-rigg-t-b1-test-unit", "agent-rigg-t-b1-review"):
             self.assertIn("Don't push.", read(os.path.join(d, doc + ".md")).decode(), doc)
-        self.assertIn('"renderer": "avel-render 4"', read(os.path.join(d, "MANIFEST.json")).decode())
+        self.assertIn('"renderer": "avel-render 5"', read(os.path.join(d, "MANIFEST.json")).decode())  # the current renderer
 
     def test_a_package_rendered_before_v4_still_says_dont_push_at_run_time(self):
         r = self.r

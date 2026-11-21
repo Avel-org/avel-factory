@@ -44,13 +44,17 @@ except ModuleNotFoundError:  # Python 3.10
     except ModuleNotFoundError:
         sys.exit("render.py needs Python 3.11+, or the tomli package (sudo apt install python3-tomli)")
 
-RENDERER = "avel-render 4"
+RENDERER = "avel-render 5"
 # A package keeps the renderer it was rendered with, so a kit change never invalidates one in flight:
 # --verify renders it again with the version its MANIFEST.json names. 2 adds the "Messages received"
 # report section (CR-37) and the comma-separated lock line. 3 puts every build on Opus (Javaris, Nov 18:
 # "builders should be on opus not sonnet"); before 3, only a full-rigor build was. 4: a build pushes its
 # branch and opens the PR once its report says done (CR-46 B3); before 4, every dispatch was told not to push.
-RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3", "avel-render 4")
+RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3", "avel-render 4", "avel-render 5")
+# 5: a full-rigor review runs on Sonnet too (Javaris, Nov 21: "I agree with the 4 improvements"); the other lead's
+# second review (G7) stays the backstop. Like the Opus builds of 3, a session starts on the current renderer's
+# model (--info), so reviews of packages rendered with 1 to 4 start on Sonnet while their docs keep saying Opus.
+OPUS_REVIEWS_BEFORE = ("avel-render 1", "avel-render 2", "avel-render 3", "avel-render 4")
 # The renderers whose activation tells every dispatch "Don't push."
 NO_PUSH_BEFORE = ("avel-render 1", "avel-render 2", "avel-render 3")
 # The renderers that gave a standard-rigor build Sonnet.
@@ -409,7 +413,7 @@ def dispatches(plan, renderer=RENDERER):
                         model="opus" if full or renderer not in OPUS_BUILDS_BEFORE else "sonnet",
                         doc=f"agent-{s['builder']}-{tid_l(tid)}-build", checkout="branch"))
         out.append(dict(base, kind="review", role="review", agent=s["checker"], seat="checker",
-                        model="opus" if full else "sonnet",
+                        model="opus" if full and renderer in OPUS_REVIEWS_BEFORE else "sonnet",
                         doc=f"agent-{s['checker']}-{tid_l(tid)}-review", checkout="detached"))
     return out
 
