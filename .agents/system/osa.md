@@ -35,7 +35,7 @@ A **ticket** is one module of a sprint's `docs/agent-dispatch/<lane>/sprint-NN/p
 4. **During the cycle:**
    - Watch every session against `scripts/agents/limits.json`.
    - Read each completion report's status and route it (L2):
-     - `blocked`, `test-dispute` and `out-of-scope` go to the lane's lead;
+     - `blocked`, `test-dispute`, `out-of-scope` and `stuck` go to the lane's lead;
      - `needs-cr` and `needs-dependency` go to Javaris as a decision, with your brief.
    - Run `scripts/dispatch.sh` again whenever something lands.
 5. **After the cycle:**

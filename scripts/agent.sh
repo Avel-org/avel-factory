@@ -131,7 +131,8 @@ start_file() { echo "$state/logs/$lane-$sprint-$doc.a$1.start"; }
 if (( resume )); then
   # CR-46 B2: the same attempt, in the same worktree. Only a stopped dispatch whose attempt left no report.
   read -r st _ < <(render --state "$lane/$sprint" "$doc")
-  [[ $st == stopped ]] || { (( auto )) && exit 0; die "$doc is $st: only a stopped attempt with no report is resumed"; }
+  [[ $st == stopped || ( $st == needs-javaris && $auto == 0 ) ]] ||
+    { (( auto )) && exit 0; die "$doc is $st: only a stopped attempt with no report is resumed"; }
   eval "$(render --last "$lane/$sprint" "$doc")" || die "$doc has no attempt to resume"
   n=$LAST_ATTEMPT wt=$LAST_WORKTREE base=$LAST_BASE
   [[ $HAS_REPORT == 0 ]] || { (( auto )) && exit 0; die "a$n of $doc left a report: a new attempt is the lead's call (scripts/agent.sh $lane $sprint $doc $((n + 1)))"; }
@@ -159,6 +160,7 @@ else
     ready) ;;
     stopped) [[ -n $want ]] || die "$doc stopped on an earlier attempt. A retry is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
     done) [[ -n $want ]] || die "$doc is done (a$((n - 1))). Another attempt after a review is the lead's call: scripts/agent.sh $lane $sprint $doc $n" ;;
+      needs-javaris) [[ -n $want ]] || die "$doc failed twice (K2, L3, CR-46 B6): Javaris decides. Only a named attempt starts it: scripts/agent.sh $lane $sprint $doc $n" ;;
     *) die "$doc is $st, not ready. scripts/render.py --status $lane/$sprint says why." ;;
   esac
   [[ -z $want || $want == "$n" ]] || die "the next attempt of $doc is a$n, not a$want"

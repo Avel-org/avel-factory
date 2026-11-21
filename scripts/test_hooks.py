@@ -277,6 +277,57 @@ class DoneCheck(unittest.TestCase):
         self.assertEqual(self.status(), "status: blocked")
 
 
+STUCK = os.path.join(KIT, "scripts/hooks/stuck.py")
+
+
+class Stuck(unittest.TestCase):
+    """CR-46 B6: the same failing command 3 times in the last 5 failures tells the agent to stop."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="avel-stuck-")
+        subprocess.run(["git", "init", "-q", self.tmp], check=True)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def fail(self, command, error, session="s1", limit="400"):
+        env = dict(os.environ)
+        env.pop("AVEL_TURN_LIMIT", None)
+        if limit:
+            env["AVEL_TURN_LIMIT"] = limit
+        hook = {"session_id": session, "cwd": self.tmp, "hook_event_name": "PostToolUseFailure", "tool_name": "Bash",
+                "tool_input": {"command": command}, "error": error}
+        out = subprocess.run([sys.executable, STUCK], input=json.dumps(hook), capture_output=True, text=True, env=env)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        return json.loads(out.stdout) if out.stdout.strip() else None
+
+    def test_the_third_same_failure_says_stop(self):
+        e = "Exit code 1\nsrc/a.ts(3,1): error TS2322: Type 'string' is not assignable"
+        self.assertIsNone(self.fail("pnpm typecheck", e))
+        self.assertIsNone(self.fail("pnpm  typecheck", e))  # spacing doesn't make it a new command
+        out = self.fail("pnpm typecheck", e)
+        self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "PostToolUseFailure")
+        self.assertIn("status stuck", out["hookSpecificOutput"]["additionalContext"])
+
+    def test_different_failures_and_old_ones_dont_count(self):
+        e = "Exit code 1\nboom"
+        self.fail("pnpm test", e)
+        self.fail("pnpm test", e)
+        for i in range(4):  # four other failures push the two out of the last five
+            self.assertIsNone(self.fail(f"pnpm test other-{i}", e))
+        self.assertIsNone(self.fail("pnpm test", e))
+        self.assertIsNone(self.fail("pnpm test", "Exit code 1\na different error"))
+
+    def test_sessions_are_counted_apart_and_only_in_a_dispatch(self):
+        e = "Exit code 2\nnope"
+        self.fail("x", e, session="a")
+        self.fail("x", e, session="a")
+        self.assertIsNone(self.fail("x", e, session="b"))
+        self.assertIsNone(self.fail("x", e, session="c", limit=None))
+        self.assertIsNone(self.fail("x", e, session="c", limit=None))
+        self.assertIsNone(self.fail("x", e, session="c", limit=None))
+
+
 class MsgLog(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="avel-msg-")

@@ -583,6 +583,33 @@ class Flow(unittest.TestCase):
         self.assertIn("Don", info)
         self.assertNotIn("gh pr create", info)
 
+    def test_two_failed_attempts_need_javaris_and_nothing_starts_a_third(self):
+        # CR-46 B6 with K2 and L3: two failed attempts, then needs-javaris; a resume isn't an attempt.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", env={"FAKE_STATUS": "blocked"})
+        self.assertEqual(self.state(doc), "stopped")
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 2", env={"FAKE_NOOP": "1"})  # a crash
+        # a crashed attempt can still be resumed, so it isn't a failure yet
+        self.assertEqual(r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split(), ["stopped", "3"])
+        r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", env={"FAKE_STATUS": "test-dispute"})
+        out = r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split()
+        self.assertEqual(out, ["needs-javaris", "3"])
+        self.assertIn("needs-javaris", self.status())
+        self.assertEqual(r.run("python3 scripts/render.py --next backend rigg").stdout.strip(), "")
+        refused = r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", check=False)
+        self.assertIn("Javaris decides", refused.stderr)
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 3")  # Javaris's call, named
+        self.assertEqual(self.state(doc), "done")
+
+    def test_a_v4_report_lists_stuck(self):
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        p = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
+        text = read(p).decode()
+        self.assertIn("| out-of-scope | stuck", text)
+        self.assertIn("out-of-scope or stuck", text)
+
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")

@@ -285,12 +285,13 @@ CI is green and the acceptance tests pass. Nothing else.
   - `needs-cr` (a doc is wrong or missing something);
   - `test-dispute`;
   - `needs-dependency`;
-  - `out-of-scope` (it found work the ticket doesn't cover).
+  - `out-of-scope` (it found work the ticket doesn't cover);
+  - `stuck` (the same failure three times; CR-46 B6).
 - **L2. Who answers:**
-  - The lead answers `blocked`, `test-dispute` and `out-of-scope` within the cycle.
+  - The lead answers `blocked`, `test-dispute`, `out-of-scope` and `stuck` within the cycle.
   - `needs-cr` and `needs-dependency` go to Javaris as a decision, with OSA's brief.
   - The agent also messages OSA at once with its status (CR-37); the completion report is still the official record.
-- **L3. The same failure twice ends the loop.** The lead re-plans it or escalates it; nobody retries it a third time.
+- **L3. The same failure twice ends the loop.** The lead re-plans it or escalates it; nobody retries it a third time. Inside a session, the same failing command three times gets a message to stop and report `stuck` (CR-46 B6). A dispatch with two failed attempts shows `needs-javaris` in `render.py --status`, and only a named attempt starts it again; a resume (D1) isn't an attempt.
 - **L4. When Javaris is needed** (OSA's wake rules, CR-29):
   - **now:** a leak, a full-rigor merge waiting more than 2 working hours, the day's cost limit, or a step-close;
   - **otherwise:** the digest at 9:00, 13:00 and 17:00 Central.

@@ -459,8 +459,12 @@ def activation(plan, d, renderer=RENDERER):
     else:
         lines.append("You're on a detached checkout of the builder's result. Review the diff against the ticket, "
                      "the locked tests and the rules. Every finding cites evidence and a severity.")
-    lines.append("If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, "
-                 "needs-dependency or out-of-scope. Don't start a new approach on your own.")
+    if renderer in NO_PUSH_BEFORE:
+        lines.append("If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, "
+                     "needs-dependency or out-of-scope. Don't start a new approach on your own.")
+    else:  # CR-46 B6 adds stuck: the same failure three times
+        lines.append("If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, "
+                     "needs-dependency, out-of-scope or stuck. Don't start a new approach on your own.")
     end = "committed to the branch" if d["kind"] != "review" else "left uncommitted"
     if d["kind"] == "build" and renderer not in NO_PUSH_BEFORE:
         lines.append(f"End with your completion report at `{report_path(plan, d)}`, {end}. Once it says done, push "
@@ -661,7 +665,8 @@ def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
     out.append("```\n")
     out.append(f"**Your report:** `{report_path(plan, d)}`. Its first lines are:\n")
     out.append("```")
-    out.append("status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope")
+    out.append("status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope"
+               + ("" if renderer in NO_PUSH_BEFORE else " | stuck"))
     if kind == "review":
         out.append("verdict: pass | changes | block")
     out.append(f"ticket: {t['id']}")
@@ -900,6 +905,26 @@ def report_status(plan, d, attempt=None):
     return (st.group(1) if st else "unknown", vd.group(1) if vd else None)
 
 
+MAX_FAILED = 2  # K2 and L3: a dispatch that failed twice isn't started a third time as it is (CR-46 B6)
+
+
+def failed_attempts(plan, d, mine):
+    """Attempts of this dispatch that ended without a done report. A resume is the same attempt (B2), and
+    the latest attempt doesn't count yet while it can still be resumed: no report, never resumed, and
+    its worktree still there (a crash is what a resume is for)."""
+    nums = sorted({x["attempt"] for x in mine})
+    failed = 0
+    for a in nums:
+        rep = report_status(plan, d, a)
+        if rep and rep[0] == "done":
+            continue
+        rows = [x for x in mine if x["attempt"] == a]
+        resumable = (a == nums[-1] and not rep and not any(x.get("mode") == "resumed" for x in rows)
+                     and os.path.isdir(rows[0].get("worktree") or ""))
+        failed += 0 if resumable else 1
+    return failed
+
+
 def dispatch_states(plan):
     attempts = read_attempts()
     live = {(m["lane"], m["sprint"], m["doc"]) for m in running_markers()}
@@ -917,6 +942,9 @@ def dispatch_states(plan):
             state, why = "running", f"a{n}"
         elif rep and rep[0] == "done":
             state, why = "done", f"a{n}" + (f" · verdict {rep[1]}" if rep[1] else "")
+        elif n >= MAX_FAILED and failed_attempts(plan, d, mine) >= MAX_FAILED:
+            # CR-46 B6 with K2 and L3: two failed attempts, and nothing starts a third by itself.
+            state, why = "needs-javaris", f"{MAX_FAILED} attempts failed (last a{n}: {rep[0] if rep else 'no report'}): K2, L3"
         elif rep:
             state, why = "stopped", f"{rep[0]} (a{n}): the lead decides"
         elif n:
