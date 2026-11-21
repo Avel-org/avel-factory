@@ -13,7 +13,8 @@ The conditions (CR-36, section 1):
   5  a squash merge: the PR title as the header, the PR's Refs: line as the body  always required
   6  a ticket PR from dispatch: a t/<id>-<slug> branch                            Javaris's approval covers it
   7  not a guardrail or design PR (labels contract or schema, the lockfile,       Javaris's approval covers it
-     .github, .claude, .agents, scripts, docs/design, AGENTS.md)
+     .github, .claude, .agents, scripts, docs/design, AGENTS.md; an agent's
+     .agents/memory/<agent>.md lines are exempt, CR-46 B4)
   8  no "hold" label and no review asking for changes                             always required
 
 With --approved, TEXT must be Javaris's own words from OSA's session, quoted as he wrote them, and they
@@ -46,6 +47,8 @@ TICKET_BRANCH = re.compile(r"^t/([A-Z]\d+)-[a-z0-9-]+$")
 GUARDED_PREFIXES = (".github/", ".claude/", ".agents/", "scripts/", "docs/design/")
 GUARDED_FILES = {"AGENTS.md", "pnpm-lock.yaml"}
 GUARDED_LABELS = {"contract", "schema"}
+# CR-46 B4: an agent's memory lines merge with its ticket's PR; the lock check holds them to one line.
+MEMORY = re.compile(r"^\.agents/memory/[a-z0-9]+\.md$")
 WAIVABLE = {2, 3, 6, 7}
 ROUTE = {1: "the lane's lead", 3: "the lane's lead", 4: "the lane's lead", 6: "the lane's lead",
          8: "the lane's lead", 2: "Javaris, as a decision", 7: "Javaris, as a decision", 5: "OSA (fix the PR text)"}
@@ -81,7 +84,7 @@ def common_dir(root):
 
 def guarded(files, labels):
     """Condition 7: the guardrail and design paths and labels this PR touches."""
-    hits = sorted({f for f in files if f in GUARDED_FILES or f.startswith(GUARDED_PREFIXES)})
+    hits = sorted({f for f in files if (f in GUARDED_FILES or f.startswith(GUARDED_PREFIXES)) and not MEMORY.match(f)})
     return [f"label {l}" for l in sorted(set(labels) & GUARDED_LABELS)] + hits
 
 

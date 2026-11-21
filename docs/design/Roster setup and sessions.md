@@ -69,7 +69,7 @@ While the factory is built by hand, each Claude Code session stands in for one t
 
 ### Good practices
 - **Fresh context, always.** No `/clear` and no reusing a session for different work. If an attempt runs long, the agent finishes its current chain, commits a checkpoint and reports, and the next attempt resumes from that commit.
-- **Fix the page, not the chat.** When an agent gets something wrong that it could get wrong again, add one line to the **Learned** section of `.claude/agents/<name>.md` while you route the finding, and commit it with the merge. Next attempt, the rule is already there.
+- **Fix the page, not the chat.** When an agent gets something wrong that it could get wrong again, add one line to `.agents/memory/<name>.md` while you route the finding, and commit it with the merge (CR-46 B4). Next attempt, the rule is already there.
 - **The task doc is the whole briefing.** If you find yourself typing extra instructions into an agent session, the task doc is missing something: fix the plan, re-render, and start a new attempt. Your corrections then end up in the record.
 - **Reviews in their own sessions.** Never ask a builder's session to review its own work, and don't run a reviewer as a subagent of the builder's session: the builder would decide what the reviewer sees.
 - **Subagents only where the task doc allows them,** inside the same cap.
@@ -121,7 +121,7 @@ The frontend runs the same way: Zero leads, Fenn writes the tests, and Nemi, Fan
 Every agent file has the same sections: the role, **How you work** (or **Reviewing a diff**), **Read first**, **Learned** and **Always**.
 
 - **Read first** names the standing docs, in `docs/design/` (and `packages/contract` and `docs/ui-contracts` once they exist), that the agent opens before it acts on its task doc. If one is missing, it stops and says so. The task doc names this dispatch's sources; Read first means no task doc has to remember the standing ones.
-- **Learned** is the agent's own list of hard rules, one line per mistake. When a review finding or a retry shows a mistake the agent could make again, the operator adds a line there as part of routing that finding. Fix the page, not the chat: a correction typed into a session is lost when the session ends, while a line in Learned holds for every attempt after it. Agents never edit their own file (`.claude/**` is in no territory). A line that holds for every agent goes in **Always** instead, in all 15 files.
+- **Learned** points at the agent's lessons in `.agents/memory/<name>.md` (CR-46 B4): its own list of hard rules, one line per mistake, which `kit.py` puts at the end of every session's prompt. The agent adds a line on its ticket branch when it hits a mistake it would repeat; the lead adds one when a finding or a retry shows one. Fix the page, not the chat: a correction typed into a session is lost when the session ends, while a line in the memory file holds for every attempt after it. Agents never edit their identity file (`.claude/**` is in no territory). A line that holds for every agent goes in **Always** instead, in all 15 files.
 
 Reviewers have no Edit tool, and write only their review reports and findings. Every review starts from the diff: `scripts/agent.sh` sets `AVEL_BASE` to where the attempt left `main`, and the reviewer reads `git diff "$AVEL_BASE"..HEAD` before anything else. Builders and test writers are held to their territories by the lock check and, from Step 4, by Gate 3.
 

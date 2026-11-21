@@ -13,11 +13,13 @@ review. The output depends only on the plan and this file, byte for byte.
   scripts/render.py --ready <lane>/sprint-NN        ready dispatches: <lane> <sprint> <doc> <attempt>, tab-separated
 
 Used by scripts/agent.sh, scripts/dispatch.sh and scripts/agents/lane.sh:
-  --next <lane> <agent>    the agent's next ready dispatch in the lane's current sprint
+  --next <lane> <agent>    the agent's next ready dispatch in the lane's rendered sprints, oldest first
   --docs <agent>           the agent's dispatches that can be opened by hand (ready or stopped)
   --info <lane>/<sprint> <doc>                       a task doc's front matter, as shell assignments
   --state <lane>/<sprint> <doc>                      its state and next attempt number
   --slots <lane> <seat>                              exit 0 if a session may start (B7), else say why
+  --merged <ticket>                                  exit 0 if the ticket is merged on main (agent.sh --prune)
+  --last <lane>/<sprint> <doc>                       its latest attempt, as shell assignments (agent.sh --resume)
   --record <lane>/<sprint> <doc> <attempt> <worktree> <base> <mode>   log an attempt
 
 State lives in <git common dir>/avel/: attempts.jsonl, running/, reports/, paused.
@@ -42,12 +44,15 @@ except ModuleNotFoundError:  # Python 3.10
     except ModuleNotFoundError:
         sys.exit("render.py needs Python 3.11+, or the tomli package (sudo apt install python3-tomli)")
 
-RENDERER = "avel-render 3"
+RENDERER = "avel-render 4"
 # A package keeps the renderer it was rendered with, so a kit change never invalidates one in flight:
 # --verify renders it again with the version its MANIFEST.json names. 2 adds the "Messages received"
 # report section (CR-37) and the comma-separated lock line. 3 puts every build on Opus (Javaris, Nov 18:
-# "builders should be on opus not sonnet"); before 3, only a full-rigor build was.
-RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3")
+# "builders should be on opus not sonnet"); before 3, only a full-rigor build was. 4: a build pushes its
+# branch and opens the PR once its report says done (CR-46 B3); before 4, every dispatch was told not to push.
+RENDERERS = ("avel-render 1", "avel-render 2", "avel-render 3", "avel-render 4")
+# The renderers whose activation tells every dispatch "Don't push."
+NO_PUSH_BEFORE = ("avel-render 1", "avel-render 2", "avel-render 3")
 # The renderers that gave a standard-rigor build Sonnet.
 OPUS_BUILDS_BEFORE = ("avel-render 1", "avel-render 2")
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -429,7 +434,7 @@ def report_path(plan, d):
     return f"{sprint_path(plan)}/{d['doc']}-completion.md"
 
 
-def activation(plan, d):
+def activation(plan, d, renderer=RENDERER):
     t, s = d["ticket"], plan["_seats"]
     me = cap(d["agent"])
     doc = f"{sprint_path(plan)}/{d['doc']}.md"
@@ -454,10 +459,19 @@ def activation(plan, d):
     else:
         lines.append("You're on a detached checkout of the builder's result. Review the diff against the ticket, "
                      "the locked tests and the rules. Every finding cites evidence and a severity.")
-    lines.append("If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, "
-                 "needs-dependency or out-of-scope. Don't start a new approach on your own.")
+    if renderer in NO_PUSH_BEFORE:
+        lines.append("If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, "
+                     "needs-dependency or out-of-scope. Don't start a new approach on your own.")
+    else:  # CR-46 B6 adds stuck: the same failure three times
+        lines.append("If you can't finish inside this ticket, stop with one status: blocked, needs-cr, test-dispute, "
+                     "needs-dependency, out-of-scope or stuck. Don't start a new approach on your own.")
     end = "committed to the branch" if d["kind"] != "review" else "left uncommitted"
-    lines.append(f"End with your completion report at `{report_path(plan, d)}`, {end}. Don't push.")
+    if d["kind"] == "build" and renderer not in NO_PUSH_BEFORE:
+        lines.append(f"End with your completion report at `{report_path(plan, d)}`, {end}. Once it says done, push "
+                     f"the branch (`git push -u origin {d['branch']}`) and open its PR with `gh pr create`, the report "
+                     "as its description. Push nothing else, and never merge.")
+    else:
+        lines.append(f"End with your completion report at `{report_path(plan, d)}`, {end}. Don't push.")
     return " ".join(lines)
 
 
@@ -651,7 +665,8 @@ def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
     out.append("```\n")
     out.append(f"**Your report:** `{report_path(plan, d)}`. Its first lines are:\n")
     out.append("```")
-    out.append("status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope")
+    out.append("status: done | blocked | needs-cr | test-dispute | needs-dependency | out-of-scope"
+               + ("" if renderer in NO_PUSH_BEFORE else " | stuck"))
     if kind == "review":
         out.append("verdict: pass | changes | block")
     out.append(f"ticket: {t['id']}")
@@ -682,7 +697,7 @@ def task_doc(plan, d, all_plans_owned, renderer=RENDERER):
     out.append("Then these sections:\n" + bullets(sections) + "\n")
 
     out.append("## Activation prompt\n")
-    out.append("> " + activation(plan, d) + "\n")
+    out.append("> " + activation(plan, d, renderer) + "\n")
     return "\n".join(out)
 
 
@@ -734,7 +749,7 @@ def render_package(plan, owned, renderer=RENDERER):
                "<!-- Every task doc's activation prompt, archived. Rendered; never edit. -->", ""]
     for d in ds:
         files[d["doc"] + ".md"] = task_doc(plan, d, owned, renderer)
-        prompts += [f"## {d['doc']}", "", "> " + activation(plan, d), ""]
+        prompts += [f"## {d['doc']}", "", "> " + activation(plan, d, renderer), ""]
     files["DISPATCH-PROMPTS.md"] = "\n".join(prompts)
 
     manifest = {"renderer": renderer, "plan_sha256": plan["_sha"], "lane": lane, "sprint": sprint,
@@ -890,6 +905,26 @@ def report_status(plan, d, attempt=None):
     return (st.group(1) if st else "unknown", vd.group(1) if vd else None)
 
 
+MAX_FAILED = 2  # K2 and L3: a dispatch that failed twice isn't started a third time as it is (CR-46 B6)
+
+
+def failed_attempts(plan, d, mine):
+    """Attempts of this dispatch that ended without a done report. A resume is the same attempt (B2), and
+    the latest attempt doesn't count yet while it can still be resumed: no report, never resumed, and
+    its worktree still there (a crash is what a resume is for)."""
+    nums = sorted({x["attempt"] for x in mine})
+    failed = 0
+    for a in nums:
+        rep = report_status(plan, d, a)
+        if rep and rep[0] == "done":
+            continue
+        rows = [x for x in mine if x["attempt"] == a]
+        resumable = (a == nums[-1] and not rep and not any(x.get("mode") == "resumed" for x in rows)
+                     and os.path.isdir(rows[0].get("worktree") or ""))
+        failed += 0 if resumable else 1
+    return failed
+
+
 def dispatch_states(plan):
     attempts = read_attempts()
     live = {(m["lane"], m["sprint"], m["doc"]) for m in running_markers()}
@@ -907,6 +942,9 @@ def dispatch_states(plan):
             state, why = "running", f"a{n}"
         elif rep and rep[0] == "done":
             state, why = "done", f"a{n}" + (f" · verdict {rep[1]}" if rep[1] else "")
+        elif n >= MAX_FAILED and failed_attempts(plan, d, mine) >= MAX_FAILED:
+            # CR-46 B6 with K2 and L3: two failed attempts, and nothing starts a third by itself.
+            state, why = "needs-javaris", f"{MAX_FAILED} attempts failed (last a{n}: {rep[0] if rep else 'no report'}): K2, L3"
         elif rep:
             state, why = "stopped", f"{rep[0]} (a{n}): the lead decides"
         elif n:
@@ -1157,17 +1195,29 @@ def cmd_state(target, doc):
     sys.exit(f"no task doc {doc} in {target}")
 
 
+def rendered_sprints(lane):
+    d = os.path.join(DISPATCH, lane)
+    if not os.path.isdir(d):
+        return []
+    return sorted(n for n in os.listdir(d) if re.fullmatch(r"sprint-\d{2}", n)
+                  and os.path.exists(os.path.join(d, n, "MANIFEST.json")))
+
+
 def cmd_next(lane, agent):
-    sprint = current_sprint(lane, rendered_only=True)
-    if not sprint:
-        return
-    plan = load_for_state(f"{lane}/{sprint}")
-    if package_problems(lane, sprint):
-        return
-    for d, state, _, n in dispatch_states(plan):
-        if state == "ready" and d["agent"] == agent:
-            print(f"{sprint}\t{d['doc']}\t{n}")
-            return
+    """The agent's next ready dispatch in any of the lane's rendered sprints, oldest sprint first. Several
+    sprints are in flight at once (frontend 12 to 14, Nov 20), and the newest-only search left sprint-12
+    and 13 work ready with no session (Nov 21)."""
+    for sprint in rendered_sprints(lane):
+        try:
+            plan = load_for_state(f"{lane}/{sprint}")
+        except SystemExit:
+            continue
+        if package_problems(lane, sprint):
+            continue
+        for d, state, _, n in dispatch_states(plan):
+            if state == "ready" and d["agent"] == agent:
+                print(f"{sprint}\t{d['doc']}\t{n}")
+                return
 
 
 def cmd_docs(agent):
@@ -1188,6 +1238,15 @@ def cmd_docs(agent):
                     print(f"{lane}\t{sprint}\t{x['doc']}\t{n}")
 
 
+def package_renderer(plan):
+    """The renderer a rendered package names in its MANIFEST.json (the current one if it has none)."""
+    try:
+        with open(os.path.join(folder(plan["_lane"], plan["_sprint"]), "MANIFEST.json")) as fh:
+            return json.load(fh).get("renderer", RENDERER)
+    except Exception:
+        return RENDERER
+
+
 def cmd_info(target, doc):
     plan = load_for_state(target)
     for d in dispatches(plan):
@@ -1195,7 +1254,7 @@ def cmd_info(target, doc):
             vals = {"AGENT": d["agent"], "SEAT": d["seat"], "KIND": d["kind"], "ROLE": d["role"],
                     "TICKET": d["ticket"]["id"], "BRANCH": d["branch"], "CHECKOUT": d["checkout"],
                     "MODEL": d["model"], "RIGOR": d["ticket"]["rigor"], "REPORT": report_path(plan, d),
-                    "FINDINGS": f"{sprint_path(plan)}/findings", "ACTIVATION": activation(plan, d),
+                    "FINDINGS": f"{sprint_path(plan)}/findings", "ACTIVATION": activation(plan, d, package_renderer(plan)),
                     "DOC_PATH": f"{sprint_path(plan)}/{d['doc']}.md"}
             for k, v in vals.items():
                 print(f"{k}={shlex.quote(v)}")
@@ -1222,6 +1281,24 @@ def cmd_record(target, doc, attempt, worktree, base, mode):
         f.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+def cmd_last(target, doc):
+    """The doc's latest attempt, for agent.sh --resume (CR-46 B2): its number, worktree, base and
+    first mode, how many times it was resumed, and whether it left a report. Exit 1 if it never ran."""
+    lane, sprint = parse_target(target)
+    rows = [a for a in read_attempts() if (a["lane"], a["sprint"], a["doc"]) == (lane, sprint, doc)]
+    if not rows:
+        sys.exit(f"{doc} has never run")
+    n = max(a["attempt"] for a in rows)
+    mine = [a for a in rows if a["attempt"] == n]
+    first = next((a for a in mine if a.get("mode") != "resumed"), mine[0])
+    copy = os.path.join(state_dir(), "reports", f"{lane}-{sprint}-{doc}.a{n}.md")
+    vals = {"LAST_ATTEMPT": str(n), "LAST_WORKTREE": first.get("worktree", ""), "LAST_BASE": first.get("base", ""),
+            "LAST_MODE": first.get("mode", ""), "RESUMES": str(sum(a.get("mode") == "resumed" for a in mine)),
+            "HAS_REPORT": "1" if os.path.exists(copy) else "0"}
+    for k, v in vals.items():
+        print(f"{k}={shlex.quote(v)}")
+
+
 def cmd_verify(target):
     lane, sprint = parse_target(target)
     problems = package_problems(lane, sprint)
@@ -1240,6 +1317,8 @@ def main():
     g.add_argument("--info", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--state", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--slots", nargs=2, metavar=("LANE", "SEAT"))
+    g.add_argument("--merged", metavar="TICKET")
+    g.add_argument("--last", nargs=2, metavar=("TARGET", "DOC"))
     g.add_argument("--record", nargs=6, metavar=("TARGET", "DOC", "N", "WORKTREE", "BASE", "MODE"))
     ap.add_argument("targets", nargs="*")
     a = ap.parse_args()
@@ -1265,6 +1344,13 @@ def main():
         cmd_slots(*a.slots)
     elif a.record:
         cmd_record(*a.record)
+    elif a.last:
+        cmd_last(*a.last)
+    elif a.merged:
+        # agent.sh --prune: exit 0 when the ticket's squash merge is on main, 1 when it isn't
+        merged = ticket_merged(a.merged.upper())
+        print("merged" if merged else "not merged")
+        sys.exit(0 if merged else 1)
     elif a.targets:
         cmd_check(a.targets, write=True)
     else:

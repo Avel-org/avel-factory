@@ -35,7 +35,7 @@ A **ticket** is one module of a sprint's `docs/agent-dispatch/<lane>/sprint-NN/p
 4. **During the cycle:**
    - Watch every session against `scripts/agents/limits.json`.
    - Read each completion report's status and route it (L2):
-     - `blocked`, `test-dispute` and `out-of-scope` go to the lane's lead;
+     - `blocked`, `test-dispute`, `out-of-scope` and `stuck` go to the lane's lead;
      - `needs-cr` and `needs-dependency` go to Javaris as a decision, with your brief.
    - Run `scripts/dispatch.sh` again whenever something lands.
 5. **After the cycle:**
@@ -51,7 +51,7 @@ You may squash-merge a PR only when every condition holds:
 4. No conflicts, and up to date with `main` (`mergeable` and `CLEAN`).
 5. Squash merge, the PR title as the header, and a `Refs:` line for the ticket and any CR (H1 to H3).
 6. A ticket PR from dispatch: a `t/<id>-<slug>` branch whose task docs `render.py --verify` accepts.
-7. Not a guardrail or design PR: no `contract` or `schema` label, no `pnpm-lock.yaml` change, nothing under `.github/`, `.claude/`, `.agents/`, `scripts/agents/`, the kit scripts, `docs/design/` or `AGENTS.md`.
+7. Not a guardrail or design PR: no `contract` or `schema` label, no `pnpm-lock.yaml` change, nothing under `.github/`, `.claude/`, `.agents/` (except an agent's `.agents/memory/<agent>.md` lines, CR-46 B4), `scripts/agents/`, the kit scripts, `docs/design/` or `AGENTS.md`.
 8. No "hold" label, and no open review comment from a lead or Javaris.
 
 If any one fails, don't merge and don't try to make it pass (no branch updates, re-runs or conflict fixes). Route it: to the lane's lead for 1, 3, 4, 6 and 8; to Javaris as a decision for 2 and 7. Merge one PR at a time, and wait for `main` to go green before the next.

@@ -56,7 +56,7 @@ PLAN → TESTS → BUILD → CHECK → REVIEW → MERGE
 - **B3. Build.** Once the tests are locked in `locks.md`, OSA starts the builder's **build dispatch** on the same branch. The session ends with its completion report, which becomes the pull request's description.
 - **B4. Check.** CI runs on every PR (H4).
 - **B5. Review.** The checker's **review dispatch** reviews each PR on a detached checkout, once per cycle (section G).
-- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41).
+- **B6. Merge.** The lead merges what's green and has no blocking finding. OSA may merge a PR instead of the lead when every CR-36 condition holds. Full-rigor PRs wait for Javaris (G7). With his approval, OSA merges them for him (CR-41). Auto-merge (CR-46 B3) is turned on by OSA, with `gh pr merge --auto --squash`, only after the review's verdict is pass with no P0 or P1; never when the PR opens, since CI goes green before the review exists. Contract and schema PRs (I3) are merged by hand.
 - **B7. Work in progress:**
   - At most 4 sessions run at once: one checker per lane, and up to two builders per lane when their tickets share no file and neither depends on the other (CR-45). A session that runs the web's Playwright suite counts as two.
   - A checker can write tests for the next ticket while the builder works on the current one, because they touch different files.
@@ -120,24 +120,24 @@ CI is green and the acceptance tests pass. Nothing else.
   - `scripts/agent.sh` opens it in a new worktree with the agent's identity, `claude --agent <name>`, and `/dispatch <lane>/sprint-NN/<task doc>` as the first message.
   - In the building tabs, the lane loop does this in the agent's own pane. OSA may run it headless (`claude -p`) when nobody is watching.
   - Nothing is pasted in by hand. OSA may message a running session under CR-37, logged, and only within the ticket. If the plan is missing something a message can't fix inside the ticket, the lead fixes the plan and re-renders.
-  - No resuming: a session that stops leaves its completion report, and the next attempt starts fresh from that report.
+  - A session that crashed or was cut off with no report is resumed as the same attempt (CR-46 B2): `scripts/agent.sh --resume` runs `claude --continue` in that attempt's worktree. The lane loop resumes once on its own, and only an attempt that left commits or changes; after that, the lead decides (K2, L3). A session that stops with a report doesn't resume: a new attempt follows the lead's review, starting fresh from that report.
 - **D2. Limits:**
 
   | Session | Turns | Time | Cost |
   | --- | --- | --- | --- |
-  | Builder or checker | 150 | 120 minutes | $4 ($8 on Opus) |
+  | Builder or checker | 400 | 360 minutes | $4 ($8 on Opus) |
   | Lead (planning or full-rigor review) | 60 | 45 minutes | $6 |
   | The whole build, per day | — | — | $75 |
 
-  These are starting values, set in `scripts/agents/limits.json`. A builder's or checker's interactive session is capped by turns as well as time (CR-37): `scripts/agent.sh` sets the limit, and `scripts/hooks/turns.py` warns in the last 5 turns, then allows only the report, its commit and a message to OSA for 5 grace turns, then refuses everything. The lead row isn't enforced by the hook yet: how to cap a lead's long-running seat is Javaris's decision (lead kit PR, Nov 17). When the day's limit is reached, OSA starts nothing new and tells Javaris.
+  These are starting values, set in `scripts/agents/limits.json`. A builder's or checker's interactive session is capped by turns as well as time (CR-37): `scripts/agent.sh` sets the limit, and `scripts/hooks/turns.py` warns in the last 20 turns, then allows only the report, its commit and a message to OSA for 20 grace turns, then refuses everything (CR-46 B1: a median ticket takes about 3.3 hours, so the old 120 minutes and 150 turns cut working sessions short). Headless runs keep `--max-turns`. The cost column is recorded, not enforced, on the Claude plan (CR-46). A build's `done` means its checks pass (CR-46 B5): the Stop hook `scripts/hooks/done_check.py` runs `pnpm typecheck` and the related tests when a build's report says done, blocks the stop with the failing output at most twice, and after that lets it stop with the report's status set to `stopped (checks failing)`, committed and logged for OSA. The lead row isn't enforced by the hook yet: how to cap a lead's long-running seat is Javaris's decision (lead kit PR, Nov 17). When the day's limit is reached, OSA starts nothing new and tells Javaris.
 - **D3. The startup routine,** every session, in order:
   1. Confirm the folder and branch.
   2. Read the task doc in full, then its Context in order: the identity file, `AGENTS.md`, this doc, the codebase analysis and the reading list.
   3. Read `git log -20`.
   4. Start the session's own Postgres (D5).
   5. Run the tests, and only then start work.
-- **D4. One worktree per attempt, one branch per ticket.** The branch is `t/<ticket-id>-<slug>`, for example `t/B12-db-errors`. The tests and the build dispatches commit to it in turn, each from a fresh worktree. A review dispatch runs on a detached checkout of the PR's head.
-- **D5. One database per worktree.** `scripts/pg-local.sh start` already runs one Postgres container per checkout, on a free port, so two sessions' tests never collide. The dev server's port comes from the worktree too.
+- **D4. One worktree per attempt, one branch per ticket.** The branch is `t/<ticket-id>-<slug>`, for example `t/B12-db-errors`. The tests and the build dispatches commit to it in turn, each from a fresh worktree, or from its own worktree again when it's resumed (D1). Worktrees stay until the ticket merges; `scripts/agent.sh --prune` removes them then. A review dispatch runs on a detached checkout of the PR's head.
+- **D5. One database per worktree.** `scripts/pg-local.sh start` gives each checkout its own database on one shared Postgres container (`PG_LOCAL_SHARED=0`: a container per checkout), so two sessions' tests never collide (CR-46). The dev server's port comes from the worktree too.
 - **D6. Memory lives in files.**
   - The sprint folder is the task list: `scripts/dispatch.sh <lane>/sprint-NN --status` shows what's done, running, ready and waiting.
   - The completion report is the record, and the PR description copies it.
@@ -145,6 +145,7 @@ CI is green and the acceptance tests pass. Nothing else.
 - **D7. Permissions:**
   - On your laptop, sessions run with the repo's `.claude/settings.json` allowlist: pnpm, git inside the worktree, and the package registry.
   - Permissions are skipped only inside a sandbox (a container, or a MIOSA room under CR-22), never on the laptop.
+  - A build dispatch pushes its own ticket branch and opens its PR once its report says done (CR-46 B3): the allowlist has `git push origin t/` and `gh pr create`, and `scripts/hooks/push_guard.py` holds a session to `git push [-u] origin <its branch>`. A tests or review dispatch never pushes. Nobody force-pushes, deletes a branch or merges from a dispatch.
 - **D8. Helpers only read.** A session may start small helper agents to search code or docs. Helpers never change files, and they count against the session's cost limit.
 
 ## E. Build rules
@@ -249,7 +250,7 @@ CI is green and the acceptance tests pass. Nothing else.
   - for the web: the bundle budget, accessibility and end-to-end tests. On a pull request the end-to-end tests run only when the web, the contract, the mock, the lockfile or the workflows change (CR-45); a push to `main` always runs them.
 - **H5. A red check blocks.** Nobody merges red, retries CI to get a green, or marks a check optional.
 - **H6. Lock checks:** CI fails a PR if the builder's commits touch a file outside the build task doc's Territory, or any file listed in `locks.md`. The lists are read from the rendered task doc and `locks.md`, never from the issue. CI also fails a PR whose task docs differ from what `render.py` renders from the plan.
-- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
+- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
 
 ## I. Docs and change requests
 
@@ -284,12 +285,13 @@ CI is green and the acceptance tests pass. Nothing else.
   - `needs-cr` (a doc is wrong or missing something);
   - `test-dispute`;
   - `needs-dependency`;
-  - `out-of-scope` (it found work the ticket doesn't cover).
+  - `out-of-scope` (it found work the ticket doesn't cover);
+  - `stuck` (the same failure three times; CR-46 B6).
 - **L2. Who answers:**
-  - The lead answers `blocked`, `test-dispute` and `out-of-scope` within the cycle.
+  - The lead answers `blocked`, `test-dispute`, `out-of-scope` and `stuck` within the cycle.
   - `needs-cr` and `needs-dependency` go to Javaris as a decision, with OSA's brief.
   - The agent also messages OSA at once with its status (CR-37); the completion report is still the official record.
-- **L3. The same failure twice ends the loop.** The lead re-plans it or escalates it; nobody retries it a third time.
+- **L3. The same failure twice ends the loop.** The lead re-plans it or escalates it; nobody retries it a third time. Inside a session, the same failing command three times gets a message to stop and report `stuck` (CR-46 B6). A dispatch with two failed attempts shows `needs-javaris` in `render.py --status`, and only a named attempt starts it again; a resume (D1) isn't an attempt.
 - **L4. When Javaris is needed** (OSA's wake rules, CR-29):
   - **now:** a leak, a full-rigor merge waiting more than 2 working hours, the day's cost limit, or a step-close;
   - **otherwise:** the digest at 9:00, 13:00 and 17:00 Central.
@@ -354,7 +356,7 @@ Plus one more for this team: **tests that failed first**, as a share of acceptan
 | `docs/agent-dispatch/<lane>/sprint-01/plan.toml` | The first cycle's tickets; `docs/agent-dispatch/avel/example-plan.toml` is a worked example | C1 |
 | `scripts/agents/lane.sh` | The loop each builder and checker pane runs: opens its agent's next ready task doc through `agent.sh` (written Nov 16) | D1, D4 |
 | `scripts/agents/limits.json` | Session counts, turn and time limits (enforced by `agent.sh`), and the dollar limits (recorded; enforced only on API billing) (written Nov 16) | D2, B7 |
-| `scripts/pg-local.sh` | One Postgres per checkout, so sessions' tests never collide (already does this) | D5 |
+| `scripts/pg-local.sh` | One database per checkout on a shared Postgres, so sessions' tests never collide | D5 |
 | `docs/quarantine.md` | Quarantined tests, empty to start | F5 |
 | `docs/review/security-checklist.md` | The second review on full-rigor PRs | G7 (written Nov 15) |
 | The lock check in CI | Builders can't touch files outside the ticket, or the checker's tests | H6 |

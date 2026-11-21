@@ -1,14 +1,16 @@
-import { afterAll, expect, vi } from "vitest";
+import { afterAll, expect, inject, vi } from "vitest";
 import { createDatabase, dropDatabase, pnpmDb, rows } from "./psql.ts";
+import { cloneTemplate, TEMPLATE_KEY } from "./template.ts";
 
 type Made = { url: string; status: number; output: string };
 
 /**
- * A database with the first migration applied, made on first use and dropped
+ * A database with the migrations applied, made on first use and dropped
  * when the file ends. Tests use it through rolled-back transactions.
- * The migration runs through the package's own command (`migrate:up`), which
- * is the one the build's done-when names. Call it inside a test, so a missing
- * build fails as an assertion in that test, never as a setup error.
+ * It's a clone of the template the global setup migrated with the package's
+ * own command (`migrate:up`, the one the build's done-when names); with no
+ * template, the file runs `migrate:up` itself. Call it inside a test, so a
+ * missing build fails as an assertion in that test, never as a setup error.
  */
 export function migratedDb(label: string): () => string {
   vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
@@ -18,10 +20,15 @@ export function migratedDb(label: string): () => string {
   });
   return () => {
     if (!made) {
-      const url = createDatabase(label);
-      const run = pnpmDb("migrate:up", url);
-      const output = `${run.stdout}\n${run.stderr}`.trim().split("\n").slice(-6).join("\n");
-      made = { url, status: run.status, output };
+      const template = inject(TEMPLATE_KEY);
+      if (template) {
+        made = { url: cloneTemplate(template, label), status: 0, output: `cloned ${template}` };
+      } else {
+        const url = createDatabase(label);
+        const run = pnpmDb("migrate:up", url);
+        const output = `${run.stdout}\n${run.stderr}`.trim().split("\n").slice(-6).join("\n");
+        made = { url, status: run.status, output };
+      }
     }
     expect(
       made.status,

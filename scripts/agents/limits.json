@@ -1,5 +1,5 @@
 {
-  "_note": "Build rules D2 and B7. scripts/agent.sh enforces the session counts and the time limit, and the turn limit through --max-turns (headless) or scripts/hooks/turns.py (interactive, CR-37). lead_session isn't enforced yet: Javaris decides how (lead kit PR, Nov 17). The dollar limits need API billing (Build roster and environment.md, Keys A): on a Claude plan they are recorded, not enforced. CR-45 decision 5: two builders per lane, when their tickets share no file and neither depends on the other.",
+  "_note": "Build rules D2 and B7. scripts/agent.sh enforces the session counts and the time limit, and the turn limit through --max-turns (headless) or scripts/hooks/turns.py (interactive, CR-37). lead_session isn't enforced yet: Javaris decides how (lead kit PR, Nov 17). The dollar limits need API billing (Build roster and environment.md, Keys A): on a Claude plan they are recorded, not enforced. CR-45 decision 5: two builders per lane, when their tickets share no file and neither depends on the other. CR-46 B1: 360 minutes and 400 turns, with 20 warning and 20 grace turns in scripts/hooks/turns.py.",
   "sessions": {
     "total": 4,
     "per_lane": {
@@ -8,8 +8,8 @@
     }
   },
   "agent_session": {
-    "turns": 150,
-    "minutes": 120,
+    "turns": 400,
+    "minutes": 360,
     "usd": 4,
     "usd_opus": 8
   },

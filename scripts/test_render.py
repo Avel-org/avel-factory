@@ -8,6 +8,7 @@ Each test builds a throwaway git repo with the kit and the example plan
 completion report, so a whole ticket can run tests -> lock -> build -> review -> merge.
 """
 
+import json
 import os
 import shutil
 import stat
@@ -312,14 +313,141 @@ class Flow(unittest.TestCase):
         self.assertEqual(self.state("agent-soap-t-b1-build"), "merged")
         self.assertEqual(self.state("agent-rigg-t-b2-test-unit"), "ready")
 
-    def test_a_finished_session_removes_its_clean_worktree(self):
-        # Nobody has to close what a finished dispatch leaves behind: a clean worktree goes, the branch stays.
+    def test_a_finished_session_keeps_its_worktree_until_the_ticket_merges(self):
+        # A3 (Nov 20): Claude Code finds a session by its folder, so a removed worktree can't be resumed.
+        # The worktree stays when the session ends; --prune removes it only once the ticket is merged.
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
         r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         wts = [l for l in r.run("git worktree list --porcelain").stdout.splitlines() if l.startswith("worktree ")]
-        self.assertEqual(len(wts), 1, wts)
+        self.assertEqual(len(wts), 2, wts)
         self.assertTrue(r.run("git rev-parse --verify -q t/B1-effect-spike").stdout.strip())
+        out = r.run("scripts/agent.sh --prune").stdout
+        self.assertIn("T-B1 isn't merged", out)
+        self.assertIn("pruned 0 worktree(s), kept 1", out)
+
+    def test_prune_removes_a_merged_tickets_clean_worktrees_and_keeps_uncommitted_work(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        with open(os.path.join(r.root, "docs/agent-dispatch/backend/sprint-01/locks.md"), "a") as f:
+            f.write("- T-B1: packages/server/test/spike.test.ts @ abc1234\n")
+        r.run("git commit -qam 'lock T-B1'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-soap-t-b1-build")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-review")
+        kit_wts = lambda: [l.split(" ", 1)[1] for l in r.run("git worktree list --porcelain").stdout.splitlines()
+                           if l.startswith("worktree ") and "-wt/" in l]
+        self.assertEqual(len(kit_wts()), 3)  # the tests', the build's and the review's, each left detached
+        build_wt = next(w for w in kit_wts() if w.endswith("-build-a1"))
+        with open(os.path.join(build_wt, "scratch.txt"), "w") as f:
+            f.write("not committed\n")
+        r.run("git merge -q --squash t/B1-effect-spike && git commit -qm 'feat(server): spike 1' -m 'Refs: T-B1'")
+        out = r.run("scripts/agent.sh --prune").stdout
+        self.assertIn("pruned 2 worktree(s), kept 1", out)  # the review's uncommitted report doesn't count
+        self.assertIn("has uncommitted work", out)
+        self.assertIn("scratch.txt", out)
+        self.assertEqual(kit_wts(), [build_wt])
+        os.remove(os.path.join(build_wt, "scratch.txt"))
+        self.assertIn("pruned 1 worktree(s), kept 0", r.run("scripts/agent.sh --prune").stdout)
+        self.assertEqual(kit_wts(), [])
+
+    # CR-46 B2: a crashed or cut-off attempt is resumed as the same attempt, in its own worktree.
+    def attempts(self):
+        with open(os.path.join(self.r.root, ".git/avel/attempts.jsonl")) as f:
+            return [json.loads(l) for l in f]
+
+    def test_a_crashed_attempt_resumes_as_the_same_attempt(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", env={"FAKE_NOOP": "1"})  # killed, no report
+        self.assertEqual(r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split(), ["stopped", "2"])
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}").stdout
+        self.assertIn("resuming a1", out)
+        args = read(os.path.join(r.tmp, "last-claude-args")).decode()
+        self.assertIn("--continue", args)
+        self.assertIn("You were interrupted", args)
+        self.assertEqual(r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split(), ["done", "2"])
+        rows = self.attempts()
+        self.assertEqual([(a["attempt"], a["mode"]) for a in rows], [(1, "interactive"), (1, "resumed")])
+        self.assertEqual(rows[0]["worktree"], rows[1]["worktree"])
+
+    def test_a_resume_is_refused_unless_a_stopped_attempt_left_no_report_and_its_worktree(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}")
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("is done", out.stderr)
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 2", env={"FAKE_STATUS": "blocked"})
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", check=False)
+        self.assertIn("left a report", out.stderr)
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 3", env={"FAKE_NOOP": "1"})
+        r.run(f"git worktree remove --force '{self.attempts()[-1]['worktree']}'")
+        out = r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", check=False)
+        self.assertNotEqual(out.returncode, 0)
+        self.assertIn("is gone", out.stderr)
+
+    def test_the_lane_loop_resumes_once_and_only_an_attempt_that_got_somewhere(self):
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        auto = f"scripts/agent.sh --here --auto-resume backend sprint-01 {doc}"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", env={"FAKE_NOOP": "1"})
+        self.assertIn("left nothing in its worktree", r.run(auto).stdout)
+        wt = self.attempts()[-1]["worktree"]
+        with open(os.path.join(wt, "work-in-progress.ts"), "w") as f:
+            f.write("export {};\n")
+        r.run(auto, env={"FAKE_NOOP": "1"})  # resumed, and cut off again
+        self.assertEqual([a["mode"] for a in self.attempts()], ["interactive", "resumed"])
+        self.assertIn("resumed once already", r.run(auto).stdout)
+        self.assertEqual(len(self.attempts()), 2)
+        # after a finished session the loop's call is a no-op
+        r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}")
+        self.assertEqual(r.run(auto).stdout, "")
+
+    def test_a_sessions_prompt_ends_with_mains_memory_file(self):
+        # CR-46 B4: the agent's lessons from main's .agents/memory/<agent>.md, after its identity.
+        r = self.r
+        os.makedirs(os.path.join(r.root, ".agents/memory"), exist_ok=True)
+        with open(os.path.join(r.root, ".agents/memory/rigg.md"), "w") as f:
+            f.write("# Rigg's lessons\n\n- Prove the test fails on the start commit, not on main's tip.\n")
+        r.run("git add -A && git commit -qm 'render sprint-01, and a lesson'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        with open(os.path.join(r.root, ".git/avel/kit/backend-sprint-01-agent-rigg-t-b1-test-unit.a1/agents.json")) as f:
+            prompt = json.load(f)["rigg"]["prompt"]
+        self.assertIn("## What you learned on earlier tickets", prompt)
+        self.assertIn("- Prove the test fails on the start commit", prompt)
+        self.assertIn(".agents/memory/rigg.md", prompt)
+
+    def test_a_hand_started_session_starts_in_tmux_without_wezterm(self):
+        # Nov 21: the tab command's $( && || ) ended non-zero under set -e and agent.sh exited 1, silently.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        bin_ = os.path.join(r.tmp, "bin")
+        with open(os.path.join(bin_, "tmux"), "w") as f:
+            f.write('#!/usr/bin/env bash\necho "$@" >> "$HOME/tmux-calls"\n[ "$1" = has-session ] && exit 1\nexit 0\n')
+        os.chmod(os.path.join(bin_, "tmux"), 0o755)
+        path = ":".join(p for p in r.env["PATH"].split(":") if not p.startswith("/mnt/"))  # no wezterm.exe
+        out = r.run("scripts/agent.sh backend sprint-01 agent-rigg-t-b1-test-unit", env={"PATH": path})
+        self.assertIn("RIGG T-B1-tests started in tmux session avel-rigg-t-b1-tests", out.stdout)
+        with open(os.path.join(r.tmp, "tmux-calls")) as f:
+            calls = f.read().replace("\\", "")  # the command reaches tmux shell-escaped (printf %q)
+        self.assertIn("new-session -d -s avel-rigg-t-b1-tests", calls)
+        self.assertIn("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", calls)
+        self.assertNotIn("--resume", calls)
+
+    def test_the_lane_loop_finds_ready_work_in_an_older_sprint_first(self):
+        # Nov 21: --next looked only at the newest rendered sprint, so sprint-12 and 13 work sat ready.
+        r = self.r
+        r.plan(example().replace('sprint = "sprint-01"', 'sprint = "sprint-02"'), sprint="sprint-02")
+        r.run("python3 scripts/render.py backend/sprint-02 && git add -A && git commit -qm 'render sprint-01 and 02'")
+        self.assertEqual(r.run("python3 scripts/render.py --next backend rigg").stdout.split()[:2],
+                         ["sprint-01", "agent-rigg-t-b1-test-unit"])
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        self.assertEqual(r.run("python3 scripts/render.py --next backend rigg").stdout.split()[:2],
+                         ["sprint-02", "agent-rigg-t-b1-test-unit"])
 
     def test_a_session_gets_the_kit_from_main_not_from_its_branch(self):
         # Nov 17: Fenn's T-F5 tests a2 ran on a branch cut before #23 and had no SendMessage.
@@ -349,12 +477,13 @@ class Flow(unittest.TestCase):
         # The lead commits the lock line on the ticket's branch, so a dispatcher on main must see it.
         r = self.r
         r.run("git add -A && git commit -qm 'render sprint-01'")
-        # The test uses the finished session's worktree as the lead's checkout of the branch, so keep it.
-        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit", env={"AVEL_KEEP_WORKTREE": "1"})
+        # The test uses the finished session's worktree (kept, A3) as the lead's checkout of the branch.
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
         self.assertEqual(r.run("git branch --show-current").stdout.strip(), "main")
         wt = [l.split(" ", 1)[1] for l in r.run("git worktree list --porcelain").stdout.splitlines()
               if l.startswith("worktree ")]
-        wt = next(w for w in wt if r.run(f"git -C '{w}' branch --show-current").stdout.strip() == "t/B1-effect-spike")
+        wt = next(w for w in wt if w.endswith("-test-unit-a1"))
+        r.run(f"git -C '{wt}' checkout -q t/B1-effect-spike")  # a finished session leaves it detached (A3)
         locks = "docs/agent-dispatch/backend/sprint-01/locks.md"
         self.assertEqual(self.state("agent-soap-t-b1-build"), "waiting")
 
@@ -452,6 +581,62 @@ class Flow(unittest.TestCase):
         self.assertIn("model: sonnet", read(p).decode())
         info = r.run("python3 scripts/render.py --info backend/sprint-01 agent-soap-t-b1-build").stdout
         self.assertIn("MODEL=opus", info)
+
+    def test_a_v4_build_pushes_its_branch_and_opens_its_pr(self):
+        # CR-46 B3: the builder pushes its own branch and opens the PR; tests and reviews never push.
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        d = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01")
+        build = read(os.path.join(d, "agent-soap-t-b1-build.md")).decode()
+        self.assertIn("git push -u origin t/B1-effect-spike", build)
+        self.assertIn("gh pr create", build)
+        self.assertNotIn("Don't push.", build)
+        for doc in ("agent-rigg-t-b1-test-unit", "agent-rigg-t-b1-review"):
+            self.assertIn("Don't push.", read(os.path.join(d, doc + ".md")).decode(), doc)
+        self.assertIn('"renderer": "avel-render 4"', read(os.path.join(d, "MANIFEST.json")).decode())
+
+    def test_a_package_rendered_before_v4_still_says_dont_push_at_run_time(self):
+        r = self.r
+        r.run("python3 - <<'PY'\n"
+              "import os, sys\n"
+              "sys.path.insert(0, 'scripts')\n"
+              "import render\n"
+              "plan, _ = render.load_plan('backend', 'sprint-01', render.load_json('roster.json'))\n"
+              "files = render.render_package(plan, render.owned_paths([plan]), 'avel-render 3')\n"
+              "for name, body in files.items():\n"
+              "    open(os.path.join(render.folder('backend', 'sprint-01'), name), 'w').write(body)\n"
+              "PY")
+        r.run("git add -A && git commit -qm 'a v3 package'")
+        self.assertIn("matches a fresh render", r.run("python3 scripts/render.py --verify backend/sprint-01").stdout)
+        info = r.run("python3 scripts/render.py --info backend/sprint-01 agent-soap-t-b1-build").stdout
+        self.assertIn("Don", info)
+        self.assertNotIn("gh pr create", info)
+
+    def test_two_failed_attempts_need_javaris_and_nothing_starts_a_third(self):
+        # CR-46 B6 with K2 and L3: two failed attempts, then needs-javaris; a resume isn't an attempt.
+        r = self.r
+        r.run("git add -A && git commit -qm 'render sprint-01'")
+        doc = "agent-rigg-t-b1-test-unit"
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", env={"FAKE_STATUS": "blocked"})
+        self.assertEqual(self.state(doc), "stopped")
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 2", env={"FAKE_NOOP": "1"})  # a crash
+        # a crashed attempt can still be resumed, so it isn't a failure yet
+        self.assertEqual(r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split(), ["stopped", "3"])
+        r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}", env={"FAKE_STATUS": "test-dispute"})
+        out = r.run(f"python3 scripts/render.py --state backend/sprint-01 {doc}").stdout.split()
+        self.assertEqual(out, ["needs-javaris", "3"])
+        self.assertIn("needs-javaris", self.status())
+        self.assertEqual(r.run("python3 scripts/render.py --next backend rigg").stdout.strip(), "")
+        refused = r.run(f"scripts/agent.sh --here backend sprint-01 {doc}", check=False)
+        self.assertIn("Javaris decides", refused.stderr)
+        r.run(f"scripts/agent.sh --here backend sprint-01 {doc} 3")  # Javaris's call, named
+        self.assertEqual(self.state(doc), "done")
+
+    def test_a_v4_report_lists_stuck(self):
+        self.r.run("python3 scripts/render.py backend/sprint-01")
+        p = os.path.join(self.r.root, "docs/agent-dispatch/backend/sprint-01/agent-soap-t-b1-build.md")
+        text = read(p).decode()
+        self.assertIn("| out-of-scope | stuck", text)
+        self.assertIn("out-of-scope or stuck", text)
 
     def test_a_stopped_dispatch_is_never_restarted_by_itself(self):
         r = self.r

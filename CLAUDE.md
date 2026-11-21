@@ -1,1 +1,3 @@
-Read `AGENTS.md` before any work, then `docs/design/README.md`, which says which doc wins.
+@AGENTS.md
+
+`docs/design/README.md` says which doc wins when docs disagree. Read it only when you need to settle a conflict.

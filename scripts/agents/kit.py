@@ -11,6 +11,9 @@ branch from before #23 and had no SendMessage. So scripts/agent.sh passes these 
                         `claude --settings`. They load beside the branch's project settings:
                         permissions add up, and an older branch's hooks run too (they only write
                         the same state). Turning the project source off would drop CLAUDE.md.
+
+The identity's prompt ends with main's .agents/memory/<agent>.md, under "What you learned on earlier
+tickets" (CR-46 B4): its lesson lines, at most 60.
 """
 
 import json
@@ -20,11 +23,25 @@ import subprocess
 import sys
 
 
-def show(root, path):
+MEMORY_CAP = 60
+
+
+def show(root, path, required=True):
     out = subprocess.run(["git", "show", f"main:{path}"], cwd=root, capture_output=True, text=True)
     if out.returncode != 0:
+        if not required:
+            return None
         sys.exit(f"kit.py: main has no {path}")
     return out.stdout
+
+
+def memory(root, agent):
+    """The agent's lessons from main's .agents/memory/<agent>.md, as a prompt section, or ''."""
+    text = show(root, f".agents/memory/{agent}.md", required=False) or ""
+    lessons = [l.rstrip() for l in text.splitlines() if l.startswith("- ")][:MEMORY_CAP]
+    how = (f"To add a lesson, append one line, `- <lesson>`, to `.agents/memory/{agent}.md` on your ticket "
+           "branch, only for a mistake you'd otherwise repeat. It merges with your ticket's PR. One line per ticket.")
+    return "\n## What you learned on earlier tickets\n\n" + ("\n".join(lessons) if lessons else "(none yet)") + "\n\n" + how + "\n"
 
 
 def identity(text, agent):
@@ -52,6 +69,7 @@ def main():
                           capture_output=True, text=True, check=True).stdout.strip()
     os.makedirs(out, exist_ok=True)
     agents = {agent: identity(show(root, f".claude/agents/{agent}.md"), agent)}
+    agents[agent]["prompt"] += memory(root, agent)
     with open(os.path.join(out, "agents.json"), "w") as f:
         json.dump(agents, f, indent=1)
     settings = show(root, ".claude/settings.json").replace("$CLAUDE_PROJECT_DIR/scripts/", f"{root}/scripts/")
