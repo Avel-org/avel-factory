@@ -80,6 +80,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - Which screens read which source: decisions (Decisions); missions (Clients, All projects, New project, the project overview and Progress); canon (Onboarding); plan (Plan, Dispatch); build (Live, Watch the work, the module page); release (Gates, Findings, Release, Receipt). Every other page keeps its sample imports where they are
 - LG-06 lives in the data layer: on a 401 from any contract route it navigates once to /login?next={path, search and hash}&reason=expired with replace, and a burst of 401s makes one navigation. It reads nothing from __root and changes no route file: T-F12's /login draws the expired notice and its guard handles the rest. The end-to-end LG-06 check comes with the first screen that calls the API (T-F16)
 - Log every export file this ticket changes, with its reason, in control-room/changes/T-F14.md (T-F12 adds the pointer in SOURCE.md)
+- Amended Nov 21 (Zero, before the lock; Fenn's tests report, Limitations): app/crew.js (Watch the work) imports operations.json, which a source owns, so it reads it through the build source like the other Watch the work data. That's the one change to crew.js; history.json stays where it is
 - Budget: / doesn't grow. Copy budget.spec's / figure into the report and the PR text as a number. Over 235 KB, stop with needs-cr
 - Review, full rigor (G7): Fenn, then the second review against docs/review/security-checklist.md, then Javaris merges. One review round (CR-42). The full-diff rule applies: every file in `git diff main...HEAD --name-only` is in this build's may-change list, this ticket's locked test files, its own dispatch reports in this sprint's folder, or locks.md. Anything else is a P1
 - Size: a full session (#45: 120 minutes, 150 turns). If the build can't finish, report blocked with what's done, the client and the error map first. Run only this ticket's specs while building; CI runs the whole suite
@@ -140,6 +141,7 @@ You review the builder's work on this ticket, from the diff and this document on
 - `apps/web/control-room/src/app/canon.js`
 - `apps/web/control-room/src/app/operations.js`
 - `apps/web/control-room/src/app/decisions.js`
+- `apps/web/control-room/src/app/crew.js`
 - `apps/web/control-room/changes/T-F14.md`
 
 **Never change, whatever the task says:**
