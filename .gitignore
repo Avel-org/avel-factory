@@ -13,6 +13,7 @@ dist/
 # Keys never go in the repo (Build roster and environment.md); .env.example lists the names
 .env
 .env.*
+*.env
 !.env.example
 
 # Per-machine Claude settings
