@@ -88,7 +88,11 @@ pnpm --filter @avel/docs generate
 scripts/pg-local.sh stop    # prune removes the ones whose worktree is gone
 ```
 
-In a fresh checkout, run `pnpm build` once before `pnpm typecheck` or `pnpm test`: workspace packages resolve to their `dist/`.
+## Testing while you work
+
+- In a fresh checkout, run `pnpm build` once before `pnpm typecheck` or `pnpm test`: workspace packages resolve to their `dist/`.
+- While working, run only the tests you touched: `pnpm --filter <pkg> exec vitest run <test files>`, or `pnpm --filter <pkg> exec vitest related --run <changed src files>` (it follows imports, so it misses a file a test runs as a process, such as `src/main.ts`).
+- Run the full `pnpm test` once, before writing the completion report.
 
 ## The team that builds the factory
 
