@@ -39,13 +39,13 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | --- | --- | --- | --- |
 | `agent-rigg-t-b27-test-unit.md` | Rigg | tests | sonnet |
 | `agent-soap-t-b27-build.md` | Soap | build | opus |
-| `agent-rigg-t-b27-review.md` | Rigg | review | opus |
+| `agent-rigg-t-b27-review.md` | Rigg | review | sonnet |
 | `agent-rigg-t-b21-test-unit.md` | Rigg | tests | sonnet |
 | `agent-soap-t-b21-build.md` | Soap | build | opus |
-| `agent-rigg-t-b21-review.md` | Rigg | review | opus |
+| `agent-rigg-t-b21-review.md` | Rigg | review | sonnet |
 | `agent-rigg-t-b22-test-unit.md` | Rigg | tests | sonnet |
 | `agent-soap-t-b22-build.md` | Soap | build | opus |
-| `agent-rigg-t-b22-review.md` | Rigg | review | opus |
+| `agent-rigg-t-b22-review.md` | Rigg | review | sonnet |
 | `agent-rigg-t-b24-test-unit.md` | Rigg | tests | sonnet |
 | `agent-soap-t-b24-build.md` | Soap | build | opus |
 | `agent-rigg-t-b24-review.md` | Rigg | review | sonnet |
@@ -54,7 +54,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | `agent-rigg-t-b25-review.md` | Rigg | review | sonnet |
 | `agent-rigg-t-b26-test-unit.md` | Rigg | tests | sonnet |
 | `agent-soap-t-b26-build.md` | Soap | build | opus |
-| `agent-rigg-t-b26-review.md` | Rigg | review | opus |
+| `agent-rigg-t-b26-review.md` | Rigg | review | sonnet |
 
 ## Territory map
 
@@ -64,7 +64,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | T-B21 | `packages/server/src/compute/credentials/**`, `packages/server/src/server.ts` | `packages/server/test/credentials/**` |
 | T-B22 | `packages/server/src/metering/**`, `docs/design/DATABASE.md`, `packages/db/src/owners.ts` | `packages/server/test/metering/**` |
 | T-B24 | `packages/server/src/factory/decisions/**`, `packages/server/src/platform/status/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` | `packages/server/test/decisions/**`, `packages/server/test/status/**` |
-| T-B25 | `packages/server/src/factory/missions/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` | `packages/server/test/missions/**` |
+| T-B25 | `packages/server/src/factory/missions/**`, `packages/contract/src/routes/missions.ts`, `packages/contract/src/version.ts`, `packages/contract/package.json`, `docs/generated/openapi.json`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` | `packages/server/test/missions/**`, `packages/contract/test/cr-w32.test.ts` |
 | T-B26 | `packages/server/src/events/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` | `packages/server/test/streams/**` |
 
 ## Merge order
