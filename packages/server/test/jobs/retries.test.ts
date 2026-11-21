@@ -6,8 +6,9 @@ import { Clock, Effect } from "effect";
 import { describe, expect, it } from "vitest";
 import { Db } from "../../src/platform/db/db.ts";
 import { Jobs } from "../../src/platform/jobs/index.ts";
+import { until as untilSettled } from "../consumers/support.ts";
 import { testDatabase } from "../db/support/database.ts";
-import { advance, runJobs, until, workHandler } from "./support.ts";
+import { advance, runJobs, workHandler } from "./support.ts";
 
 const database = testDatabase("b13retry");
 
@@ -37,8 +38,30 @@ describe("T-B13-06 · retries and dead", () => {
         const jobs = yield* Jobs;
         yield* jobs.startWorker({ name: "w", handlers: [work.handler] });
         id = (yield* db.withTransaction(jobs.enqueue("t13.work", "retry:1", {}))).id;
-        const all = yield* until(c, () => starts.length === 5, 900_000);
-        expect(all.ok, "the job didn't reach its 5th try within 15 simulated minutes").toBe(true);
+        // Each try is waited for on the facts it reads (T-B27, t-b18-rigg-03): the failure is committed
+        // (the job is back in the queue with its run_after), time moves to a few seconds before that
+        // run_after, and then in 1 s steps, each one after the engine has no statement in flight, until
+        // the next try has started. Time never gets ahead of the poll that claims the job, so a try's
+        // start is read at the Clock time it was due at, however loaded the machine is.
+        const first = yield* untilSettled(c, () => starts.length === 1, 30_000);
+        expect(first.ok, "the job never made its 1st try").toBe(true);
+        for (let tries = 1; tries < 5; tries++) {
+          const queued = yield* untilSettled(
+            c,
+            async () => {
+              const view = await Effect.runPromise(jobs.get(id));
+              return view?.state === "queued" && view.attempts === tries;
+            },
+            30_000,
+          );
+          expect(queued.ok, `try ${tries}'s failure was never saved`).toBe(true);
+          const due = (yield* jobs.get(id))?.runAfter ?? 0;
+          const now = yield* Clock.currentTimeMillis;
+          const hop = Math.floor((due - now - 3_000) / 10_000) * 10_000;
+          if (hop > 0) yield* advance(c, hop, 10_000);
+          const next = yield* untilSettled(c, () => starts.length === tries + 1, 20_000);
+          expect(next.ok, `the job never made try ${tries + 1}`).toBe(true);
+        }
         // The 5th failure is saved; then nothing more is ever run.
         yield* advance(c, 20 * 60_000, 5_000);
         const view = yield* jobs.get(id);

@@ -25,6 +25,8 @@ const GUARD_MS = 4_000;
 async function proxy(target: string) {
   const to = new URL(target);
   const sockets = new Set<net.Socket>();
+  /** The sockets of clients that were proxied (not the ones Postgres answers on). */
+  const proxied = new Set<net.Socket>();
   let hanging = false;
   let hungConnections = 0;
   const server = net.createServer((client) => {
@@ -34,6 +36,7 @@ async function proxy(target: string) {
       hungConnections += 1;
       return;
     }
+    proxied.add(client);
     const upstream = net.connect(Number(to.port), to.hostname);
     sockets.add(upstream);
     upstream.on("error", () => client.destroy());
@@ -52,23 +55,28 @@ async function proxy(target: string) {
     url: target.replace(`${to.host}`, `127.0.0.1:${port}`),
     /** Connections that reached the proxy after it switched to hang. */
     hungConnections: () => hungConnections,
-    /** Switch to hang: destroy what was proxied, and wait until the clients' ends have closed. */
+    /**
+     * Switch to hang: end the proxied clients' sockets, and wait until each has closed. An end is a
+     * graceful close, so a socket closes only once its peer, the pool's own socket, has ended too:
+     * the pool has seen the end and dropped its dead client, which is the fact the test needs.
+     * Only the client side is ended: ending Postgres's side too would close the client side by
+     * destroying it, before the pool's socket had seen anything. Waiting a number of event-loop
+     * turns for it fails under CPU load (T-B27, t-b18-rigg-03).
+     */
     hang: async () => {
       hanging = true;
-      const proxied = [...sockets];
-      sockets.clear();
+      const ending = [...proxied];
+      proxied.clear();
       await Promise.all(
-        proxied.map(
+        ending.map(
           (s) =>
             new Promise<void>((ok) => {
               if (s.destroyed) return ok();
               s.once("close", () => ok());
-              s.destroy();
+              s.end();
             }),
         ),
       );
-      // Let the pool's own sockets see the close, in event-loop turns, not wall-clock time.
-      for (let i = 0; i < 20; i++) await new Promise((r) => setImmediate(r));
     },
     destroy: destroyAll,
     close: async () => {

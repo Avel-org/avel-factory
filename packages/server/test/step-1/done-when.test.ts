@@ -12,8 +12,10 @@
  *   - cell 4 (Test ID): one or more backticked strings. Each appears in a describe, it or test
  *     title in at least one of the named files (for example "T-B16-01", or "done-when 5").
  *   - cell 5 (Ticket): the ticket that locked it, as T-B<n> or T-F<n>.
- *   - A test that left Step 1 has no file: cell 3 says "moved" and names where it went. Tests 5, 8
+ *   - A test that left Step 1 has no file: cell 3 says "moved" and names where it went. Tests 8
  *     and 9 name CR-43; 14 and 15 name CR-31; 12 also names Step 7 (the finalize half).
+ *   - Test 5 stays in Step 1 (T-B27-04, t-b20-rigg-01): CR-43 restates it on sign-in, it doesn't move
+ *     it. Its row names the files and test IDs of T-B9-04 and T-B16-03 and is verified like any other.
  *   Rows 1 to 15 are all present, each number once.
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -25,7 +27,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const reportPath = resolve(root, "docs/steps/step-1-done.md");
 
 const MOVED: Record<number, string> = {
-  5: "CR-43",
   8: "CR-43",
   9: "CR-43",
   14: "CR-31",
@@ -82,10 +83,10 @@ describe("T-B20-01 · Step 1's done-when report", () => {
     for (const r of rows) expect(r.says.length, `row ${r.n} says nothing`).toBeGreaterThan(10);
   });
 
-  it("each of tests 1 to 13 still in Step 1 names real test files and test IDs and a locking ticket", () => {
+  it("each of tests 1 to 7 and 10 to 13, still in Step 1, names real test files and test IDs and a locking ticket", () => {
     expect(existsSync(reportPath), "docs/steps/step-1-done.md is missing").toBe(true);
     const rows = readRows().filter((r) => !(r.n in MOVED));
-    expect(rows.map((r) => r.n)).toEqual([1, 2, 3, 4, 6, 7, 10, 11, 12, 13]);
+    expect(rows.map((r) => r.n)).toEqual([1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13]);
     for (const r of rows) {
       const files = ticks(r.file);
       const ids = ticks(r.id);
@@ -107,6 +108,20 @@ describe("T-B20-01 · Step 1's done-when report", () => {
         );
       }
     }
+  });
+
+  it("T-B27-04 · row 5 stays in Step 1, restated by CR-43 on sign-in, with T-B9-04 and T-B16-03 in its cells", () => {
+    expect(existsSync(reportPath), "docs/steps/step-1-done.md is missing").toBe(true);
+    const five = readRows().find((r) => r.n === 5);
+    expect(five, "row 5 is missing").toBeDefined();
+    expect(five?.file.toLowerCase(), "row 5 still says it moved").not.toContain("moved");
+    expect(five?.line, "row 5 names CR-43").toContain("CR-43");
+    expect([...ticks(five?.file ?? "")].sort(), "row 5's files").toEqual([
+      "packages/server/test/auth/rate-limit.test.ts",
+      "packages/server/test/server/rate-limit.test.ts",
+    ]);
+    expect([...ticks(five?.id ?? "")].sort(), "row 5's test IDs").toEqual(["T-B16-03", "T-B9-04"]);
+    expect(five?.ticket, "row 5's locking tickets").toMatch(/T-B9\b.*T-B16\b|T-B16\b.*T-B9\b/);
   });
 
   it("no named test file skips, focuses, marks todo or is quarantined", () => {

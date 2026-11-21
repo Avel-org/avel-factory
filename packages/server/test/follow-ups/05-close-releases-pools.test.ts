@@ -42,9 +42,11 @@ describe("T-B19-05 · close() releases every pool at once", () => {
     const tookMs = performance.now() - started;
     expect(tookMs, "close() took longer than 2 s").toBeLessThan(2_000);
 
-    // Right after close(): not after Postgres's or the pool's idle timeout.
+    // Right after close(): not after Postgres's or the pool's idle timeout (pg's default is 10 s).
+    // The count is waited on, not read once a fixed time later: how long Postgres takes to drop the
+    // backends of closed sockets depends on the load of the machine (T-B27, t-b18-rigg-03).
     await vi.waitFor(async () => expect(await others()).toBe(before), {
-      timeout: 1_000,
+      timeout: 8_000,
       interval: 50,
     });
   });
