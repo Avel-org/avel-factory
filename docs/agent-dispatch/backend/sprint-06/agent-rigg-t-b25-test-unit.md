@@ -67,10 +67,14 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - CR-W5 Mission summary and status: the list's strip, counts and needs-you
 - Design v0.6 Main, Build order step 7: a mission is a draft before Canon's first question (Canon himself is Step 7's)
 - Build rules E13: four tests per route
+- CR-W32 (accepted Nov 21): route 34's first turn on a draft mission starts onboarding; its contract half is this ticket's (I3)
 
 **Merged before this starts:** T-B24
 
+**Labels:** contract · implements CR-W32
+
 **Notes from the lead:**
+- CR-W32's contract half (labelled contract, I3): route 34's summary gains "on a draft mission, your first turn starts onboarding" and nothing else in the route changes. It's fix(contract): CONTRACT_VERSION and packages/contract/package.json go from 1.0.1 to 1.0.2, and pnpm --filter @avel/docs generate rewrites docs/generated/openapi.json. Zero signed CR-W32 as its author; route 34's server half is Step 7's (Canon), not this ticket's
 - The factory module owns missions (packages/db/src/owners.ts); its routes live in packages/server/src/factory/missions/. One mapper per DTO (toMissionDto, toMissionListRowDto); no Drizzle row leaves the server
 - Route 20 writes the mission as a draft with its name and optional client (kind unset: Canon's first question sets it, CR-W22), its activity row and missions.mission.created, in one transaction through the idempotency store. Its budget comes from the design's $150 mission budget as one named constant citing Design v0.6 Main, until finalize pins factory.yaml's (Step 7). It writes nothing of onboarding's: the session and the opener are Canon's (Step 7). An unknown clientId is the database's refusal mapped to 422, not a check in code alone
 - Route 19 pages missions by the contract's cursor with ?kind= (unset lists missions whose kind isn't set) and ?clientId=. Each row's gates, modules, runningDispatches and lastEventAt come from their tables (gate evaluations, module runs, dispatches, events), and needsYouCount from T-B24's count. A draft has its strip at its first state and zero counts. No money on the row (CR-W5)
@@ -115,10 +119,16 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
 
+### T-B25-08: a failing test for: the contract (CR-W32): route 34's summary says that on a draft mission your first turn starts onboarding, and CONTRACT_VERSION and packages/contract/package.json are both 1.0.2 (fails on main: the summary lacks it and the version is 1.0.1)
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm test` runs it, and it **fails** on the start commit for the right reason.
+
 ## 5. Territory
 
 **You may change** (and create):
 - `packages/server/test/missions/**`
+- `packages/contract/test/cr-w32.test.ts`
 - `docs/agent-dispatch/backend/sprint-06/agent-rigg-t-b25-test-unit-completion.md` (your report)
 
 **Never change, whatever the task says:**
@@ -130,7 +140,10 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - `packages/server/src/platform/app.ts`
 - `packages/server/src/platform/db/**`
 - `packages/db/**`
-- `packages/contract/**`
+- `packages/contract/src/dto/**`
+- `packages/contract/src/errors.ts`
+- `packages/contract/src/events.ts`
+- `packages/contract/src/value-lists.ts`
 - `apps/web/*/**`
 - `apps/web/.*`
 - `apps/web/*.{ts,tsx,js,mjs,cjs,css,html,md,yaml,yml,toml}`
@@ -173,6 +186,9 @@ pnpm typecheck
 pnpm lint
 pnpm test
 pnpm --filter @avel/server test
+pnpm --filter @avel/contract test
+pnpm --filter @avel/docs generate && git diff --exit-code docs/generated
+pnpm --filter @avel/docs drift
 pnpm --filter @avel/server typecheck
 pnpm --filter @avel/server check:effect
 pnpm build && pnpm typecheck && pnpm lint && pnpm test

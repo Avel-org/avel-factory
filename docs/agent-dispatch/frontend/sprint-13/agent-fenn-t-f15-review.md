@@ -47,7 +47,7 @@ You review the builder's work on this ticket, from the diff and this document on
 7. `docs/design/API routes.md`: each route by number
 8. `docs/ui-contracts/decisions-approval-page.md`: the decision card, Undo and the stale state
 9. `apps/web/playwright.config.ts`: today's two web servers, both vite dev (with and without AVEL_API=mock); T-F12 added the sign-in setup project
-10. `apps/web/vite.config.ts`: the mock middleware is apply: serve, configureServer only; vite preview needs it too
+10. `apps/web/vite.config.ts`: mockApi() already serves contract-mock in vite dev and vite preview under AVEL_API=mock (T-F12)
 11. `.github/workflows/ci.yml`: the web e2e job
 12. `docs/quarantine.md`: T-F7-05's row, removed when it's back
 13. `apps/web/e2e/control-room/routes.spec.ts`: the locked acceptance tests: they define done
@@ -69,7 +69,7 @@ You review the builder's work on this ticket, from the diff and this document on
 **Merged before this starts:** T-F12
 
 **Notes from the lead:**
-- Both web servers run vite build, then vite preview, under the same AVEL_API values. The mock middleware runs in preview too (configurePreviewServer), never in a deployed build. Local runs may keep vite dev through an env switch the report names; CI always uses the build
+- Both web servers run vite build, then vite preview, under the same AVEL_API values. T-F12 already serves the mock in preview (configurePreviewServer, under AVEL_API=mock only), so this ticket changes vite.config.ts only if the build switch needs it. Local runs may keep vite dev through an env switch the report names; CI always uses the build
 - Remove T-F7-05's row from docs/quarantine.md once the checker's un-skipped test passes, and close #57 in the PR text (Fixes #57)
 - The PR changes .github/workflows/ci.yml, so Javaris merges it (CR-36's guardrail exclusion)
 - Report the suite's time in CI before and after, as numbers
@@ -82,7 +82,7 @@ You review the builder's work on this ticket, from the diff and this document on
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
-### T-F15-02: check: e2e (behaviour): under AVEL_API=mock, the preview server still answers /api with contract-mock (route 52 returns the mock's rows)
+### T-F15-02: check: e2e (guard): under AVEL_API=mock, the preview server still answers /api with contract-mock (route 52 returns the mock's rows); T-F12 built it, so this passes first (CR-42)
 
 - Is it built, and does a locked test actually prove it? Cite the test and the code.
 
@@ -133,6 +133,8 @@ You review the builder's work on this ticket, from the diff and this document on
 | T-F23 | tests | `packages/contract-mock/test/mission-streams.test.ts`, `packages/contract-mock/test/world.test.ts` |
 | T-F24 | builds | `packages/contract-mock/src/**` |
 | T-F24 | tests | `packages/contract-mock/test/mission-reads.test.ts` |
+| T-F25 | builds | `apps/web/control-room/src/sources/canon.js`, `apps/web/control-room/src/app/canon.js`, `apps/web/control-room/src/app/uploads.js`, `apps/web/control-room/src/app/logic.js`, `apps/web/control-room/changes/T-F25.md` |
+| T-F25 | tests | `apps/web/e2e/home-headroom/**`, `apps/web/test/sources/samples.test.ts` |
 
 ## 6. Execution protocol: review
 

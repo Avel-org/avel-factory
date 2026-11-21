@@ -69,7 +69,7 @@ The design is frozen. Implement it as written. If code shows a doc is wrong or m
 
 ## How to work
 
-- Follow the 14-step build order, one step at a time. A step is done only when its "done when" tests pass against real Postgres.
+- Follow the build order: the critical path one step at a time, other steps beside it once their inputs exist (Build rules E9, CR-47). A step is done only when its "done when" tests pass against real Postgres.
 - **Start every step by stating which docs and tables it touches and the test plan,** then build.
 - **Step 1 is done** (closed Nov 21; `docs/steps/step-1-done.md`). For the record, it ran in this order (Javaris's build order, Nov 17): spike 1 (Effect at the edge) → the server shell, middleware, database errors, idempotency and the `Db` service (items 1 to 4) → auth, step-up and CLI login, with the activity log on their writes (items 5 to 8) → tests 10 and 11 against a small `Jobs` interface → spike 2 (DBOS) → the jobs engine that won → the rest of Step 1 (event consumers, the factory repo loader, CI). No sample route and no approval page (CR-31); spans aren't part of Step 1.
 - Port from avel-server only what `Port inventory.md` says, in its stated form (CR-30 moves the clock, ids and logger to "with changes").

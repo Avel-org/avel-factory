@@ -16,7 +16,7 @@ This replaces that guide's team (section 3), its review team (section 7, items 1
 | **Operator agent** | OSA | Claude Opus in Claude Code today; the target is MIOSA AI: DeepSeek V4.1 Flash for everyday work, Kimi K2.6 for briefs (CR-29) | Runs the cycle for Javaris: files the approved tickets, starts and watches sessions, keeps the board, writes digests and decision briefs, merges clear and clean PRs (CR-36) and what Javaris approves (CR-41), relays instructions to running sessions (CR-37) | Approves, merges anything but a clear and clean PR (CR-36) or one Javaris approved in his own words (CR-41), writes product code or tests, changes rules, or decides anything (CR-29: OSA prepares, Javaris decides) |
 | **Backend lead** | Axis | Opus | Plans backend tickets, answers the backend builder and checker, merges green backend work, drafts change requests | Writes most of the code, or reviews its own tickets |
 | **Backend builder** | Soap | Opus (Javaris, Nov 18) | Builds one backend ticket per session to pass its acceptance tests | Edits the acceptance tests, or reviews |
-| **Backend checker** | Rigg | Sonnet; Opus for full-rigor reviews | Writes each ticket's acceptance tests first, then reviews the builder's pull request | Writes product code |
+| **Backend checker** | Rigg | Sonnet, full-rigor reviews too (Javaris, Nov 21; the other lead's second review, G7, is the backstop) | Writes each ticket's acceptance tests first, then reviews the builder's pull request | Writes product code |
 | **Frontend lead** | Zero | Opus | The same as Axis, for the web app | The same |
 | **Frontend builder** | Fantem | Opus (Javaris, Nov 18) | Builds one frontend ticket per session | Edits the acceptance tests, or reviews |
 | **Frontend checker** | Fenn | Sonnet | Writes the frontend acceptance tests and end-to-end tests first, then reviews | Writes product code |
@@ -172,7 +172,11 @@ CI is green and the acceptance tests pass. Nothing else.
 
 ### Backend (Axis's lane)
 
-- **E9. Step order is the build order.** Step 1 runs in the order `AGENTS.md` gives: spike 1 first, the DBOS test (spike 2) before the jobs engine. No ticket from a later step starts until the current step closes.
+- **E9. The critical path runs in order; other steps run beside it once their inputs exist.** (CR-47)
+  1. The critical path (`Backend modules and build plan.md`, section 1: 0 → 1 → 2 → 4 → 8 → 9a → 9b) runs one step at a time. No critical-path ticket starts until the step before it closes.
+  2. Steps 3, 5, 6 and 7 are off the path. Each may start once the steps section 1 names as its inputs have closed: Step 3 needs 1, Step 5 needs 1, Step 6 needs 1, and Step 7 needs 2 and 6. A ticket from one of them names its step, and the sprint's plan says which inputs it uses. A ticket whose code uses none of its step's unclosed inputs may start sooner if the plan says so. For example, sprint-06's T-B25 saves and reads mission drafts, Step 7's first rows, without the model proxy or plans. Section 1 names no inputs for Steps 10 to 14, so they follow 9b in order.
+  3. A part of a later critical-path step may be brought into the current one only when the current step's work can't be right without it (for example Step 8's per-request reservation inside Step 2's model proxy, so no request is ever metered without its ceiling). The plan names it, and Javaris approves it with the plan.
+  4. Step 1 runs in the order `AGENTS.md` gives.
 - **E10. Real Postgres, always.** No database mocks or in-memory substitutes. Fakes are only for things outside the process (the model vendor, GitHub, the room host), provided as Effect layers.
 - **E11. The database enforces its rules,** and code maps the violations (AGENTS.md). A ticket that wants a new CHECK or table is a `schema` ticket with a CR (I3).
 - **E12. Each table is written only by its owning module** (`Backend modules and build plan.md`). Importing another module's internals is a lint error.
@@ -250,7 +254,7 @@ CI is green and the acceptance tests pass. Nothing else.
   - for the web: the bundle budget, accessibility and end-to-end tests. On a pull request the end-to-end tests run only when the web, the contract, the mock, the lockfile or the workflows change (CR-45); a push to `main` always runs them.
 - **H5. A red check blocks.** Nobody merges red, retries CI to get a green, or marks a check optional.
 - **H6. Lock checks:** CI fails a PR if the builder's commits touch a file outside the build task doc's Territory, or any file listed in `locks.md`. The lists are read from the rendered task doc and `locks.md`, never from the issue. CI also fails a PR whose task docs differ from what `render.py` renders from the plan.
-- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
+- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). And (Javaris, Nov 21: "yes leads can push main merges and plan branches"): a lead pushes a clean merge of `main` onto a ticket branch, made in a detached worktree with the lock check passing, and the lead's own `plan/`, `cr/` and `docs/` branches. Any other push of a ticket branch goes through OSA. Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
 
 ## I. Docs and change requests
 
