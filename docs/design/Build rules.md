@@ -137,7 +137,7 @@ CI is green and the acceptance tests pass. Nothing else.
   4. Start the session's own Postgres (D5).
   5. Run the tests, and only then start work.
 - **D4. One worktree per attempt, one branch per ticket.** The branch is `t/<ticket-id>-<slug>`, for example `t/B12-db-errors`. The tests and the build dispatches commit to it in turn, each from a fresh worktree, or from its own worktree again when it's resumed (D1). Worktrees stay until the ticket merges; `scripts/agent.sh --prune` removes them then. A review dispatch runs on a detached checkout of the PR's head.
-- **D5. One database per worktree.** `scripts/pg-local.sh start` already runs one Postgres container per checkout, on a free port, so two sessions' tests never collide. The dev server's port comes from the worktree too.
+- **D5. One database per worktree.** `scripts/pg-local.sh start` gives each checkout its own database on one shared Postgres container (`PG_LOCAL_SHARED=0`: a container per checkout), so two sessions' tests never collide (CR-46). The dev server's port comes from the worktree too.
 - **D6. Memory lives in files.**
   - The sprint folder is the task list: `scripts/dispatch.sh <lane>/sprint-NN --status` shows what's done, running, ready and waiting.
   - The completion report is the record, and the PR description copies it.
@@ -356,7 +356,7 @@ Plus one more for this team: **tests that failed first**, as a share of acceptan
 | `docs/agent-dispatch/<lane>/sprint-01/plan.toml` | The first cycle's tickets; `docs/agent-dispatch/avel/example-plan.toml` is a worked example | C1 |
 | `scripts/agents/lane.sh` | The loop each builder and checker pane runs: opens its agent's next ready task doc through `agent.sh` (written Nov 16) | D1, D4 |
 | `scripts/agents/limits.json` | Session counts, turn and time limits (enforced by `agent.sh`), and the dollar limits (recorded; enforced only on API billing) (written Nov 16) | D2, B7 |
-| `scripts/pg-local.sh` | One Postgres per checkout, so sessions' tests never collide (already does this) | D5 |
+| `scripts/pg-local.sh` | One database per checkout on a shared Postgres, so sessions' tests never collide | D5 |
 | `docs/quarantine.md` | Quarantined tests, empty to start | F5 |
 | `docs/review/security-checklist.md` | The second review on full-rigor PRs | G7 (written Nov 15) |
 | The lock check in CI | Builders can't touch files outside the ticket, or the checker's tests | H6 |
