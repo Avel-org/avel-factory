@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The loop a builder or checker seat runs (tools/wezterm/avel.lua, tabs 4 and 5).
-# It waits for the agent's next ready task doc in its lane's current sprint, then opens it here
+# It waits for the agent's next ready task doc in its lane's rendered sprints (oldest first), then opens it here
 # through scripts/agent.sh: a fresh worktree and session, one dispatch each (Build rules D1).
 # A session that ended with no report, having changed its worktree, is resumed here once as the same
 # attempt (CR-46 B2). Anything else that stopped is never retried here: the lead decides (K2, L3).

@@ -13,7 +13,7 @@ review. The output depends only on the plan and this file, byte for byte.
   scripts/render.py --ready <lane>/sprint-NN        ready dispatches: <lane> <sprint> <doc> <attempt>, tab-separated
 
 Used by scripts/agent.sh, scripts/dispatch.sh and scripts/agents/lane.sh:
-  --next <lane> <agent>    the agent's next ready dispatch in the lane's current sprint
+  --next <lane> <agent>    the agent's next ready dispatch in the lane's rendered sprints, oldest first
   --docs <agent>           the agent's dispatches that can be opened by hand (ready or stopped)
   --info <lane>/<sprint> <doc>                       a task doc's front matter, as shell assignments
   --state <lane>/<sprint> <doc>                      its state and next attempt number
@@ -1195,17 +1195,29 @@ def cmd_state(target, doc):
     sys.exit(f"no task doc {doc} in {target}")
 
 
+def rendered_sprints(lane):
+    d = os.path.join(DISPATCH, lane)
+    if not os.path.isdir(d):
+        return []
+    return sorted(n for n in os.listdir(d) if re.fullmatch(r"sprint-\d{2}", n)
+                  and os.path.exists(os.path.join(d, n, "MANIFEST.json")))
+
+
 def cmd_next(lane, agent):
-    sprint = current_sprint(lane, rendered_only=True)
-    if not sprint:
-        return
-    plan = load_for_state(f"{lane}/{sprint}")
-    if package_problems(lane, sprint):
-        return
-    for d, state, _, n in dispatch_states(plan):
-        if state == "ready" and d["agent"] == agent:
-            print(f"{sprint}\t{d['doc']}\t{n}")
-            return
+    """The agent's next ready dispatch in any of the lane's rendered sprints, oldest sprint first. Several
+    sprints are in flight at once (frontend 12 to 14, Nov 20), and the newest-only search left sprint-12
+    and 13 work ready with no session (Nov 21)."""
+    for sprint in rendered_sprints(lane):
+        try:
+            plan = load_for_state(f"{lane}/{sprint}")
+        except SystemExit:
+            continue
+        if package_problems(lane, sprint):
+            continue
+        for d, state, _, n in dispatch_states(plan):
+            if state == "ready" and d["agent"] == agent:
+                print(f"{sprint}\t{d['doc']}\t{n}")
+                return
 
 
 def cmd_docs(agent):
