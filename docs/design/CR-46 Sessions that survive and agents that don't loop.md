@@ -2,7 +2,14 @@
 
 Nov 20, 2026 · drafted by OSA at Javaris's request (the repo-fixes work order, Part B) · changes `Build rules.md` D1, D2, D4, D5, D7, K2 and L3, CR-36 condition 7, `scripts/agents/limits.json`, `scripts/agent.sh`, `scripts/agents/lane.sh`, `scripts/agents/kit.py`, `scripts/hooks/turns.py`, `scripts/render.py`, `.claude/settings.json`, `.claude/commands/dispatch.md`, the identity files' "Learned" sections and `tools/repo-checks/src/check-locks.ts`
 
-**Proposed, not accepted.** Javaris accepts or changes each decision. The code changes for a decision land only after he accepts it, in the same PR as its doc edits, so the code and the docs never drift (I2).
+**Accepted, every decision with OSA's recommendations** (Javaris, Nov 20, to OSA: "i approve all, go with your recommendations"). So:
+- B1 keeps D2's cost column as it is: recorded, not enforced, on the Claude plan.
+- B3 turns on auto-merge only after a passing review, and adds the push guard.
+- B4 takes the H6 and CR-36 condition 7 exemptions for `.agents/memory/`.
+- B6 keeps K2's two failed attempts, and a resume isn't an attempt.
+- D5 takes the new wording.
+
+Each decision's code landed with its doc edits on `chore/speed-audit`, one commit per decision.
 
 ## In short
 
