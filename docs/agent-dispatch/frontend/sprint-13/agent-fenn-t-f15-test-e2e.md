@@ -7,7 +7,7 @@ agent: fenn
 seat: checker
 kind: tests
 role: test-e2e
-rigor: standard
+rigor: full
 model: sonnet
 branch: t/F15-e2e-production-build
 checkout: branch
@@ -25,7 +25,7 @@ report: docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f15-test-e2e-complet
 | --- | --- |
 | Lane | frontend · lead Zero |
 | Sprint | sprint-13 · Step 1 |
-| Ticket | T-F15 · rigor standard |
+| Ticket | T-F15 · rigor full |
 | Dispatch | test-e2e · Fenn (checker) · model sonnet |
 | Works on | `t/F15-e2e-production-build` |
 | Done when | CI is green and the acceptance tests pass. Nothing else (C1, C3). |
@@ -50,13 +50,18 @@ You write this ticket's acceptance tests before anything is built. They must fai
 10. `apps/web/vite.config.ts`: mockApi() already serves contract-mock in vite dev and vite preview under AVEL_API=mock (T-F12)
 11. `.github/workflows/ci.yml`: the web e2e job
 12. `docs/quarantine.md`: T-F7-05's row, removed when it's back
-13. `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f15-test-e2e.md`: this document: follow it exactly
+13. `docs/design/CR-W33 The web server reads the session at a configured origin.md`: the rule this ticket builds: the session read's origin from AVEL_API_ORIGIN, fail closed, dev and preview wiring
+14. `apps/web/src/routes/__root.tsx`: readRoot reads the session at new URL(getRequest().url).origin today (lines 16 and 21): the Host-derived origin CR-W33 replaces
+15. `apps/web/src/auth/api.ts`: getSession({ cookie, origin }): the one caller of get-session
+16. `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f15-test-e2e.md`: this document: follow it exactly
 
 ## 3. Domain
 
 **Goal:** CI's end-to-end tests run against the production build, so a lazy page never waits on the dev server's first compile, and the suite gives the same answer every run; T-F7-05 is back from quarantine.
 
 **Refs:**
+- CR-W33 (accepted Nov 21 with Javaris's "Option b"): the guard's session read at AVEL_API_ORIGIN, from Axis's G7 P1 on #102 (t-f12-fenn-01)
+- t-f12-fenn-02 (P3): sign-out's failure alert has no test
 - F5 and issue #57 (T-F7-05 quarantined Nov 18, #58)
 - F6 (end-to-end tests in CI)
 - build review item 3.6 (sessions run only their ticket's specs)
@@ -67,7 +72,9 @@ You write this ticket's acceptance tests before anything is built. They must fai
 **Notes from the lead:**
 - Both web servers run vite build, then vite preview, under the same AVEL_API values. T-F12 already serves the mock in preview (configurePreviewServer, under AVEL_API=mock only), so this ticket changes vite.config.ts only if the build switch needs it. Local runs may keep vite dev through an env switch the report names; CI always uses the build
 - Remove T-F7-05's row from docs/quarantine.md once the checker's un-skipped test passes, and close #57 in the PR text (Fixes #57)
-- The PR changes .github/workflows/ci.yml, so Javaris merges it (CR-36's guardrail exclusion)
+- CR-W33 (Javaris, Nov 21: "Option b": T-F12 merged with t-f12-fenn-01 accepted until this ticket fixes it, before the web is served anywhere beyond localhost): the guard's session read, and any later call the web server makes to /api while rendering, goes to AVEL_API_ORIGIN, a server-side setting, never to an origin built from the request's Host. Missing or not an absolute http(s) origin: the read fails, the visitor is signed out, and the server logs it once with no values (fail closed). The dev and preview web servers in playwright.config.ts, and the preview starters through e2e/support/preview-auth.ts's environment, set it to their own origin; for a person's vite dev, mockApi() may default it to the origin Vite resolved, only when it's unset and AVEL_API=mock (say how in the report). safeNext keeps the request's origin, which it only compares. Name the setting in the report so Javaris adds it to .env.example (E6)
+- t-f12-fenn-02: sign-out's failure (login.md section 4: stay on Settings and draw Couldn't sign out. Try again.) gets its test here. T-F12's sign-in navigates instead of calling router.invalidate(), as its build report explains (a thrown redirect always replaces, which broke LG-22's Back); that stands, and the lead's old note is superseded
+- Full rigor (C4: sign-in): Fenn's review, then Axis's second review against docs/review/security-checklist.md, then Javaris merges, as he does anyway for .github/workflows/ci.yml (CR-36's guardrail exclusion)
 - Report the suite's time in CI before and after, as numbers
 - Review: one round (CR-42); the full-diff rule applies as in T-F14
 - Size: about 60 minutes
@@ -89,7 +96,17 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
 
-### T-F15-04: a failing test for: e2e (guard): t-f9-fenn-01, each project tab and the Library's three pages are told apart by a per-tab marker (aria-current or a data-testid beside the h1), not the mission name alone
+### T-F15-04: a failing test for: unit (behaviour, CR-W33): the guard's session read goes to AVEL_API_ORIGIN; a request with Host: other.example sends nothing to other.example; with AVEL_API_ORIGIN unset or not an absolute http(s) origin, the read fails and the visitor is signed out
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
+
+### T-F15-05: a failing test for: e2e (behaviour, t-f12-fenn-02): a 500 on sign-out keeps you on Settings with Couldn't sign out. Try again. and the Sign out button back, and passes WCAG 2.2 AA
+
+- **Write:** one test, in the test paths, that proves this behaviour.
+- **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
+
+### T-F15-06: a failing test for: e2e (guard): t-f9-fenn-01, each project tab and the Library's three pages are told apart by a per-tab marker (aria-current or a data-testid beside the h1), not the mission name alone
 
 - **Write:** one test, in the test paths, that proves this behaviour.
 - **Verify:** `pnpm --filter @avel/web exec vitest run && pnpm --filter @avel/web exec playwright test` runs it, and it **fails** on the start commit for the right reason.
@@ -100,13 +117,17 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - `apps/web/e2e/control-room/routes.spec.ts`
 - `apps/web/e2e/control-room-screens/routes.ts`
 - `apps/web/e2e/e2e-build/**`
+- `apps/web/test/sign-in/origin.test.ts`
+- `apps/web/e2e/sign-in/sign-out-failure.spec.ts`
+- `apps/web/e2e/support/preview-auth.ts`
 - `docs/agent-dispatch/frontend/sprint-13/agent-fenn-t-f15-test-e2e-completion.md` (your report)
 
 **Never change, whatever the task says:**
 - `packages/**`
 - `apps/web/package.json`
 - `pnpm-lock.yaml`
-- `apps/web/src/**`
+- `apps/web/src/data/**`
+- `apps/web/src/routes/login.tsx`
 - `apps/web/control-room/**`
 - `packages/**`
 - `.claude/**`, `.agents/**`, `docs/agent-dispatch/**` (except your report), `scripts/agents/**`, the kit scripts, `.env*`

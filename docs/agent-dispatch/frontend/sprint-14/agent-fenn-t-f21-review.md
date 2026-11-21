@@ -8,7 +8,7 @@ seat: checker
 kind: review
 role: review
 rigor: full
-model: opus
+model: sonnet
 branch: t/F21-release-live
 checkout: detached
 after: [agent-fantem-t-f21-build]
@@ -26,7 +26,7 @@ report: docs/agent-dispatch/frontend/sprint-14/agent-fenn-t-f21-review-completio
 | Lane | frontend · lead Zero |
 | Sprint | sprint-14 · Step 1 |
 | Ticket | T-F21 · rigor full |
-| Dispatch | review · Fenn (checker) · model opus |
+| Dispatch | review · Fenn (checker) · model sonnet |
 | Works on | a detached checkout of `t/F21-release-live`'s head |
 | Done when | CI is green and the acceptance tests pass. Nothing else (C1, C3). |
 

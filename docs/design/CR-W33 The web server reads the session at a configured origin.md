@@ -1,6 +1,6 @@
 # CR-W33: the web server reads the session at a configured origin
 
-Nov 21, 2026 · drafted by Zero · **proposed** (Javaris accepts). It's from Axis's G7 second review of T-F12 (#102), which raised t-f12-fenn-01 to P1.
+Nov 21, 2026 · drafted by Zero · **accepted Nov 21** (Javaris, to OSA: "Option b"). It's from Axis's G7 second review of T-F12 (#102), which raised t-f12-fenn-01 to P1. Under option B, T-F12 merged with the P1 accepted until **T-F15** fixes it. The fix must land before the web is served anywhere beyond localhost.
 
 **What:**
 - **The rule:** every call the web server makes to `/api` while it renders goes to one configured origin, `AVEL_API_ORIGIN`, and never to an origin taken from the request. Today the only such call is the guard's session read (`get-session`, with the caller's cookie forwarded).
@@ -16,12 +16,12 @@ Nov 21, 2026 · drafted by Zero · **proposed** (Javaris accepts). It's from Axi
 - **Guard bypass:** a request with `Host: attacker.example` makes the web server fetch that host, and an answer shaped like `{ session, user }` makes the guard draw the control room. That breaks section 2's "the shell is never drawn signed out".
 - **SSRF:** an internal Host makes the server probe internal addresses, up to the 10 s timeout each.
 - **No leak today:** no data leaks, because a browser can't send someone else's cookie to a spoofed host, and the API checks the real session on every data call. But it fails the security checklist's "every input is validated before use", and every later server-side read that copies the pattern would inherit it.
-- Axis rated it P1 (G3: a broken rule), and the fix goes into T-F12 (#102) before it merges.
+- Axis rated it P1 (G3: a broken rule). Javaris chose option B: T-F12 (#102) merges as it is, and T-F15 fixes it.
 
 **Touches:**
 - **`docs/ui-contracts/login.md` section 1:** "at the request's origin (as `router.tsx` sets `baseUrl`)" becomes "at `AVEL_API_ORIGIN`, the web server's configured API origin (CR-W33)". This CR overrides the line until login.md is next revised (I1).
-- **T-F12 (frontend sprint-12):** by an amendment with this CR. The guard reads at `AVEL_API_ORIGIN`, with a test that a forged Host gets no request. The dev and preview servers set it.
+- **T-F15 (frontend sprint-13, now full rigor):** by an amendment with this CR. The guard reads at `AVEL_API_ORIGIN`, with a test that a forged Host gets no request. The dev and preview servers set it.
 - **`.env.example`:** gains `AVEL_API_ORIGIN` with no value. Javaris adds it (E6).
 - **The backend:** nothing. The API's own Better Auth origin checks are unchanged.
 
-**Decision asked:** accept CR-W33 as written, with the T-F12 amendment in the same PR.
+**Decided:** accepted with option B. The fix is in T-F15, and the web isn't served beyond localhost until T-F15 merges.
