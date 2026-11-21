@@ -2,7 +2,7 @@
 
 Nov 12, 2026 · @javaris
 
-AVEL (avelco.dev, Austin, TX) is a one-person software agency that ships client software through a factory: Javaris runs the business and makes the calls, and AI agents do the building inside a controlled, tested process. This project builds the engine that runs that factory. The design is frozen at v0.6; the repo is at Step 1 of a 14-step build order.
+AVEL (avelco.dev, Austin, TX) is a one-person software agency that ships client software through a factory: Javaris runs the business and makes the calls, and AI agents do the building inside a controlled, tested process. This project builds the engine that runs that factory. The design is frozen at v0.6; the repo has finished Steps 0 and 1 of a 14-step build order (Nov 21) and is on Step 2.
 
 ## What the factory has to get right
 
@@ -65,12 +65,12 @@ The full walkthrough is in the doc "AVEL Backend System Explained".
 
 ## The repo today
 
-- **`packages/contract`:** version 1.0.0 on branch `feat/contract-cr-w1-w22`, not on main yet: 119 routes, the DTOs, value lists, the error catalog, the event catalog, the plain-text templates and 163 tests. Main still has the 102-route 0.0.0.
+- **`packages/contract`:** version 1.0.1 on main: 119 routes, the DTOs, value lists, the error catalog, the event catalog and the plain-text templates.
 - **`packages/contract-mock`:** the same contract served with mock data, so the web works before the server exists. With `world: true` it serves the control room's sample world (Fleet portal, Spring launch site, Booking fix, Field app, Parts catalogue, Control room).
 - **`packages/db`:** the Drizzle schema (rebuilt by CR-19 with every accepted change applied), migrations 0000 to 0003 with down files, and 652 tests: one per database rule (553), plus the migration, map, value-list and trigger tests.
-- **`apps/web`:** the shell route only so far. UI contracts written for the shell layout, login, the decisions approval page and the design kit v1.9. Its Decisions module still reads the Step 1 row, so 39 of its 197 tests fail on contract 1.0.0 until it moves to the new union.
+- **`apps/web`:** the control room ported from Javaris's design export (CR-W29), running on contract-mock. Sign-in and the first mission's screens are in frontend sprints 12 to 14.
 - **Generated docs:** `docs/generated/erd.md` and `openapi.json` (version 1.0.0, 119 operations) follow the code; the DATABASE.md drift check passes.
-- **Not started:** `packages/server`.
+- **`packages/server`:** Step 1, done Nov 21. The Effect 4 shell, middleware, database errors, idempotency, Better Auth sign-in with lockout and rate limits, the hand-built jobs engine and event consumers. About 3.3k lines of source and 61 test files.
 - **History:** 399 commits from Nov 4 to Nov 8. About 59 were code, about 194 were records and 77 were merges. The build rules in the change package stop that from happening again.
 
 ## Build order and where we are
@@ -78,8 +78,8 @@ The full walkthrough is in the doc "AVEL Backend System Explained".
 | Step | What | Status |
 | --- | --- | --- |
 | 0 | Contract and schema from the docs | Done |
-| 1 | Scaffold: server shell, middleware, idempotency, Better Auth, step-up, CLI login, jobs, events, sample route | In progress (backend sprint 1, frontend sprint 2); contract 1.0.0 decided |
-| 2 | Rooms, the model proxy, the egress proxy, git credentials | Next |
+| 1 | Scaffold: server shell, middleware, idempotency, Better Auth, jobs, events (step-up and CLI login moved out by CR-43, the sample route by CR-31) | Done Nov 21 (backend sprints 1 to 5) |
+| 2 | Rooms, the model proxy, the egress proxy, git credentials | In progress (backend sprint-06) |
 | 3 | Gate parity: `decide()`, receipts, rules, `avel check` | |
 | 4 | Runner, harness, delivery and secrets | |
 | 5 | Events and the CLI | |

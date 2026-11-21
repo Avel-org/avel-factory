@@ -4,11 +4,12 @@ Nov 14, 2026 · @javaris · replaces "Docs index and alignment" (Nov 4, updated 
 
 These are the design docs for the AVEL software factory (`avel-factory`). This page says what each doc is, which one wins when two disagree, and where the frozen docs are out of date. The frozen design docs are verbatim copies; nothing in them was edited.
 
-## Where things stand (Nov 13)
+## Where things stand (Nov 21)
 
 - **Contract 1.0.0** is decided and built: 119 routes, 87 event kinds named `<module>.<object>.<verb>`, one pending-decisions union of 10 kinds. Every verdict is in `Contract response to CR-W1 to W22.md`; every route is in `API routes.md`.
 - **The database:** 96 tables, migrations 0000 to 0003, 553 rules with one test each (652 `db` tests in all). `DATABASE.md` here matches the schema; the drift check passes.
-- **Step 0 is done. Step 1 (the server) is next.** Per CR-30 (accepted Nov 13), it's written in Effect 4, starts with spike 1 (folded into the first cycle's T-B1, Nov 16), and tests DBOS before the jobs engine. Per CR-31, it has no sample route and no approval page.
+- **Steps 0 and 1 are done.** Javaris closed Step 1 on Nov 21, after T-B20 (#89). `docs/steps/step-1-done.md` traces each of its tests to the locked test that proves it, or to the CR that moved it out (CR-31, CR-43). The server is in Effect 4 (CR-30). DBOS lost spike 2, so the jobs engine is hand-built (T-B17).
+- **Step 2 is next:** backend sprint-06 (credentials and the model proxy), beside the first mission's routes. The frontend's sprints 12 to 14 wire the first mission's screens to contract-mock.
 - **The repo is new.** The code comes from the 1.0.0 source export (`packages/contract`, `packages/contract-mock`, `packages/db`, `tools/docs`). The old `Avel-org/avel-factory` main is the 0.0.0 contract and isn't a source.
 
 ## Reading order
@@ -107,6 +108,7 @@ If code and a doc disagree on something this page doesn't cover, don't pick one.
 | CR-W29 | The control room comes from the design export: Javaris's control room JSX runs at `/` in apps/web with its sample world; the old shell goes; T-F5 dropped, T-F6, T-F3 and T-F4 withdrawn; temporary exceptions to E2, E4, E14 and E16 | Accepted Nov 17 (`CR-W29 The control room from the design export.md`); built in frontend sprints 07 to 10 as T-F7 to T-F10; the setup.css question is open |
 | CR-W30 | The web's auth wire and a minified contract: A the auth mock, B the step-up wire, C the mock's routes 1 to 7, D the minified router | Accepted Nov 17 (`CR-W30 The web's auth wire and a minified contract.md`); A and D in T-B11; B and C's routes 1 to 5 wait with the CLI (CR-43) |
 | CR-W31 | contract-mock serves the first mission's routes, over a world with one mission from draft to release | Accepted Nov 18 (`CR-W31 contract-mock serves the first mission's routes.md`); built by the frontend lane, on Axis's conditions: part (a) as T-F22, (b) and (c) as T-F23 and T-F24 |
+| CR-W32 | Your first turn with Canon starts onboarding: route 34's first turn on a draft mission moves it to onboarding | Proposed Nov 21 (`CR-W32 Your first turn with Canon starts onboarding.md`), in Zero's sprint 13/14 re-plan; Axis signed the contract half; the mock half in T-F24, the web half in T-F18, the contract summary in backend T-B25 (I3) |
 
 ## Known drift in the frozen docs
 
