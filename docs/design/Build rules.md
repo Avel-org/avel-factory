@@ -254,7 +254,7 @@ CI is green and the acceptance tests pass. Nothing else.
   - for the web: the bundle budget, accessibility and end-to-end tests. On a pull request the end-to-end tests run only when the web, the contract, the mock, the lockfile or the workflows change (CR-45); a push to `main` always runs them.
 - **H5. A red check blocks.** Nobody merges red, retries CI to get a green, or marks a check optional.
 - **H6. Lock checks:** CI fails a PR if the builder's commits touch a file outside the build task doc's Territory, or any file listed in `locks.md`. The lists are read from the rendered task doc and `locks.md`, never from the issue. CI also fails a PR whose task docs differ from what `render.py` renders from the plan.
-- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
+- **H7. Pushing to any remote** happens only when Javaris says so (the standing rule). His standing yes (CR-46 B3): a build dispatch pushes its own `t/*` branch and opens its PR (D7). And (Javaris, Nov 21: "yes leads can push main merges and plan branches"): a lead pushes a clean merge of `main` onto a ticket branch, made in a detached worktree with the lock check passing, and the lead's own `plan/`, `cr/` and `docs/` branches. Any other push of a ticket branch goes through OSA. Until the repo exists, OSA keeps the board in local files and Javaris gets each checkpoint as a zip.
 
 ## I. Docs and change requests
 
