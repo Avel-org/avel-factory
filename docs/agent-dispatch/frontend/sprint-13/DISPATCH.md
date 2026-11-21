@@ -56,7 +56,7 @@ Each ticket runs tests, then build (once its tests are in `locks.md`), then revi
 | T-F15 | `apps/web/playwright.config.ts`, `apps/web/vite.config.ts`, `.github/workflows/ci.yml`, `docs/quarantine.md` | `apps/web/e2e/control-room/routes.spec.ts`, `apps/web/e2e/control-room-screens/routes.ts`, `apps/web/e2e/e2e-build/**` |
 | T-F16 | `apps/web/control-room/src/sources/decisions.js`, `apps/web/control-room/src/app/decisions.js`, `apps/web/control-room/src/pages/decisions/**`, `apps/web/control-room/changes/T-F16.md` | `apps/web/test/decisions-live/**`, `apps/web/e2e/decisions-live/**` |
 | T-F17 | `apps/web/control-room/src/sources/missions.js`, `apps/web/control-room/src/pages/project/NewProjectPage.jsx`, `apps/web/control-room/src/pages/project/ProjectOverviewPage.jsx`, `apps/web/control-room/changes/T-F17.md` | `apps/web/test/mission-start/**`, `apps/web/e2e/mission-start/**` |
-| T-F23 | `packages/contract-mock/src/**` | `packages/contract-mock/test/mission-streams.test.ts` |
+| T-F23 | `packages/contract-mock/src/**` | `packages/contract-mock/test/mission-streams.test.ts`, `packages/contract-mock/test/world.test.ts` |
 | T-F24 | `packages/contract-mock/src/**` | `packages/contract-mock/test/mission-reads.test.ts` |
 
 ## Merge order
