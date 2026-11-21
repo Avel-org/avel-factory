@@ -4,11 +4,12 @@ Nov 14, 2026 · @javaris · replaces "Docs index and alignment" (Nov 4, updated 
 
 These are the design docs for the AVEL software factory (`avel-factory`). This page says what each doc is, which one wins when two disagree, and where the frozen docs are out of date. The frozen design docs are verbatim copies; nothing in them was edited.
 
-## Where things stand (Nov 13)
+## Where things stand (Nov 21)
 
 - **Contract 1.0.0** is decided and built: 119 routes, 87 event kinds named `<module>.<object>.<verb>`, one pending-decisions union of 10 kinds. Every verdict is in `Contract response to CR-W1 to W22.md`; every route is in `API routes.md`.
 - **The database:** 96 tables, migrations 0000 to 0003, 553 rules with one test each (652 `db` tests in all). `DATABASE.md` here matches the schema; the drift check passes.
-- **Step 0 is done. Step 1 (the server) is next.** Per CR-30 (accepted Nov 13), it's written in Effect 4, starts with spike 1 (folded into the first cycle's T-B1, Nov 16), and tests DBOS before the jobs engine. Per CR-31, it has no sample route and no approval page.
+- **Steps 0 and 1 are done.** Javaris closed Step 1 on Nov 21, after T-B20 (#89). `docs/steps/step-1-done.md` traces each of its tests to the locked test that proves it, or to the CR that moved it out (CR-31, CR-43). The server is in Effect 4 (CR-30). DBOS lost spike 2, so the jobs engine is hand-built (T-B17).
+- **Step 2 is next:** backend sprint-06 (credentials and the model proxy), beside the first mission's routes. The frontend's sprints 12 to 14 wire the first mission's screens to contract-mock.
 - **The repo is new.** The code comes from the 1.0.0 source export (`packages/contract`, `packages/contract-mock`, `packages/db`, `tools/docs`). The old `Avel-org/avel-factory` main is the 0.0.0 contract and isn't a source.
 
 ## Reading order
