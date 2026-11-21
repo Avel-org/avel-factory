@@ -88,6 +88,8 @@ pnpm --filter @avel/docs generate
 scripts/pg-local.sh stop    # prune removes the ones whose worktree is gone
 ```
 
+In a fresh checkout, run `pnpm build` once before `pnpm typecheck` or `pnpm test`: workspace packages resolve to their `dist/`.
+
 ## The team that builds the factory
 
 `docs/design/Build rules.md` (version 3, Nov 15) is how work moves here. Read it before your first ticket. In short:

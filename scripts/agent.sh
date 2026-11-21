@@ -193,6 +193,8 @@ kitargs=(--agents "$(cat "$kit/agents.json")" --settings "$kit/settings.json")
 cd "$wt"
 if [[ -f package.json ]]; then
   pnpm install --frozen-lockfile --prefer-offline >/dev/null 2>&1 || echo "warning: pnpm install failed in $wt; the session's first test run will show why"
+  # Workspace packages resolve to their dist/, so typecheck and test fail in a fresh worktree until a build.
+  pnpm build >/dev/null 2>&1 || echo "warning: pnpm build failed in $wt"
 fi
 echo "$name: $DOC_PATH on $( [[ $CHECKOUT == detached ]] && echo "a detached checkout of $BRANCH" || echo "$BRANCH" ), model $MODEL, at most $minutes minutes"
 if (( headless )); then
