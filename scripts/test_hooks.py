@@ -212,6 +212,71 @@ class PushGuard(unittest.TestCase):
         self.assertIsNone(self.run_guard("git push origin main", tool="Read"))
 
 
+DONE_CHECK = os.path.join(KIT, "scripts/hooks/done_check.py")
+
+
+class DoneCheck(unittest.TestCase):
+    """CR-46 B5: a build whose report says done can't stop with failing checks, but is never trapped."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="avel-done-")
+        subprocess.run(["git", "init", "-q", "-b", "main", self.tmp], check=True)
+        self.report = os.path.join(self.tmp, "report.md")
+        self.write_report("status: done\nticket: T-B1\n")
+        self.flag = os.path.join(self.tmp, "done.flag")
+        g = lambda *a: subprocess.run(["git", "-C", self.tmp, "-c", "user.name=t", "-c", "user.email=t@e", *a],
+                                      check=True, capture_output=True)
+        g("add", "-A")
+        g("commit", "-qm", "report")
+        self.env = dict(os.environ, AVEL_TURN_LIMIT="400", AVEL_KIND="build", AVEL_REPORT=self.report,
+                        AVEL_DONE_FLAG=self.flag, AVEL_SEAT="SOAP T-B1-build a1", GIT_AUTHOR_NAME="t",
+                        GIT_AUTHOR_EMAIL="t@e", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@e",
+                        AVEL_DONE_CHECK_CMD="echo 'src/a.ts(1,1): error TS2322: nope'; exit 1")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def write_report(self, text):
+        with open(self.report, "w") as f:
+            f.write(text)
+
+    def stop(self, active=False, **env):
+        out = subprocess.run([sys.executable, DONE_CHECK], input=json.dumps(
+            {"session_id": "s1", "cwd": self.tmp, "stop_hook_active": active}), capture_output=True, text=True,
+            env=dict(self.env, **env))
+        self.assertEqual(out.returncode, 0, out.stderr)
+        return json.loads(out.stdout) if out.stdout.strip() else None
+
+    def status(self):
+        with open(self.report) as f:
+            return f.read().splitlines()[0]
+
+    def test_failing_checks_block_twice_then_the_stop_goes_ahead_and_the_report_says_so(self):
+        open(self.flag, "w").close()
+        out = self.stop()
+        self.assertEqual(out["decision"], "block")
+        self.assertIn("error TS2322", out["reason"])
+        self.assertFalse(os.path.exists(self.flag))  # the block lowers the done flag
+        self.assertFalse(os.path.exists(self.flag + ".checking"))
+        self.assertEqual(self.stop()["decision"], "block")
+        self.assertIsNone(self.stop())  # a third failing stop isn't trapped
+        self.assertEqual(self.status(), "status: stopped (checks failing)")
+        log = subprocess.run(["git", "-C", self.tmp, "log", "-1", "--format=%s"], capture_output=True, text=True).stdout
+        self.assertIn("checks failing", log)  # committed, so the session counts as finished
+
+    def test_a_stop_a_hook_already_continued_is_allowed(self):
+        self.assertIsNone(self.stop(active=True))
+        self.assertEqual(self.status(), "status: stopped (checks failing)")
+
+    def test_passing_checks_and_other_cases_say_nothing(self):
+        self.assertIsNone(self.stop(AVEL_DONE_CHECK_CMD="true"))
+        self.assertIsNone(self.stop(AVEL_KIND="tests"))  # a tests dispatch's tests fail on purpose
+        self.assertIsNone(self.stop(AVEL_TURN_LIMIT=""))
+        self.write_report("status: blocked\n")
+        self.assertIsNone(self.stop())
+        self.assertEqual(self.status(), "status: blocked")
+
+
 class MsgLog(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="avel-msg-")

@@ -293,7 +293,8 @@ if (( headless )); then
     || echo "the session ended with an error or hit its limit: $log"
 else
   # A finished session ends itself: the Stop hook (scripts/hooks/session.py) raises the flag once the
-  # report is final, and 15 seconds later, if no new turn has lowered it, the session is closed.
+  # report is final, and 15 seconds later, if no new turn has lowered it, the session is closed. A build's
+  # done check (done_check.py) holds the flag while its checks run, and lowers it if it blocks the stop.
   export AVEL_DONE_FLAG="$state/logs/$lane-$sprint-$doc.a$n.done"
   # The hook compares the report against the one the worktree held at the start (REPORT_START above).
   export AVEL_REPORT_START="$REPORT_START"
@@ -302,8 +303,10 @@ else
     while sleep 5; do
       kill -0 $$ 2>/dev/null || exit 0
       [[ -e $AVEL_DONE_FLAG ]] || continue
+      # The done check (scripts/hooks/done_check.py, CR-46 B5) may still be running its checks.
+      while [[ -e $AVEL_DONE_FLAG.checking ]]; do sleep 5; done
       sleep 15
-      [[ -e $AVEL_DONE_FLAG ]] || continue
+      [[ -e $AVEL_DONE_FLAG && ! -e $AVEL_DONE_FLAG.checking ]] || continue
       echo; echo "$name: the report is in; closing the session."
       pkill -TERM -P $$ -x timeout
       exit 0
