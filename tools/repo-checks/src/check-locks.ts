@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 // The lock check (Build rules H6). For a PR from t/<B|F><n>-<slug> it reads the ticket's rendered
 // build task doc (its Territory) and its locks.md line, then holds the builder's commits to them.
 // The builder's commits are every commit after the lock line's sha that isn't on the base branch,
-// side branches included. The tests report (the checker's, rewritten by the kit) is exempt.
+// side branches included. The tests report (the checker's, rewritten by the kit) is exempt, and so is
+// one added line in the builder's own memory file, .agents/memory/<builder>.md (CR-46 B4).
 
 const root = process.env.AVEL_REPO_ROOT ?? fileURLToPath(new URL("../../../", import.meta.url));
 const branch = process.env.GITHUB_HEAD_REF ?? "";
@@ -238,8 +239,23 @@ function main(): void {
     }
   }
 
+  // CR-46 B4: the builder may add one lesson to its own memory file. Held across the whole range: at
+  // most one line added, none removed. Anyone else's memory file is outside the Territory as usual.
+  const builder = /\/agent-([a-z0-9]+)-[^/]*-build\.md$/.exec(doc)?.[1] ?? "";
+  const memory = `.agents/memory/${builder}.md`;
+  if (builder && commits.some((c) => filesOf(c).includes(memory))) {
+    // From where the branch meets the base, so what a merge of main brings in doesn't count.
+    const [added = "0", removed = "0"] = git("diff", "--numstat", `${base}...HEAD`, "--", memory)
+      .trim()
+      .split(/\s+/);
+    if (Number(added) > 1 || Number(removed) > 0)
+      problems.push(
+        `${memory}: a ticket may add one line to its builder's memory file; this adds ${added} and removes ${removed} (CR-46 B4)`,
+      );
+  }
+
   for (const c of commits) {
-    const files = filesOf(c).filter((f) => f !== report);
+    const files = filesOf(c).filter((f) => f !== report && f !== memory);
     if (files.length === 1 && files[0] === locksPath) continue;
     // The checker's fix before a relock is allowed; the Territory still applies.
     const frozen = !relocks.some((r) => isAncestor(c, r));

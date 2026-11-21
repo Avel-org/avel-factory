@@ -43,4 +43,4 @@ Stop with one status: `blocked`, `needs-cr`, `test-dispute`, `needs-dependency` 
 - List every instruction you received in your report's **Messages received** section, with what you did with it.
 
 ## Learned
-<!-- One line per lesson, added through a reviewed PR. -->
+Your lessons live in `.agents/memory/rigg.md` (CR-46 B4). Your session's prompt ends with main's copy; add one line there on your ticket branch when you hit a mistake you'd repeat.

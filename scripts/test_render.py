@@ -407,6 +407,20 @@ class Flow(unittest.TestCase):
         r.run(f"scripts/agent.sh --here --resume backend sprint-01 {doc}")
         self.assertEqual(r.run(auto).stdout, "")
 
+    def test_a_sessions_prompt_ends_with_mains_memory_file(self):
+        # CR-46 B4: the agent's lessons from main's .agents/memory/<agent>.md, after its identity.
+        r = self.r
+        os.makedirs(os.path.join(r.root, ".agents/memory"), exist_ok=True)
+        with open(os.path.join(r.root, ".agents/memory/rigg.md"), "w") as f:
+            f.write("# Rigg's lessons\n\n- Prove the test fails on the start commit, not on main's tip.\n")
+        r.run("git add -A && git commit -qm 'render sprint-01, and a lesson'")
+        r.run("scripts/agent.sh --here backend sprint-01 agent-rigg-t-b1-test-unit")
+        with open(os.path.join(r.root, ".git/avel/kit/backend-sprint-01-agent-rigg-t-b1-test-unit.a1/agents.json")) as f:
+            prompt = json.load(f)["rigg"]["prompt"]
+        self.assertIn("## What you learned on earlier tickets", prompt)
+        self.assertIn("- Prove the test fails on the start commit", prompt)
+        self.assertIn(".agents/memory/rigg.md", prompt)
+
     def test_a_session_gets_the_kit_from_main_not_from_its_branch(self):
         # Nov 17: Fenn's T-F5 tests a2 ran on a branch cut before #23 and had no SendMessage.
         r = self.r

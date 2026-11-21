@@ -39,4 +39,4 @@ Finish the chain you're on, commit a checkpoint, and stop with one status: `bloc
 - List every instruction you received in your report's **Messages received** section, with what you did with it.
 
 ## Learned
-<!-- One line per lesson, added through a reviewed PR when a finding shows a repeatable mistake. -->
+Your lessons live in `.agents/memory/soap.md` (CR-46 B4). Your session's prompt ends with main's copy; add one line there on your ticket branch when you hit a mistake you'd repeat.
