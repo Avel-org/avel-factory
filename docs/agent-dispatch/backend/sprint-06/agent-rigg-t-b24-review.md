@@ -148,7 +148,7 @@ You review the builder's work on this ticket, from the diff and this document on
 | --- | --- | --- |
 | T-B21 | builds | `packages/server/src/compute/credentials/**`, `packages/server/src/server.ts` |
 | T-B21 | tests | `packages/server/test/credentials/**` |
-| T-B22 | builds | `packages/server/src/metering/**` |
+| T-B22 | builds | `packages/server/src/metering/**`, `docs/design/DATABASE.md`, `packages/db/src/owners.ts` |
 | T-B22 | tests | `packages/server/test/metering/**` |
 | T-B25 | builds | `packages/server/src/factory/missions/**`, `packages/server/src/platform/router.ts`, `packages/server/src/platform/errors.ts` |
 | T-B25 | tests | `packages/server/test/missions/**` |

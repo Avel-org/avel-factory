@@ -67,12 +67,14 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - Sandbox doc: the model key stays on the host; the proxy adds it, allows only the messages endpoint and requires the dispatch's token
 - CR-22 item 3: ANTHROPIC_BASE_URL points at the proxy and ANTHROPIC_AUTH_TOKEN is the attempt's dispatch token
 - Port inventory: token usage and prices with changes (split 5-minute and 1-hour cache writes; the proxy is the meter of record)
-- CR-48 (decision 5): metering writes attempts.cost_micros as well as the reserved and spent columns
+- CR-48 (accepted Nov 21, decision 5): metering writes attempts.cost_micros as well as the reserved and spent columns
 
 **Merged before this starts:** T-B21
 
+**Labels:** schema · implements CR-48
+
 **Notes from the lead:**
-- Build only after CR-48 is accepted (decision 5). If it isn't, stop with blocked
+- CR-48 is accepted (docs/design/CR-48 Metering writes an attempt's cost.md). Make its two Touches edits and nothing more: DATABASE.md's Ownership sentence and owners.ts's header comment. No table, column, CHECK or migration changes
 - The proxy is its own Hono app and its own process (Design v0.6 Main: the model proxy and the egress proxy are separate services on the host): startModelProxy(env) in packages/server/src/metering/proxy/, with its own entry file beside it, its own port and its own pools in one Scope (Writing Effect rule 6). The main service never reads the model key: the key is Config.Redacted, read only by startModelProxy, which refuses to start without it, naming the variable and never the value
 - Callers: a room's harness with its attempt's dispatch token, and Canon with a session's service token (T-B21's verify). It allows only POST /v1/messages; anything else, and any request without a valid token, is refused before any vendor call. It strips the caller's credentials and adds the factory's key. The vendor is a layer over fetch with a timeout (rule 5); tests provide a fake vendor layer (E10)
 - Reserve before sending, in one transaction: a budget_reservations row of kind request for the attempt (or the session) with its request_id, and the same amount added to the attempt's reserved_micros, its module run's and its mission's (a session's: the mission's only). The amount is the request's maximum cost: its input tokens priced at the highest of the input and cache-write prices, plus max_tokens at the output price, from the price_table row valid now (Clock) for the vendor and model. Input is counted before sending through the vendor layer's token count, with no tokenizer package (E5). A request with no valid price is refused
@@ -148,7 +150,9 @@ You write this ticket's acceptance tests before anything is built. They must fai
 - `packages/server/src/main.ts`
 - `packages/server/src/platform/**`
 - `packages/server/src/compute/**`
-- `packages/db/**`
+- `packages/db/src/schema/**`
+- `packages/db/drizzle/**`
+- `packages/db/test/**`
 - `packages/contract/**`
 - `apps/web/*/**`
 - `apps/web/.*`
