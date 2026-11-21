@@ -156,12 +156,67 @@ describe("the mock serves the new routes", () => {
     expect(art.status).toBe(200);
   });
 
-  it("GET /api/events/stream yields one event of every kind", async () => {
-    const res = await mock.fetch(new Request("http://mock/api/events/stream"));
-    const text = await res.text();
-    const kinds = new Set(
-      [...text.matchAll(/"kind":"([a-z_]+\.[a-z_]+\.[a-z_]+)"/g)].map((m) => m[1]),
+  // F2, Nov 21 (Zero's ruling): route 63 is a live stream. It replays the events the routes have
+  // made, oldest first from seq 1, then waits for more. It never ends on its own, it doesn't
+  // serve world.sampleEvents(), and it stops when the request is aborted. The catalog of every
+  // kind stays covered by "has one sample of every kind" above.
+  it("GET /api/events/stream replays the events the routes made, then waits, and stops on abort", async () => {
+    const live = createMock({ contractVersion: C.CONTRACT_VERSION, world: true });
+    const made = await live.fetch(
+      new Request("http://mock/api/missions", {
+        method: "POST",
+        headers: { "content-type": "application/json", "idempotency-key": crypto.randomUUID() },
+        body: JSON.stringify({ name: "Acme portal" }),
+      }),
     );
-    for (const k of C.EventKind) expect(kinds.has(k), k).toBe(true);
+    expect(made.status).toBe(201);
+
+    const abort = new AbortController();
+    const res = await live.fetch(
+      new Request("http://mock/api/events/stream", {
+        headers: { accept: "text/event-stream" },
+        signal: abort.signal,
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type") ?? "").toContain("text/event-stream");
+    const reader = (res.body as ReadableStream<Uint8Array>).getReader();
+    const decoder = new TextDecoder();
+    const turns = async () => {
+      for (let i = 0; i < 20; i++) await new Promise((r) => setImmediate(r));
+    };
+
+    // Replay: route 20's own events (the mission, and Q-0.1a's decision), from seq 1, each an EventDto with its seq as the SSE id.
+    let text = "";
+    while (!text.includes("onboarding.decision.opened")) {
+      const { done, value } = await reader.read();
+      expect(done, "the stream is still open after the replay").toBe(false);
+      text += decoder.decode(value, { stream: true });
+    }
+    expect(text).toMatch(/^id: ?1$/m);
+    const datas = [...text.matchAll(/^data: ?(.*)$/gm)].map((m) => JSON.parse(m[1] ?? "null"));
+    for (const d of datas) parse(C.EventDto, d);
+    expect(datas[0]?.seq).toBe(1);
+    const kinds = datas.map((d) => d.kind as string);
+    expect(kinds).toContain("missions.mission.created");
+    expect(kinds).toContain("onboarding.decision.opened");
+    // It isn't the sample catalog: kinds no route has made are absent.
+    expect(new Set(kinds).size).toBeLessThan(C.EventKind.length);
+
+    // Then it waits: the next read stays pending, and the stream doesn't end.
+    let next: "pending" | "settled" = "pending";
+    const pending = reader.read().then((r) => {
+      next = "settled";
+      return r;
+    });
+    await turns();
+    expect(next, "the stream waits for more events instead of ending").toBe("pending");
+
+    // Aborting the request stops it: the pending read comes back, and nothing is left running.
+    abort.abort();
+    await Promise.race([pending.catch(() => undefined), turns()]);
+    await turns();
+    expect(next, "an aborted request stops the stream").toBe("settled");
+    await reader.cancel().catch(() => undefined);
   });
 });

@@ -2,6 +2,7 @@ import {
   type AgentStepDto,
   type AlertDto,
   type CanonMessageDto,
+  type CanonStreamChunk,
   type CheckpointDto,
   type ClientDto,
   type DispatchPackageCommitDto,
@@ -10,6 +11,7 @@ import {
   type EventDto,
   type EventKind,
   EventKind as EventKinds,
+  type EventOf,
   type FollowupDto,
   type GateStripItem,
   type LeadDto,
@@ -29,6 +31,7 @@ import {
   type ReleaseApprovalDto,
   receiptPlain,
   returnedLine,
+  type SendMessageInput,
   type SkillResultsDto,
   type StatusDto,
   type TemplateDraftDto,
@@ -1289,6 +1292,11 @@ export const DELIVERY = {
  * - release (route 30): `delivering`, then `delivered`.
  * The moves no part (a) route makes (Canon starting the interview, the build, Gate 5's
  * receipt, the delivery) are made only by `seedMission`.
+ *
+ * CR-W31 part (b): each move a route makes sends its events through `ctx.emit`, in the
+ * contract's kinds, for route 63: the object's own change, and the decisions it settled
+ * (`<owner>.decision.resolved`) or opened (`<owner>.decision.opened`). `seedMission` sends
+ * none. Canon's turns (route 34) are kept on the mission, with each reply's script.
  */
 
 export const MISSION_STAGES = [
@@ -1336,13 +1344,22 @@ export interface LiveMission {
   moduleRunId: string;
   /** When the step now waiting on you opened: its route 52 row's `createdAt`. */
   openedAt: string;
+  /** Route 33's chat, oldest first: your turns and Canon's replies (route 34). */
+  messages: CanonMessageDto[];
+  /** Each Canon reply's script, for route 105 to replay while it's streaming. */
+  replies: Reply[];
 }
+
+/** An event before route 63's log numbers it with its `seq`. */
+export type NewEvent = { [K in EventKind]: Omit<EventOf<K>, "seq"> }[EventKind];
 
 export interface Ctx {
   /** A new UUIDv7. */
   ids: () => string;
   /** Now, as an ISO time. */
   at: string;
+  /** Appends an event to route 63's log. */
+  emit: (event: NewEvent) => void;
 }
 
 // ---------------------------------------------------------------- making one
@@ -1355,7 +1372,7 @@ export function newMission(
   const id = opts.id ?? ctx.ids();
   const sessionId = ctx.ids();
   const { at } = ctx;
-  return {
+  const m: LiveMission = {
     mission: {
       id,
       name: opts.name,
@@ -1433,7 +1450,18 @@ export function newMission(
     release: null,
     moduleRunId: ctx.ids(),
     openedAt: at,
+    messages: [],
+    replies: [],
   };
+  const dto = missionDto(m);
+  emit(ctx, m, "missions.mission.created", {
+    missionId: id,
+    name: dto.name,
+    rowVersion: dto.rowVersion,
+    plain: dto.plain,
+  });
+  decided(m, ctx, [], "answered");
+  return m;
 }
 
 /**
@@ -1479,6 +1507,74 @@ function moved(m: LiveMission, ctx: Ctx, state?: MissionState) {
   m.openedAt = ctx.at;
 }
 
+/** One event on the mission, at `ctx.at`. */
+function emit<K extends EventKind>(
+  ctx: Ctx,
+  m: LiveMission,
+  kind: K,
+  payload: EventOf<K>["payload"],
+) {
+  ctx.emit({
+    schemaVersion: 1,
+    kind,
+    at: ctx.at,
+    missionId: m.mission.id,
+    dispatchId: null,
+    attemptId: null,
+    payload,
+  } as NewEvent);
+}
+
+/** `missions.mission.changed`: the mission's new state, rowVersion and plain. */
+function missionChanged(m: LiveMission, ctx: Ctx) {
+  const dto = missionDto(m);
+  emit(ctx, m, "missions.mission.changed", {
+    missionId: dto.id,
+    rowVersion: dto.rowVersion,
+    state: dto.state,
+    displayState: dto.displayState,
+    plain: dto.plain,
+    deadline: dto.deadline,
+  });
+}
+
+/**
+ * The decisions a move settled and opened: each route 52 row that was in `before` and is gone
+ * is `<owner>.decision.resolved` with `verdict`; each new one is `<owner>.decision.opened`.
+ */
+function decided(
+  m: LiveMission,
+  ctx: Ctx,
+  before: PendingDecisionDto[],
+  verdict: "approved" | "answered",
+) {
+  const after = pendingRows(m);
+  for (const row of before) {
+    if (after.some((r) => r.ref === row.ref)) continue;
+    emit(ctx, m, `${row.owner}.decision.resolved`, {
+      ref: row.ref,
+      verdict,
+      resolvedAt: ctx.at,
+    });
+  }
+  for (const item of after) {
+    if (!before.some((r) => r.ref === item.ref))
+      emit(ctx, m, `${item.owner}.decision.opened`, { item });
+  }
+}
+
+/** `onboarding.checkpoint.changed`: a checkpoint's new state. */
+function checkpointChanged(m: LiveMission, ctx: Ctx, cp: CheckpointDto) {
+  emit(ctx, m, "onboarding.checkpoint.changed", {
+    missionId: m.mission.id,
+    checkpointId: cp.id,
+    checkpoint: cp.checkpoint,
+    state: cp.state,
+    version: cp.version,
+    rowVersion: cp.rowVersion,
+  });
+}
+
 /**
  * Route 44 on Q-0.1a: an option, or `other` in your own words. Internal tool and internal
  * template set the kind with the internal client; a client project sets it with the client
@@ -1491,6 +1587,7 @@ export function answerQuestion(
   choice: string,
   answer: string | undefined,
 ): QuestionDto {
+  const before = pendingRows(m);
   const q = m.question;
   Object.assign(q, {
     answer: choice === "other" ? (answer ?? null) : choice,
@@ -1520,6 +1617,22 @@ export function answerQuestion(
     } satisfies Partial<MissionDto>);
   }
   moved(m, ctx);
+  emit(ctx, m, "onboarding.question.changed", {
+    missionId: m.mission.id,
+    questionId: q.id,
+    answered: true,
+    rowVersion: q.rowVersion,
+  });
+  if (client)
+    emit(ctx, m, "missions.mission.kind_set", {
+      missionId: m.mission.id,
+      kind: client.kind,
+      clientId: client.id,
+      clientKind: client.clientKind,
+      templateSlug: m.mission.templateSlug,
+      rowVersion: m.mission.rowVersion,
+    });
+  decided(m, ctx, before, "answered");
   return structuredClone(q);
 }
 
@@ -1563,6 +1676,7 @@ export function approveCheckpoint(
   cp: CheckpointDto,
   operatorId: string,
 ): CheckpointDto {
+  const before = pendingRows(m);
   Object.assign(cp, {
     state: "approved",
     approvedAt: ctx.at,
@@ -1570,9 +1684,15 @@ export function approveCheckpoint(
     rowVersion: cp.rowVersion + 1,
     updatedAt: ctx.at,
   } satisfies Partial<CheckpointDto>);
+  checkpointChanged(m, ctx, cp);
   const next = KEYS[KEYS.indexOf(cp.checkpoint as Key) + 1];
-  if (next !== undefined) m.checkpoints.push(draftCheckpoint(m, ctx, next));
+  if (next !== undefined) {
+    const drafted = draftCheckpoint(m, ctx, next);
+    m.checkpoints.push(drafted);
+    checkpointChanged(m, ctx, drafted);
+  }
   m.openedAt = ctx.at;
+  decided(m, ctx, before, "approved");
   return structuredClone(cp);
 }
 
@@ -1590,6 +1710,7 @@ export function canFinalize(m: LiveMission): boolean {
  * `rendered` with the package waiting on its commit. The deadline clock starts.
  */
 export function finalize(m: LiveMission, ctx: Ctx): MissionDto {
+  const before = pendingRows(m);
   Object.assign(m.mission, {
     approvedAt: ctx.at,
     renderedAt: ctx.at,
@@ -1603,11 +1724,24 @@ export function finalize(m: LiveMission, ctx: Ctx): MissionDto {
     branchHead: hex("2", 40),
   } satisfies Partial<MissionDto>);
   moved(m, ctx, "rendered");
+  emit(ctx, m, "onboarding.plan.finalized", {
+    missionId: m.mission.id,
+    planId: m.plan.id,
+    planVersion: m.plan.version,
+  });
+  emit(ctx, m, "factory.dispatch_package.rendered", {
+    missionId: m.mission.id,
+    planVersion: m.plan.version,
+    packageHash: m.packageHash,
+  });
+  missionChanged(m, ctx);
+  decided(m, ctx, before, "approved");
   return missionDto(m);
 }
 
 /** Route 114: the integrator commits the package to the mission branch. */
 export function commitPackage(m: LiveMission, ctx: Ctx): DispatchPackageCommitDto {
+  const before = pendingRows(m);
   m.packageCommit = {
     missionId: m.mission.id,
     packageHash: m.packageHash,
@@ -1615,6 +1749,7 @@ export function commitPackage(m: LiveMission, ctx: Ctx): DispatchPackageCommitDt
     confirmedAt: ctx.at,
   };
   m.openedAt = ctx.at;
+  decided(m, ctx, before, "approved");
   return structuredClone(m.packageCommit);
 }
 
@@ -1642,6 +1777,7 @@ export function approvePass(
   reason: string,
   operatorId: string,
 ): PassApprovalDto {
+  const before = pendingRows(m);
   const receipt = m.receipt as NonNullable<LiveMission["receipt"]>;
   m.passApproval = {
     id: ctx.ids(),
@@ -1654,11 +1790,19 @@ export function approvePass(
     createdAt: ctx.at,
   };
   moved(m, ctx, "awaiting_release");
+  emit(ctx, m, "gate.pass.approved", {
+    missionId: m.mission.id,
+    passApprovalId: m.passApproval.id,
+    receiptId: receipt.id,
+  });
+  missionChanged(m, ctx);
+  decided(m, ctx, before, "approved");
   return structuredClone(m.passApproval);
 }
 
 /** Route 30, approval #2: the exact commit the receipt names goes out (`delivering`). */
 export function release(m: LiveMission, ctx: Ctx, operatorId: string): ReleaseApprovalDto {
+  const before = pendingRows(m);
   const receipt = m.receipt as NonNullable<LiveMission["receipt"]>;
   m.release = {
     id: ctx.ids(),
@@ -1672,6 +1816,13 @@ export function release(m: LiveMission, ctx: Ctx, operatorId: string): ReleaseAp
     createdAt: ctx.at,
   };
   moved(m, ctx, "delivering");
+  emit(ctx, m, "delivery.release.approved", {
+    missionId: m.mission.id,
+    releaseApprovalId: m.release.id,
+    receiptId: receipt.id,
+  });
+  missionChanged(m, ctx);
+  decided(m, ctx, before, "approved");
   return structuredClone(m.release);
 }
 
@@ -1691,6 +1842,201 @@ export function allowedMoves(m: LiveMission): MissionState[] {
     return ["awaiting_release"];
   if (m.mission.state === "awaiting_release" && !m.release) return ["delivering"];
   return [];
+}
+
+// ---------------------------------------------------------------- Canon's turns (part b)
+
+/**
+ * Canon's reply to every turn: a fixed script, so two runs compare equal. It's plain text,
+ * written one word per `text-delta`.
+ */
+export const CANON_REPLY =
+  "Got it. Offline sign-off means each phone keeps the job, its photos and the signature until the crew is back in signal, then sends them. I'll note it under 0.1. Which phones do the crews carry?";
+
+/** The script's timing: Canon's first word after `TTFT_MS`, then one word every `WORD_MS`. */
+const TTFT_MS = 400;
+const WORD_MS = 50;
+
+/**
+ * A reply being written. The stream hands out its chunks without waiting; the reply is
+ * streaming from its POST until `now()` is past `endsAt`, and `done` after that (or once its
+ * POST has handed out the whole script). An aborted POST stops it at what it had written.
+ */
+export interface Reply {
+  messageId: string;
+  /** The operator's message it answers. */
+  turnId: string;
+  chunks: CanonStreamChunk[];
+  /** How many chunks the POST has handed out. */
+  written: number;
+  endsAt: number;
+}
+
+/** The script as chunks: start, the words, finish (`done`, with its timings). */
+function script(messageId: string): CanonStreamChunk[] {
+  const words = CANON_REPLY.split(" ");
+  return [
+    { type: "start", messageId },
+    { type: "text-start", id: "t1" },
+    ...words.map(
+      (word, i): CanonStreamChunk => ({
+        type: "text-delta",
+        id: "t1",
+        delta: i === 0 ? word : ` ${word}`,
+      }),
+    ),
+    { type: "text-end", id: "t1" },
+    {
+      type: "finish",
+      messageMetadata: {
+        messageId,
+        status: "done",
+        ttftMs: TTFT_MS,
+        totalMs: TTFT_MS + words.length * WORD_MS,
+      },
+    },
+  ];
+}
+
+const textOf = (chunks: CanonStreamChunk[]) =>
+  chunks.flatMap((c) => (c.type === "text-delta" ? [c.delta] : [])).join("");
+
+export const messageOf = (m: LiveMission, messageId: string) =>
+  m.messages.find((x) => x.id === messageId);
+
+export const replyOf = (m: LiveMission, messageId: string) =>
+  m.replies.find((r) => r.messageId === messageId);
+
+/** The reply to the turn with this `clientMessageId`, if you've sent it before. */
+export const replyToTurn = (m: LiveMission, clientMessageId: string) => {
+  const turn = m.messages.find(
+    (x) => x.role === "operator" && x.clientMessageId === clientMessageId,
+  );
+  return turn && m.replies.find((r) => r.turnId === turn.id);
+};
+
+/** Canon is still writing a reply on this mission (route 34's `CANON_BUSY`). */
+export const replying = (m: LiveMission) => m.messages.some((x) => x.status === "streaming");
+
+/** Route 33: the chat, newest first. */
+export const chat = (m: LiveMission) =>
+  structuredClone([...m.messages].sort((a, b) => b.seq - a.seq));
+
+function message(
+  m: LiveMission,
+  ctx: Ctx,
+  fields: Partial<CanonMessageDto> & Pick<CanonMessageDto, "role" | "text" | "status">,
+): CanonMessageDto {
+  const msg: CanonMessageDto = {
+    id: ctx.ids(),
+    sessionId: m.sessionId,
+    seq: m.messages.length + 1,
+    clientMessageId: null,
+    source: null,
+    relayedBy: null,
+    answersQuestionId: null,
+    questionId: null,
+    checkpoint: null,
+    ttftMs: null,
+    totalMs: null,
+    costMicros: null,
+    redactedAt: null,
+    createdAt: ctx.at,
+    ...fields,
+  };
+  m.messages.push(msg);
+  emit(ctx, m, "onboarding.message.created", {
+    missionId: m.mission.id,
+    message: structuredClone(msg),
+  });
+  return msg;
+}
+
+/** Route 34: your turn is stored, and Canon's reply starts streaming. */
+export function postTurn(m: LiveMission, ctx: Ctx, input: SendMessageInput): Reply {
+  const turn = message(m, ctx, {
+    role: "operator",
+    text: input.text,
+    status: "done",
+    clientMessageId: input.clientMessageId,
+    source: input.source,
+    relayedBy: input.relayedBy ?? null,
+    answersQuestionId: input.answersQuestionId ?? null,
+    checkpoint: input.checkpoint,
+  });
+  const msg = message(m, ctx, {
+    role: "canon",
+    text: "",
+    status: "streaming",
+    checkpoint: input.checkpoint,
+  });
+  const chunks = script(msg.id);
+  const finish = chunks.at(-1) as Extract<CanonStreamChunk, { type: "finish" }>;
+  const reply: Reply = {
+    messageId: msg.id,
+    turnId: turn.id,
+    chunks,
+    written: 0,
+    endsAt: Date.parse(ctx.at) + (finish.messageMetadata.totalMs ?? 0),
+  };
+  m.replies.push(reply);
+  return reply;
+}
+
+/** A reply ends: `done` with the whole script, or `stopped` with what was written. */
+function endReply(m: LiveMission, ctx: Ctx, reply: Reply, status: "done" | "stopped") {
+  const msg = messageOf(m, reply.messageId);
+  if (msg?.status !== "streaming") return;
+  const written = status === "done" ? reply.chunks : reply.chunks.slice(0, reply.written);
+  Object.assign(msg, {
+    status,
+    text: textOf(written),
+    ttftMs: written.some((c) => c.type === "text-delta") ? TTFT_MS : null,
+    totalMs: status === "done" ? reply.endsAt - Date.parse(msg.createdAt) : null,
+  } satisfies Partial<CanonMessageDto>);
+  emit(ctx, m, "onboarding.message.updated", {
+    missionId: m.mission.id,
+    message: structuredClone(msg),
+  });
+}
+
+/** Route 34's stream has handed out `count` chunks; the whole script means it's done. */
+export function wrote(m: LiveMission, ctx: Ctx, reply: Reply, count: number) {
+  if (messageOf(m, reply.messageId)?.status !== "streaming") return;
+  reply.written = count;
+  const msg = messageOf(m, reply.messageId) as CanonMessageDto;
+  msg.text = textOf(reply.chunks.slice(0, count));
+  if (count >= reply.chunks.length) endReply(m, ctx, reply, "done");
+}
+
+/** Route 34's request was aborted: the reply stops at what it had written. */
+export const stopReply = (m: LiveMission, ctx: Ctx, reply: Reply) =>
+  endReply(m, ctx, reply, "stopped");
+
+/** Every reply whose script's time has gone by is done (the mock runs this on each request). */
+export function settleReplies(m: LiveMission, ctx: Ctx) {
+  const time = Date.parse(ctx.at);
+  for (const reply of m.replies) if (time >= reply.endsAt) endReply(m, ctx, reply, "done");
+}
+
+/** A repeated turn (route 34, same `clientMessageId`) gets the reply it already has, as stored. */
+export function storedReply(m: LiveMission, reply: Reply): CanonStreamChunk[] {
+  const msg = messageOf(m, reply.messageId) as CanonMessageDto;
+  return [
+    { type: "start", messageId: msg.id },
+    { type: "text-start", id: "t1" },
+    { type: "text-delta", id: "t1", delta: msg.text },
+    { type: "text-end", id: "t1" },
+    {
+      type: "finish",
+      messageMetadata: {
+        messageId: msg.id,
+        status: msg.status,
+        ttftMs: msg.ttftMs,
+        totalMs: msg.totalMs,
+      },
+    },
+  ];
 }
 
 // ---------------------------------------------------------------- what the routes read

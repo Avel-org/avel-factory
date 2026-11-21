@@ -4,6 +4,7 @@ import {
   CONTRACT_VERSION_HEADER,
   contract,
   type ErrorBody,
+  type EventDto,
   errorMap,
   IDEMPOTENCY_KEY_HEADER,
   type MissionListRowDto,
@@ -12,7 +13,7 @@ import {
   REQUEST_ID_HEADER,
 } from "@avel/contract";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
-import { implement, type ORPCError, ValidationError } from "@orpc/server";
+import { implement, type ORPCError, ValidationError, withEventMeta } from "@orpc/server";
 import { fixtures } from "#fixtures";
 import {
   decisionChoices,
@@ -33,6 +34,12 @@ import * as world from "#world";
  *
  * CR-W31 part (a): routes 9, 10, 20, 21, 28 to 30, 40, 44, 104, 108 and 114 over the missions
  * the routes make and move (`world.ts`, its mission state module), and routes 8, 19 and 52 read the same world.
+ *
+ * CR-W31 part (b): the streams. Route 34 streams Canon's scripted reply and route 105
+ * re-attaches to it; route 33 lists the chat. Route 63 replays the events the routes' moves
+ * made, then waits for more; route 64 (`view=steps`) streams an attempt's steps, as route 109
+ * lists them. Every streamed value carries its SSE `id`, and `Last-Event-ID` resumes after it.
+ * The streams hand out what they have without waiting; time is the mock's `now()`.
  */
 
 /** The operator the mock records as `resolvedBy`: a fixed UUIDv7 (INT). */
@@ -49,19 +56,31 @@ export type MockRoute =
   | 28
   | 29
   | 30
+  | 33
+  | 34
   | 40
   | 44
   | 52
   | 53
   | 54
+  | 63
+  | 64
   | 104
+  | 105
   | 108
+  | 109
   | 114;
 
 /** The writes that require an `Idempotency-Key` and replay their first response. */
 const KEYED_WRITES: ReadonlySet<MockRoute> = new Set<MockRoute>([
   9, 20, 28, 29, 30, 40, 44, 54, 114,
 ]);
+
+/**
+ * The writes that stream their response: they require an `Idempotency-Key` too, but a stream
+ * isn't stored for replay. Route 34's turn is idempotent by its `clientMessageId` instead.
+ */
+const STREAMED_WRITES: ReadonlySet<MockRoute> = new Set<MockRoute>([34]);
 
 export type { MissionStage } from "#world";
 
@@ -171,13 +190,19 @@ const ROUTES: ReadonlyArray<[MockRoute, string, RegExp]> = [
   [28, "POST", /^\/api\/missions\/[^/]+\/finalizations$/],
   [29, "POST", /^\/api\/missions\/[^/]+\/pass-approvals$/],
   [30, "POST", /^\/api\/missions\/[^/]+\/releases$/],
+  [33, "GET", /^\/api\/missions\/[^/]+\/messages$/],
+  [34, "POST", /^\/api\/missions\/[^/]+\/messages$/],
   [40, "POST", /^\/api\/checkpoints\/[^/]+\/approvals$/],
   [44, "POST", /^\/api\/questions\/[^/]+\/answers$/],
   [52, "GET", /^\/api\/pending-decisions$/],
   [53, "GET", /^\/api\/proposals\/[^/]+$/],
   [54, "POST", /^\/api\/proposals\/[^/]+\/decisions$/],
+  [63, "GET", /^\/api\/events\/stream$/],
+  [64, "GET", /^\/api\/traces\/stream$/],
   [104, "GET", /^\/api\/status$/],
+  [105, "GET", /^\/api\/missions\/[^/]+\/messages\/[^/]+\/stream$/],
   [108, "GET", /^\/api\/missions\/[^/]+\/modules\/[^/]+$/],
+  [109, "GET", /^\/api\/attempts\/[^/]+\/steps$/],
   [114, "POST", /^\/api\/missions\/[^/]+\/dispatch-package\/commits$/],
 ];
 
@@ -283,6 +308,76 @@ function pageOf<T extends { id: string }>(
   return { items: page.map((entry) => structuredClone(entry.row)), nextCursor };
 }
 
+/** `Last-Event-ID` as a position: the number it names, or 0 (from the start) for anything else. */
+function positionOf(lastEventId: string | undefined): number {
+  const n = Number(lastEventId);
+  return Number.isInteger(n) && n > 0 ? n : 0;
+}
+
+/** Route 33's cursor: the last message's `seq`, encoded. */
+function decodeSeq(cursor: string): number | null {
+  try {
+    const n = Number(atob(cursor));
+    return Number.isInteger(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Routes 34 and 105: a reply's chunks after position `after`, each with its position as `id`. */
+async function* replay(chunks: CanonStreamChunk[], after = 0): AsyncGenerator<CanonStreamChunk> {
+  for (const [i, chunk] of chunks.entries()) {
+    if (i + 1 > after) yield withEventMeta(structuredClone(chunk), { id: String(i + 1) });
+  }
+}
+
+/**
+ * Routes 63 and 64: a live stream over a log that only grows. It sends each item `keep`
+ * passes, oldest first, then waits in `waiters` for the next one, until the reader leaves or
+ * the request is aborted. Both wake a pending wait, so a closed stream leaves nothing running.
+ */
+function follow<T extends object>(
+  log: () => readonly T[],
+  keep: (item: T) => boolean,
+  idOf: (item: T) => string,
+  waiters: Set<() => void>,
+  signal: AbortSignal | undefined,
+): AsyncGenerator<T, void> {
+  let open = signal?.aborted !== true;
+  let wake = () => {};
+  const close = () => {
+    open = false;
+    wake();
+  };
+  signal?.addEventListener("abort", close, { once: true });
+  const stream = (async function* () {
+    try {
+      let at = 0;
+      while (open) {
+        const item = log()[at];
+        if (item === undefined) {
+          await new Promise<void>((resolve) => {
+            wake = resolve;
+            waiters.add(resolve);
+          });
+          waiters.delete(wake);
+          continue;
+        }
+        at += 1;
+        if (keep(item)) yield withEventMeta(structuredClone(item), { id: idOf(item) });
+      }
+    } finally {
+      signal?.removeEventListener("abort", close);
+    }
+  })();
+  const stop = stream.return.bind(stream);
+  stream.return = (value) => {
+    close();
+    return stop(value);
+  };
+  return stream;
+}
+
 export function createMock(opts: {
   contractVersion: string;
   now?: () => Date;
@@ -317,7 +412,16 @@ export function createMock(opts: {
   let idCount = 0;
   /** UUIDv7-shaped IDs, in the order the mock makes them. */
   const nextId = () => `0193c000-0000-7000-8000-${String(++idCount).padStart(12, "0")}`;
-  const ctx = (): world.Ctx => ({ ids: nextId, at: now().toISOString() });
+  /** Route 63's log: the events the routes' moves made, oldest first, `seq` from 1. */
+  let events: EventDto[] = [];
+  /** The live streams waiting for the next event. */
+  const waiters = new Set<() => void>();
+  function emit(event: world.NewEvent) {
+    events.push({ ...event, seq: events.length + 1 } as EventDto);
+    for (const wake of waiters) wake();
+    waiters.clear();
+  }
+  const ctx = (): world.Ctx => ({ ids: nextId, at: now().toISOString(), emit });
   const proposals = new Map<string, StoredProposal>();
   let factoryChanges: FactorySeed[] = [];
   let injected: Json[] = [];
@@ -384,16 +488,15 @@ export function createMock(opts: {
   const questionOf = (questionId: string) =>
     [...liveMissions.values()].find((m) => m.question.id === questionId);
 
-  async function* streamReply(text: string): AsyncGenerator<CanonStreamChunk> {
-    const messageId = "0193b000-0000-7000-8000-000000000903";
-    yield { type: "start", messageId };
-    yield { type: "text-start", id: "t1" };
-    for (const word of text.split(" ")) yield { type: "text-delta", id: "t1", delta: `${word} ` };
-    yield { type: "text-end", id: "t1" };
-    yield {
-      type: "finish",
-      messageMetadata: { messageId, status: "done", ttftMs: 400, totalMs: 1800 },
-    };
+  /** Route 34's reply: hands out the script, recording each chunk as written. */
+  async function* writeReply(
+    m: world.LiveMission,
+    reply: world.Reply,
+  ): AsyncGenerator<CanonStreamChunk> {
+    for (const [i, chunk] of reply.chunks.entries()) {
+      world.wrote(m, ctx(), reply, i + 1);
+      yield withEventMeta(structuredClone(chunk), { id: String(i + 1) });
+    }
   }
 
   const os = implement(contract);
@@ -503,15 +606,42 @@ export function createMock(opts: {
           deliveries: mission.state === "awaiting_release" ? [world.DELIVERY] : [],
         };
       }),
-      listMessages: os.missions.listMessages.handler(() => ({
-        items: world.CANON_MESSAGES,
-        nextCursor: null,
-      })),
-      postMessage: os.missions.postMessage.handler(({ input }) =>
-        streamReply(`Got it: ${input.text.slice(0, 80)}`),
-      ),
-      resumeMessage: os.missions.resumeMessage.handler(({ errors }) => {
-        throw errors.STREAM_GONE();
+      // Route 33: a live mission's chat, newest first; the sample world's for the others.
+      listMessages: os.missions.listMessages.handler(({ input, errors }) => {
+        const m = liveMissions.get(input.missionId);
+        if (!m) return { items: world.CANON_MESSAGES, nextCursor: null };
+        const before = input.cursor === undefined ? null : decodeSeq(input.cursor);
+        if (input.cursor !== undefined && before === null) throw invalidCursor(errors)();
+        const listed = world.chat(m).filter((x) => before === null || x.seq < before);
+        const limit = input.limit ?? DEFAULT_LIMIT;
+        const items = listed.slice(0, limit);
+        const last = items.at(-1);
+        return {
+          items,
+          nextCursor: listed.length > limit && last ? btoa(String(last.seq)) : null,
+        };
+      }),
+
+      // Route 34: your turn is stored and Canon's reply streams; an abort stops it.
+      postMessage: os.missions.postMessage.handler(({ input, errors, signal }) => {
+        const m = liveMissions.get(input.missionId);
+        if (!m) throw errors.NOT_FOUND();
+        if (world.replying(m)) throw errors.CANON_BUSY();
+        const repeat = world.replyToTurn(m, input.clientMessageId);
+        if (repeat) return replay(world.storedReply(m, repeat));
+        if (m.mission.state !== "onboarding") throw errors.MISSION_NOT_IN_SCOPING();
+        const reply = world.postTurn(m, ctx(), input);
+        signal?.addEventListener("abort", () => world.stopReply(m, ctx(), reply), { once: true });
+        return writeReply(m, reply);
+      }),
+
+      // Route 105: the reply's script after Last-Event-ID, while it's still streaming.
+      resumeMessage: os.missions.resumeMessage.handler(({ input, errors, lastEventId }) => {
+        const m = liveMissions.get(input.missionId);
+        const reply = m && world.replyOf(m, input.messageId);
+        if (!m || !reply) throw errors.NOT_FOUND();
+        if (world.messageOf(m, reply.messageId)?.status !== "streaming") throw errors.STREAM_GONE();
+        return replay(reply.chunks, positionOf(lastEventId));
       }),
       transcribe: os.missions.transcribe.handler(async function* () {
         yield { type: "partial", text: "Dale said the crews" };
@@ -824,16 +954,34 @@ export function createMock(opts: {
       }),
     },
 
+    // Route 63: the log after Last-Event-ID, for all missions or one, then each new event.
     events: {
-      stream: os.events.stream.handler(async function* ({ input }) {
-        for (const event of await world.sampleEvents()) {
-          if (
-            input.missionId === undefined ||
-            event.missionId === null ||
-            event.missionId === input.missionId
-          )
-            yield event;
-        }
+      stream: os.events.stream.handler(({ input, lastEventId, signal }) => {
+        const after = positionOf(lastEventId);
+        return follow(
+          () => events,
+          (e) =>
+            e.seq > after && (input.missionId === undefined || e.missionId === input.missionId),
+          (e) => String(e.seq),
+          waiters,
+          signal,
+        );
+      }),
+    },
+
+    // Route 64: with view=steps, an attempt's steps (route 109's) after Last-Event-ID, then
+    // it waits. The world has no raw traces and no session's, so those streams only wait.
+    traces: {
+      stream: os.traces.stream.handler(({ input, lastEventId, signal }) => {
+        const after = positionOf(lastEventId);
+        const steps = input.view === "steps" && input.attemptId !== undefined;
+        return follow(
+          () => world.STEPS,
+          (st) => steps && st.attemptId === input.attemptId && st.traceSeq > after,
+          (st) => String(st.traceSeq),
+          waiters,
+          signal,
+        );
       }),
     },
 
@@ -908,14 +1056,34 @@ export function createMock(opts: {
         row.resolvedAt = resolvedAt;
         row.rowVersion += 1;
         row.updatedAt = resolvedAt;
-        return toProposalDto(row);
+        const dto = toProposalDto(row);
+        const choices = decisionChoices(row.options);
+        emit({
+          schemaVersion: 1,
+          kind: `${dto.owner}.decision.resolved`,
+          at: resolvedAt,
+          missionId: dto.mission?.id ?? null,
+          dispatchId: null,
+          attemptId: null,
+          payload: {
+            ref: dto.ref,
+            verdict:
+              input.choice === choices?.approve.choice
+                ? "approved"
+                : input.choice === choices?.reject.choice
+                  ? "rejected"
+                  : "chose",
+            resolvedAt,
+          },
+        });
+        return dto;
       }),
     },
   };
 
   function respond(
     status: number,
-    text: string,
+    text: BodyInit | null,
     requestId: string,
     headers: HeadersInit = { "content-type": "application/json" },
   ): Response {
@@ -1033,14 +1201,17 @@ export function createMock(opts: {
         requestId,
       );
     }
-    const text = await result.response.text();
-    return respond(result.response.status, text, requestId, result.response.headers);
+    // A stream goes out as it's written; anything else is read whole.
+    const streamed = result.response.headers.get("content-type")?.includes("text/event-stream");
+    const body = streamed ? result.response.body : await result.response.text();
+    return respond(result.response.status, body, requestId, result.response.headers);
   }
 
   function reset() {
     signInState.clear();
     clients = structuredClone(initialClients);
     liveMissions.clear();
+    events = [];
     proposals.clear();
     factoryChanges = [];
     injected = [];
@@ -1070,6 +1241,10 @@ export function createMock(opts: {
         body: isAuth ? redacted(body) : body,
       });
 
+      // The replies whose script's time has gone by are done (now() paces them, F4).
+      const settled = ctx();
+      for (const m of liveMissions.values()) world.settleReplies(m, settled);
+
       // failNext: before any check.
       const pending = route === null ? undefined : failures.get(route);
       if (route !== null && pending !== undefined) {
@@ -1096,7 +1271,10 @@ export function createMock(opts: {
         );
       }
 
-      if (route === null || !KEYED_WRITES.has(route)) return serve(request, requestId);
+      const streamedWrite = route !== null && STREAMED_WRITES.has(route);
+      if (route === null || (!KEYED_WRITES.has(route) && !streamedWrite)) {
+        return serve(request, requestId);
+      }
 
       // A write: the key first (Axis, S1-1 and S1-3), then the idempotency rules.
       if (idempotencyKey === null || idempotencyKey === "") {
@@ -1114,6 +1292,7 @@ export function createMock(opts: {
           requestId,
         );
       }
+      if (streamedWrite) return serve(request, requestId);
       const bodyKey = canonical(body);
       const seen = idempotency.get(idempotencyKey);
       if (seen !== undefined) {
@@ -1148,7 +1327,9 @@ export function createMock(opts: {
     seedMission(stage) {
       const avel = world.CLIENTS.avel;
       if (!clients.some((c) => c.id === avel.id)) clients.push(structuredClone(avel));
-      const m = world.seedMission(ctx(), SEEDED_MISSION_ID, stage, MOCK_OPERATOR_ID);
+      // A seeded mission's history sends no events: route 63 starts with the routes' moves.
+      const quiet = { ...ctx(), emit: () => {} };
+      const m = world.seedMission(quiet, SEEDED_MISSION_ID, stage, MOCK_OPERATOR_ID);
       liveMissions.set(m.mission.id, m);
       return { missionId: m.mission.id, clientId: avel.id };
     },
